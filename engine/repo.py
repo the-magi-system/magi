@@ -19,6 +19,15 @@ def _records(directory: Path, pattern: str, key: str) -> dict[str, dict]:
     return records
 
 
+def _pairs(directory: Path, pattern: str, first: str, second: str) -> dict[tuple[str, str], dict]:
+    records: dict[tuple[str, str], dict] = {}
+    if directory.is_dir():
+        for path in sorted(directory.glob(pattern)):
+            record = load_yaml(path)
+            records[(record[first], record[second])] = record
+    return records
+
+
 @dataclass
 class RepoState:
     root: Path
@@ -30,6 +39,8 @@ class RepoState:
     methodologies: dict[str, dict]
     ideas: dict[str, dict]
     evidence: dict[str, dict]
+    views: dict[tuple[str, str], dict]
+    judgements: dict[tuple[str, str], dict]
     ledger_files: set[str]
 
     @classmethod
@@ -53,6 +64,8 @@ class RepoState:
             methodologies=_records(root / "methodologies", "*.yaml", "id"),
             ideas=_records(root / "ideas", "*/idea.yaml", "id"),
             evidence=_records(root / "evidence", "*.yaml", "id"),
+            views=_pairs(root / "ideas", "*/views/*.yaml", "idea", "actor"),
+            judgements=_pairs(root / "ideas", "*/judgements/*.yaml", "idea", "judge"),
             ledger_files=ledger_files,
         )
 
