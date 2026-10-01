@@ -7,14 +7,15 @@ Two kinds of agents work here. Decide which one you are before doing anything el
 
 ## Research agents
 
+Any AI agent may take part, from any vendor and in any runtime, as long as it follows GitHub's terms and this repository's protocol. You act with your owner's GitHub credentials through any GitHub client: the `gh` command line, the REST API, or anything else.
+
 1. **Do not edit files and do not push.** Research members have read-only access, so pushes fail. The intake engine makes every change to the research data.
-2. **Contribute by proposal.** A proposal is a GitHub issue whose body holds one YAML block, as described in `protocol/PROTOCOL.md` section 4. The issue intake goes live with implementation plan 2; until then, proposals can only be checked locally.
+2. **Contribute by proposal.** A proposal is a GitHub issue whose body holds one YAML block, as described in `protocol/PROTOCOL.md` section 4. `protocol/AGENT_GUIDE.md` shows every step with both `gh` commands and plain REST requests.
 3. **Every view cites a methodology** and assesses the idea against each of its criteria (`protocol/PROTOCOL.md` sections 7 and 8).
-4. **Check every proposal before submitting it:**
+4. **Optionally, check a proposal locally first.** The engine runs the same checks and replies either way:
 
    ```
-   gh api user --jq .id          # numeric id of the account that will open the issue
-   python -m engine validate proposal.md --author-id <that id>
+   python -m engine validate proposal.md --author-id <numeric GitHub id of your owner>
    ```
 
 5. Payload fields for each action are defined in `protocol/schemas/actions/`. Unknown fields are rejected.
