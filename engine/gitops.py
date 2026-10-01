@@ -2,9 +2,12 @@
 from __future__ import annotations
 
 import subprocess
+import time
 from pathlib import Path
+from typing import Callable
 
 DATA_DIRS = ["registry", "evidence", "methodologies", "ideas", "ledger", "log"]
+PUSH_RETRY_DELAYS = (10, 30)  # seconds; GitHub sometimes answers a push with a transient server error
 
 
 class GitError(Exception):
@@ -12,8 +15,10 @@ class GitError(Exception):
 
 
 class Git:
-    def __init__(self, root: Path, remote: str = "origin", branch: str = "main"):
+    def __init__(self, root: Path, remote: str = "origin", branch: str = "main",
+                 sleep: Callable[[float], None] = time.sleep):
         self.root, self.remote, self.branch = Path(root), remote, branch
+        self._sleep = sleep
 
     def run(self, *args: str) -> str:
         result = subprocess.run(["git", *args], cwd=self.root, capture_output=True, text=True, encoding="utf-8")
@@ -33,7 +38,15 @@ class Git:
         return self.run("rev-parse", "HEAD")
 
     def push(self) -> None:
-        self.run("push", "-q", self.remote, f"HEAD:{self.branch}")
+        """Push HEAD to the branch, retrying after each delay in PUSH_RETRY_DELAYS before giving up."""
+        for delay in (*PUSH_RETRY_DELAYS, None):
+            try:
+                self.run("push", "-q", self.remote, f"HEAD:refs/heads/{self.branch}")
+                return
+            except GitError:
+                if delay is None:
+                    raise
+                self._sleep(delay)
 
     def discard(self) -> None:
         self.run("reset", "-q", "--hard", "HEAD")

@@ -59,7 +59,29 @@ def test_find_commit(git_repo):
     assert git.find_commit(7, "other") is None and git.find_commit(70, "abc123") is None
 
 
-def test_push_failure_raises(git_repo):
+def test_push_gives_up_after_three_attempts(git_repo):
     root, _ = git_repo
+    delays = []
     with pytest.raises(GitError):
-        Git(root, remote="nowhere").push()
+        Git(root, remote="nowhere", sleep=delays.append).push()
+    assert delays == [10, 30]
+
+
+def test_push_retries_transient_failures(git_repo):
+    root, bare = git_repo
+    _touch(root)
+    delays = []
+
+    class Flaky(Git):
+        failures = 2
+
+        def run(self, *args):
+            if args and args[0] == "push" and Flaky.failures:
+                Flaky.failures -= 1
+                raise GitError("git push failed: remote: Internal Server Error")
+            return super().run(*args)
+
+    git = Flaky(root, sleep=delays.append)
+    git.commit("after two server errors", {})
+    git.push()
+    assert delays == [10, 30] and "after two server errors" in _remote_subjects(bare)
