@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "register_asset payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "type", "sector", "currency", "price_source"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,31}$"},
+    "name": {"type": "string", "minLength": 1, "maxLength": 120},
+    "type": {"enum": ["equity", "crypto", "commodity", "fx", "index", "fund", "other"]},
+    "sector": {"enum": ["energy", "materials", "industrials", "consumer-discretionary", "consumer-staples", "health-care", "financials", "information-technology", "communication-services", "utilities", "real-estate", "digital-assets", "commodities", "multi-asset"]},
+    "currency": {"type": "string", "pattern": "^[A-Z]{3}$"},
+    "price_source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "symbol"],
+      "properties": {
+        "provider": {"enum": ["yahoo"]},
+        "symbol": {"type": "string", "pattern": "^[A-Za-z0-9.=^-]{1,32}$"}
+      }
+    }
+  }
+}

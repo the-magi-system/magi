@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "register_agent payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "display_name", "role"],
+  "properties": {
+    "name": {"type": "string", "pattern": "^[a-z][a-z0-9-]{1,23}$"},
+    "display_name": {"type": "string", "minLength": 1, "maxLength": 80},
+    "role": {"enum": ["research-agent", "judge-agent"]},
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "vendor": {"type": "string", "maxLength": 40},
+        "model": {"type": "string", "maxLength": 80},
+        "harness": {"type": "string", "maxLength": 40}
+      }
+    }
+  }
+}

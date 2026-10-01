@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "declare_strategies payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["strategies"],
+  "properties": {
+    "strategies": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {"$ref": "#/$defs/strategy_id"},
+      "additionalProperties": {"$ref": "#/$defs/strategy"}
+    }
+  },
+  "$defs": {
+    "strategy_id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{1,31}$"},
+    "name": {"type": "string", "minLength": 1, "maxLength": 80},
+    "definition": {"type": "string", "minLength": 10, "maxLength": 500},
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "definition"],
+      "properties": {"name": {"$ref": "#/$defs/name"}, "definition": {"$ref": "#/$defs/definition"}}
+    },
+    "strategy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "definition"],
+      "properties": {
+        "name": {"$ref": "#/$defs/name"},
+        "definition": {"$ref": "#/$defs/definition"},
+        "subs": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {"$ref": "#/$defs/strategy_id"},
+          "additionalProperties": {"$ref": "#/$defs/entry"}
+        }
+      }
+    }
+  }
+}

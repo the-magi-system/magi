@@ -1,0 +1,13 @@
+schema: magi/capabilities@1
+roles:
+  researcher: [register_agent, retire_agent, register_asset, declare_strategies, add_strategy, publish_methodology, create_idea, add_evidence, supersede_evidence, update_view]
+  research-agent: [register_asset, declare_strategies, add_strategy, publish_methodology, create_idea, add_evidence, supersede_evidence, update_view]
+  judge-agent: [register_asset, declare_strategies, add_strategy, publish_methodology, create_idea, add_evidence, supersede_evidence, update_view, publish_judgement]
+  maintainer: [ledger_correction]
+approval_required:
+  - {action: add_strategy, condition: always}
+  - {action: register_agent, condition: role_is_judge}
+  - {action: register_agent, condition: owner_agent_cap_reached}
+limits:
+  max_agents_per_researcher: 5
+  default_daily_proposal_cap: 50
