@@ -8,9 +8,13 @@ from pathlib import Path
 from .apply import apply_proposal
 from .changes import ApplyError
 from .errors import E_INTERNAL, MagiError
+from .github import GitHubClient
+from .gitops import Git
+from .intake import run_intake
 from .prices import FixedPrices, YahooProvider
 from .repo import RepoState
 from .timeutil import parse_iso, utc_now
+from .triage import run_triage
 from .validate import validate
 
 
@@ -43,6 +47,20 @@ def _dry_run(args) -> int:
     return 1 if result["status"] == "rejected" else 0
 
 
+def _summarise(outcomes) -> None:
+    print(json.dumps([{"issue": o.number, "status": o.result["status"]} for o in outcomes], indent=2))
+
+
+def _intake(args) -> int:
+    _summarise(run_intake(args.repo, GitHubClient.from_env(), YahooProvider(), Git(args.repo)))
+    return 0
+
+
+def _triage(args) -> int:
+    _summarise(run_triage(args.repo, GitHubClient.from_env()))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m engine", description="The Magi System intake engine")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -62,6 +80,14 @@ def build_parser() -> argparse.ArgumentParser:
     dry.add_argument("--price", type=float, default=None, help="use this price for every asset instead of a live quote")
     dry.add_argument("--now", default=None, help="processing time, ISO 8601 UTC ending in Z")
     dry.set_defaults(handler=_dry_run, json_errors=True)
+
+    intake = commands.add_parser("intake", help="process proposal issues (run by the intake workflow)")
+    intake.add_argument("--repo", type=Path, default=Path("."), help="repository root")
+    intake.set_defaults(handler=_intake, json_errors=False)
+
+    triage = commands.add_parser("triage", help="answer request issues (run by the triage workflow)")
+    triage.add_argument("--repo", type=Path, default=Path("."), help="repository root")
+    triage.set_defaults(handler=_triage, json_errors=False)
     return parser
 
 

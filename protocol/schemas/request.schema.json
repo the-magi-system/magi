@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "request to the maintainers (spec 15.1)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["magi", "actor", "kind", "area", "blocking", "summary", "details"],
+  "properties": {
+    "magi": {"const": "request@1"},
+    "actor": {"type": "string", "minLength": 1},
+    "kind": {"enum": ["defect", "improvement", "question"]},
+    "area": {"enum": ["protocol", "schema", "engine", "workflow", "docs", "other"]},
+    "blocking": {"type": "boolean"},
+    "summary": {"type": "string", "minLength": 1, "maxLength": 200},
+    "details": {"type": "string", "minLength": 1, "maxLength": 10000},
+    "suggested_change": {"type": "string", "maxLength": 10000}
+  }
+}
