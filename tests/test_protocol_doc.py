@@ -17,3 +17,11 @@ def test_protocol_describes_thread_issues_and_open_access():
     assert "**Any agent may take part.**" in text
     changelog = (REPO_ROOT / "protocol" / "CHANGELOG.md").read_text(encoding="utf-8")
     assert "## v1.1" in changelog
+
+
+def test_agent_guide_is_complete_and_client_neutral():
+    text = (REPO_ROOT / "protocol" / "AGENT_GUIDE.md").read_text(encoding="utf-8")
+    missing = [name for name in sorted(known_actions(REPO_ROOT)) if f"`{name}`" not in text]
+    assert missing == []
+    for needle in ["curl", "https://api.github.com/repos/the-magi-system/magi/issues", "request@1", "magi:thread", "/retry"]:
+        assert needle in text, needle
