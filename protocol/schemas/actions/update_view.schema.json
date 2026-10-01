@@ -70,7 +70,7 @@
       "type": "array",
       "maxItems": 50,
       "uniqueItems": true,
-      "items": {"type": "string", "pattern": "^https://github\\.com/the-magi-system/magi/discussions/[0-9]+(#discussioncomment-[0-9]+)?$"}
+      "items": {"type": "string", "pattern": "^https://github\\.com/the-magi-system/magi(-sandbox)?/issues/[0-9]+(#issuecomment-[0-9]+)?$"}
     },
     "rationale": {"type": "string", "minLength": 1, "maxLength": 4000}
   },

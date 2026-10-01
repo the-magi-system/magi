@@ -141,3 +141,13 @@ def test_add_strategy_accepts_one_form_only():
                         "definition": "Assets priced well below liquidation value"}}
     assert validate_payload(REPO_ROOT, "add_strategy", top) == []
     assert validate_payload(REPO_ROOT, "add_strategy", {**top, "parent": "special-sit"}) != []
+
+
+def test_discussion_refs_accept_thread_issue_comments():
+    ok = view_payload(discussion_refs=[
+        "https://github.com/the-magi-system/magi/issues/37#issuecomment-123",
+        "https://github.com/the-magi-system/magi-sandbox/issues/5",
+    ])
+    assert validate_payload(REPO_ROOT, "update_view", ok) == []
+    old = view_payload(discussion_refs=["https://github.com/the-magi-system/magi/discussions/37"])
+    assert [e.path for e in validate_payload(REPO_ROOT, "update_view", old)] == ["/payload/discussion_refs/0"]

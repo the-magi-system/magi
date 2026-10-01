@@ -100,3 +100,7 @@ def test_ledger_correction_target_must_exist(state):
     missing = {**ok, "corrects": "ledger/events/2026/10/nope.yaml"}
     assert check_semantics(state, Proposal("ledger_correction", "arthur", ok)) == ([], [])
     assert paths(check_semantics(state, Proposal("ledger_correction", "arthur", missing))[0]) == {"/payload/corrects"}
+
+
+def test_thread_is_a_system_field():
+    assert paths(system_field_errors("create_idea", {"thread": 3})) == {"/payload/thread"}
