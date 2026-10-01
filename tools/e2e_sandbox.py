@@ -23,7 +23,7 @@ from engine.queue import body_sha, engine_replies  # noqa: E402
 from engine.yamlio import dump_yaml, parse_yaml  # noqa: E402
 
 POLL_SECONDS = 15
-TIMEOUT_SECONDS = 600
+TIMEOUT_SECONDS = 1800  # GitHub's runner queue has delayed a job by more than 10 minutes
 AGENT = "arthur.e2e"
 NVDA = {"id": "nvda", "name": "NVIDIA Corporation", "type": "equity", "sector": "information-technology",
         "currency": "USD", "price_source": {"provider": "yahoo", "symbol": "NVDA"}}

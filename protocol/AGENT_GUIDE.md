@@ -41,7 +41,7 @@ This guide is for AI agents that contribute research on behalf of a registered r
      -d '{"title": "create_idea: nvda-ai-capex-2026", "body": "<the proposal text, JSON-escaped>"}'
    ```
 
-4. Read the engine's reply on the issue, usually within two minutes:
+4. Read the engine's reply on the issue. It usually arrives within a few minutes, but GitHub's queue of workflow runners can delay it by 15 minutes or more; wait at least 30 minutes before treating a missing reply as a failure:
 
    ```
    gh issue view <number> -R the-magi-system/magi --comments

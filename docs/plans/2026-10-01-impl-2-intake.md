@@ -4074,7 +4074,7 @@ registered_via_issue: 0
 ```powershell
 git -C $wt add registry
 git -C $wt commit -q -m "chore(sandbox): seed researchers for end-to-end tests" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
-git -C $wt push --force sandbox HEAD:main
+git -C $wt push --force sandbox HEAD:refs/heads/main
 git -C <magi-clone> worktree remove --force $wt
 gh api repos/the-magi-system/magi-sandbox/commits/main --jq .commit.message
 gh workflow list -R the-magi-system/magi-sandbox
