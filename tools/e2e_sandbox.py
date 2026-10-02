@@ -103,6 +103,29 @@ class Runner:
         if not condition:
             raise Failure(name)
 
+    def eventually(self, name: str, condition, timeout: int = 900) -> None:
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            if condition():
+                self.check(name, True)
+                return
+            time.sleep(POLL_SECONDS)
+        self.check(name, False, f"not true within {timeout} seconds")
+
+    def run_workflow(self, workflow: str) -> dict:
+        """Dispatch a workflow and wait for that run. Runs are told apart by id, not by clock time."""
+        path = f"/repos/{self.gh.repo}/actions/workflows/{workflow}/runs"
+        known = {run["id"] for run in self.gh.request("GET", path, query={"per_page": 20})["workflow_runs"]}
+        self.gh.request("POST", f"/repos/{self.gh.repo}/actions/workflows/{workflow}/dispatches", {"ref": "main"})
+        deadline = time.time() + TIMEOUT_SECONDS
+        while time.time() < deadline:
+            runs = self.gh.request("GET", path, query={"event": "workflow_dispatch", "per_page": 5})["workflow_runs"]
+            done = [run for run in runs if run["id"] not in known and run["status"] == "completed"]
+            if done:
+                return done[0]
+            time.sleep(POLL_SECONDS)
+        raise Failure(f"{workflow} did not finish within {TIMEOUT_SECONDS} seconds")
+
 
 def scenario(r: Runner) -> None:
     month_dir = f"ledger/events/{datetime.now(timezone.utc):%Y/%m}"
@@ -161,6 +184,30 @@ def scenario(r: Runner) -> None:
     log_text = r.gh.get_file(f"log/{datetime.now(timezone.utc):%Y-%m}.jsonl") or ""
     last = json.loads(log_text.strip().splitlines()[-1])
     r.check("discussion_refs recorded in the event log", last.get("discussion_refs") == [note["html_url"]])
+
+    data_request = "```yaml\n" + dump_yaml({"magi": "data-request@1", "actor": AGENT, "provider": "arthur",
+                                            "category": "company-facts", "subject": ["nvda"],
+                                            "purpose": "E2E check of the data request channel"}) + "```\n"
+    n = r.submit("data request", data_request)
+    r.expect("data request received", r.wait(n), "received")
+    issue = r.issue(n)
+    r.check("data request labelled and assigned to the provider",
+            "magi:data-request" in {label["name"] for label in issue["labels"]}
+            and "ThinkwChivalri" in {person["login"] for person in issue["assignees"]})
+
+    def snapshot_lists_idea() -> bool:
+        ideas = json.loads(r.gh.get_file("ideas.json", ref="snapshot") or "[]")
+        return any(item["id"] == IDEA["id"] and item["views"] for item in ideas)
+
+    r.eventually("snapshot lists the idea with its views", snapshot_lists_idea)
+
+    run = r.run_workflow("prices.yml")
+    r.check("prices workflow succeeded", run["conclusion"] == "success", run["html_url"])
+    prices = json.loads(r.gh.get_file("prices.json", ref="snapshot") or "{}")
+    r.check("snapshot carries the daily close", "nvda" in prices, str(prices.get("nvda")))
+    open_audits = [i for i in r.gh.labelled_issues("magi:audit")
+                   if i["state"] == "open" and i["title"] == "Consistency check found problems"]
+    r.check("consistency check is clean", open_audits == [], str([i["number"] for i in open_audits]))
 
 
 def main(argv: list[str] | None = None) -> int:
