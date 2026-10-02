@@ -151,3 +151,9 @@ def test_discussion_refs_accept_thread_issue_comments():
     assert validate_payload(REPO_ROOT, "update_view", ok) == []
     old = view_payload(discussion_refs=["https://github.com/the-magi-system/magi/discussions/37"])
     assert [e.path for e in validate_payload(REPO_ROOT, "update_view", old)] == ["/payload/discussion_refs/0"]
+
+
+def test_evidence_provider_ref():
+    assert validate_payload(REPO_ROOT, "add_evidence", evidence_payload(provider_ref="avalon:20261002:nvda-mgmt-01")) == []
+    errors = validate_payload(REPO_ROOT, "add_evidence", evidence_payload(provider_ref="Bad Ref!"))
+    assert [e.path for e in errors] == ["/payload/provider_ref"]

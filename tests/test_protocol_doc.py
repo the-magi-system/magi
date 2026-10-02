@@ -25,3 +25,10 @@ def test_agent_guide_is_complete_and_client_neutral():
     assert missing == []
     for needle in ["curl", "https://api.github.com/repos/the-magi-system/magi/issues", "request@1", "magi:thread", "/retry"]:
         assert needle in text, needle
+
+
+def test_protocol_describes_data_requests():
+    text = (REPO_ROOT / "protocol" / "PROTOCOL.md").read_text(encoding="utf-8")
+    assert "data-request@1" in text and "`provider_ref`" in text and "`magi:data-request`" in text
+    assert "data-request@1" in (REPO_ROOT / "protocol" / "AGENT_GUIDE.md").read_text(encoding="utf-8")
+    assert "## v1.2" in (REPO_ROOT / "protocol" / "CHANGELOG.md").read_text(encoding="utf-8")

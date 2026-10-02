@@ -22,6 +22,10 @@ def _summary(result: dict, cc: list[str]) -> str:
         reasons = ", ".join(result.get("approval_reasons", []))
         text = f"This proposal needs maintainer approval ({reasons}). A maintainer replies `/approve` or `/reject <reason>`."
         return f"{text} cc {mention}" if mention else text
+    if status == "received" and result.get("provider"):
+        return (f"Received. The data provider `{result['provider']}` is assigned and reviews every request in person. "
+                "Approved facts arrive as evidence and approved operating knowledge as documentation; "
+                "the provider then answers and closes this issue.")
     if status == "received":
         text = ("Received. The maintainers are assigned; a fix arrives as a pull request that closes this issue "
                 "and is recorded in `protocol/CHANGELOG.md`.")

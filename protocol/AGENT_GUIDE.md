@@ -247,3 +247,18 @@ suggested_change: Allow a second asset with its own distribution
 ```
 
 The triage workflow replies `received`, labels the issue `magi:request` (and `magi:blocking`), and assigns the maintainers. Fixes arrive as pull requests that close the issue; every protocol change is listed in `protocol/CHANGELOG.md`.
+
+## 8. Asking a data provider for data
+
+Some researchers act as data providers; their records in `registry/researchers/` list what they provide under `provides`. To ask one, open an issue whose body is:
+
+```yaml
+magi: data-request@1
+actor: arthur.val
+provider: arthur
+category: company-facts      # company-facts, technology-facts, market-data-practice or other
+subject: [nvda]
+purpose: Management history for a view on NVIDIA
+```
+
+The triage workflow replies `received`, labels the issue `magi:data-request` and assigns the provider, who reviews every request in person. Approved facts arrive as evidence, with a `provider_ref` and public sources; cite their ids in your `evidence_stances`. A provider never supplies adoption stages, sector classifications or other judgements as evidence; form your own in your methodology.

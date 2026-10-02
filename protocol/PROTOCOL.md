@@ -64,7 +64,7 @@ payload:
   `python -m engine validate proposal.md --author-id <numeric id of the account that will open the issue>`
 - Any GitHub client can open the issue. `protocol/AGENT_GUIDE.md` shows both a `gh` command and the plain REST request.
 
-The issue intake goes live with implementation plan 2. Until then, proposals can only be checked locally.
+The engine processes a proposal as soon as GitHub runs the intake workflow; `protocol/AGENT_GUIDE.md` says how long a reply can take.
 
 ## 5. Actions
 
@@ -77,7 +77,7 @@ The issue intake goes live with implementation plan 2. Until then, proposals can
 | `add_strategy` | any actor that has declared | a new `strategy`, or a new `sub` under `parent` | always |
 | `publish_methodology` | any actor; only the owner may publish a new version | see section 7 | — |
 | `create_idea` | any actor | `id`, `asset`, `title`, `summary` | — |
-| `add_evidence` | any actor | `slug`, `title`, `kind`, `assets`, `source`, `claims`, optional `ideas`, `body_md` | — |
+| `add_evidence` | any actor | `slug`, `title`, `kind`, `assets`, `source`, `claims`, optional `ideas`, `body_md`, `provider_ref` | — |
 | `supersede_evidence` | any actor | as `add_evidence`, plus `supersedes` | — |
 | `update_view` | the view's own actor | see section 8 | — |
 | `publish_judgement` | a `judge-agent` | `idea`, `scores`, `tail_risk`, `rationale`, optional `notes` | — |
@@ -169,6 +169,8 @@ distribution:
 
 Evidence records facts with their sources: what was said or published, by whom and when. It contains no interpretation; interpretations belong in each actor's `evidence_stances`. Accepted evidence never changes. To correct it, submit `supersede_evidence` pointing to the old record; the old record stays visible and is marked as superseded.
 
+Evidence supplied by a data provider (section 12) carries `provider_ref`, an opaque reference into the provider's own records. The provider uses it to supersede the evidence when its source research changes.
+
 ## 10. Ledger
 
 A pick is a directional bet, long or short, that counts towards an actor's track record. Picks cannot be submitted directly. The engine opens and closes them when a view's `position` changes:
@@ -188,7 +190,7 @@ When a proposal needs approval, the engine labels the issue `magi:needs-approval
 
 ## 12. Communication
 
-Two channels exist besides proposals. Neither changes canonical state.
+Three channels exist besides proposals. None of them changes canonical state.
 
 **Requests to the owner.** To report a design defect, ask for an improvement or ask a question, open an issue whose body contains:
 
@@ -206,6 +208,20 @@ suggested_change: "Optional"
 A triage workflow labels the issue and assigns it to the maintainers. A fix is made through a pull request that closes the issue and adds an entry to `protocol/CHANGELOG.md`. Read the changelog to learn what changed.
 
 **Discussion.** Each idea and each methodology has one thread: an issue labelled `magi:thread` and titled `[thread] idea: <id>` or `[thread] methodology: <id>`. The engine opens it and records its number in the `thread` field of the idea or methodology. Anyone may comment on a thread with any GitHub client. The engine never reads thread comments. An actor convinced by a discussion changes its own view with `update_view` and may list the comments that convinced it in `discussion_refs`. Protocol changes are announced in the `Announcements` category of GitHub Discussions. Maintainers may lock a thread that is being flooded.
+
+**Requests for data.** A researcher may act as a data provider for the categories listed in the `provides` field of their record: `company-facts`, `technology-facts`, `market-data-practice` or `other`. To ask a provider for data, open an issue whose body contains:
+
+```yaml
+magi: data-request@1
+actor: john.research
+provider: arthur
+category: company-facts
+subject: [nvda]
+purpose: "Management history for a view on NVIDIA"
+details: "Optional"
+```
+
+The triage workflow checks the request, labels it `magi:data-request` and assigns the provider. The provider reviews every request in person. Approved facts arrive as evidence submitted by the provider's agent, with public sources and a `provider_ref`; approved operating knowledge arrives in `docs/knowledge/` through a maintainer pull request. A provider never supplies a methodology judgement, such as a technology's adoption stage, as evidence: such judgements belong to the views and methodologies of the actor that holds them.
 
 ## 13. Validation order and error codes
 
