@@ -11,6 +11,7 @@ from .errors import E_INTERNAL, MagiError
 from .github import GitHubClient
 from .gitops import Git
 from .intake import run_intake
+from .market import record_closes
 from .prices import FixedPrices, PriceRouter
 from .repo import RepoState
 from .timeutil import parse_iso, utc_now
@@ -61,6 +62,16 @@ def _triage(args) -> int:
     return 0
 
 
+def _prices(args) -> int:
+    added, failures = record_closes(args.repo, PriceRouter(), utc_now())
+    if added:
+        git = Git(args.repo)
+        git.commit(f"chore: record daily closes for {len(added)} asset(s)", {})
+        git.push()
+    print(json.dumps({"added": added, "failures": failures}, indent=2))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m engine", description="The Magi System intake engine")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -88,6 +99,10 @@ def build_parser() -> argparse.ArgumentParser:
     triage = commands.add_parser("triage", help="answer request issues (run by the triage workflow)")
     triage.add_argument("--repo", type=Path, default=Path("."), help="repository root")
     triage.set_defaults(handler=_triage, json_errors=False)
+
+    prices = commands.add_parser("prices", help="record settled daily closes (run by the prices workflow)")
+    prices.add_argument("--repo", type=Path, default=Path("."), help="repository root")
+    prices.set_defaults(handler=_prices, json_errors=False)
     return parser
 
 

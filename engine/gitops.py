@@ -6,7 +6,7 @@ import time
 from pathlib import Path
 from typing import Callable
 
-DATA_DIRS = ["registry", "evidence", "methodologies", "ideas", "ledger", "log"]
+DATA_DIRS = ["registry", "evidence", "methodologies", "ideas", "ledger", "log", "market"]
 PUSH_RETRY_DELAYS = (10, 30)  # seconds; GitHub sometimes answers a push with a transient server error
 
 
