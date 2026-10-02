@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "snapshot ideas/<id>.json: everything about one idea",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["idea", "latest_close", "views", "judgements", "evidence", "history"],
+  "properties": {
+    "idea": {"type": "object", "required": ["id", "asset"]},
+    "latest_close": {"type": ["object", "null"]},
+    "views": {"type": "array", "items": {"type": "object", "required": ["actor", "version", "derived", "now"]}},
+    "judgements": {"type": "array", "items": {"type": "object"}},
+    "evidence": {"type": "array", "items": {"type": "object", "required": ["id"]}},
+    "history": {"type": "array", "items": {"type": "object", "required": ["seq", "at", "action", "actor", "entity"]}}
+  }
+}

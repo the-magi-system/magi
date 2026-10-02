@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "snapshot prices.json: latest recorded close per asset",
+  "type": "object",
+  "additionalProperties": {
+    "type": "object", "additionalProperties": false, "required": ["value", "currency", "date", "source"],
+    "properties": {"value": {"type": "number"}, "currency": {"type": "string"}, "date": {"type": "string"}, "source": {"type": "string"}}
+  }
+}

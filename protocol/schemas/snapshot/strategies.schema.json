@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "snapshot strategies.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["strategies", "view_counts"],
+  "properties": {
+    "strategies": {"type": "object"},
+    "view_counts": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}}
+  }
+}

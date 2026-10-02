@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "snapshot agents.json",
+  "type": "array",
+  "items": {
+    "type": "object", "additionalProperties": false, "required": ["id", "owner", "role", "status", "runtime", "picks"],
+    "properties": {
+      "id": {"type": "string"}, "owner": {"type": "string"}, "role": {"type": "string"},
+      "status": {"enum": ["active", "retired"]}, "runtime": {"type": ["object", "null"]},
+      "picks": {
+        "type": "object", "additionalProperties": false, "required": ["opened", "closed", "open", "mean_realized_return"],
+        "properties": {
+          "opened": {"type": "integer", "minimum": 0}, "closed": {"type": "integer", "minimum": 0},
+          "open": {"type": "integer", "minimum": 0}, "mean_realized_return": {"type": ["number", "null"]}
+        }
+      }
+    }
+  }
+}

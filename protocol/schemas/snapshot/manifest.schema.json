@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "snapshot manifest.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["generated_at", "main_commit", "protocol_version", "counts"],
+  "properties": {
+    "generated_at": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"},
+    "main_commit": {"type": "string", "minLength": 1},
+    "protocol_version": {"type": "string", "minLength": 1},
+    "counts": {
+      "type": "object", "additionalProperties": false,
+      "required": ["ideas", "views", "evidence", "agents", "methodologies", "open_picks"],
+      "properties": {
+        "ideas": {"type": "integer", "minimum": 0}, "views": {"type": "integer", "minimum": 0},
+        "evidence": {"type": "integer", "minimum": 0}, "agents": {"type": "integer", "minimum": 0},
+        "methodologies": {"type": "integer", "minimum": 0}, "open_picks": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "snapshot ideas.json: one summary per idea",
+  "type": "array",
+  "items": {
+    "type": "object", "additionalProperties": false,
+    "required": ["id", "asset", "title", "status", "thread", "latest_close", "views"],
+    "properties": {
+      "id": {"type": "string"}, "asset": {"type": "string"}, "title": {"type": "string"},
+      "status": {"enum": ["active", "archived"]}, "thread": {"type": ["integer", "null"]},
+      "latest_close": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/close"}]},
+      "views": {"type": "array", "items": {"$ref": "#/$defs/view"}}
+    }
+  },
+  "$defs": {
+    "close": {
+      "type": "object", "additionalProperties": false, "required": ["value", "currency", "date", "source"],
+      "properties": {"value": {"type": "number"}, "currency": {"type": "string"}, "date": {"type": "string"}, "source": {"type": "string"}}
+    },
+    "now": {
+      "type": "object", "additionalProperties": false, "required": ["price", "date", "expected_return", "prob_loss"],
+      "properties": {"price": {"type": "number"}, "date": {"type": "string"}, "expected_return": {"type": "number"}, "prob_loss": {"type": "number"}}
+    },
+    "view": {
+      "type": "object", "additionalProperties": false,
+      "required": ["actor", "position", "strategy", "sub_strategy", "methodology", "version", "published_at",
+                   "p10", "p50", "p90", "expected_price", "expected_return_at_publish", "now"],
+      "properties": {
+        "actor": {"type": "string"}, "position": {"enum": ["long", "short", "neutral"]},
+        "strategy": {"type": "string"}, "sub_strategy": {"type": ["string", "null"]},
+        "methodology": {"type": "string"}, "version": {"type": "integer"}, "published_at": {"type": "string"},
+        "p10": {"type": "number"}, "p50": {"type": "number"}, "p90": {"type": "number"},
+        "expected_price": {"type": "number"}, "expected_return_at_publish": {"type": "number"},
+        "now": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/now"}]}
+      }
+    }
+  }
+}

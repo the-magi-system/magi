@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "snapshot methodologies.json",
+  "type": "array",
+  "items": {
+    "type": "object", "additionalProperties": false, "required": ["id", "name", "owner", "version", "thread", "scope", "view_count"],
+    "properties": {
+      "id": {"type": "string"}, "name": {"type": "string"}, "owner": {"type": "string"},
+      "version": {"type": "integer", "minimum": 1}, "thread": {"type": ["integer", "null"]},
+      "scope": {"type": "object"}, "view_count": {"type": "integer", "minimum": 0}
+    }
+  }
+}

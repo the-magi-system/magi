@@ -1,7 +1,9 @@
-"""Git operations used by the intake workflow. Only data directories are ever staged."""
+"""Git operations used by the workflows. Only data directories are ever staged on main."""
 from __future__ import annotations
 
+import os
 import subprocess
+import tempfile
 import time
 from pathlib import Path
 from typing import Callable
@@ -20,8 +22,9 @@ class Git:
         self.root, self.remote, self.branch = Path(root), remote, branch
         self._sleep = sleep
 
-    def run(self, *args: str) -> str:
-        result = subprocess.run(["git", *args], cwd=self.root, capture_output=True, text=True, encoding="utf-8")
+    def run(self, *args: str, env: dict | None = None, cwd: Path | None = None) -> str:
+        result = subprocess.run(["git", *args], cwd=cwd or self.root, capture_output=True, text=True,
+                                encoding="utf-8", env=env)
         if result.returncode != 0:
             raise GitError(f"git {' '.join(args)} failed: {result.stderr.strip()}")
         return result.stdout.strip()
@@ -37,16 +40,20 @@ class Git:
         self.run("commit", "-q", "-m", message)
         return self.run("rev-parse", "HEAD")
 
-    def push(self) -> None:
-        """Push HEAD to the branch, retrying after each delay in PUSH_RETRY_DELAYS before giving up."""
+    def _push(self, refspec: str, force: bool = False) -> None:
+        args = ["push", "-q"] + (["--force"] if force else []) + [self.remote, refspec]
         for delay in (*PUSH_RETRY_DELAYS, None):
             try:
-                self.run("push", "-q", self.remote, f"HEAD:refs/heads/{self.branch}")
+                self.run(*args)
                 return
             except GitError:
                 if delay is None:
                     raise
                 self._sleep(delay)
+
+    def push(self) -> None:
+        """Push HEAD to the branch, retrying after each delay in PUSH_RETRY_DELAYS before giving up."""
+        self._push(f"HEAD:refs/heads/{self.branch}")
 
     def discard(self) -> None:
         self.run("reset", "-q", "--hard", "HEAD")
@@ -58,3 +65,27 @@ class Git:
         found = self.run("log", "--format=%H", "--all-match", f"--grep=^Magi-Issue: {issue}$",
                          f"--grep=^Magi-Body: {sha}$", "-1")
         return found or None
+
+    def publish_tree(self, directory: Path, branch: str, message: str) -> str | None:
+        """Force-push the files in `directory` as the only commit of `branch`; None when nothing changed."""
+        directory = Path(directory).resolve()
+        git_dir = self.run("rev-parse", "--absolute-git-dir")
+        with tempfile.TemporaryDirectory() as scratch:
+            env = {**os.environ, "GIT_INDEX_FILE": str(Path(scratch) / "index")}
+            outside = ("--git-dir", git_dir, "--work-tree", str(directory))
+            self.run(*outside, "add", "-A", ".", env=env, cwd=directory)
+            tree = self.run(*outside, "write-tree", env=env, cwd=directory)
+            try:
+                self.run("fetch", "-q", self.remote, f"+refs/heads/{branch}:refs/remotes/{self.remote}/{branch}")
+            except GitError:
+                pass  # the branch does not exist yet; the comparison below then finds nothing
+            try:
+                current = self.run("rev-parse", "--verify", "--quiet", f"refs/remotes/{self.remote}/{branch}^{{tree}}")
+            except GitError:
+                current = ""
+            if current == tree:
+                return None
+            commit = self.run("commit-tree", tree, "-m", message)
+        self._push(f"{commit}:refs/heads/{branch}", force=True)
+        self.run("update-ref", f"refs/remotes/{self.remote}/{branch}", commit)
+        return commit

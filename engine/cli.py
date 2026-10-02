@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import tempfile
 from pathlib import Path
 
 from .apply import apply_proposal
@@ -10,11 +11,12 @@ from .changes import ApplyError
 from .consistency import check_repository
 from .errors import E_INTERNAL, MagiError
 from .github import GitHubClient
-from .gitops import Git
+from .gitops import Git, GitError
 from .intake import run_intake
 from .market import record_closes
 from .prices import FixedPrices, PriceRouter
 from .repo import RepoState
+from .snapshot import compile_snapshot, write_snapshot
 from .timeutil import parse_iso, utc_now
 from .triage import run_triage
 from .validate import validate
@@ -79,6 +81,20 @@ def _consistency(args) -> int:
     return 1 if findings else 0
 
 
+def _snapshot(args) -> int:
+    root = Path(args.repo)
+    try:
+        commit = Git(root).run("rev-parse", "HEAD")
+    except GitError:
+        commit = "unknown"
+    files = compile_snapshot(root, utc_now(), commit)
+    out = Path(args.out) if args.out else Path(tempfile.mkdtemp(prefix="magi-snapshot-"))
+    write_snapshot(out, files)
+    published = Git(root).publish_tree(out, "snapshot", f"snapshot of {commit[:12]}") if args.publish else None
+    print(json.dumps({"files": len(files), "out": str(out), "published": published}, indent=2))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m engine", description="The Magi System intake engine")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -114,6 +130,12 @@ def build_parser() -> argparse.ArgumentParser:
     consistency = commands.add_parser("consistency", help="check every stored file; report, never fix")
     consistency.add_argument("--repo", type=Path, default=Path("."), help="repository root")
     consistency.set_defaults(handler=_consistency, json_errors=False)
+
+    snapshot = commands.add_parser("snapshot", help="compile the UI snapshot; optionally publish it")
+    snapshot.add_argument("--repo", type=Path, default=Path("."), help="repository root")
+    snapshot.add_argument("--out", default=None, help="directory to write the snapshot into")
+    snapshot.add_argument("--publish", action="store_true", help="force-push the snapshot to the snapshot branch")
+    snapshot.set_defaults(handler=_snapshot, json_errors=False)
     return parser
 
 
