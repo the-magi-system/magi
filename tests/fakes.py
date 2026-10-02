@@ -28,6 +28,9 @@ class FakePrices:
             raise PriceError(f"simulated outage for {symbol}")
         return Quote(self.values.get(symbol, 100.0), self.currency.get(symbol, asset["currency"]), self.as_of, "fake")
 
+    def close(self, asset: dict) -> Quote:
+        return self.quote(asset)
+
 
 def init_git_repo(root: Path) -> Path:
     """Turn `root` into a git repository with one commit, pushed to a bare `remote.git` next to it."""

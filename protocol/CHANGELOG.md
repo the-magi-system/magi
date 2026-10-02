@@ -6,6 +6,7 @@ Newest first. Each entry gives the date, what changed, and the request issue tha
 
 - New request type `magi: data-request@1`: ask a registered data provider for facts or operating knowledge; the provider approves every request in person.
 - Researcher records may list `provides`; evidence may carry `provider_ref`.
+- Korea-listed shares are priced from Naver Finance (`price_source.provider: naver`); daily closes use the last settled bar.
 
 ## v1.1 — 2026-10-01
 

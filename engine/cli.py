@@ -11,7 +11,7 @@ from .errors import E_INTERNAL, MagiError
 from .github import GitHubClient
 from .gitops import Git
 from .intake import run_intake
-from .prices import FixedPrices, YahooProvider
+from .prices import FixedPrices, PriceRouter
 from .repo import RepoState
 from .timeutil import parse_iso, utc_now
 from .triage import run_triage
@@ -29,7 +29,7 @@ def _dry_run(args) -> int:
     issue = json.loads(args.issue_file.read_text(encoding="utf-8-sig"))
     state = RepoState.load(args.repo)
     now = parse_iso(args.now) if args.now else utc_now()
-    prices = FixedPrices(args.price, now) if args.price is not None else YahooProvider()
+    prices = FixedPrices(args.price, now) if args.price is not None else PriceRouter()
     author_id = int(issue["author_id"])
     checked = validate(state, issue["body"], author_id, int(issue.get("today_count", 0)))
     result = checked.to_dict()
@@ -52,7 +52,7 @@ def _summarise(outcomes) -> None:
 
 
 def _intake(args) -> int:
-    _summarise(run_intake(args.repo, GitHubClient.from_env(), YahooProvider(), Git(args.repo)))
+    _summarise(run_intake(args.repo, GitHubClient.from_env(), PriceRouter(), Git(args.repo)))
     return 0
 
 
