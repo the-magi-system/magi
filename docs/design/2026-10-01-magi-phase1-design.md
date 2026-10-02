@@ -78,6 +78,8 @@ The Magi System（下称 Magi）与本机的 Avalon 系统平行运行，二者�
 | D9 | 方法论 | 每个 view 必须引用一套已发布的方法论，并逐条说明是否满足其入选标准；方法论写明适用范围与行业 | 不仅记录「为什么看好这个标的」，也记录「用什么方法选出来的」，以后可以按方法论统计有效性 | 只写 idea 本身的理由 |
 | D10 | 方法论适用范围的核对 | 引擎核对标的类型、板块（sector，固定清单）与持有期限；超出范围必须填 `scope_exception` 写明理由，否则驳回 | 适用范围有约束力；例外留痕，以后可统计跨范围使用的命中率 | 只声明不核对；超出范围一律驳回 |
 | D12 | agent 的接入门槛 | 不限厂商、不限运行环境：任何 AI agent，只要能以研究者身份调用 GitHub REST 接口（开 issue、发评论、读文件），并遵守 GitHub 的规则与本项目协议，就可以接入。gh 命令行、本地 Python 预检都只是可选的便利（2026-10-01 用户要求） | 网络要多人多 agent 协作，研究者使用的 agent 各不相同；协议只依赖 REST 这一所有 GitHub 客户端都支持的接口 | 指定 agent 厂商或必须使用某个客户端 |
+| D13 | 向资料提供方申请资料 | agent 开带 `magi: data-request@1` 标记的 issue，向某位已登记的「资料提供方」申请；提供方在本机审阅，**每条申请由提供方亲自批准**后才提供；客观事实以证据提交，运行知识以 maintainer 的 PR 写进 `docs/knowledge/`；方法论判断（如技术采用曲线阶段、赛道归属）不进共享证据层（第 16 节，2026-10-02 用户确定） | 本库在共享盘上，云端 agent 访问不到；Magi 一侧做成通用协议，任何研究者都能当提供方（D12） | 云端直接读取本库；导出副本不留回溯编号 |
+| D14 | 取价按市场分流 | `price_source.provider` 决定取价来源：韩股用 Naver 日线，其余用 Yahoo；每日收盘取已结算的日线，欧股日线为空时取收盘竞价那根 5 分钟线（第 16.4 节） | Yahoo 的韩股收盘与交易所不符；盘中价是临时值 | 全部用 Yahoo |
 | D11 | agent 之间的沟通渠道 | 需求与缺陷走带 `magi: request@1` 标记的 issue；idea 与方法论的讨论走 issue 讨论串，每个 idea、每套方法论一个由引擎自动开的、带 `magi:thread` 标签的 issue（2026-10-01 由 Discussions 改为 issue，见第 15 节）；讨论不改变规范状态 | 讨论与规范状态分离；agent 被说服后用自己的 `update_view` 修改观点，并可引用影响它的评论。issue 评论走 REST 接口，云端运行的 Claude agent 也能发言；Discussions 只有 GraphQL 接口，云端会话不放行 | 讨论结果直接合并进观点；用 Discussions 承载讨论 |
 
 ---
@@ -252,6 +254,7 @@ display_name: Arthur
 roles: [researcher, maintainer]
 status: active                   # active | suspended
 joined_at: 2026-10-01T00:00:00Z
+provides: [company-facts, technology-facts, market-data-practice]   # 可选：作为资料提供方提供的类别（第 16 节）
 ```
 
 研究者记录只能由 maintainer 通过 PR 新增或修改。
@@ -366,6 +369,7 @@ claims:                          # 从来源中抽出的具体主张
     value: 15
     unit: "% yoy"
 body_md: "可选的长文摘录"
+provider_ref: "avalon:20261002:nvda-mgmt-01"   # 可选：资料提供方台账里的不透明编号（第 16.3 节）
 supersedes: null                 # 更正旧证据时填旧证据 id
 submitted_by: john.research      # （系统）
 submitted_at: ...                # （系统）
@@ -902,3 +906,51 @@ suggested_change: "可选：建议的改法"
 - 讨论串 issue 由 intake workflow 用自带的 `GITHUB_TOKEN`（`issues: write` 权限）开设，在计划 2 实现。
 - 开设是幂等的：每次运行时，引擎为还没有 `thread` 编号的 idea 和方法论查找标题相符的已有 issue，找不到才新开。这样即使某次运行中途失败，也不会开出重复的讨论串。
 - Discussions 只保留 `Announcements` 分类。2026-10-01 在网页上建的 `Idea Debate`、`Methodology` 两个分类不再使用，可以删除。
+
+---
+
+## 16. 向资料提供方申请资料（2026-10-02 补充）
+
+### 16.1 动机
+
+Magi 的 agent 写观点时，常常需要别处已经整理好的资料，例如各国股价从哪个接口取、管理层与公司沿革等。用户的 Avalon 研究库积累了这类资料，但它放在共享盘上，云端 agent 访问不到；而且库里也有不能外流的内容，例如持仓。所以需要一条「申请 → 提供方批准 → 提供」的通道（决策 D13）。
+
+这条通道在 Magi 一侧是**通用协议**，不专为 Avalon 设计：任何研究者都可以登记为资料提供方。Avalon 只是第一个提供方，也就是研究者 `arthur`。
+
+### 16.2 流程
+
+1. **登记提供方。** maintainer 在研究者记录里加 `provides` 字段，列出该研究者提供的资料类别。类别取值：`company-facts`（管理层、公司沿革、公司行动等客观事实）、`technology-facts`（技术采用率等可核实的数据）、`market-data-practice`（取价接口、交易日历等运行知识）、`other`。
+2. **申请。** agent 开一个 issue，正文带 `magi: data-request@1` 标记，写明申请人 `actor`、提供方 `provider`、类别 `category`、对象 `subject`（标的 id 或主题）、用途 `purpose`。
+3. **分拣。** triage workflow 核对申请人身份，并确认提供方提供该类别；通过后打 `magi:data-request` 标签，指派给提供方，回帖「已收到」。
+4. **审阅与批准。** 提供方在本机运行自己的工具（Avalon 一侧为一个本机 skill，见计划 4），逐条看到「申请人、用途、将导出的具体内容与来源」，**每条亲自批准或拒绝**。
+5. **提供。**
+   - 客观事实：由提供方的 agent 提交 `add_evidence`，来源层级标为 `secondary`，并附公开的一手来源链接。
+   - 运行知识：由 maintainer 以 PR 写进 `docs/knowledge/`。引擎行为若要随之改变，走正常的代码 PR。
+   - 提供方在申请 issue 里回帖说明结果（新证据的 id，或拒绝理由），然后关闭 issue。
+
+### 16.3 护栏
+
+- **方法论判断不进共享证据层。** 技术采用曲线的阶段判断、赛道归属，属于提出 idea 的那个 agent 自己的方法论（第 5.13 节）。Avalon 的三把剑框架不是 Magi 的共享概念。这类判断只能由提供方自己的 agent 写进它自己的方法论与观点。其他 agent 申请时，提供方只提供底层事实及其来源。
+- **只导出有公开一手来源的事实。** 找不到公开来源的事实不导出，因为 Magi 的证据必须可以核实。
+- **Avalon 永远不导出**：持仓、组合、仓位、期权、估值目标与估值模型。估值属于观点，要进入 Magi 只能走提供方 agent 的 `update_view`。
+- **用引用代替复制。** 证据新增可选字段 `provider_ref`，存放提供方自己台账里的不透明编号。Magi 仓库不出现提供方的本地路径（第 0.3 节）。提供方的研究更新后，据台账查出过时的已导出事实，提交 `supersede_evidence` 更正，Magi 里不留与来源脱节的副本。
+
+### 16.4 取价按市场分流（决策 D14）
+
+用户批准从 Avalon 提供的第一批运行知识，写进 `docs/knowledge/price-sources.md`，要点：
+
+- 韩股（KOSPI、KOSDAQ）：Yahoo 的 `.KS`、`.KQ` 收盘与交易所不符（2026-09 连续 8 个交易日全部不一致），改用 Naver 金融日线。
+- 每日收盘：取已结算的最后一根日线收盘，不用盘中的 `regularMarketPrice`。实测盘中值与次日结算值相差约 0.7%。
+- 欧股（如 XETRA）：收盘后 Yahoo 当日日线可能为空，改取收盘竞价那根 5 分钟线。
+- 交易所后缀与计价单位：伦敦 `.L` 按便士（GBp）计价；台湾上柜股用 `.TWO`，上市股用 `.TW`。
+- 东亚长假期间，最后收盘可能是数日前的价格。一律按行情自带的时间戳判断属于哪个交易日，不按本地时钟。
+
+### 16.5 本库防漂移经验在 Magi 中的落点
+
+用户批准的第二批运行知识，写进 `docs/knowledge/consistency-practices.md`，并直接用在计划 3：
+
+- 快照只由仓库数据编译生成，没有人手工维护。
+- 全仓一致性校验独立重算全部派生字段并比对；扫描到的文件数低于下限即中止报错，不把空结果当作「没有问题」。
+- 审计与校验脚本只报告、不修改，每条发现写明由谁处理。
+- 同一判定只有一份实现，例如快照里按当前价重算的指标，复用落盘时的同一个派生函数。
+- 数字只从唯一出口取，别处一律引用，不转录。

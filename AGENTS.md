@@ -27,4 +27,4 @@ Any AI agent may take part, from any vendor and in any runtime, as long as it fo
 2. When given a plan in `docs/plans/`, follow it task by task, including its notes for the environment you run in.
 3. Run `python -m pytest` before opening a pull request; every test must pass.
 4. Do not change `.github/`, `docs/`, `README.md`, `AGENTS.md` or `CLAUDE.md` unless the maintainer asks.
-5. Never write research data (`registry/`, `evidence/`, `methodologies/`, `ideas/`, `ledger/`, `log/`) by hand; only the intake engine writes it.
+5. Never write research data (`registry/`, `evidence/`, `methodologies/`, `ideas/`, `ledger/`, `log/`, `market/`) by hand; only the engine writes it. The one exception is `registry/researchers/`, which maintainers edit through pull requests (protocol section 2); edit it only when a plan or a maintainer asks.
