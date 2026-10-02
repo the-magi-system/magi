@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ledger/events/YYYY/MM/<file>.yaml (files are only ever added)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "event", "at", "issue"],
+  "properties": {
+    "schema": {"const": "magi/ledger-event@1"},
+    "event": {"enum": ["pick_opened", "pick_closed", "ledger_correction"]},
+    "pick_id": {"type": ["string", "null"], "pattern": "^pk-\\d{6}$"},
+    "actor": {"type": "string"},
+    "idea": {"type": "string"},
+    "direction": {"enum": ["long", "short"]},
+    "at": {"$ref": "#/$defs/timestamp"},
+    "price": {
+      "type": "object", "additionalProperties": false, "required": ["value", "currency", "as_of", "source"],
+      "properties": {"value": {"type": "number", "exclusiveMinimum": 0}, "currency": {"type": "string"},
+                     "as_of": {"$ref": "#/$defs/timestamp"}, "source": {"type": "string"}}
+    },
+    "view_version": {"type": "integer", "minimum": 1},
+    "original": {"type": "object"},
+    "issue": {"type": "integer", "minimum": 0},
+    "entry_price": {"type": "number", "exclusiveMinimum": 0},
+    "realized_return": {"type": "number"},
+    "duration_days": {"type": "integer", "minimum": 0},
+    "reason": {"type": "string", "minLength": 1},
+    "corrects": {"type": "string"},
+    "fields": {"type": "object"},
+    "by": {"type": "string"}
+  },
+  "allOf": [
+    {"if": {"properties": {"event": {"const": "pick_opened"}}},
+     "then": {"required": ["pick_id", "actor", "idea", "direction", "price", "view_version", "original"]}},
+    {"if": {"properties": {"event": {"const": "pick_closed"}}},
+     "then": {"required": ["pick_id", "actor", "idea", "direction", "price", "entry_price", "realized_return", "duration_days", "reason"]}},
+    {"if": {"properties": {"event": {"const": "ledger_correction"}}},
+     "then": {"required": ["corrects", "fields", "reason", "by"]}}
+  ],
+  "$defs": {"timestamp": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"}}
+}

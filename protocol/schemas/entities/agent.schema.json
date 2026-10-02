@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "engine-written fields of registry/agents/<id>.yaml",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "owner", "daily_proposal_cap", "status", "registered_at"],
+  "properties": {
+    "schema": {"const": "magi/agent@1"},
+    "id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{1,23}\\.[a-z][a-z0-9-]{1,23}$"},
+    "owner": {"type": "string", "pattern": "^[a-z][a-z0-9-]{1,23}$"},
+    "daily_proposal_cap": {"type": "integer", "minimum": 1},
+    "status": {"enum": ["active", "retired"]},
+    "registered_at": {"$ref": "#/$defs/timestamp"},
+    "registered_via_issue": {"type": "integer", "minimum": 0},
+    "retired_at": {"$ref": "#/$defs/timestamp"},
+    "retired_via_issue": {"type": "integer", "minimum": 0},
+    "retire_reason": {"type": "string"}
+  },
+  "$defs": {"timestamp": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"}}
+}

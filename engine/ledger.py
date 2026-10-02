@@ -30,23 +30,40 @@ class Book:
     paths: set[str]
 
 
-def load_book(root: Path) -> Book:
+_EVENT_ORDER = {"pick_opened": 0, "pick_closed": 1, "ledger_correction": 2}
+
+
+def ordered_events(root: Path) -> list[tuple[str, dict]]:
+    """Every ledger event with its relative path, in the order the events happened.
+
+    File names start with a timestamp to the second, so events written in the same second
+    are ordered by pick number, then opening before closing before correction.
+    """
     root = Path(root)
     directory = root / LEDGER_DIR
+    events = [(path.relative_to(root).as_posix(), load_yaml(path))
+              for path in directory.rglob("*.yaml")] if directory.is_dir() else []
+
+    def order(item: tuple[str, dict]) -> tuple:
+        path, event = item
+        return (path.rsplit("/", 1)[-1][:16], event.get("pick_id") or "", _EVENT_ORDER.get(event.get("event"), 3), path)
+
+    return sorted(events, key=order)
+
+
+def load_book(root: Path) -> Book:
     open_picks: dict[tuple[str, str], OpenPick] = {}
     highest, paths = 0, set()
-    if directory.is_dir():
-        for path in sorted(directory.rglob("*.yaml")):
-            paths.add(path.relative_to(root).as_posix())
-            event = load_yaml(path)
-            if event.get("pick_id"):
-                highest = max(highest, int(event["pick_id"].split("-")[1]))
-            key = (event.get("actor"), event.get("idea"))
-            if event["event"] == "pick_opened":
-                open_picks[key] = OpenPick(event["pick_id"], event["actor"], event["idea"], event["direction"],
-                                           float(event["price"]["value"]), event["at"])
-            elif event["event"] == "pick_closed":
-                open_picks.pop(key, None)
+    for path, event in ordered_events(root):
+        paths.add(path)
+        if event.get("pick_id"):
+            highest = max(highest, int(event["pick_id"].split("-")[1]))
+        key = (event.get("actor"), event.get("idea"))
+        if event["event"] == "pick_opened":
+            open_picks[key] = OpenPick(event["pick_id"], event["actor"], event["idea"], event["direction"],
+                                       float(event["price"]["value"]), event["at"])
+        elif event["event"] == "pick_closed":
+            open_picks.pop(key, None)
     return Book(open_picks, highest + 1, paths)
 
 

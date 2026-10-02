@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "engine-written fields of ideas/<id>/idea.yaml",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "status", "created_by", "created_at"],
+  "properties": {
+    "schema": {"const": "magi/idea@1"},
+    "status": {"enum": ["active", "archived"]},
+    "created_by": {"type": "string", "minLength": 1},
+    "created_at": {"$ref": "#/$defs/timestamp"},
+    "created_via_issue": {"type": "integer", "minimum": 0},
+    "thread": {"type": ["integer", "null"]}
+  },
+  "$defs": {"timestamp": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"}}
+}

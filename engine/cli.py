@@ -7,6 +7,7 @@ from pathlib import Path
 
 from .apply import apply_proposal
 from .changes import ApplyError
+from .consistency import check_repository
 from .errors import E_INTERNAL, MagiError
 from .github import GitHubClient
 from .gitops import Git
@@ -72,6 +73,12 @@ def _prices(args) -> int:
     return 0
 
 
+def _consistency(args) -> int:
+    findings = check_repository(args.repo)
+    print(json.dumps([finding.to_dict() for finding in findings], indent=2, ensure_ascii=False))
+    return 1 if findings else 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m engine", description="The Magi System intake engine")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -103,6 +110,10 @@ def build_parser() -> argparse.ArgumentParser:
     prices = commands.add_parser("prices", help="record settled daily closes (run by the prices workflow)")
     prices.add_argument("--repo", type=Path, default=Path("."), help="repository root")
     prices.set_defaults(handler=_prices, json_errors=False)
+
+    consistency = commands.add_parser("consistency", help="check every stored file; report, never fix")
+    consistency.add_argument("--repo", type=Path, default=Path("."), help="repository root")
+    consistency.set_defaults(handler=_consistency, json_errors=False)
     return parser
 
 

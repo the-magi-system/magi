@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "registry/strategies.yaml",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "strategies", "declarations"],
+  "properties": {
+    "schema": {"const": "magi/strategies@1"},
+    "strategies": {"type": "object", "additionalProperties": {"$ref": "#/$defs/strategy"}},
+    "declarations": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object", "additionalProperties": false, "required": ["issue", "at"],
+        "properties": {"issue": {"type": "integer", "minimum": 0}, "at": {"$ref": "#/$defs/timestamp"}}
+      }
+    }
+  },
+  "$defs": {
+    "timestamp": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"},
+    "sub": {
+      "type": "object", "additionalProperties": false, "required": ["name", "definition", "status"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1}, "definition": {"type": "string", "minLength": 1},
+        "status": {"enum": ["active", "deprecated"]},
+        "added_by": {"type": "string"}, "added_via_issue": {"type": "integer", "minimum": 0}
+      }
+    },
+    "strategy": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "definition", "declared_by", "status"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1}, "definition": {"type": "string", "minLength": 1},
+        "declared_by": {"type": "string", "minLength": 1}, "declared_via_issue": {"type": "integer", "minimum": 0},
+        "status": {"enum": ["active", "deprecated"]}, "merged_into": {"type": ["string", "null"]},
+        "subs": {"type": "object", "additionalProperties": {"$ref": "#/$defs/sub"}}
+      }
+    }
+  }
+}

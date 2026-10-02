@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "engine-written fields of methodologies/<id>.yaml",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "owner", "version", "published_at"],
+  "properties": {
+    "schema": {"const": "magi/methodology@1"},
+    "owner": {"type": "string", "minLength": 1},
+    "version": {"type": "integer", "minimum": 1},
+    "published_at": {"$ref": "#/$defs/timestamp"},
+    "thread": {"type": ["integer", "null"]}
+  },
+  "$defs": {"timestamp": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"}}
+}
