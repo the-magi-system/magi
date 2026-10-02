@@ -7,6 +7,7 @@ import tempfile
 from pathlib import Path
 
 from .apply import apply_proposal
+from .audit import audit_push, report
 from .changes import ApplyError
 from .consistency import check_repository
 from .errors import E_INTERNAL, MagiError
@@ -77,6 +78,8 @@ def _prices(args) -> int:
 
 def _consistency(args) -> int:
     findings = check_repository(args.repo)
+    if findings and args.report_issue:
+        report(GitHubClient.from_env(), "Consistency check found problems", findings)
     print(json.dumps([finding.to_dict() for finding in findings], indent=2, ensure_ascii=False))
     return 1 if findings else 0
 
@@ -92,6 +95,14 @@ def _snapshot(args) -> int:
     write_snapshot(out, files)
     published = Git(root).publish_tree(out, "snapshot", f"snapshot of {commit[:12]}") if args.publish else None
     print(json.dumps({"files": len(files), "out": str(out), "published": published}, indent=2))
+    return 0
+
+
+def _audit(args) -> int:
+    findings = audit_push(Git(args.repo), args.before, args.after, args.pusher)
+    title = f"Audit: push {args.after[:12]} by {args.pusher}"
+    number = report(GitHubClient.from_env(), title, findings) if findings else None
+    print(json.dumps({"findings": [f.to_dict() for f in findings], "issue": number}, indent=2))
     return 0
 
 
@@ -129,6 +140,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     consistency = commands.add_parser("consistency", help="check every stored file; report, never fix")
     consistency.add_argument("--repo", type=Path, default=Path("."), help="repository root")
+    consistency.add_argument("--report-issue", action="store_true", help="open or update a magi:audit issue")
     consistency.set_defaults(handler=_consistency, json_errors=False)
 
     snapshot = commands.add_parser("snapshot", help="compile the UI snapshot; optionally publish it")
@@ -136,6 +148,13 @@ def build_parser() -> argparse.ArgumentParser:
     snapshot.add_argument("--out", default=None, help="directory to write the snapshot into")
     snapshot.add_argument("--publish", action="store_true", help="force-push the snapshot to the snapshot branch")
     snapshot.set_defaults(handler=_snapshot, json_errors=False)
+
+    audit = commands.add_parser("audit", help="audit one push to main (run by the audit workflow)")
+    audit.add_argument("--repo", type=Path, default=Path("."), help="repository root")
+    audit.add_argument("--before", required=True, help="commit before the push")
+    audit.add_argument("--after", required=True, help="commit after the push")
+    audit.add_argument("--pusher", required=True, help="GitHub login that pushed")
+    audit.set_defaults(handler=_audit, json_errors=False)
     return parser
 
 
