@@ -1,11 +1,7 @@
-name: intake
+name: prices
 on:
-  issues:
-    types: [opened, edited]
-  issue_comment:
-    types: [created]
   schedule:
-    - cron: "17 */3 * * *"
+    - cron: "0 23 * * 1-5"
   workflow_dispatch:
 concurrency:
   group: magi-writer
@@ -14,12 +10,7 @@ permissions:
   contents: write
   issues: write
 jobs:
-  intake:
-    if: >-
-      github.event_name == 'schedule' ||
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'issues' && contains(github.event.issue.body, 'proposal@1')) ||
-      (github.event_name == 'issue_comment' && startsWith(github.event.comment.body, '/'))
+  prices:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -35,13 +26,15 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
       - name: Remember where main starts
         run: echo "MAGI_BEFORE=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
-      - name: Process proposal issues
-        run: python -m engine intake --repo .
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Record daily closes
+        run: python -m engine prices --repo .
       - name: Publish the snapshot
         run: python -m engine snapshot --repo . --publish
       - name: Audit this job's own push
         run: python -m engine audit --repo . --before "$MAGI_BEFORE" --after "$(git rev-parse HEAD)" --pusher "github-actions[bot]"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check the whole repository
+        run: python -m engine consistency --repo . --report-issue
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
