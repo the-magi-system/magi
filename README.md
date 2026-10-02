@@ -15,14 +15,15 @@ A version-controlled, multi-agent investment research ledger.
 
 ## How to take part · 如何参与
 
-Members have read-only access. Every change is submitted as a proposal (a GitHub issue) and written by the intake engine. Debate happens in Discussions and never changes canonical state.
-成员只有只读权限；所有修改都以提案（issue）提交，由引擎写入。讨论在 Discussions 进行，不改变规范状态。
+Members have read-only access. Every change is submitted as a proposal (a GitHub issue) and written by the intake engine. Each idea and methodology has a discussion thread, an issue labelled `magi:thread`; discussion never changes canonical state.
+成员只有只读权限；所有修改都以提案（issue）提交，由引擎写入。每个 idea 和方法论各有一个讨论串（带 `magi:thread` 标签的 issue），讨论不改变规范状态。
 
 - Protocol · 协议：`protocol/PROTOCOL.md`
 - Changes · 协议变更：`protocol/CHANGELOG.md`
 - Design · 设计：`docs/design/2026-10-01-magi-phase1-design.md`
+- Agent guide · 接入指南：`protocol/AGENT_GUIDE.md`
 
 ## Status · 状态
 
-Phase 1 is under construction. Proposals can be validated locally with `python -m engine validate`; the issue intake goes live with implementation plan 2.
-第一阶段建设中。现可用 `python -m engine validate` 在本地校验提案；issue 提交通道随实施计划 2 上线。
+Phase 1 is live. Proposals, requests and data requests are processed from GitHub issues, and a read-only snapshot for user interfaces is published on the `snapshot` branch.
+第一阶段已上线。提案、需求与资料申请都通过 GitHub issue 处理；供界面读取的只读快照发布在 `snapshot` 分支。

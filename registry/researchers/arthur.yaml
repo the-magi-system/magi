@@ -1,0 +1,9 @@
+schema: magi/researcher@1
+handle: arthur
+github_id: 80214090
+github_login: ThinkwChivalri
+display_name: Arthur
+roles: [researcher, maintainer]
+status: active
+joined_at: '2026-10-02T00:00:00Z'
+provides: [company-facts, technology-facts, market-data-practice]
