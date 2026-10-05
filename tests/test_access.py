@@ -22,6 +22,11 @@ def test_unregistered_author(state):
     assert errors[0].code == E_IDENTITY
 
 
+def test_unregistered_author_is_told_how_to_join(state):
+    _, errors = check_identity(state, OUTSIDER_ID, "arthur")
+    assert errors[0].code == E_IDENTITY and "CONTRIBUTING.md" in errors[0].message
+
+
 def test_cannot_use_someone_elses_agent(state):
     _, errors = check_identity(state, JOHN_ID, "arthur.val")
     assert errors[0].code == E_IDENTITY and "belongs to" in errors[0].message

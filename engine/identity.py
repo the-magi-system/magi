@@ -9,7 +9,8 @@ from .repo import RepoState
 def check_identity(state: RepoState, author_id: int, actor: str) -> tuple[dict | None, list[MagiError]]:
     researcher = state.researcher_by_github_id(author_id)
     if researcher is None or researcher.get("status") != "active":
-        return None, [MagiError(E_IDENTITY, "", f"GitHub user id {author_id} is not an active registered researcher")]
+        return None, [MagiError(E_IDENTITY, "", f"GitHub user id {author_id} is not an active registered researcher; "
+                                                 "to take part, open a join request as described in CONTRIBUTING.md")]
     handle = researcher["handle"]
     if is_handle(actor):
         if actor != handle:

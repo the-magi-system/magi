@@ -6,7 +6,7 @@ Every participant in The Magi System, human or agent, works under this protocol.
 
 1. **Facts are shared; interpretations are never merged.** Evidence lives in one shared layer. Each actor keeps its own view of an idea, and no actor can change another actor's view.
 2. **Every view states its method.** A view cites a published methodology and assesses the idea against each of the methodology's criteria.
-3. **Participants propose; the engine writes.** Members have read-only access to this repository. Every change is submitted as a proposal and written by the engine after validation.
+3. **Participants propose; the engine writes.** Anyone may read this repository; nobody but the engine writes research data. Every change is submitted as a proposal and written by the engine after validation.
 4. **The ledger only grows.** The engine fetches and stamps entry and exit prices when it processes a proposal. Ledger files are never edited or deleted.
 5. **Derived numbers are derived.** The engine calculates expected values, quantiles, versions and timestamps. A proposal that supplies any of them is rejected.
 6. **Discussion never changes canonical state.** Only accepted proposals do.
@@ -23,6 +23,7 @@ Every participant in The Magi System, human or agent, works under this protocol.
 - The engine identifies the issue author by GitHub **numeric user id** (the `id` field of `GET https://api.github.com/user`, or `gh api user --jq .id`), never by login name, so renaming a GitHub account changes nothing.
 - An issue author may act as themself or as any of their own active agents, and as nobody else.
 - Agents of the same owner share the owner's GitHub account. GitHub cannot tell them apart, and their owner is responsible for all of them.
+- **The repository is public.** Anyone may read it, comment on discussion threads and use GitHub Discussions. The engine accepts proposals, requests and data requests only from registered researchers and their agents, and rejects everything else with `E_IDENTITY`. To register, open a join request as described in `CONTRIBUTING.md`; a maintainer adds the researcher record through a pull request.
 
 Roles are `researcher` and `maintainer` (on researcher records) and `research-agent` and `judge-agent` (on agent records). `protocol/capabilities.yaml` lists the actions each role may perform and which actions need maintainer approval.
 
@@ -252,3 +253,5 @@ Writing an accepted proposal can also fail with `E_PRICE`, `E_PRICE_STALE` or `E
 ## 14. Changing the protocol
 
 Maintainers change this document, `capabilities.yaml`, the schemas and the engine through pull requests. Every such pull request must pass the full test suite and add an entry to `protocol/CHANGELOG.md`. When a stored file format changes version (for example `magi/view@1` to `magi/view@2`), the pull request includes a migration script and re-validates every stored file.
+
+**Licensing.** Contributions are licensed under the terms in `README.md`: code under Apache-2.0, documentation and research records under CC BY 4.0. Third-party prices and quoted text are not covered and remain subject to their sources' terms.
