@@ -12,7 +12,7 @@
 
 **上游：** 计划 3 已完成（main `93f0dac`，267 个测试；`arthur.avalon` 由旧仓库 issue #9 注册）。
 
-**进度（2026-10-06）：** Task 1 与 Task 2 Step 1–7 完成：新历史 43 个提交（main `fce880c`），扫描无残留，267 个测试通过；旧仓库已改名 `magi-archive-2026-10`，私有、已归档；新仓库首次推送的 `ci`、`audit` 均为 success，没有审计 issue。Task 2 Step 8 等用户在网页上操作；Task 3 进行中。
+**进度（2026-10-06）：** Task 1 与 Task 2 Step 1–7 完成：新历史 43 个提交（main `fce880c`），扫描无残留，267 个测试通过；旧仓库已改名 `magi-archive-2026-10`，私有、已归档；新仓库首次推送的 `ci`、`audit` 均为 success，没有审计 issue。Task 3 完成：新仓库 PR #1 squash 合并为 `017f13b`（267 个测试）。Task 2 Step 8 用户已在网页上完成。Task 4–6 由云端会话完成：PR #2（许可全文由维护者本机取得，提交 `59a5fa9`；云端提交 `1c4be7b`、`83ee620`、`77cc76e`），273 个测试；本机复核全文件与计划逐字一致、只改了允许的文件、路径扫描无残留、一致性 `[]`；用户同意后 rebase 合并，main `0aa10c3`（48 个提交，全历史扫描无残留）。Task 7 完成：仓库已公开，密钥扫描与推送拦截已开，外部 fork 的 PR 须先审批，分支规则 `24528371` 生效（`deletion`、`non_fast_forward`）；匿名访问新仓库、CONTRIBUTING 与 README 图片为 200，归档仓库与 sandbox 为 404。Task 8 完成：注册 issue #3（预检 `ok`）；GitHub Actions 自 2026-10-05 19:50 UTC 起有事故，首次 intake 与 `0aa10c3` 的 ci 排队 15 分钟未分到运行机器而被取消（没有执行任何步骤），21:54 UTC 恢复后重跑均为 success；引擎回帖 `status: accepted`、`created.agent_id = arthur.avalon`，提交 `21f5672`（`log_seq` 1，分支规则下第一次引擎推送成功），issue 已关闭并锁定；审计 issue 0，一致性 `[]`，main 上 `273 passed`；不带令牌读快照：`protocol_version` 1.3，`counts.agents` 1。注册之后 main 上重新有了 `registry/agents/` 与 `log/`，此时再跑 `verify_history.py` 会报两行「tip still has」，属预期，字符串检查仍全部通过。**计划 3.5 完成。**
 
 ## 执行路线
 
@@ -313,7 +313,7 @@ Expected:
 - 归档仓库最新一次运行早于 Step 2 的时间。
 - Discussions 列出 GitHub 的默认分类（含 `Announcements`）。旧仓库的 `Idea Debate`、`Methodology` 两个分类在讨论改为 issue 串后已经不用，不再建。
 
-- [ ] **Step 8: 用户在网页上让 Claude 应用能访问新仓库**
+- [x] **Step 8: 用户在网页上让 Claude 应用能访问新仓库**
 
 Claude 应用在组织里按「选定仓库」安装，新仓库不在名单里，云端会话就打不开它。请用户在 `https://github.com/organizations/the-magi-system/settings/installations` → Claude → Configure → Repository access 中加入 `magi`。
 
@@ -372,7 +372,7 @@ Expected: `worktree clean: 12 replacement rules checked`，`exit: 0`。先在一
 
 README 里的图片是上传到旧私有仓库的附件，未登录访客打开会得到 404。用户 2026-10-06 确认有权公开这张图，所以把它存进仓库：从附件地址下载图片（须带令牌：`curl.exe -sL -H "Authorization: token $(gh auth token)" <附件地址> -o <magi-clone>\docs\assets\magi-sigil.png`），确认是 599×842 的 PNG；把 README 那一行的 `src` 改为 `docs/assets/magi-sigil.png`，`alt` 改为 `The Magi System`。
 
-- [ ] **Step 4: 提交、开 PR、合并**
+- [x] **Step 4: 提交、开 PR、合并**
 
 ```powershell
 Set-Location <magi-clone>
@@ -398,7 +398,7 @@ Expected: `267 passed`；合并后 main 含 `docs/plans/2026-10-05-impl-3-5-goin
 **Interfaces:**
 - Produces: README 的 `## License · 许可`、`## Disclaimer · 免责声明` 两节；CONTRIBUTING 的「How to join」；issue 表单名 `Join as a researcher`、标签 `magi:join`（标签已在 Task 2 建好）
 
-- [ ] **Step 1: 写失败的测试 `tests/test_public_docs.py`**
+- [x] **Step 1: 写失败的测试 `tests/test_public_docs.py`**
 
 ````python
 """Files a public repository needs: licences, disclaimer, contribution guide and join form (design section 17)."""
@@ -436,12 +436,12 @@ def test_join_form_and_blank_issues():
     assert config["blank_issues_enabled"] is True
 ````
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest tests/test_public_docs.py`
 Expected: `3 failed`（`FileNotFoundError`：`LICENSE`、`CONTRIBUTING.md`、`join.yml` 尚不存在）
 
-- [ ] **Step 3: 两份许可全文**
+- [x] **Step 3: 两份许可全文**
 
 全文取自 GitHub 的许可接口，不手抄：
 
@@ -454,7 +454,9 @@ wc -l LICENSE LICENSES/CC-BY-4.0.txt
 
 Expected: 约 202 行与 396 行。若接口访问不到，停下报告，不要从别处抄全文。
 
-- [ ] **Step 4: 写 `CONTRIBUTING.md`**
+（2026-10-06 实测：云端会话只能调用属于某个仓库的 GitHub 接口，`/licenses/...` 返回 403。改由维护者在本机取两份全文，单独提交 `59a5fa9` 推到云端会话的分支，`wc -l` 为 201 行与 395 行（末行无换行符），均为 LF。云端会话快进到该提交后从 Step 4 继续。）
+
+- [x] **Step 4: 写 `CONTRIBUTING.md`**
 
 ````markdown
 # Contributing to The Magi System
@@ -495,7 +497,7 @@ Argue with evidence and keep to the subject. Maintainers may hide comments, lock
 Nothing here is investment advice. Views and track records are research records published for discussion.
 ````
 
-- [ ] **Step 5: 写两个 issue 表单文件**
+- [x] **Step 5: 写两个 issue 表单文件**
 
 `.github/ISSUE_TEMPLATE/join.yml`：
 
@@ -557,7 +559,7 @@ contact_links:
     about: Questions and open discussion that do not belong to an idea or methodology thread.
 ```
 
-- [ ] **Step 6: 改 `README.md`（三处，不动图片那一行）**
+- [x] **Step 6: 改 `README.md`（三处，不动图片那一行）**
 
 1. 「How to take part · 如何参与」一节的头两行：
 
@@ -596,7 +598,7 @@ Nothing in this repository is investment advice. Views, probability distribution
 本仓库的任何内容都不构成投资建议。观点、概率分布与业绩记录是作者为讨论而公开的研究记录，不是买卖任何证券的推荐。
 ```
 
-- [ ] **Step 7: 运行，确认通过**
+- [x] **Step 7: 运行，确认通过**
 
 Run: `python -m pytest tests/test_public_docs.py`
 Expected: `3 passed`
@@ -604,7 +606,7 @@ Expected: `3 passed`
 Run: `python -m pytest`
 Expected: `270 passed`
 
-- [ ] **Step 8: 提交**
+- [x] **Step 8: 提交**
 
 ```bash
 git add LICENSE LICENSES CONTRIBUTING.md README.md .github/ISSUE_TEMPLATE tests/test_public_docs.py
@@ -623,7 +625,7 @@ git commit -m "docs: licences, contribution guide, join request form and disclai
 - Consumes: Task 4 的 `CONTRIBUTING.md`（只按文件名引用）
 - Produces: `E_IDENTITY` 对未登记账户的消息含 `CONTRIBUTING.md`；`protocol_version(root)` 返回 `"1.3"`
 
-- [ ] **Step 1: 写失败的测试**
+- [x] **Step 1: 写失败的测试**
 
 `tests/test_access.py` 在 `test_unregistered_author` 之后加：
 
@@ -658,12 +660,12 @@ def test_protocol_describes_public_participation():
     assert (manifest["main_commit"], manifest["protocol_version"]) == ("abc123", "1.3")
 ```
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest tests/test_access.py tests/test_protocol_doc.py tests/test_snapshot.py`
 Expected: `3 failed, 23 passed`（新加的两个测试，以及版本号仍为 1.2 的快照测试）
 
-- [ ] **Step 3: 改 `engine/identity.py` 的消息**
+- [x] **Step 3: 改 `engine/identity.py` 的消息**
 
 ```python
         return None, [MagiError(E_IDENTITY, "", f"GitHub user id {author_id} is not an active registered researcher")]
@@ -676,7 +678,7 @@ Expected: `3 failed, 23 passed`（新加的两个测试，以及版本号仍为 
                                                  "to take part, open a join request as described in CONTRIBUTING.md")]
 ```
 
-- [ ] **Step 4: 改 `protocol/PROTOCOL.md`（三处）**
+- [x] **Step 4: 改 `protocol/PROTOCOL.md`（三处）**
 
 1. §1 第 3 条：
 
@@ -702,7 +704,7 @@ Expected: `3 failed, 23 passed`（新加的两个测试，以及版本号仍为 
 **Licensing.** Contributions are licensed under the terms in `README.md`: code under Apache-2.0, documentation and research records under CC BY 4.0. Third-party prices and quoted text are not covered and remain subject to their sources' terms.
 ```
 
-- [ ] **Step 5: 改 `protocol/AGENT_GUIDE.md` §1（两处）**
+- [x] **Step 5: 改 `protocol/AGENT_GUIDE.md` §1（两处）**
 
 1. 在 `- A fine-grained personal access token needs only this repository, with **Issues: read and write** and **Contents: read**.` 之后加一项：
 
@@ -712,12 +714,12 @@ Expected: `3 failed, 23 passed`（新加的两个测试，以及版本号仍为 
 
 2. 把 `Until then you cannot submit anything as yourself.` 改为 `Until then you cannot submit anything as yourself. Your owner must first be a registered researcher; `CONTRIBUTING.md` explains how to join.`
 
-- [ ] **Step 6: 改 `AGENTS.md`（「Research agents」一节两处）**
+- [x] **Step 6: 改 `AGENTS.md`（「Research agents」一节两处）**
 
 1. 第一段末尾 `…the `gh` command line, the REST API, or anything else.` 之后接一句：` Your owner must be a registered researcher; `CONTRIBUTING.md` explains how to join.`
 2. 规则 1 的 `Research members have read-only access, so pushes fail.` 改为 `Contributors have read-only access, so pushes fail.`
 
-- [ ] **Step 7: `protocol/CHANGELOG.md` 在 `## v1.2` 之前插入**
+- [x] **Step 7: `protocol/CHANGELOG.md` 在 `## v1.2` 之前插入**
 
 ```markdown
 ## v1.3 — 2026-10-05
@@ -728,7 +730,7 @@ Expected: `3 failed, 23 passed`（新加的两个测试，以及版本号仍为 
 
 ```
 
-- [ ] **Step 8: 运行，确认通过**
+- [x] **Step 8: 运行，确认通过**
 
 Run: `python -m pytest tests/test_access.py tests/test_protocol_doc.py tests/test_snapshot.py`
 Expected: `26 passed`
@@ -736,7 +738,7 @@ Expected: `26 passed`
 Run: `python -m pytest`
 Expected: `272 passed`
 
-- [ ] **Step 9: 提交**
+- [x] **Step 9: 提交**
 
 ```bash
 git add engine/identity.py protocol AGENTS.md tests/test_access.py tests/test_protocol_doc.py tests/test_snapshot.py
@@ -755,7 +757,7 @@ git commit -m "feat(protocol): v1.3 public repository; identity replies point to
 - Consumes: 计划 3 的 `tools/import_ruleset.py` 中 `resolve(ruleset, lookup) -> dict`
 - Produces: `governance/rulesets/main.json` 只含 `deletion` 与 `non_fast_forward` 两条规则，没有绕过者
 
-- [ ] **Step 1: 用下文整体替换 `tests/test_governance.py`**
+- [x] **Step 1: 用下文整体替换 `tests/test_governance.py`**
 
 ````python
 import importlib.util
@@ -787,12 +789,12 @@ def test_resolve_turns_lookups_into_ids():
     assert "actor_lookup" in ruleset["bypass_actors"][0]
 ````
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest tests/test_governance.py`
 Expected: `1 failed, 1 passed`（现行规则还含 `pull_request` 与 `required_status_checks`）
 
-- [ ] **Step 3: 用下文整体替换 `governance/rulesets/main.json`**
+- [x] **Step 3: 用下文整体替换 `governance/rulesets/main.json`**
 
 ```json
 {
@@ -808,7 +810,7 @@ Expected: `1 failed, 1 passed`（现行规则还含 `pull_request` 与 `required
 }
 ```
 
-- [ ] **Step 4: 用下文整体替换 `governance/README.md`**
+- [x] **Step 4: 用下文整体替换 `governance/README.md`**
 
 ````markdown
 # Governance
@@ -833,7 +835,7 @@ Check the result under Settings → Rules → Rulesets, or with `gh api repos/th
 - When issues or comments are flooded, a maintainer sets temporary interaction limits (Settings → Moderation options → Interaction limits), so that only prior contributors can open issues and comment. The engine already rejects proposals from unregistered accounts.
 ````
 
-- [ ] **Step 5: `tools/import_ruleset.py` 文档字符串第一行**
+- [x] **Step 5: `tools/import_ruleset.py` 文档字符串第一行**
 
 ```python
 """Import governance/rulesets/main.json once the organisation is on GitHub Team (design section 3.6).
@@ -845,7 +847,7 @@ Check the result under Settings → Rules → Rulesets, or with `gh api repos/th
 """Import governance/rulesets/main.json into the public repository (design section 17.6).
 ```
 
-- [ ] **Step 6: 运行，确认通过**
+- [x] **Step 6: 运行，确认通过**
 
 Run: `python -m pytest tests/test_governance.py`
 Expected: `2 passed`
@@ -853,7 +855,7 @@ Expected: `2 passed`
 Run: `python -m pytest`
 Expected: `273 passed`
 
-- [ ] **Step 7: 提交、推送、开 PR**
+- [x] **Step 7: 提交、推送、开 PR**
 
 ```bash
 git add governance tools/import_ruleset.py tests/test_governance.py
@@ -869,7 +871,7 @@ git push -u origin HEAD
 
 前提：Task 4–6 的 PR 已合并（rebase 方式，与计划 3 相同）；本地 `main` 已拉取，跑全部测试为 `273 passed`。
 
-- [ ] **Step 1: 核对知识包已去掉运维数字**
+- [x] **Step 1: 核对知识包已去掉运维数字**
 
 用户 2026-10-06 同意两份知识包公开，条件是去掉两处运维数字；Task 1 已在全部历史里改写。切换前再核一次新仓库：
 
@@ -882,7 +884,7 @@ $env:MAGI_SCRUB_MAP = "$env:TEMP\magi-scrub\replacements.txt"
 
 Expected: `history clean: <提交数> commits, 12 replacement rules checked`，退出码 0。这一步同时证明 Task 3–6 合并进来的文件没有带回本机路径。此时还没有重新注册 `arthur.avalon`（Task 8），所以最新提交里没有 `registry/agents/` 和 `log/`。
 
-- [ ] **Step 2: 切换公开**
+- [x] **Step 2: 切换公开**
 
 ```powershell
 gh repo edit the-magi-system/magi --visibility public --accept-visibility-change-consequences
@@ -891,7 +893,7 @@ gh api repos/the-magi-system/magi --jq .visibility
 
 Expected: `public`
 
-- [ ] **Step 3: 开启密钥扫描与推送拦截，外部 fork 的 PR 一律先审批再运行**
+- [x] **Step 3: 开启密钥扫描与推送拦截，外部 fork 的 PR 一律先审批再运行**
 
 ```powershell
 gh api -X PATCH repos/the-magi-system/magi -f "security_and_analysis[secret_scanning][status]=enabled" -f "security_and_analysis[secret_scanning_push_protection][status]=enabled" --jq '[.security_and_analysis.secret_scanning.status,.security_and_analysis.secret_scanning_push_protection.status]'
@@ -901,7 +903,7 @@ gh api repos/the-magi-system/magi/actions/permissions/fork-pr-contributor-approv
 
 Expected: `["enabled","enabled"]`；`all_external_contributors`。
 
-- [ ] **Step 4: 导入分支规则**
+- [x] **Step 4: 导入分支规则**
 
 ```powershell
 Set-Location <magi-clone>
@@ -911,7 +913,7 @@ gh api repos/the-magi-system/magi/rules/branches/main --jq '.[].type'
 
 Expected: 打印新规则的 id 与名称 `main: no deletion, no force push`；生效规则为 `deletion`、`non_fast_forward`。
 
-- [ ] **Step 5: 不带令牌访问**
+- [x] **Step 5: 不带令牌访问**
 
 ```powershell
 curl.exe -s -o NUL -w "%{http_code}`n" https://github.com/the-magi-system/magi
@@ -924,7 +926,7 @@ Expected: 两个 `200`。
 
 ### Task 8（本机）：在新仓库重新注册 `arthur.avalon`
 
-- [ ] **Step 1: 用真实提案注册**
+- [x] **Step 1: 用真实提案注册**
 
 提案正文与计划 3 Task 10 相同，写进 `$env:TEMP\magi-first-agent.md`（UTF-8）：
 
@@ -949,7 +951,7 @@ gh issue create -R the-magi-system/magi --title "register_agent: arthur.avalon" 
 
 Expected: 预检 `status: ok`、无需审批；数分钟内（运行机器排队时可能更久）引擎回帖 `status: accepted`，`created.agent_id = arthur.avalon`，issue 关闭并锁定。这也是分支规则生效后的第一次引擎推送：回帖带有 `commit` 即说明推送成功。
 
-- [ ] **Step 2: 核对审计与一致性**
+- [x] **Step 2: 核对审计与一致性**
 
 ```powershell
 gh issue list -R the-magi-system/magi --label magi:audit --state all --json number --jq length
@@ -959,7 +961,7 @@ git -C <magi-clone> pull -q
 
 Expected: `0`；一致性 `[]`。
 
-- [ ] **Step 3: 不带令牌读快照**
+- [x] **Step 3: 不带令牌读快照**
 
 ```powershell
 curl.exe -s https://raw.githubusercontent.com/the-magi-system/magi/snapshot/manifest.json
@@ -967,7 +969,7 @@ curl.exe -s https://raw.githubusercontent.com/the-magi-system/magi/snapshot/mani
 
 Expected: JSON 中 `counts.agents` 为 `1`，`protocol_version` 为 `1.3`。
 
-- [ ] **Step 4: 记录**
+- [x] **Step 4: 记录**
 
 在 `<vault>\_Collab\The Magi System Implementation 3.5 - Going Public.md` 开头写进度：新旧仓库名、新历史的提交数、合并的 PR、测试数、注册 issue 编号、快照核对结果。
 
@@ -975,11 +977,11 @@ Expected: JSON 中 `counts.agents` 为 `1`，`protocol_version` 为 `1.3`。
 
 ## 计划 3.5 完成标准
 
-- [ ] 新历史 43 个提交，扫描无残留；旧仓库为 `magi-archive-2026-10`，私有、已归档，不再运行 workflow。
-- [ ] 新仓库设置、团队、标签与旧仓库相同，另有 `magi:join`；Claude 应用能访问新仓库。
-- [ ] Task 4–6 的 PR 已合并；main 上 `273 passed`。
-- [ ] 全部历史里知识包不带运维数字；仓库已公开；密钥扫描与推送拦截已开；外部 fork 的 PR 须先审批；分支规则生效。
-- [ ] `arthur.avalon` 在新仓库注册成功；没有审计 issue；匿名可读 README、CONTRIBUTING 与快照。
+- [x] 新历史 43 个提交，扫描无残留；旧仓库为 `magi-archive-2026-10`，私有、已归档，不再运行 workflow。
+- [x] 新仓库设置、团队、标签与旧仓库相同，另有 `magi:join`；Claude 应用能访问新仓库。
+- [x] Task 4–6 的 PR 已合并；main 上 `273 passed`。
+- [x] 全部历史里知识包不带运维数字；仓库已公开；密钥扫描与推送拦截已开；外部 fork 的 PR 须先审批；分支规则生效。
+- [x] `arthur.avalon` 在新仓库注册成功；没有审计 issue；匿名可读 README、CONTRIBUTING 与快照。
 
 ---
 
