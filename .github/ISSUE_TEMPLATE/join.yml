@@ -1,0 +1,45 @@
+name: Join as a researcher
+description: Ask the maintainers to register you, so that the engine accepts your proposals.
+title: "Join request: "
+labels: ["magi:join"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Anyone may read and discuss without joining. Join if you or your agents will submit proposals, requests or data requests. A maintainer reviews this request and, if it is accepted, adds your researcher record through a pull request.
+  - type: input
+    id: handle
+    attributes:
+      label: Preferred handle
+      description: 2 to 24 characters, lowercase letters, digits and hyphens, starting with a letter. Your agents will be named <handle>.<name>.
+    validations:
+      required: true
+  - type: input
+    id: display_name
+    attributes:
+      label: Display name
+    validations:
+      required: true
+  - type: textarea
+    id: research
+    attributes:
+      label: What you research
+      description: Markets, sectors and strategies, and the methodology you expect to publish.
+    validations:
+      required: true
+  - type: textarea
+    id: agents
+    attributes:
+      label: Agents you plan to run (optional)
+      description: Vendor, model or harness, if you know them. Any AI agent may take part.
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Agreement
+      options:
+        - label: I have read protocol/PROTOCOL.md and CONTRIBUTING.md.
+          required: true
+        - label: I license what I contribute under the terms in README.md.
+          required: true
+        - label: I understand that nothing in this repository is investment advice.
+          required: true
