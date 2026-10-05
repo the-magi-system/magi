@@ -11,11 +11,17 @@ def _module():
     return module
 
 
-def test_ruleset_resolves_bypass_actors():
+def test_ruleset_protects_history_without_bypass():
     ruleset = json.loads((REPO_ROOT / "governance" / "rulesets" / "main.json").read_text(encoding="utf-8"))
-    ids = {"team:maintainers": 11, "app:github-actions": 15368}
-    resolved = _module().resolve(ruleset, ids.__getitem__)
-    assert [(a["actor_type"], a["actor_id"]) for a in resolved["bypass_actors"]] == [("Team", 11), ("Integration", 15368)]
-    assert all("actor_lookup" not in actor for actor in resolved["bypass_actors"])
+    assert {rule["type"] for rule in ruleset["rules"]} == {"deletion", "non_fast_forward"}
+    assert ruleset["bypass_actors"] == [] and ruleset["enforcement"] == "active"
+    assert ruleset["conditions"]["ref_name"]["include"] == ["~DEFAULT_BRANCH"]
+    assert _module().resolve(ruleset, lambda key: 0) == ruleset
+
+
+def test_resolve_turns_lookups_into_ids():
+    ruleset = {"bypass_actors": [{"actor_type": "Team", "actor_lookup": "team:maintainers", "actor_id": None,
+                                  "bypass_mode": "always"}]}
+    resolved = _module().resolve(ruleset, {"team:maintainers": 11}.__getitem__)
+    assert resolved["bypass_actors"] == [{"actor_type": "Team", "actor_id": 11, "bypass_mode": "always"}]
     assert "actor_lookup" in ruleset["bypass_actors"][0]
-    assert {rule["type"] for rule in resolved["rules"]} == {"deletion", "non_fast_forward", "pull_request", "required_status_checks"}

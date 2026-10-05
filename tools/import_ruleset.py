@@ -1,4 +1,4 @@
-"""Import governance/rulesets/main.json once the organisation is on GitHub Team (design section 3.6).
+"""Import governance/rulesets/main.json into the public repository (design section 17.6).
 
     python tools/import_ruleset.py --repo the-magi-system/magi
 
