@@ -10,6 +10,27 @@
 
 **Spec:** `_Collab\The Magi System Design v0.2.md`（仓库内副本：`docs/design/2026-10-01-magi-phase1-design.md`）。本计划依据其中第 5.9–5.13、6、7、8、10.2、15 节，以及决策 D11（讨论串用 issue）、D12（接入不限厂商）。
 
+**进度：计划 2 已于 2026-10-02 全部完成。**
+
+- **Task 0**：PR #2（squash 合并）。
+- **Task 1–15**：云端会话完成，PR #3 以 rebase 方式合并。
+  - 本机人工审查：逐文件与计划代码块比对，全部一致。
+  - 测试：Windows 本机 217 个测试全部通过。
+- **Task 16**：PR #4 完成；两个仓库各有 7 个 `magi:` 标签；`intake`、`triage` 两个 workflow 已启用。
+- **Task 17–18**：sandbox 第三次完整运行端到端测试，22 步全部通过（`all steps passed`）。
+- **main 当前提交**：`4a82bf6`；测试 218 个（比计划多 1 个，是下面第 2 条修复补的测试）。
+- **正式仓库 `magi`**：未登记任何研究者，也没有任何 issue。
+
+端到端测试一共发现 3 个问题，均已修复：
+
+1. **workflow 排队延迟。** GitHub 的运行机器排队约 10 分钟，回帖晚于脚本 600 秒的等待上限。
+   - 修复（PR #5）：脚本等待上限改为 30 分钟；`AGENT_GUIDE.md` 改为「回帖通常几分钟内到达，可能延迟 15 分钟以上，等满 30 分钟再判定失败」。
+2. **推送遇到服务器临时错误。** GitHub 对 intake 的推送返回 `Internal Server Error`。引擎按设计没有回帖，但提案要等 3 小时一次的定时扫描才会重处理。
+   - 修复（PR #6）：`Git.push` 在 10 秒、30 秒后各重试一次；推送目标显式写成 `refs/heads/<branch>`。
+3. **计划本身的命令错误。** Task 17 向空的 sandbox 推送时，必须写完整引用 `HEAD:refs/heads/main`（已在 PR #5 改正）。
+
+另外确认：从 GitHub Actions 向 Yahoo 取价可用，三次运行都成功注册了标的。
+
 **上游：** 计划 1 已完成（main `719bdbf`）。本计划直接调用计划 1 的接口：`validate()`、`RepoState`、`Proposal`、`check_distribution()`、`scope_gaps()`、`MagiError` 与错误码。
 
 ## 执行路线

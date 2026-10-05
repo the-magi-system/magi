@@ -1,5 +1,7 @@
 # The Magi System 实施计划 3：输出与防护（快照、取价、一致性、审计、资料申请、正式启用）
 
+> **进度（2026-10-02）**：用户确认计划与两份知识包。Task 1–8 在本机临时工作树里预演三轮，最后一轮全部符合预期（267 passed，workflow 均能解析）。Task 0 完成：PR #7 合并，main `58e341f`，218 passed。Task 1–8 完成：云端会话开 PR #8（9 个提交，作者 Claude），本机逐字核对与计划一致，2026-10-04 用户批准后以 rebase 方式合并，main `3d08e79`，267 passed，一致性 `[]`；合并推送的 `ci`、`audit` 均成功，`audit` 无发现。Task 9 完成：两个仓库已建 `magi:data-request` 标签；sandbox 已重置（种子提交 `84d9a5b`），审计按预期开出 #29（历史改写＋john.research.yaml），核对后关闭；端到端测试 28 步全部 PASS（每日收盘记为交易所交易日 2026-10-02，周日运行）；人工审计检验：推送 stray 证据文件（`b662b49`）报出 #43 审计与 #44 一致性，revert（`4bc4700`）报出 #45，三者核对后关闭，sandbox 无遗留问题。Task 10 完成：正式仓库 issue #9 `register_agent: arthur.avalon` 被接受（提交 `ad8435d`，log_seq 1），issue 关闭并锁定；快照 `counts.agents = 1`、协议 1.2；无审计 issue。**计划 3 全部完成。**
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 给 UI 一个只读的快照出口；按市场分流取价并记录每日收盘；用独立重算的全仓一致性校验与推送审计守住数据；开通向资料提供方申请资料的通道；导出升级 Team 时的分支规则；最后在正式仓库登记用户、注册第一个 agent，正式启用。
@@ -30,7 +32,7 @@
 - 计划 1、2 的全部约束继续有效（接入不限厂商；只用 REST；单元测试不访问网络；UTC 时间；LF；原子写入；PowerShell 下 `--jq` 不写内嵌双引号；提交信息结尾 `Co-Authored-By` 行）。
 - 快照、一致性校验、审计只读研究数据；它们唯一的写操作是发布 `snapshot` 分支与开 `magi:audit` issue。
 - 派生字段只由 `engine/derive.py` 计算；任何地方都不另写一份。
-- 引擎、协议、知识包与研究数据里不出现任何资料提供方的本地路径；提供方资料只以 `provider_ref` 这种不透明编号回溯。（计划与设计的仓库副本照计划 1、2 的做法原样复制，其中本机步骤会写到共享盘路径。）
+- 仓库里任何文件都不出现本机路径或机器名，计划与设计里的本机步骤一律用占位符（`<vault>`、`<magi-clone>` 等，见设计 §3.1）；提供方资料只以 `provider_ref` 这种不透明编号回溯。
 - 资料提供方永远不提供：持仓、组合、仓位、期权、估值目标与估值模型；也不把方法论判断（如技术采用阶段）作为证据提供。
 - 取价：韩股用 Naver 日线；其余用 Yahoo；每日收盘取最后一根已结算日线，日线收盘为空时取当日最后一根 5 分钟线；仍在交易的当日不算收盘；收盘按交易所当地交易日记日期；任何价格的时间戳都不得晚于取价时刻。
 - 全仓扫描用 `os.scandir` 并逐目录记录错误；数据目录存在却一份文件都没扫到，报为问题。
@@ -3228,11 +3230,11 @@ Expected: 快照 `counts.agents = 1`；没有打开的 `magi:audit` issue。
 
 ## 计划 3 完成标准
 
-- [ ] Task 0 的文档 PR（含两份知识包）已合并。
-- [ ] Task 1–8 的 PR 已合并；main 上 `267 passed`；CI 含一致性检查且为 success。
-- [ ] `prices`、`audit` 两个新 workflow 上线；intake 之后发布快照并审计自己的推送。
-- [ ] sandbox 端到端测试 `all steps passed`；人工审计检验报出两个 issue。
-- [ ] 正式仓库：研究者 arthur 已登记；`arthur.avalon` 经真实提案注册；快照已发布；无打开的审计 issue。
+- [x] Task 0 的文档 PR（含两份知识包）已合并。
+- [x] Task 1–8 的 PR 已合并；main 上 `267 passed`；CI 含一致性检查且为 success。
+- [x] `prices`、`audit` 两个新 workflow 上线；intake 之后发布快照并审计自己的推送。
+- [x] sandbox 端到端测试 `all steps passed`；人工审计检验报出两个 issue。
+- [x] 正式仓库：研究者 arthur 已登记；`arthur.avalon` 经真实提案注册；快照已发布；无打开的审计 issue。
 - [ ] 计划 4（Avalon 一侧的资料申请处理 skill）待写。
 
 ---

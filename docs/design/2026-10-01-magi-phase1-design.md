@@ -86,29 +86,13 @@ The Magi System（下称 Magi）与本机的 Avalon 系统平行运行，二者�
 
 ## 3. GitHub 设置
 
-### 3.1 用户名变更的影响与本机修正
+### 3.1 用户名变更的影响
 
-**现状**（2026-10-01 在 <workstation> 上查得）：
+维护者的 GitHub 账户在 2026-10 改过名，现名 `ThinkwChivalri`，数字 id `80214090`。维护者本机的 gh 登录、全局 git 身份和其他本地克隆的 remote 已在实施计划 1 的 Task 1 中改正；这些属于维护者本机事务，本文不记录本机路径与旧名。
 
-- GitHub 当前登录名为 `ThinkwChivalri`，数字 id 为 `80214090`。旧名 `<former-account>` 目前无人注册，GitHub 仍会把旧地址转向新地址；但只要有人注册了旧名，转向就会失效。
-- 本机 gh 的配置文件 `hosts.yml` 仍把账户记在旧名下。
-- 以下两份本地克隆的 remote 仍指向旧地址 `https://github.com/<former-account>/<other-repo>.git`：
-  - `<other-clone-1>`
-  - `<other-clone-2>`
-- 本机全局 git 没有设置 `user.name` 与 `user.email`。
-- 本次扫描只覆盖了 <workstation> 上的几个常用目录；其他机器（如 <vault-host>）上的克隆需要另行检查。
+提交身份一律用 GitHub 提供的匿名地址（noreply），提交记录里不出现真实邮箱。
 
-**修正步骤**（实施时逐项执行，执行前再向用户确认）：
-
-```powershell
-gh auth logout -h github.com
-gh auth login -h github.com -p https -w
-git config --global user.name  "ThinkwChivalri"
-git config --global user.email "80214090+ThinkwChivalri@users.noreply.github.com"
-git -C "<克隆路径>" remote set-url origin https://github.com/ThinkwChivalri/<other-repo>.git
-```
-
-邮箱用 GitHub 提供的匿名地址（noreply），提交记录里不出现真实邮箱。
+本文与各实施计划中的本机路径一律写成占位符：`<vault>` 是资料提供方的研究库，`<magi-clone>` 是本仓库的本地克隆，`<workstation>`、`<vault-host>` 是维护者的两台机器。占位符对应的实际路径只记在维护者本机。
 
 **Magi 的地址**：仓库建在组织下，地址里用的是组织名，例如 `https://github.com/the-magi-system/magi`。用户名只出现在组织 owner、注册表中用户本人那条记录、提交身份和本机 gh 配置里。注册表按数字 id 校验身份，因此用户以后再改名，Magi 不受影响。
 
@@ -834,7 +818,7 @@ snapshot/
 
 | 步骤 | 内容 | 执行者 |
 |---|---|---|
-| 0 | 本机修正：重新登录 gh、设置 git 身份、修改 <other-repo> 的 remote | Claude（执行前确认） |
+| 0 | 本机修正：重新登录 gh、设置 git 身份、修改其他本地克隆的 remote | Claude（执行前确认） |
 | 1 | 在网页上建立组织 `the-magi-system`，开启强制 2FA | 用户 |
 | 2 | 补授 `admin:org`，用 gh 完成第 3.2 节其余设置；建立 `magi` 与 `magi-sandbox`、两个 team、标签、Actions 权限 | Claude |
 | 2b | 在网页上建 Discussions 分类（第 15 节），GitHub 没有建分类的 API。2026-10-01 已建；讨论改用 issue 后，只有 `Announcements` 仍在使用 | 用户 |

@@ -10,6 +10,14 @@
 
 **Spec:** `_Collab\The Magi System Design v0.2.md`（仓库内副本：`docs/design/2026-10-01-magi-phase1-design.md`）
 
+**进度：计划 1 已于 2026-10-01 全部完成。**
+- Task 1–3 在本机完成，main 上的骨架提交为 `de52fbb`。
+- Task 4–14 由云端会话完成，经 PR #1 以 rebase 方式合并，main 的最新提交为 `719bdbf`。
+- main 上 CI 结果为 success；本机 115 个测试全部通过。
+- 本机人工审查：除 `tests/util.py`（分三次拼接）、`protocol/CHANGELOG.md`、`tests/test_protocol_doc.py` 三个文件外，其余文件逐一与计划代码块比对，全部一致；这三个文件经人工核对，也与计划一致。
+- 提交作者：云端的 11 个提交作者为 `Claude <noreply@anthropic.com>`，committer 为用户。用户确认采用 rebase 合并，以保留「代码由谁写就记谁」的归属。
+- 未完成：其他机器上的克隆尚未检查用户名残留。
+
 **执行路线（2026-10-01 用户确定）：** Task 1–3 在 <workstation> 本机执行（涉及本机配置、组织管理与网页操作）；Task 4–14 由一个 Claude Code 云端会话按顺序执行，产出一个 PR，由用户审阅合并。云端执行时以文末「云端执行附注」为准，计划正文里的 Windows 路径与 PowerShell 命令按附注换成 Linux 写法。
 
 ## 三份实施计划的分工
