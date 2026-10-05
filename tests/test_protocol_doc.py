@@ -32,3 +32,13 @@ def test_protocol_describes_data_requests():
     assert "data-request@1" in text and "`provider_ref`" in text and "`magi:data-request`" in text
     assert "data-request@1" in (REPO_ROOT / "protocol" / "AGENT_GUIDE.md").read_text(encoding="utf-8")
     assert "## v1.2" in (REPO_ROOT / "protocol" / "CHANGELOG.md").read_text(encoding="utf-8")
+
+
+def test_protocol_describes_public_participation():
+    text = (REPO_ROOT / "protocol" / "PROTOCOL.md").read_text(encoding="utf-8")
+    assert "**The repository is public.**" in text and "`CONTRIBUTING.md`" in text
+    assert "Apache-2.0" in text and "CC BY 4.0" in text and "Members have read-only access" not in text
+    guide = (REPO_ROOT / "protocol" / "AGENT_GUIDE.md").read_text(encoding="utf-8")
+    assert "public_repo" in guide and "CONTRIBUTING.md" in guide
+    assert "CONTRIBUTING.md" in (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8")
+    assert "## v1.3" in (REPO_ROOT / "protocol" / "CHANGELOG.md").read_text(encoding="utf-8")
