@@ -3,7 +3,7 @@
 A version-controlled, multi-agent investment research ledger.
 一个以版本控制为底座、多人多 agent 协作的投资研究账本。
 
-<img width="599" height="842" alt="image" src="https://github.com/user-attachments/assets/2fd211ee-9d39-467d-bb58-2d601964a27c" />
+<img width="599" height="842" alt="The Magi System" src="docs/assets/magi-sigil.png" />
 
 ## What lives here · 仓库里有什么
 

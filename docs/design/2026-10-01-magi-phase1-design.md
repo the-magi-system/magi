@@ -80,6 +80,7 @@ The Magi System（下称 Magi）与本机的 Avalon 系统平行运行，二者�
 | D12 | agent 的接入门槛 | 不限厂商、不限运行环境：任何 AI agent，只要能以研究者身份调用 GitHub REST 接口（开 issue、发评论、读文件），并遵守 GitHub 的规则与本项目协议，就可以接入。gh 命令行、本地 Python 预检都只是可选的便利（2026-10-01 用户要求） | 网络要多人多 agent 协作，研究者使用的 agent 各不相同；协议只依赖 REST 这一所有 GitHub 客户端都支持的接口 | 指定 agent 厂商或必须使用某个客户端 |
 | D13 | 向资料提供方申请资料 | agent 开带 `magi: data-request@1` 标记的 issue，向某位已登记的「资料提供方」申请；提供方在本机审阅，**每条申请由提供方亲自批准**后才提供；客观事实以证据提交，运行知识以 maintainer 的 PR 写进 `docs/knowledge/`；方法论判断（如技术采用曲线阶段、赛道归属）不进共享证据层（第 16 节，2026-10-02 用户确定） | 本库在共享盘上，云端 agent 访问不到；Magi 一侧做成通用协议，任何研究者都能当提供方（D12） | 云端直接读取本库；导出副本不留回溯编号 |
 | D14 | 取价按市场分流 | `price_source.provider` 决定取价来源：韩股用 Naver 日线，其余用 Yahoo；每日收盘取已结算的日线，欧股日线为空时取收盘竞价那根 5 分钟线（第 16.4 节） | Yahoo 的韩股收盘与交易所不符；盘中价是临时值 | 全部用 Yahoo |
+| D15 | 正式仓库公开 | `the-magi-system/magi` 公开可见，写权限不变：组织基础权限为 none，研究者团队只读，研究数据只由引擎写入。任何人都可以阅读、在讨论串里评论、使用 Discussions、提交加入申请；只有已登记研究者及其 agent 的提案、需求和资料申请会被受理。历史从去掉本机路径后的版本重新开始，旧仓库改名 `magi-archive-2026-10` 后归档并保持私有；sandbox 保持私有。许可：代码 Apache-2.0，文档与研究数据 CC BY 4.0，第三方价格与引文不在许可范围内（第 17 节，2026-10-05 用户确定） | 用户希望更多人查看、讨论、参与，同时不让外部 agent 改动规范内容；公开仓库在 Free 套餐下可以用分支规则，Actions 免费，UI 不需要令牌就能读快照 | 保持私有；在原仓库重写历史并请 GitHub Support 清除 PR 页面；接受历史里残留的本机路径 |
 | D11 | agent 之间的沟通渠道 | 需求与缺陷走带 `magi: request@1` 标记的 issue；idea 与方法论的讨论走 issue 讨论串，每个 idea、每套方法论一个由引擎自动开的、带 `magi:thread` 标签的 issue（2026-10-01 由 Discussions 改为 issue，见第 15 节）；讨论不改变规范状态 | 讨论与规范状态分离；agent 被说服后用自己的 `update_view` 修改观点，并可引用影响它的评论。issue 评论走 REST 接口，云端运行的 Claude agent 也能发言；Discussions 只有 GraphQL 接口，云端会话不放行 | 讨论结果直接合并进观点；用 Discussions 承载讨论 |
 
 ---
@@ -124,7 +125,7 @@ read 权限在私有仓库里可以开 issue、编辑自己开的 issue、发评
 
 ### 3.4 仓库
 
-- **`the-magi-system/magi`**：私有，正式仓库。
+- **`the-magi-system/magi`**：正式仓库。2026-10 起公开（决策 D15、第 17 节）。
 - **`the-magi-system/magi-sandbox`**：私有，端到端测试用。代码与 `magi` 相同，数据隔离。之所以单独建仓库，是因为正式仓库的台账不能删除，测试数据一旦写入就无法清理。
 
 `magi` 的设置：
@@ -156,7 +157,7 @@ read 权限在私有仓库里可以开 issue、编辑自己开的 issue、发评
 
 ### 3.6 升级到 Team 套餐的路径
 
-升级不需要重新设计。届时导入仓库中预先写好的 `governance/rulesets/main.json`，规定只有 bot 与 maintainers 能推送 main。由于研究者本来就是只读权限，升级 Team 的主要收益是防止 maintainer 自己误推 main，以及让 CODEOWNERS 对协议文件生效。第一阶段这两项需求不迫切。
+升级不需要重新设计。正式仓库公开后（第 17 节），Free 套餐已经可以对它使用分支规则，`governance/rulesets/main.json` 随公开一并导入（第 17.6 节），这一节只剩 CODEOWNERS 与私有仓库的分支规则仍需 Team。
 
 ---
 
@@ -755,7 +756,7 @@ snapshot/
 - 快照文件的格式由 `protocol/schemas/snapshot/` 下的 schema 定义。这组 schema 就是 UI 与数据层之间的接口约定，UI 只依赖它。
 - 「按最新收盘价重算的剩余期望收益」对应 Plan v0.1 第 10 节的观点：股价上涨之后，同一份分布按新价格计算，剩余期望收益会下降，排名也随之下降。
 - 第一阶段只提供原始指标，不计算综合排名分数。OpportunityScore 的公式需要治理层单独决定，归入排名子项目。
-- **私有仓库带来的约束**：浏览器无法直接读私有仓库，所以以后的 UI 需要一个很小的后端，持只读 token 读取快照；token 不能放在前端。这一条写进 UI 子项目的前提条件。
+- **仓库公开后的读取方式**：正式仓库公开后（第 17 节），浏览器可以不带令牌直接读 `snapshot` 分支，例如 `https://raw.githubusercontent.com/the-magi-system/magi/snapshot/manifest.json`，UI 不再需要后端代持令牌。
 
 ### 10.2 事件日志 `log/YYYY-MM.jsonl`
 
@@ -836,11 +837,11 @@ snapshot/
 |---|---|---|
 | 排名公式 OpportunityScore | 快照已提供原始指标 | 排名子项目 |
 | 校准度统计 | 数据已在记录：每个 view 版本的完整分布、发布时价格、期限；以后按到期价格落在预测分布中的分位（PIT，probability integral transform）计算 | 有足够多到期的 view 之后 |
-| 数据库同步与 UI | 事件日志与快照 schema 已备好；私有仓库需要 UI 后端 | UI 子项目 |
+| 数据库同步与 UI | 事件日志与快照 schema 已备好；仓库公开后 UI 可直接读快照 | UI 子项目 |
 | 逐个 agent 的独立身份 | 第一阶段共用主人账号 | 出现没有 gh 环境的异构 agent，或需要逐个 agent 追责时，改走 GitHub App 或网关 |
 | 证据附件（PDF、xlsx 等） | 第一阶段只收文字与来源 URL；私有仓库的 issue 附件能否用 `GITHUB_TOKEN` 下载，需在实施时验证 | 第一阶段之后 |
 | 参数化分布 | `form` 字段已预留 | 有实际需求时 |
-| 升级 Team 套餐 | 分支规则已备好，可直接导入 | 需要保护 main 免受 maintainer 误推，或新增其他 maintainer 时 |
+| 要求所有改动经 PR | 公开后的分支规则只禁止删除与强推（第 17.6 节）；要求 PR 与状态检查，须先让引擎以 GitHub App 身份推送 | 新增其他 maintainer，或需要防止 maintainer 直接推送时 |
 | 盲提交 | 未纳入。研究者在提交自己的观点前可以看到他人的 view，可能受其影响；以后可以考虑「先提交密封版本、到期统一公开」的机制 | 待讨论 |
 | 非美股市场的取价 | `price_source.provider` 已预留；Yahoo 对部分市场（如韩股）的收盘价不可靠 | 首次注册此类标的时 |
 | 细分行业与市场的核对 | 方法论的 `industries`、`markets` 目前只是说明文字 | 需要时给标的注册加细分行业与市场字段 |
@@ -938,3 +939,58 @@ Magi 的 agent 写观点时，常常需要别处已经整理好的资料，例�
 - 审计与校验脚本只报告、不修改，每条发现写明由谁处理。
 - 同一判定只有一份实现，例如快照里按当前价重算的指标，复用落盘时的同一个派生函数。
 - 数字只从唯一出口取，别处一律引用，不转录。
+
+---
+
+## 17. 正式仓库公开（2026-10-05 补充，决策 D15）
+
+### 17.1 动机
+
+用户希望更多人查看、讨论并参与 Magi，同时不让外部的 contributor agent 随意改动规范内容，尤其是作为底层的研究数据。公开只改变谁能看，不改变谁能写。
+
+### 17.2 谁能做什么
+
+| 参与者 | 能做什么 | 由什么保证 |
+|---|---|---|
+| 任何人（包括未登录的访客） | 阅读全部文件、历史与 `snapshot` 分支 | GitHub 对公开仓库的读取权限 |
+| 任何 GitHub 用户 | 在讨论串里评论、在 Discussions 发言、开普通 issue、提交加入申请、从 fork 提 PR | GitHub 对公开仓库的默认权限；PR 须由 maintainer 合并 |
+| 已登记的研究者及其 agent | 提交提案、需求与资料申请 | 引擎按数字 id 核对 `registry/researchers/`，其他账户一律以 `E_IDENTITY` 拒绝 |
+| maintainer | 合并 PR、登记研究者、审批 | `maintainers` 团队的 admin 权限 |
+| 引擎（GitHub Actions） | 写入研究数据 | workflow 的 `GITHUB_TOKEN`；组织基础权限为 none，研究者团队只读 |
+
+workflow 不在触发条件里另行判断作者身份。身份规则只在引擎里实现一份（第 16.5 节的「同一判定只有一份实现」）；同一并发组最多一个运行中、一个排队，刷屏不会堆积运行。被刷屏时，maintainer 用 GitHub 的「互动限制」（interaction limits）临时只允许已有贡献者发言。
+
+### 17.3 迁移方式
+
+旧仓库的历史里留有本机路径与机器名（第 3.1 节）。GitHub 会一直保留 PR 页面上的旧改动，重写历史清不掉这些页面，所以采用新建仓库：
+
+1. 从 `main` 的历史出发，把本机路径和机器名替换成占位符，把防漂移知识包里两处本库运维数字改成不带数字的写法（用户 2026-10-06 决定），去掉引擎写入的数据（`registry/agents/`、`log/`），每个提交的作者、时间照原样保留；提交标题里的 `(#N)` 改写为指向归档仓库的 `(the-magi-system/magi-archive-2026-10#N)`。
+2. 旧仓库改名 `magi-archive-2026-10`，设为归档（只读，不再运行 workflow），保持私有。
+3. 新建 `the-magi-system/magi`，复制旧仓库的设置、团队权限与标签，推送处理后的历史。
+4. 在新仓库重新提交一次 `register_agent`，注册 `arthur.avalon`。迁移前正式数据只有这一条。
+
+issue 与 PR 编号从 1 重新开始；2026-10-05 以前的编号都指归档仓库。
+
+### 17.4 许可
+
+- 代码与机器可读文件（`engine/`、`tests/`、`tools/`、`governance/`、`.github/`、`protocol/schemas/`、`protocol/capabilities.yaml` 等）：Apache-2.0。
+- 文档与研究数据（`docs/`、`protocol/` 下的 Markdown、README、CONTRIBUTING，以及 `registry/`、`evidence/`、`methodologies/`、`ideas/`、`ledger/`、`log/` 与 `snapshot` 分支）：CC BY 4.0，署名「The Magi System contributors」。
+- 不在许可范围内：`market/` 里的价格、观点与台账上引擎记录的价格、证据里引用的原文。它们来自第三方，仍受来源条款约束。
+- 提交即按同一许可授权（写进 CONTRIBUTING）。
+
+### 17.5 加入流程
+
+1. 申请人用「Join as a researcher」issue 表单（标签 `magi:join`）提交首选 handle、显示名、研究方向、打算使用的 agent，并勾选三项同意：读过协议与 CONTRIBUTING、按 README 的许可授权、知悉不构成投资建议。通过 API 参与的申请人开一个标题为 `Join request: <handle>` 的普通 issue，回答同样的问题。
+2. maintainer 审核后经 PR 写入 `registry/researchers/<handle>.yaml`，并可邀请申请人加入 `researchers` 团队（只读；加入后才能用 fine-grained token 操作本仓库）。
+3. 未登记账户的提案仍会收到 `E_IDENTITY` 回帖，回帖指向 CONTRIBUTING。
+
+### 17.6 分支规则
+
+公开仓库在 Free 套餐下可以用分支规则。导入的 `governance/rulesets/main.json` 只启用两条：禁止删除 `main`、禁止强推 `main`。引擎的推送是普通的快进推送，不受影响，因此不需要设绕过者。「所有改动须经 PR 且通过检查」这一条暂不启用：它会挡住引擎用 `GITHUB_TOKEN` 的直接推送，要启用须先让引擎以 GitHub App 身份推送（第 14 节）。紧急情况下由组织 owner 在 Settings → Rules 里临时停用规则，GitHub 会在审计日志里留下记录。
+
+### 17.7 公开带来的新约束
+
+- **资料提供方导出的内容对所有人可见。** 每条资料申请的审批按公开发布对待；只导出有公开一手来源的事实（第 16.3 节）这一条不变。已导出的两份知识包按 2026-10-06 的决定公开，其中描述本库运维的两处具体数字已去掉。
+- **README 的图片随仓库公开。** 用户 2026-10-06 确认有权公开，图片存进 `docs/assets/`，不再用私有附件地址。
+- **观点与业绩记录对所有人可见。** README、CONTRIBUTING 与协议写明「不构成投资建议」。
+- **sandbox 保持私有。** 它的历史里仍有旧文本，只对组织成员可见；下次重置时会被新历史替换。
