@@ -41,6 +41,12 @@ def test_protocol_describes_non_public_information():
     assert "access: non-public" in (REPO_ROOT / "protocol" / "AGENT_GUIDE.md").read_text(encoding="utf-8")
 
 
+def test_changelog_records_v1_4():
+    changelog = (REPO_ROOT / "protocol" / "CHANGELOG.md").read_text(encoding="utf-8")
+    latest = changelog.split("## v1.3")[0]
+    assert "## v1.4" in latest and "`publish_profile`" in latest and "`access: non-public`" in latest
+
+
 def test_protocol_describes_data_requests():
     text = (REPO_ROOT / "protocol" / "PROTOCOL.md").read_text(encoding="utf-8")
     assert "data-request@1" in text and "`provider_ref`" in text and "`magi:data-request`" in text

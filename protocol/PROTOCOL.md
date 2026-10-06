@@ -242,7 +242,7 @@ A triage workflow labels the issue and assigns it to the maintainers. A fix is m
 ```yaml
 magi: data-request@1
 actor: john.research
-provider: arthur
+provider: john
 category: company-facts
 subject: [nvda]
 purpose: "Management history for a view on NVIDIA"
