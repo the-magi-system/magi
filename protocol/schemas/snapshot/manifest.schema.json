@@ -10,10 +10,11 @@
     "protocol_version": {"type": "string", "minLength": 1},
     "counts": {
       "type": "object", "additionalProperties": false,
-      "required": ["ideas", "views", "evidence", "agents", "methodologies", "open_picks"],
+      "required": ["ideas", "views", "evidence", "agents", "profiles", "methodologies", "open_picks"],
       "properties": {
         "ideas": {"type": "integer", "minimum": 0}, "views": {"type": "integer", "minimum": 0},
         "evidence": {"type": "integer", "minimum": 0}, "agents": {"type": "integer", "minimum": 0},
+        "profiles": {"type": "integer", "minimum": 0},
         "methodologies": {"type": "integer", "minimum": 0}, "open_picks": {"type": "integer", "minimum": 0}
       }
     }

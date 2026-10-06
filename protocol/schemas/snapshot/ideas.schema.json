@@ -24,13 +24,14 @@
     "view": {
       "type": "object", "additionalProperties": false,
       "required": ["actor", "position", "strategy", "sub_strategy", "methodology", "version", "published_at",
-                   "p10", "p50", "p90", "expected_price", "expected_return_at_publish", "now"],
+                   "p10", "p50", "p90", "expected_price", "expected_return_at_publish", "non_public_pillars", "now"],
       "properties": {
         "actor": {"type": "string"}, "position": {"enum": ["long", "short", "neutral"]},
         "strategy": {"type": "string"}, "sub_strategy": {"type": ["string", "null"]},
         "methodology": {"type": "string"}, "version": {"type": "integer"}, "published_at": {"type": "string"},
         "p10": {"type": "number"}, "p50": {"type": "number"}, "p90": {"type": "number"},
         "expected_price": {"type": "number"}, "expected_return_at_publish": {"type": "number"},
+        "non_public_pillars": {"type": "array", "items": {"type": "string"}},
         "now": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/now"}]}
       }
     }

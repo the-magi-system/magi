@@ -57,7 +57,7 @@ def _view_summary(view: dict, line: dict | None) -> dict:
             "sub_strategy": view.get("sub_strategy"), "methodology": view["methodology"], "version": view["version"],
             "published_at": view["published_at"], "p10": derived["p10"], "p50": derived["p50"], "p90": derived["p90"],
             "expected_price": derived["expected_price"], "expected_return_at_publish": derived["expected_return"],
-            "now": _now(view, line)}
+            "non_public_pillars": view.get("non_public_pillars", []), "now": _now(view, line)}
 
 
 def _agent_summary(agent: dict, events: list[dict]) -> dict:
@@ -101,6 +101,7 @@ def compile_snapshot(root: Path, now: datetime, commit: str) -> dict[str, object
         method_counts[view["methodology"]] = method_counts.get(view["methodology"], 0) + 1
     files["ideas.json"] = summaries
     files["agents.json"] = [_agent_summary(agent, events) for _, agent in sorted(state.agents.items())]
+    files["profiles.json"] = [profile for _, profile in sorted(state.profiles.items())]
     files["strategies.json"] = {"strategies": state.strategies["strategies"], "view_counts": view_counts}
     files["methodologies.json"] = [{"id": mid, "name": m["name"], "owner": m["owner"], "version": m["version"],
                                     "thread": m.get("thread"), "scope": m["scope"], "view_count": method_counts.get(mid, 0)}
@@ -109,7 +110,7 @@ def compile_snapshot(root: Path, now: datetime, commit: str) -> dict[str, object
     files["manifest.json"] = {
         "generated_at": iso(now), "main_commit": commit, "protocol_version": protocol_version(root),
         "counts": {"ideas": len(state.ideas), "views": len(state.views), "evidence": len(state.evidence),
-                   "agents": len(state.agents), "methodologies": len(state.methodologies),
+                   "agents": len(state.agents), "profiles": len(state.profiles), "methodologies": len(state.methodologies),
                    "open_picks": len(load_book(root).open)},
     }
     return files

@@ -35,11 +35,13 @@ def _close(repo, asset, value, currency="USD", date="2026-10-02"):
 
 def test_compile_on_fixture(repo):
     files = compile_snapshot(repo, NOW, "abc123")
-    assert set(files) == {"manifest.json", "ideas.json", "agents.json", "strategies.json", "methodologies.json",
-                          "prices.json", "ideas/nvda-ai-capex-2026.json", "ideas/nvda-archived-idea.json",
+    assert set(files) == {"manifest.json", "ideas.json", "agents.json", "profiles.json", "strategies.json",
+                          "methodologies.json", "prices.json", "ideas/nvda-ai-capex-2026.json", "ideas/nvda-archived-idea.json",
                           "ideas/xom-lng-2027.json"}
     manifest = files["manifest.json"]
-    assert manifest["counts"] == {"ideas": 3, "views": 0, "evidence": 1, "agents": 4, "methodologies": 1, "open_picks": 1}
+    assert manifest["counts"] == {"ideas": 3, "views": 0, "evidence": 1, "agents": 4, "profiles": 2, "methodologies": 1,
+                                  "open_picks": 1}
+    assert [p["actor"] for p in files["profiles.json"]] == ["arthur.val", "john.research"]
     assert (manifest["main_commit"], manifest["protocol_version"]) == ("abc123", "1.3")
 
 
@@ -52,6 +54,15 @@ def test_views_carry_now_metrics(repo):
                               "expected_return": derive(dist, 200.0, "long")["expected_return"],
                               "prob_loss": derive(dist, 200.0, "long")["prob_loss"]}
     assert summary["expected_return_at_publish"] == derive(dist, 180.2, "long")["expected_return"]
+
+
+def test_view_summary_lists_non_public_pillars(repo):
+    state = RepoState.load(repo)
+    pillars = [{"id": "contacts", "claim": "Contacts are upbeat", "weight": 1, "basis": "non-public"}]
+    changes = apply_proposal(state, Proposal("update_view", "john.research", view_payload(pillars=pillars)), issue=61,
+                             owner="john", now=NOW, prices=FakePrices({"NVDA": 180.2}))
+    write_changes(repo, changes)
+    assert compile_snapshot(repo, NOW, "x")["ideas.json"][0]["views"][0]["non_public_pillars"] == ["contacts"]
 
 
 def test_now_metrics_need_a_close_in_the_same_currency(repo):
