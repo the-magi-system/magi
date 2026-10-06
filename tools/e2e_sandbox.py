@@ -24,7 +24,7 @@ from engine.yamlio import dump_yaml, parse_yaml  # noqa: E402
 
 POLL_SECONDS = 15
 TIMEOUT_SECONDS = 1800  # GitHub's runner queue has delayed a job by more than 10 minutes
-AGENT = "arthur.e2e"
+AGENT = "e2e.sandbox"
 NVDA = {"id": "nvda", "name": "NVIDIA Corporation", "type": "equity", "sector": "information-technology",
         "currency": "USD", "price_source": {"provider": "yahoo", "symbol": "NVDA"}}
 STRATEGIES = {"event-driven": {"name": "Event Driven", "definition": "A dated corporate event drives the outcome",
@@ -39,6 +39,16 @@ METHOD = {"id": "event-catalyst", "name": "Event Catalyst",
           "scope": {"asset_types": ["equity"], "sectors": ["information-technology"], "horizon_months": {"min": 6, "max": 24}},
           "exclusions": "Companies without a dated event in the next two years", "failure_modes": "The event slips"}
 IDEA = {"id": "nvda-e2e-launch", "asset": "nvda", "title": "Launch cycle", "summary": "End-to-end test idea"}
+PROFILE = {"identity": "I am the end-to-end test agent of the sandbox",
+           "philosophy": "Every rule of the protocol should be exercised once against the live workflows",
+           "competence": "The intake engine, its workflows and its snapshot",
+           "sectors": ["information-technology"], "asset_types": ["equity"], "horizon_months": {"min": 6, "max": 24},
+           "return_sources": ["event-driven"], "risk_preference": "balanced", "methodologies": ["event-catalyst"]}
+SECRET = {"slug": "nvda-e2e-channel-check", "title": "Contact on launch timing", "kind": "research", "assets": ["nvda"],
+          "access": "non-public",
+          "source": {"type": "interview", "description": "One supply-chain contact", "published_at": "2026-09-30",
+                     "tier": "primary"},
+          "claims": [{"text": "A contact expects the launch on schedule"}]}
 
 
 class Failure(Exception):
@@ -129,8 +139,11 @@ class Runner:
 
 def scenario(r: Runner) -> None:
     month_dir = f"ledger/events/{datetime.now(timezone.utc):%Y/%m}"
-    n = r.submit("register_agent", proposal("register_agent", "arthur", {"name": "e2e", "display_name": "E2E Agent", "role": "research-agent"}))
+    n = r.submit("register_agent", proposal("register_agent", "arthur", {"name": "e2e", "system": "sandbox", "display_name": "E2E.Sandbox", "role": "research-agent"}))
     r.expect("register an agent", r.wait(n), "accepted")
+    n = r.submit("register_agent with the reserved system name", proposal("register_agent", "arthur", {
+        "name": "melchior", "system": "magi", "display_name": "Melchior.Magi", "role": "research-agent"}))
+    r.expect("reserved system name rejected", r.wait(n), "rejected", "E_SEMANTIC")
     n = r.submit("register_asset", proposal("register_asset", AGENT, NVDA))
     r.expect("register an asset with a live price", r.wait(n), "accepted")
     n = r.submit("declare_strategies", proposal("declare_strategies", AGENT, {"strategies": STRATEGIES}))
@@ -144,10 +157,21 @@ def scenario(r: Runner) -> None:
                 "claims": [{"text": "The launch is dated for next quarter"}]}
     n = r.submit("add_evidence", proposal("add_evidence", AGENT, evidence))
     evidence_id = r.expect("add evidence", r.wait(n), "accepted")["created"]["evidence_id"]
+    n = r.submit("add_evidence (non-public)", proposal("add_evidence", AGENT, SECRET))
+    secret_id = r.expect("add non-public evidence", r.wait(n), "accepted")["created"]["evidence_id"]
 
-    n = r.submit("update_view (long)", proposal("update_view", AGENT, view(evidence_id)))
+    n = r.submit("update_view before a profile", proposal("update_view", AGENT, view(evidence_id)))
+    r.expect("view without a profile rejected", r.wait(n), "rejected", "E_SEMANTIC")
+    n = r.submit("publish_profile", proposal("publish_profile", AGENT, PROFILE))
+    r.expect("publish a profile", r.wait(n), "accepted")
+
+    pillars = [{"id": "launch", "claim": "The launch lands on time", "weight": 2, "evidence": [secret_id]}]
+    n = r.submit("update_view (long)", proposal("update_view", AGENT, view(evidence_id, pillars=pillars)))
     r.expect("open a long view", r.wait(n), "accepted")
     r.check("pick opened in the ledger", any(name.endswith("pick_opened.yaml") for name in r.gh.list_dir(month_dir)))
+    stored = parse_yaml(r.gh.get_file(f"ideas/{IDEA['id']}/views/{AGENT}.yaml") or "{}")
+    r.check("pillar resting on non-public evidence is flagged", stored.get("non_public_pillars") == ["launch"],
+            str(stored.get("non_public_pillars")))
 
     bad = view(evidence_id, distribution={"form": "points", "points": [{"price": 100, "p": 15}, {"price": 200, "p": 55}, {"price": 300, "p": 30}]})
     n = r.submit("update_view (percent probabilities)", proposal("update_view", AGENT, bad))
