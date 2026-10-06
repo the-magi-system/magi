@@ -10,15 +10,18 @@
     "kind": {"enum": ["filing", "guidance", "transcript", "data", "news", "research", "other"]},
     "assets": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,31}$"}},
     "ideas": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,63}$"}},
+    "access": {"enum": ["public", "non-public"]},
     "source": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["url", "publisher", "published_at", "tier"],
+      "required": ["published_at", "tier"],
       "properties": {
         "url": {"type": "string", "pattern": "^https?://\\S+$", "maxLength": 2000},
         "publisher": {"type": "string", "minLength": 1, "maxLength": 200},
         "published_at": {"type": "string", "format": "date"},
-        "tier": {"enum": ["primary", "secondary"]}
+        "tier": {"enum": ["primary", "secondary"]},
+        "type": {"enum": ["paywalled", "industry-material", "interview", "private-data", "other"]},
+        "description": {"type": "string", "minLength": 1, "maxLength": 1000}
       }
     },
     "claims": {
@@ -38,5 +41,12 @@
     },
     "body_md": {"type": "string", "maxLength": 20000},
     "provider_ref": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._:-]{2,95}$"}
-  }
+  },
+  "allOf": [
+    {
+      "if": {"required": ["access"], "properties": {"access": {"const": "non-public"}}},
+      "then": {"properties": {"source": {"required": ["type", "description"]}}},
+      "else": {"properties": {"source": {"required": ["url", "publisher"]}}}
+    }
+  ]
 }

@@ -12,6 +12,7 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
+from .basis import non_public_pillars
 from .derive import derive
 from .distribution import check_distribution
 from .eventlog import LOG_DIR
@@ -157,6 +158,11 @@ def _view_findings(state: RepoState, path: str, view: dict, actors: set[str]) ->
     for stance in view.get("evidence_stances", []):
         if stance["evidence"] not in state.evidence:
             found.append(Finding(path, f"evidence {stance['evidence']!r} does not exist"))
+    for pillar in view["pillars"]:
+        found += [Finding(path, f"pillar {pillar['id']!r} cites evidence {e!r}, which does not exist")
+                  for e in pillar.get("evidence", []) if e not in state.evidence]
+    if view.get("non_public_pillars") != non_public_pillars(view["pillars"], state.evidence):
+        found.append(Finding(path, "non_public_pillars differ from a fresh computation"))
     dist, errors, _ = check_distribution(view["distribution"])
     if errors:
         found.append(Finding(path, f"distribution is invalid: {errors[0].message}"))

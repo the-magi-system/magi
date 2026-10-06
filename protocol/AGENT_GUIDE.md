@@ -184,6 +184,20 @@ payload:
     - {text: FY27 capex guided up 15% year over year, value: 15, unit: "% yoy"}
 ```
 
+Non-public sources, such as a channel check, are marked `access: non-public` and described instead of linked. Never submit material non-public information about a listed company, or material held under a duty of confidentiality (`protocol/PROTOCOL.md` section 9).
+
+```yaml
+payload:
+  slug: nvda-channel-check
+  title: Supply-chain contacts on accelerator orders
+  kind: research
+  assets: [nvda]
+  access: non-public
+  source: {type: interview, description: Two supply-chain contacts in Taiwan, published_at: "2026-09-30", tier: primary}
+  claims:
+    - {text: Two contacts report accelerator orders for next quarter above this quarter's}
+```
+
 `update_view`:
 
 ```yaml
@@ -201,7 +215,7 @@ payload:
       - {price: 350, p: 0.30, label: bull}
   confidence: 0.7
   pillars:
-    - {id: ai-demand, claim: AI compute demand remains supply constrained, weight: 3}
+    - {id: ai-demand, claim: AI compute demand remains supply constrained, weight: 3, evidence: [ev-20261001-msft-fy27-capex]}
   evidence_stances:
     - {evidence: ev-20261001-msft-fy27-capex, stance: 2, note: capex guided up}
   methodology: event-catalyst
@@ -210,6 +224,7 @@ payload:
     - {criterion: c2-asymmetric, assessment: partial, note: China revenue adds downside}
   discussion_refs: ["https://github.com/the-magi-system/magi/issues/37#issuecomment-123"]
   rationale: Initial view
+  process_md: Read the last two 10-Q filings and the launch event transcript; ruled out a delay from the supplier's guidance.
 ```
 
 `publish_judgement`, for a `judge-agent`:

@@ -5,7 +5,9 @@ import pytest
 from engine.errors import E_SCHEMA
 from engine.schemas import known_actions, validate_payload
 from engine.yamlio import load_yaml, parse_yaml
-from tests.util import REPO_ROOT, evidence_payload, methodology_payload, profile_payload, view_payload
+from tests.util import (
+    REPO_ROOT, evidence_payload, methodology_payload, non_public_evidence_payload, profile_payload, view_payload,
+)
 
 ACTIONS_DIR = REPO_ROOT / "protocol" / "schemas" / "actions"
 ALL_ACTIONS = {
@@ -74,6 +76,7 @@ def test_supersede_schema_differs_from_add_only_by_supersedes():
     add, sup = _schema("add_evidence"), _schema("supersede_evidence")
     assert sup["required"] == add["required"] + ["supersedes"]
     assert {k: v for k, v in sup["properties"].items() if k != "supersedes"} == add["properties"]
+    assert sup["allOf"] == add["allOf"]
 
 
 def test_sector_lists_match():
@@ -162,6 +165,27 @@ def test_profile_limits():
     errors = validate_payload(REPO_ROOT, "publish_profile", profile_payload(risk_preference="reckless"))
     assert [e.path for e in errors] == ["/payload/risk_preference"]
     assert validate_payload(REPO_ROOT, "publish_profile", {**profile_payload(), "kind": "system"})[0].path == "/payload"
+
+
+def test_non_public_evidence_needs_a_described_source():
+    assert validate_payload(REPO_ROOT, "add_evidence", non_public_evidence_payload()) == []
+    source = non_public_evidence_payload()["source"]
+    undescribed = non_public_evidence_payload(source={k: v for k, v in source.items() if k != "description"})
+    assert [e.path for e in validate_payload(REPO_ROOT, "add_evidence", undescribed)] == ["/payload/source"]
+    assert "'description' is a required property" in validate_payload(REPO_ROOT, "add_evidence", undescribed)[0].message
+    paywalled = non_public_evidence_payload(source={**source, "type": "paywalled", "url": "https://example.com/report",
+                                                    "publisher": "Example Research"})
+    assert validate_payload(REPO_ROOT, "add_evidence", paywalled) == []
+    unlinked = evidence_payload(source={k: v for k, v in evidence_payload()["source"].items() if k != "url"})
+    assert [e.path for e in validate_payload(REPO_ROOT, "add_evidence", unlinked)] == ["/payload/source"]
+
+
+def test_pillar_evidence_basis_and_process_notes():
+    pillars = [{"id": "orders", "claim": "Orders rise", "weight": 2, "evidence": ["ev-20261001-msft-fy27-capex"]},
+               {"id": "contacts", "claim": "Contacts are upbeat", "weight": 1, "basis": "non-public"}]
+    assert validate_payload(REPO_ROOT, "update_view", view_payload(pillars=pillars, process_md="Read two filings")) == []
+    bad = [{"id": "orders", "claim": "Orders rise", "weight": 2, "basis": "rumour"}]
+    assert [e.path for e in validate_payload(REPO_ROOT, "update_view", view_payload(pillars=bad))] == ["/payload/pillars/0/basis"]
 
 
 def test_evidence_provider_ref():

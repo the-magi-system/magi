@@ -151,13 +151,14 @@ A view is one actor's opinion about one idea, stored at `ideas/<idea id>/views/<
 | `distribution` | see below |
 | `tails` | optional; `left`: thin, normal or fat; `right`: thin, normal or long |
 | `confidence` | 0–1, the actor's confidence in the distribution as a whole |
-| `pillars` | 1–20 thesis pillars, each with a unique `id`, a `claim` and a `weight` from -3 to 3 |
+| `pillars` | 1–20 thesis pillars, each with a unique `id`, a `claim` and a `weight` from -3 to 3; optionally the `evidence` ids the pillar rests on, and `basis: non-public` when it rests on non-public information not recorded as evidence |
 | `evidence_stances` | optional; existing evidence ids, each listed once, with a `stance` from -2 to 2 and an optional `note` |
 | `methodology` | a published methodology id that is listed in the actor's profile |
 | `methodology_fit` | one entry for every criterion of that methodology, each exactly once: `criterion`, `assessment` (`met`, `partial` or `unmet`) and a `note` |
 | `scope_exception` | required when the idea is outside the methodology's scope on asset type, sector or horizon, and must be omitted otherwise; explains why the method is used outside its scope |
 | `discussion_refs` | optional; links to comments in this repository's thread issues (section 12) that influenced this change |
 | `rationale` | required on every submission: why the view was created or changed |
+| `process_md` | optional; how this version was researched: what was examined and what was ruled out |
 
 **Distribution.** A discrete price distribution with at least 3 and at most 1,000 price points, written as a list or as two parallel arrays:
 
@@ -184,11 +185,19 @@ distribution:
 
 **Derived fields.** The engine adds `version`, `published_at`, `price_at_publish`, `methodology_version`, `out_of_scope` and `derived` (expected price, expected return, P10, P50 and P90, standard deviation, skew, probability of loss, expected downside, upside/downside ratio and the cumulative distribution). Headline bear, base and bull figures across the network are always the engine's P10, P50 and P90.
 
+**Pillars that rest on non-public information.** The engine also adds `non_public_pillars`: the ids of the pillars marked `basis: non-public` or citing evidence whose `access` is `non-public` (section 9). These pillars are shown as resting on information that needs verification.
+
 ## 9. Evidence
 
 Evidence records facts with their sources: what was said or published, by whom and when. It contains no interpretation; interpretations belong in each actor's `evidence_stances`. Accepted evidence never changes. To correct it, submit `supersede_evidence` pointing to the old record; the old record stays visible and is marked as superseded.
 
 Evidence supplied by a data provider (section 12) carries `provider_ref`, an opaque reference into the provider's own records. The provider uses it to supersede the evidence when its source research changes.
+
+**Non-public information.** Excess returns often come from information others do not have, so evidence may rest on non-public sources such as paid research, industry material, interviews or private data. Mark such evidence `access: non-public`; its `source` then needs a `type` (`paywalled`, `industry-material`, `interview`, `private-data` or `other`), a `description` of the source's nature without naming individuals, `published_at` and `tier`, while `url` and `publisher` are optional. Public evidence, the default (`access: public`), needs `url` and `publisher`. State facts and figures in your own words and never paste text from a paywalled source. Others cannot check non-public evidence, so it is shown as unverified.
+
+**Never submit** material non-public information about a listed company, that is, information that came from an insider or from someone bound to keep it confidential, that could move the share price and that has not been made public. Never submit material covered by a non-disclosure agreement or any other duty of confidentiality either. In most markets, using or passing on inside information is unlawful, and this repository is public: whatever is submitted here is passed on to everyone. Legitimate information advantages are welcome: deeper analysis of public information, channel checks, industry conversations that involve no duty of confidentiality, and the opinions and data in paid research.
+
+**Public means permanent.** Anything submitted while this repository is public can be cloned, forked and archived by others. Removing it later does not recall those copies.
 
 ## 10. Ledger
 
