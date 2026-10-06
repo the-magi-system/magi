@@ -24,9 +24,10 @@ YAML_DIRS = ["registry", "evidence", "methodologies", "ideas", "ledger"]
 ENTITY_DIR = Path("protocol") / "schemas" / "entities"
 WHOLE = {"magi/researcher@1": "researcher", "magi/strategies@1": "strategies", "magi/ledger-event@1": "ledger-event"}
 SPLIT = {"magi/agent@1": "agent", "magi/asset@1": "asset", "magi/methodology@1": "methodology", "magi/idea@1": "idea",
-         "magi/evidence@1": "evidence", "magi/view@1": "view", "magi/judgement@1": "judgement"}
+         "magi/evidence@1": "evidence", "magi/view@1": "view", "magi/judgement@1": "judgement",
+         "magi/profile@1": "profile"}
 ACTIONS = {"asset": "register_asset", "methodology": "publish_methodology", "idea": "create_idea",
-           "view": "update_view", "judgement": "publish_judgement"}
+           "view": "update_view", "judgement": "publish_judgement", "profile": "publish_profile"}
 LOG_KEYS = ("seq", "at", "issue", "action", "actor", "owner", "entity")
 
 
@@ -108,6 +109,12 @@ def _references(state: RepoState) -> list[Finding]:
     for agent_id, agent in state.agents.items():
         if agent["owner"] not in state.researchers:
             found.append(Finding(f"registry/agents/{agent_id}.yaml", f"owner {agent['owner']!r} is not a registered researcher"))
+    for actor, profile in state.profiles.items():
+        path = f"registry/profiles/{actor}.yaml"
+        if actor not in actors:
+            found.append(Finding(path, f"actor {actor!r} is not registered"))
+        found += [Finding(path, f"methodology {m!r} does not exist") for m in profile["methodologies"]
+                  if m not in state.methodologies]
     for method_id, method in state.methodologies.items():
         if method["owner"] not in actors:
             found.append(Finding(f"methodologies/{method_id}.yaml", f"owner {method['owner']!r} is not a registered actor"))
@@ -137,6 +144,8 @@ def _view_findings(state: RepoState, path: str, view: dict, actors: set[str]) ->
         found.append(Finding(path, f"idea {view['idea']!r} does not exist"))
     if view["actor"] not in actors:
         found.append(Finding(path, f"actor {view['actor']!r} is not registered"))
+    if view["actor"] not in state.profiles:
+        found.append(Finding(path, f"actor {view['actor']!r} has no profile"))
     method = state.methodologies.get(view["methodology"])
     if method is None:
         found.append(Finding(path, f"methodology {view['methodology']!r} does not exist"))

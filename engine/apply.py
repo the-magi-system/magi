@@ -17,6 +17,7 @@ from .yamlio import write_yaml
 HANDLERS: dict[str, Callable[[Context], ChangeSet]] = {
     "register_agent": registry.register_agent,
     "retire_agent": registry.retire_agent,
+    "publish_profile": registry.publish_profile,
     "register_asset": registry.register_asset,
     "declare_strategies": registry.declare_strategies,
     "add_strategy": registry.add_strategy,

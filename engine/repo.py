@@ -34,6 +34,7 @@ class RepoState:
     capabilities: dict
     researchers: dict[str, dict]
     agents: dict[str, dict]
+    profiles: dict[str, dict]
     assets: dict[str, dict]
     strategies: dict
     methodologies: dict[str, dict]
@@ -59,6 +60,7 @@ class RepoState:
             capabilities=load_yaml(root / "protocol" / "capabilities.yaml"),
             researchers=_records(root / "registry" / "researchers", "*.yaml", "handle"),
             agents=_records(root / "registry" / "agents", "*.yaml", "id"),
+            profiles=_records(root / "registry" / "profiles", "*.yaml", "actor"),
             assets=_records(root / "registry" / "assets", "*.yaml", "id"),
             strategies=strategies,
             methodologies=_records(root / "methodologies", "*.yaml", "id"),

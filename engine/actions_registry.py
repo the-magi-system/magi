@@ -50,6 +50,18 @@ def retire_agent(ctx: Context) -> ChangeSet:
     return changes
 
 
+def publish_profile(ctx: Context) -> ChangeSet:
+    previous = ctx.state.profiles.get(ctx.actor)
+    version = previous["version"] + 1 if previous else 1
+    record = {"schema": "magi/profile@1", "actor": ctx.actor, "kind": "contributor", **ctx.payload,
+              "version": version, "published_at": iso(ctx.now), "published_via_issue": ctx.issue}
+    path = f"registry/profiles/{ctx.actor}.yaml"
+    changes = ChangeSet(f"publish_profile: {ctx.actor} v{version}", writes={path: record},
+                        created={"profile_version": str(version)})
+    changes.log.append(log_entry(ctx, path, version=version))
+    return changes
+
+
 def register_asset(ctx: Context) -> ChangeSet:
     payload = ctx.payload
     quote = quote_for(ctx, payload, registering=True)
