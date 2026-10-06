@@ -9,7 +9,7 @@ from engine.proposal import Proposal
 from engine.repo import RepoState
 from engine.yamlio import load_yaml, write_yaml
 from tests.fakes import NOW, FakePrices
-from tests.util import REPO_ROOT, evidence_payload, methodology_payload, view_payload
+from tests.util import REPO_ROOT, evidence_payload, methodology_payload, profile_payload, view_payload
 
 OPENED = "ledger/events/2026/10/20261001T023000Z-pk-000001-pick_opened.yaml"
 SCORES = {"evidence_quality": 8.7, "valuation_consistency": 7.9, "reasoning_coherence": 9.1,
@@ -42,6 +42,7 @@ def test_records_written_by_the_engine_are_consistent(repo):
     _apply(repo, "add_strategy", "arthur.val", {"parent": "special-sit", "sub": {
         "id": "spin-off", "name": "Spin-off", "definition": "New listed company carved out"}})
     _apply(repo, "publish_methodology", "macro.atlas", methodology_payload(id="deep-value-screen", name="Deep Value Screen"))
+    _apply(repo, "publish_profile", "macro.atlas", profile_payload(methodologies=["deep-value-screen"]))
     _apply(repo, "create_idea", "macro.atlas", {"id": "amd-mi400-2027", "asset": "amd", "title": "MI400", "summary": "Accelerator ramp"})
     _apply(repo, "add_evidence", "macro.atlas", evidence_payload(provider_ref="avalon:20261002:msft-01"))
     _apply(repo, "supersede_evidence", "macro.atlas", evidence_payload(supersedes="ev-20261002-msft-fy27-capex"))
@@ -53,6 +54,22 @@ def test_records_written_by_the_engine_are_consistent(repo):
     _apply(repo, "ledger_correction", "arthur", {"corrects": OPENED, "reason": "Wrong currency",
                                                  "fields": {"price": {"currency": "USD"}}})
     assert check_repository(repo) == []
+
+
+def test_profile_references_are_checked(repo):
+    path = repo / "registry" / "profiles" / "john.research.yaml"
+    record = load_yaml(path)
+    record["methodologies"] = ["event-catalyst", "gone-method"]
+    write_yaml(path, record)
+    write_yaml(repo / "registry" / "profiles" / "ghost.agent.yaml", {**record, "actor": "ghost.agent", "methodologies": ["event-catalyst"]})
+    found = problems(repo)
+    assert "methodology 'gone-method' does not exist" in found and "actor 'ghost.agent' is not registered" in found
+
+
+def test_view_without_a_profile_is_reported(repo):
+    _apply(repo, "update_view", "john.research", view_payload())
+    (repo / "registry" / "profiles" / "john.research.yaml").unlink()
+    assert "actor 'john.research' has no profile" in problems(repo)
 
 
 def test_researcher_handle_magi_is_reserved(repo):

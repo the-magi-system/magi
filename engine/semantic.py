@@ -7,6 +7,7 @@ from .distribution import check_distribution
 from .errors import E_SEMANTIC, MagiError
 from .ids import RESERVED_SYSTEM, compose_agent_id
 from .methodology import check_publish, check_view_methodology
+from .profiles import check_publish_profile, check_view_profile
 from .proposal import Proposal
 from .repo import RepoState
 from .strategies import check_add_strategy, check_declaration, check_view_strategy
@@ -51,6 +52,10 @@ def _retire_agent(state: RepoState, actor: str, payload: dict) -> Result:
     if agent.get("status") != "active":
         return [_error("/payload/agent", f"agent '{payload['agent']}' is already retired")], []
     return [], []
+
+
+def _publish_profile(state: RepoState, actor: str, payload: dict) -> Result:
+    return check_publish_profile(state, payload), []
 
 
 def _register_asset(state: RepoState, actor: str, payload: dict) -> Result:
@@ -105,6 +110,7 @@ def _update_view(state: RepoState, actor: str, payload: dict) -> Result:
         errors.append(_error("/payload/idea", f"idea '{payload['idea']}' is archived"))
     errors += check_view_strategy(state.strategies, payload["strategy"], payload.get("sub_strategy"))
     errors += check_view_methodology(state, payload)
+    errors += check_view_profile(state, actor, payload)
     _, distribution_errors, notes = check_distribution(payload["distribution"])
     errors += distribution_errors
     seen: set[str] = set()
@@ -141,6 +147,7 @@ def _ledger_correction(state: RepoState, actor: str, payload: dict) -> Result:
 CHECKS: dict[str, Callable[[RepoState, str, dict], Result]] = {
     "register_agent": _register_agent,
     "retire_agent": _retire_agent,
+    "publish_profile": _publish_profile,
     "register_asset": _register_asset,
     "declare_strategies": _declare_strategies,
     "add_strategy": _add_strategy,

@@ -1,7 +1,8 @@
 import pytest
 
 from engine.actions_registry import (
-    CATALOGUE, add_strategy, declare_strategies, publish_methodology, register_agent, register_asset, retire_agent,
+    CATALOGUE, add_strategy, declare_strategies, publish_methodology, publish_profile, register_agent, register_asset,
+    retire_agent,
 )
 from engine.changes import ApplyError, Context
 from engine.errors import E_PRICE, E_PRICE_STALE, E_SEMANTIC
@@ -9,7 +10,7 @@ from engine.proposal import Proposal
 from engine.repo import RepoState
 from engine.yamlio import load_yaml, write_yaml
 from tests.fakes import NOW, FakePrices
-from tests.util import methodology_payload
+from tests.util import methodology_payload, profile_payload
 
 AMD = {"id": "amd", "name": "Advanced Micro Devices", "type": "equity", "sector": "information-technology",
        "currency": "USD", "price_source": {"provider": "yahoo", "symbol": "AMD"}}
@@ -37,6 +38,17 @@ def test_retire_agent_closes_open_picks(state):
     assert len(closing) == 1 and closing[0]["reason"] == "agent_retired" and closing[0]["pick_id"] == "pk-000001"
     assert closing[0]["realized_return"] == round(200.0 / 180.2 - 1, 6)
     assert changes.log[0]["picks_closed"] == ["pk-000001"]
+
+
+def test_publish_profile_new_and_new_version(state):
+    new = run(state, publish_profile, "publish_profile", "arthur.judge", profile_payload())
+    record = new.writes["registry/profiles/arthur.judge.yaml"]
+    assert (record["actor"], record["kind"], record["version"], record["published_via_issue"]) == ("arthur.judge", "contributor", 1, 50)
+    assert record["methodologies"] == ["event-catalyst"] and new.created == {"profile_version": "1"}
+    again = run(state, publish_profile, "publish_profile", "arthur.val", profile_payload(risk_preference="right-tail"))
+    record = again.writes["registry/profiles/arthur.val.yaml"]
+    assert (record["version"], record["risk_preference"]) == (2, "right-tail")
+    assert again.log[0]["entity"] == "registry/profiles/arthur.val" and again.log[0]["version"] == 2
 
 
 def test_register_asset_checks_price(state):

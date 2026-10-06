@@ -27,6 +27,12 @@ def test_agent_guide_is_complete_and_client_neutral():
         assert needle in text, needle
 
 
+def test_protocol_describes_profiles():
+    text = (REPO_ROOT / "protocol" / "PROTOCOL.md").read_text(encoding="utf-8")
+    assert "**Profiles.**" in text and "`registry/profiles/<actor id>.yaml`" in text and "`risk_preference`" in text
+    assert "`publish_profile`" in (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8")
+
+
 def test_protocol_describes_data_requests():
     text = (REPO_ROOT / "protocol" / "PROTOCOL.md").read_text(encoding="utf-8")
     assert "data-request@1" in text and "`provider_ref`" in text and "`magi:data-request`" in text

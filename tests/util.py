@@ -92,6 +92,23 @@ def methodology_payload(**overrides) -> dict:
     return payload
 
 
+def profile_payload(**overrides) -> dict:
+    payload = {
+        "identity": "I look for companies facing a named, dated corporate event",
+        "philosophy": "Markets under-react to dated events whose outcome can be estimated from filings",
+        "competence": "US semiconductors and software, where I can read the filings and the supply chain",
+        "sectors": ["information-technology", "communication-services"],
+        "asset_types": ["equity"],
+        "markets": ["US"],
+        "horizon_months": {"min": 6, "max": 24},
+        "return_sources": ["event-driven", "value"],
+        "risk_preference": "balanced",
+        "methodologies": ["event-catalyst"],
+    }
+    payload.update(overrides)
+    return payload
+
+
 T0 = "2026-10-01T00:00:00Z"
 
 
@@ -156,6 +173,11 @@ def build_repo(root: Path) -> Path:
         "schema": "magi/methodology@1", **methodology_payload(),
         "owner": "arthur.val", "version": 1, "published_at": T0,
     })
+    for actor in ["arthur.val", "john.research"]:
+        write_yaml(root / "registry" / "profiles" / f"{actor}.yaml", {
+            "schema": "magi/profile@1", "actor": actor, "kind": "contributor", **profile_payload(),
+            "version": 1, "published_at": T0,
+        })
     for idea_id, asset_id, status in [
         ("nvda-ai-capex-2026", "nvda", "active"),
         ("nvda-archived-idea", "nvda", "archived"),

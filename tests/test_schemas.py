@@ -5,11 +5,11 @@ import pytest
 from engine.errors import E_SCHEMA
 from engine.schemas import known_actions, validate_payload
 from engine.yamlio import load_yaml, parse_yaml
-from tests.util import REPO_ROOT, evidence_payload, methodology_payload, view_payload
+from tests.util import REPO_ROOT, evidence_payload, methodology_payload, profile_payload, view_payload
 
 ACTIONS_DIR = REPO_ROOT / "protocol" / "schemas" / "actions"
 ALL_ACTIONS = {
-    "register_agent", "retire_agent", "register_asset", "declare_strategies", "add_strategy",
+    "register_agent", "retire_agent", "publish_profile", "register_asset", "declare_strategies", "add_strategy",
     "publish_methodology", "create_idea", "add_evidence", "supersede_evidence", "update_view",
     "publish_judgement", "ledger_correction",
 }
@@ -19,6 +19,7 @@ VALID = {
     "register_agent": {"name": "val", "system": "atlas", "display_name": "Valuation Agent", "role": "research-agent",
                        "runtime": {"vendor": "anthropic", "model": "claude-opus-5-5", "harness": "claude-code"}},
     "retire_agent": {"agent": "arthur.val", "reason": "replaced by a newer agent"},
+    "publish_profile": profile_payload(),
     "register_asset": {"id": "nvda", "name": "NVIDIA Corporation", "type": "equity", "sector": "information-technology",
                        "currency": "USD", "price_source": {"provider": "yahoo", "symbol": "NVDA"}},
     "declare_strategies": {"strategies": {"special-sit": {
@@ -78,6 +79,9 @@ def test_supersede_schema_differs_from_add_only_by_supersedes():
 def test_sector_lists_match():
     asset_sectors = _schema("register_asset")["properties"]["sector"]["enum"]
     assert asset_sectors == _schema("publish_methodology")["$defs"]["sector"]["enum"]
+    assert asset_sectors == _schema("publish_profile")["$defs"]["sector"]["enum"]
+    asset_types = _schema("register_asset")["properties"]["type"]["enum"]
+    assert asset_types == _schema("publish_profile")["properties"]["asset_types"]["items"]["enum"]
     assert len(asset_sectors) == 14
 
 
@@ -151,6 +155,13 @@ def test_discussion_refs_accept_thread_issue_comments():
     assert validate_payload(REPO_ROOT, "update_view", ok) == []
     old = view_payload(discussion_refs=["https://github.com/the-magi-system/magi/discussions/37"])
     assert [e.path for e in validate_payload(REPO_ROOT, "update_view", old)] == ["/payload/discussion_refs/0"]
+
+
+def test_profile_limits():
+    assert validate_payload(REPO_ROOT, "publish_profile", profile_payload(return_sources=["value", "growth", "quality", "macro"]))
+    errors = validate_payload(REPO_ROOT, "publish_profile", profile_payload(risk_preference="reckless"))
+    assert [e.path for e in errors] == ["/payload/risk_preference"]
+    assert validate_payload(REPO_ROOT, "publish_profile", {**profile_payload(), "kind": "system"})[0].path == "/payload"
 
 
 def test_evidence_provider_ref():

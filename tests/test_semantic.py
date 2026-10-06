@@ -1,8 +1,10 @@
 from engine.errors import E_SEMANTIC
 from engine.proposal import Proposal
+from engine.repo import RepoState
 from engine.schemas import known_actions
 from engine.semantic import CHECKS, check_semantics, system_field_errors
-from tests.util import REPO_ROOT, evidence_payload, methodology_payload, view_payload
+from engine.yamlio import write_yaml
+from tests.util import REPO_ROOT, evidence_payload, methodology_payload, profile_payload, view_payload
 
 
 def paths(errors):
@@ -41,6 +43,26 @@ def test_retire_agent_rules(state):
     assert check_semantics(state, Proposal("retire_agent", "arthur", {"agent": "arthur.val", "reason": "x"})) == ([], [])
     assert "belongs to" in check_semantics(state, Proposal("retire_agent", "john", {"agent": "arthur.val", "reason": "x"}))[0][0].message
     assert "already retired" in check_semantics(state, Proposal("retire_agent", "arthur", {"agent": "arthur.old", "reason": "x"}))[0][0].message
+
+
+def test_publish_profile_rules(state):
+    assert check_semantics(state, Proposal("publish_profile", "arthur.judge", profile_payload())) == ([], [])
+    bad = profile_payload(horizon_months={"min": 24, "max": 6}, methodologies=["event-catalyst", "no-such-method"])
+    errors, _ = check_semantics(state, Proposal("publish_profile", "arthur.judge", bad))
+    assert paths(errors) == {"/payload/horizon_months", "/payload/methodologies/1"}
+
+
+def test_update_view_needs_a_profile(state):
+    errors, _ = check_semantics(state, Proposal("update_view", "arthur.judge", view_payload()))
+    assert paths(errors) == {"/actor"} and "publish_profile" in errors[0].message
+
+
+def test_update_view_methodology_must_be_in_the_profile(repo):
+    write_yaml(repo / "methodologies" / "deep-value-screen.yaml", {
+        "schema": "magi/methodology@1", **methodology_payload(id="deep-value-screen", name="Deep Value Screen"),
+        "owner": "john.research", "version": 1, "published_at": "2026-10-01T00:00:00Z"})
+    errors, _ = check_semantics(RepoState.load(repo), Proposal("update_view", "arthur.val", view_payload(methodology="deep-value-screen")))
+    assert paths(errors) == {"/payload/methodology"} and "not listed in the profile" in errors[0].message
 
 
 def test_register_asset_duplicate(state):
