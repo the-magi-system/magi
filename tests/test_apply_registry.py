@@ -22,11 +22,11 @@ def run(state, handler, action, actor, payload, prices=None, issue=50):
 
 def test_register_agent(state):
     changes = run(state, register_agent, "register_agent", "john",
-                  {"name": "macro", "display_name": "Macro", "role": "research-agent"})
-    record = changes.writes["registry/agents/john.macro.yaml"]
-    assert (record["owner"], record["status"], record["daily_proposal_cap"]) == ("john", "active", 50)
-    assert record["registered_via_issue"] == 50 and changes.created == {"agent_id": "john.macro"}
-    assert changes.log[0]["entity"] == "registry/agents/john.macro" and changes.log[0]["owner"] == "john"
+                  {"name": "macro", "system": "atlas", "display_name": "Macro.Atlas", "role": "research-agent"})
+    record = changes.writes["registry/agents/macro.atlas.yaml"]
+    assert (record["id"], record["owner"], record["status"], record["daily_proposal_cap"]) == ("macro.atlas", "john", "active", 50)
+    assert record["registered_via_issue"] == 50 and changes.created == {"agent_id": "macro.atlas"}
+    assert changes.log[0]["entity"] == "registry/agents/macro.atlas" and changes.log[0]["owner"] == "john"
 
 
 def test_retire_agent_closes_open_picks(state):

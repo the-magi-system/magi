@@ -6,7 +6,7 @@
   "required": ["schema", "handle", "github_id", "github_login", "display_name", "roles", "status", "joined_at"],
   "properties": {
     "schema": {"const": "magi/researcher@1"},
-    "handle": {"type": "string", "pattern": "^[a-z][a-z0-9-]{1,23}$"},
+    "handle": {"type": "string", "pattern": "^[a-z][a-z0-9-]{1,23}$", "not": {"const": "magi"}},
     "github_id": {"type": "integer", "minimum": 1},
     "github_login": {"type": "string", "minLength": 1},
     "display_name": {"type": "string", "minLength": 1},

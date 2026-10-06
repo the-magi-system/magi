@@ -5,6 +5,7 @@ from typing import Callable
 
 from .distribution import check_distribution
 from .errors import E_SEMANTIC, MagiError
+from .ids import RESERVED_SYSTEM, compose_agent_id
 from .methodology import check_publish, check_view_methodology
 from .proposal import Proposal
 from .repo import RepoState
@@ -32,10 +33,13 @@ def system_field_errors(action: str, payload: dict) -> list[MagiError]:
 
 
 def _register_agent(state: RepoState, actor: str, payload: dict) -> Result:
-    agent_id = f"{actor}.{payload['name']}"
+    errors = []
+    if payload["system"] == RESERVED_SYSTEM:
+        errors.append(_error("/payload/system", f"the system name '{RESERVED_SYSTEM}' is reserved for the Magi system agents"))
+    agent_id = compose_agent_id(payload["name"], payload["system"])
     if agent_id in state.agents:
-        return [_error("/payload/name", f"agent id '{agent_id}' already exists; agent ids are never reused")], []
-    return [], []
+        errors.append(_error("/payload/name", f"agent id '{agent_id}' already exists; agent ids are never reused"))
+    return errors, []
 
 
 def _retire_agent(state: RepoState, actor: str, payload: dict) -> Result:

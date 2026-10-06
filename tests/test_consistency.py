@@ -20,7 +20,8 @@ AMD = {"id": "amd", "name": "Advanced Micro Devices", "type": "equity", "sector"
 
 def _apply(repo, action, actor, payload, prices=None):
     state = RepoState.load(repo)
-    changes = apply_proposal(state, Proposal(action, actor, payload), issue=60, owner=actor.split(".")[0],
+    owner = state.agents[actor]["owner"] if actor in state.agents else actor
+    changes = apply_proposal(state, Proposal(action, actor, payload), issue=60, owner=owner,
                              now=NOW, prices=prices or FakePrices())
     write_changes(repo, changes)
 
@@ -34,16 +35,16 @@ def test_fixture_repository_is_consistent(repo):
 
 
 def test_records_written_by_the_engine_are_consistent(repo):
-    _apply(repo, "register_agent", "john", {"name": "macro", "display_name": "Macro", "role": "research-agent"})
-    _apply(repo, "register_asset", "john.macro", AMD)
-    _apply(repo, "declare_strategies", "john.macro", {"strategies": {"deep-value": {
+    _apply(repo, "register_agent", "john", {"name": "macro", "system": "atlas", "display_name": "Macro.Atlas", "role": "research-agent"})
+    _apply(repo, "register_asset", "macro.atlas", AMD)
+    _apply(repo, "declare_strategies", "macro.atlas", {"strategies": {"deep-value": {
         "name": "Deep Value", "definition": "Assets priced well below liquidation value"}}})
     _apply(repo, "add_strategy", "arthur.val", {"parent": "special-sit", "sub": {
         "id": "spin-off", "name": "Spin-off", "definition": "New listed company carved out"}})
-    _apply(repo, "publish_methodology", "john.macro", methodology_payload(id="deep-value-screen", name="Deep Value Screen"))
-    _apply(repo, "create_idea", "john.macro", {"id": "amd-mi400-2027", "asset": "amd", "title": "MI400", "summary": "Accelerator ramp"})
-    _apply(repo, "add_evidence", "john.macro", evidence_payload(provider_ref="avalon:20261002:msft-01"))
-    _apply(repo, "supersede_evidence", "john.macro", evidence_payload(supersedes="ev-20261002-msft-fy27-capex"))
+    _apply(repo, "publish_methodology", "macro.atlas", methodology_payload(id="deep-value-screen", name="Deep Value Screen"))
+    _apply(repo, "create_idea", "macro.atlas", {"id": "amd-mi400-2027", "asset": "amd", "title": "MI400", "summary": "Accelerator ramp"})
+    _apply(repo, "add_evidence", "macro.atlas", evidence_payload(provider_ref="avalon:20261002:msft-01"))
+    _apply(repo, "supersede_evidence", "macro.atlas", evidence_payload(supersedes="ev-20261002-msft-fy27-capex"))
     _apply(repo, "update_view", "john.research", view_payload(), prices=FakePrices({"NVDA": 180.2}))
     _apply(repo, "update_view", "john.research", view_payload(position="neutral", rationale="Flat"))
     _apply(repo, "publish_judgement", "arthur.judge", {"idea": "nvda-ai-capex-2026", "scores": SCORES,
@@ -52,6 +53,13 @@ def test_records_written_by_the_engine_are_consistent(repo):
     _apply(repo, "ledger_correction", "arthur", {"corrects": OPENED, "reason": "Wrong currency",
                                                  "fields": {"price": {"currency": "USD"}}})
     assert check_repository(repo) == []
+
+
+def test_researcher_handle_magi_is_reserved(repo):
+    write_yaml(repo / "registry" / "researchers" / "magi.yaml", {
+        "schema": "magi/researcher@1", "handle": "magi", "github_id": 5, "github_login": "someone",
+        "display_name": "Someone", "roles": ["researcher"], "status": "active", "joined_at": "2026-10-01T00:00:00Z"})
+    assert any(p.startswith("/handle:") for p in problems(repo))
 
 
 def test_same_second_open_and_close_are_ordered(repo):

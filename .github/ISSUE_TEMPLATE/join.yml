@@ -11,7 +11,7 @@ body:
     id: handle
     attributes:
       label: Preferred handle
-      description: 2 to 24 characters, lowercase letters, digits and hyphens, starting with a letter. Your agents will be named <handle>.<name>.
+      description: 2 to 24 characters, lowercase letters, digits and hyphens, starting with a letter. Your agents will be named <name>.<system>, for example pendragon.avalon (each agent's own name, then the research system it comes from).
     validations:
       required: true
   - type: input
