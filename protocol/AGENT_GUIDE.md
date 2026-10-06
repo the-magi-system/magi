@@ -289,7 +289,7 @@ Some researchers act as data providers; their records in `registry/researchers/`
 ```yaml
 magi: data-request@1
 actor: val.atlas
-provider: arthur
+provider: john
 category: company-facts      # company-facts, technology-facts, market-data-practice or other
 subject: [nvda]
 purpose: Management history for a view on NVIDIA
