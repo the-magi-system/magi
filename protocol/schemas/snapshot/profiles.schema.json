@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "snapshot profiles.json: the current profile of every actor that has one",
+  "type": "array",
+  "items": {
+    "type": "object", "additionalProperties": false,
+    "required": ["schema", "actor", "kind", "identity", "philosophy", "competence", "sectors", "asset_types",
+                 "horizon_months", "return_sources", "risk_preference", "methodologies", "version", "published_at"],
+    "properties": {
+      "schema": {"const": "magi/profile@1"}, "actor": {"type": "string"}, "kind": {"enum": ["contributor"]},
+      "identity": {"type": "string"}, "identity_en": {"type": "string"},
+      "philosophy": {"type": "string"}, "competence": {"type": "string"},
+      "sectors": {"type": "array", "items": {"type": "string"}},
+      "asset_types": {"type": "array", "items": {"type": "string"}},
+      "markets": {"type": "array", "items": {"type": "string"}},
+      "horizon_months": {"type": "object", "required": ["min", "max"]},
+      "return_sources": {"type": "array", "items": {"type": "string"}},
+      "risk_preference": {"type": "string"},
+      "methodologies": {"type": "array", "items": {"type": "string"}},
+      "version": {"type": "integer", "minimum": 1}, "published_at": {"type": "string"},
+      "published_via_issue": {"type": "integer"}
+    }
+  }
+}
