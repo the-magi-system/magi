@@ -6,4 +6,3 @@ display_name: Arthur
 roles: [researcher, maintainer]
 status: active
 joined_at: '2026-10-02T00:00:00Z'
-provides: [company-facts, technology-facts, market-data-practice]
