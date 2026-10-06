@@ -14,7 +14,7 @@ from .strategies import check_add_strategy, check_declaration, check_view_strate
 
 SYSTEM_FIELDS = frozenset({
     "actor", "owner", "version", "published_at", "price_at_publish", "derived", "status", "merged_into",
-    "methodology_version", "out_of_scope", "discussion", "thread",
+    "methodology_version", "out_of_scope", "non_public_pillars", "discussion", "thread",
     "created_by", "created_at", "submitted_by", "submitted_at",
     "registered_by", "registered_at", "registered_via_issue", "declared_by", "declared_via_issue",
 })
@@ -118,6 +118,9 @@ def _update_view(state: RepoState, actor: str, payload: dict) -> Result:
         if pillar["id"] in seen:
             errors.append(_error(f"/payload/pillars/{i}/id", f"duplicate pillar id '{pillar['id']}'"))
         seen.add(pillar["id"])
+        for j, evidence_id in enumerate(pillar.get("evidence", [])):
+            if evidence_id not in state.evidence:
+                errors.append(_error(f"/payload/pillars/{i}/evidence/{j}", f"evidence '{evidence_id}' does not exist"))
     seen = set()
     for i, stance in enumerate(payload.get("evidence_stances", [])):
         if stance["evidence"] not in state.evidence:

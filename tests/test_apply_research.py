@@ -11,7 +11,7 @@ from engine.repo import RepoState
 from engine.schemas import known_actions
 from engine.yamlio import load_yaml
 from tests.fakes import NOW, FakePrices
-from tests.util import REPO_ROOT, evidence_payload, view_payload
+from tests.util import REPO_ROOT, evidence_payload, non_public_evidence_payload, view_payload
 
 IDEA = {"id": "msft-copilot-2027", "asset": "msft", "title": "Copilot", "summary": "Copilot monetisation"}
 SCORES = {"evidence_quality": 8.7, "valuation_consistency": 7.9, "reasoning_coherence": 9.1,
@@ -102,6 +102,17 @@ def test_out_of_scope_is_recorded(state):
 def test_discussion_refs_go_to_the_log(state):
     refs = ["https://github.com/the-magi-system/magi/issues/37#issuecomment-123"]
     assert run(state, "update_view", "john.research", view_payload(discussion_refs=refs)).log[0]["discussion_refs"] == refs
+
+
+def test_view_flags_pillars_resting_on_non_public_information(repo):
+    write_changes(repo, run(RepoState.load(repo), "add_evidence", "john.research", non_public_evidence_payload()))
+    pillars = [{"id": "orders", "claim": "Orders rise", "weight": 2, "evidence": ["ev-20261002-nvda-channel-check"]},
+               {"id": "contacts", "claim": "Contacts are upbeat", "weight": 1, "basis": "non-public"},
+               {"id": "capex", "claim": "Capex is guided up", "weight": 2, "evidence": ["ev-20261001-msft-fy27-capex"]}]
+    changes = run(RepoState.load(repo), "update_view", "john.research", view_payload(pillars=pillars, process_md="Read two filings"))
+    view = changes.writes["ideas/nvda-ai-capex-2026/views/john.research.yaml"]
+    assert view["non_public_pillars"] == ["orders", "contacts"] and view["process_md"] == "Read two filings"
+    assert changes.log[0]["diff"]["non_public_pillars"] == [None, ["orders", "contacts"]]
 
 
 def test_update_view_price_outage(state):

@@ -108,6 +108,12 @@ def test_update_view_collects_errors_from_every_rule(state):
     assert paths(errors) == {"/payload/idea", "/payload/evidence_stances/0/evidence", "/payload/pillars/1/id", "/payload/methodology"}
 
 
+def test_pillar_evidence_must_exist(state):
+    pillars = [{"id": "orders", "claim": "Orders rise", "weight": 2, "evidence": ["ev-20990101-missing"]}]
+    errors, _ = check_semantics(state, Proposal("update_view", "arthur.val", view_payload(pillars=pillars)))
+    assert paths(errors) == {"/payload/pillars/0/evidence/0"}
+
+
 def test_update_view_passes_renormalization_note(state):
     payload = view_payload(distribution={"form": "points", "prices": [100, 200, 300], "probs": [0.2, 0.5, 0.2995]})
     errors, notes = check_semantics(state, Proposal("update_view", "arthur.val", payload))

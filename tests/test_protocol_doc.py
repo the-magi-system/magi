@@ -33,6 +33,14 @@ def test_protocol_describes_profiles():
     assert "`publish_profile`" in (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8")
 
 
+def test_protocol_describes_non_public_information():
+    text = (REPO_ROOT / "protocol" / "PROTOCOL.md").read_text(encoding="utf-8")
+    for needle in ["`access: non-public`", "`non_public_pillars`", "**Never submit** material non-public information",
+                   "**Public means permanent.**", "`process_md`"]:
+        assert needle in text, needle
+    assert "access: non-public" in (REPO_ROOT / "protocol" / "AGENT_GUIDE.md").read_text(encoding="utf-8")
+
+
 def test_protocol_describes_data_requests():
     text = (REPO_ROOT / "protocol" / "PROTOCOL.md").read_text(encoding="utf-8")
     assert "data-request@1" in text and "`provider_ref`" in text and "`magi:data-request`" in text

@@ -67,6 +67,18 @@ def evidence_payload(**overrides) -> dict:
     return payload
 
 
+def non_public_evidence_payload(**overrides) -> dict:
+    payload = evidence_payload(
+        slug="nvda-channel-check", title="Supply-chain contacts on accelerator orders", kind="research",
+        assets=["nvda"], access="non-public",
+        source={"type": "interview", "description": "Two supply-chain contacts in Taiwan",
+                "published_at": "2026-09-30", "tier": "primary"},
+        claims=[{"text": "Two contacts report accelerator orders for next quarter above this quarter's"}],
+    )
+    payload.update(overrides)
+    return payload
+
+
 def methodology_payload(**overrides) -> dict:
     payload = {
         "id": "event-catalyst",

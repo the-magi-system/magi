@@ -1,6 +1,7 @@
 """Applying research actions: ideas, evidence, views, judgements, ledger corrections."""
 from __future__ import annotations
 
+from .basis import non_public_pillars
 from .changes import ChangeSet, Context, log_entry, quote_for
 from .derive import derive
 from .distribution import check_distribution
@@ -10,7 +11,7 @@ from .timeutil import iso
 from .yamlio import load_yaml
 
 DIRECTIONS = ("long", "short")
-DIFF_FIELDS = ["position", "strategy", "sub_strategy", "horizon_months", "confidence", "methodology",
+DIFF_FIELDS = ["position", "strategy", "sub_strategy", "horizon_months", "confidence", "methodology", "non_public_pillars",
                "derived.expected_price", "derived.expected_return", "derived.p10", "derived.p50", "derived.p90"]
 
 
@@ -77,6 +78,7 @@ def update_view(ctx: Context) -> ChangeSet:
     record.update(version=version, published_at=iso(ctx.now), price_at_publish=quote.to_dict(),
                   methodology_version=methodology["version"],
                   out_of_scope=scope_gaps(methodology, asset, payload["horizon_months"]),
+                  non_public_pillars=non_public_pillars(payload["pillars"], state.evidence),
                   derived=derive(dist, quote.value, payload["position"]))
     path = f"ideas/{idea_id}/views/{ctx.actor}.yaml"
     writes, picks = {path: record}, []

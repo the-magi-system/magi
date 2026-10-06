@@ -43,3 +43,5 @@ body:
           required: true
         - label: I understand that nothing in this repository is investment advice.
           required: true
+        - label: I will not submit material non-public information about listed companies, or material held under a duty of confidentiality.
+          required: true

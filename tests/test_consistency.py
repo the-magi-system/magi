@@ -9,7 +9,9 @@ from engine.proposal import Proposal
 from engine.repo import RepoState
 from engine.yamlio import load_yaml, write_yaml
 from tests.fakes import NOW, FakePrices
-from tests.util import REPO_ROOT, evidence_payload, methodology_payload, profile_payload, view_payload
+from tests.util import (
+    REPO_ROOT, evidence_payload, methodology_payload, non_public_evidence_payload, profile_payload, view_payload,
+)
 
 OPENED = "ledger/events/2026/10/20261001T023000Z-pk-000001-pick_opened.yaml"
 SCORES = {"evidence_quality": 8.7, "valuation_consistency": 7.9, "reasoning_coherence": 9.1,
@@ -84,6 +86,18 @@ def test_same_second_open_and_close_are_ordered(repo):
     _apply(repo, "update_view", "john.research", view_payload(position="neutral", rationale="Flat"))
     assert ("john.research", "nvda-ai-capex-2026") not in load_book(repo).open
     assert check_repository(repo) == []
+
+
+def test_non_public_pillars_are_recomputed(repo):
+    _apply(repo, "add_evidence", "john.research", non_public_evidence_payload())
+    pillars = [{"id": "orders", "claim": "Orders rise", "weight": 2, "evidence": ["ev-20261002-nvda-channel-check"]}]
+    _apply(repo, "update_view", "john.research", view_payload(pillars=pillars))
+    assert check_repository(repo) == []
+    path = repo / "ideas" / "nvda-ai-capex-2026" / "views" / "john.research.yaml"
+    record = load_yaml(path)
+    record["non_public_pillars"] = []
+    write_yaml(path, record)
+    assert "non_public_pillars differ from a fresh computation" in problems(repo)
 
 
 def test_tampered_derived_field_is_reported(repo):
