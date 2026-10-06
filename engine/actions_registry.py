@@ -4,6 +4,7 @@ from __future__ import annotations
 import copy
 
 from .changes import ChangeSet, Context, log_entry, quote_for
+from .ids import compose_agent_id
 from .ledger import closed_event, event_path, load_book
 from .timeutil import iso
 
@@ -12,7 +13,7 @@ CATALOGUE = "registry/strategies.yaml"
 
 def register_agent(ctx: Context) -> ChangeSet:
     payload = ctx.payload
-    agent_id = f"{ctx.actor}.{payload['name']}"
+    agent_id = compose_agent_id(payload["name"], payload["system"])
     record = {"schema": "magi/agent@1", "id": agent_id, "owner": ctx.actor,
               "display_name": payload["display_name"], "role": payload["role"]}
     if "runtime" in payload:

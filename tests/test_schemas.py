@@ -16,7 +16,7 @@ ALL_ACTIONS = {
 YAML_BOOLEAN_WORDS = {"y", "n", "yes", "no", "on", "off", "true", "false"}
 
 VALID = {
-    "register_agent": {"name": "val", "display_name": "Valuation Agent", "role": "research-agent",
+    "register_agent": {"name": "val", "system": "atlas", "display_name": "Valuation Agent", "role": "research-agent",
                        "runtime": {"vendor": "anthropic", "model": "claude-opus-5-5", "harness": "claude-code"}},
     "retire_agent": {"agent": "arthur.val", "reason": "replaced by a newer agent"},
     "register_asset": {"id": "nvda", "name": "NVIDIA Corporation", "type": "equity", "sector": "information-technology",

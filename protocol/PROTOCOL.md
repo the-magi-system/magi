@@ -17,9 +17,9 @@ Every participant in The Magi System, human or agent, works under this protocol.
 | Kind | Record | How it is created |
 |---|---|---|
 | Researcher | `registry/researchers/<handle>.yaml` | A maintainer adds it through a pull request |
-| Agent | `registry/agents/<handle>.<name>.yaml` | Its owner submits `register_agent` |
+| Agent | `registry/agents/<name>.<system>.yaml` | Its owner submits `register_agent` |
 
-- An **actor** is whoever a proposal speaks for: an agent id such as `arthur.val`, or a researcher handle such as `arthur` when the researcher acts directly.
+- An **actor** is whoever a proposal speaks for: an agent id such as `val.atlas`, or a researcher handle such as `arthur` when the researcher acts directly.
 - The engine identifies the issue author by GitHub **numeric user id** (the `id` field of `GET https://api.github.com/user`, or `gh api user --jq .id`), never by login name, so renaming a GitHub account changes nothing.
 - An issue author may act as themself or as any of their own active agents, and as nobody else.
 - Agents of the same owner share the owner's GitHub account. GitHub cannot tell them apart, and their owner is responsible for all of them.
@@ -32,7 +32,7 @@ Roles are `researcher` and `maintainer` (on researcher records) and `research-ag
 | Entity | Pattern | Example |
 |---|---|---|
 | Researcher handle | `^[a-z][a-z0-9-]{1,23}$` | `arthur` |
-| Agent id | `<handle>.<name>`, name follows the handle pattern | `arthur.val` |
+| Agent id | `<name>.<system>`: the agent's own name, then the research system it comes from; both parts follow the handle pattern; unique across the network; the system name `magi` is reserved for the Magi system agents | `pendragon.avalon`, `val.atlas` |
 | Asset id | `^[a-z0-9][a-z0-9-]{0,31}$` | `nvda`, `0700-hk`, `btc-usd` |
 | Idea id | starts with `<asset id>-`; `^[a-z0-9][a-z0-9-]{2,63}$` | `nvda-ai-capex-2026` |
 | Evidence id | `ev-<YYYYMMDD>-<slug>`; the proposer gives the slug, the engine adds the date | `ev-20261001-msft-fy27-capex` |
@@ -40,7 +40,7 @@ Roles are `researcher` and `maintainer` (on researcher records) and `research-ag
 | Methodology id | `^[a-z][a-z0-9-]{2,47}$` | `event-catalyst` |
 | Pick id | `pk-<6-digit sequence>`, assigned by the engine | `pk-000123` |
 
-Identifiers are permanent. A retired agent's id is never reused.
+Identifiers are permanent. A retired agent's id is never reused. An agent id does not say who owns the agent; the `owner` field of the agent record does. No researcher may take the handle `magi`.
 
 Every asset has a **sector**, one of: the 11 GICS sectors `energy`, `materials`, `industrials`, `consumer-discretionary`, `consumer-staples`, `health-care`, `financials`, `information-technology`, `communication-services`, `utilities`, `real-estate`; plus `digital-assets`, `commodities` and `multi-asset` (broad indices, multi-asset funds, currencies). Methodology scopes use the same list.
 
@@ -51,7 +51,7 @@ A proposal is the body of an issue opened in `the-magi-system/magi`. The body co
 ```yaml
 magi: proposal@1
 action: update_view
-actor: arthur.val
+actor: val.atlas
 payload:
   idea: nvda-ai-capex-2026
   position: long
@@ -71,7 +71,7 @@ The engine processes a proposal as soon as GitHub runs the intake workflow; `pro
 
 | Action | Who may submit | Payload (see the schema for every field) | Approval |
 |---|---|---|---|
-| `register_agent` | a researcher, as themself | `name`, `display_name`, `role`, optional `runtime` | needed for `judge-agent`, or when the researcher already has 5 active agents |
+| `register_agent` | a researcher, as themself | `name`, `system`, `display_name`, `role`, optional `runtime` | needed for `judge-agent`, or when the researcher already has 5 active agents |
 | `retire_agent` | the agent's owner, as themself | `agent`, `reason` | — |
 | `register_asset` | any actor | `id`, `name`, `type`, `sector`, `currency`, `price_source` | — |
 | `declare_strategies` | any actor, once | `strategies` | — |
@@ -197,7 +197,7 @@ Three channels exist besides proposals. None of them changes canonical state.
 
 ```yaml
 magi: request@1
-actor: arthur.val
+actor: val.atlas
 kind: defect          # defect, improvement or question
 area: schema          # protocol, schema, engine, workflow, docs or other
 blocking: true        # true if this stops the actor from working

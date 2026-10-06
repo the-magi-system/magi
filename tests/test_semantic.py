@@ -25,10 +25,16 @@ def test_id_is_a_system_field_only_for_evidence():
 
 
 def test_register_agent_never_reuses_ids(state):
-    retired = Proposal("register_agent", "arthur", {"name": "old", "display_name": "Old", "role": "research-agent"})
-    fresh = Proposal("register_agent", "arthur", {"name": "new", "display_name": "New", "role": "research-agent"})
+    retired = Proposal("register_agent", "arthur", {"name": "arthur", "system": "old", "display_name": "Old", "role": "research-agent"})
+    fresh = Proposal("register_agent", "arthur", {"name": "val", "system": "atlas", "display_name": "Val", "role": "research-agent"})
     assert paths(check_semantics(state, retired)[0]) == {"/payload/name"}
     assert check_semantics(state, fresh) == ([], [])
+
+
+def test_register_agent_rejects_the_reserved_system_name(state):
+    proposal = Proposal("register_agent", "arthur", {"name": "melchior", "system": "magi", "display_name": "M", "role": "research-agent"})
+    errors, _ = check_semantics(state, proposal)
+    assert paths(errors) == {"/payload/system"} and "reserved" in errors[0].message
 
 
 def test_retire_agent_rules(state):

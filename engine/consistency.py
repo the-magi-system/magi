@@ -68,7 +68,7 @@ def _errors(schema: dict, data: dict) -> list[str]:
 def _payload(name: str, record: dict, system_keys: set[str]) -> tuple[str, dict]:
     payload = {key: value for key, value in record.items() if key not in system_keys}
     if name == "agent":
-        payload["name"] = record["id"].split(".", 1)[1]
+        payload["name"], payload["system"] = record["id"].split(".", 1)
         return "register_agent", payload
     if name == "evidence":
         payload["slug"] = record["id"][12:]

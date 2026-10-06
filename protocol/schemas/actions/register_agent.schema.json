@@ -3,9 +3,10 @@
   "title": "register_agent payload",
   "type": "object",
   "additionalProperties": false,
-  "required": ["name", "display_name", "role"],
+  "required": ["name", "system", "display_name", "role"],
   "properties": {
     "name": {"type": "string", "pattern": "^[a-z][a-z0-9-]{1,23}$"},
+    "system": {"type": "string", "pattern": "^[a-z][a-z0-9-]{1,23}$"},
     "display_name": {"type": "string", "minLength": 1, "maxLength": 80},
     "role": {"enum": ["research-agent", "judge-agent"]},
     "runtime": {
