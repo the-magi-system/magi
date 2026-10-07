@@ -54,12 +54,16 @@ def _rejected(issue: dict, proposal: Proposal | None, errors: list[MagiError], n
 
 
 def _proposals_today(issue: dict, today: list[dict]) -> int:
+    """Earlier proposals for the same actor, today, from the same GitHub account. An issue from another account that
+    names this actor is not counted, so nobody can use up another actor's daily cap; issues opened in the same second
+    are ordered by number, as the queue orders them."""
     proposal = _parsed(issue)
     if proposal is None:
         return 0
+    position, sender = (issue["created_at"], issue["number"]), issue["user"]["id"]
     count = 0
     for other in today:
-        if other["number"] == issue["number"] or other["created_at"] >= issue["created_at"]:
+        if (other["created_at"], other["number"]) >= position or other["user"]["id"] != sender:
             continue
         if not has_marker(other.get("body") or ""):
             continue

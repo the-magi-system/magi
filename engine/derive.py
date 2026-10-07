@@ -20,16 +20,17 @@ def derive(dist: dict, price: float, position: str) -> dict:
     skew = math.fsum(p * (x - mean) ** 3 for x, p in zip(prices, probs)) / stdev ** 3 if stdev > 0 else 0.0
     downside = math.fsum(p * min(r, 0.0) for r, p in zip(returns, probs))
     upside = math.fsum(p * max(r, 0.0) for r, p in zip(returns, probs))
-    cdf, cumulative = [], 0.0
+    cdf, exact, cumulative = [], [], 0.0
     for x, p in zip(prices, probs):
         cumulative += p
+        exact.append((x, cumulative))
         cdf.append([x, _round(min(cumulative, 1.0))])
     result = {
         "expected_price": _round(mean),
         "expected_return": _round(math.fsum(p * r for r, p in zip(returns, probs))),
     }
-    for name, level in QUANTILES.items():
-        result[name] = next(x for x, c in cdf if c >= level - 1e-9)
+    for name, level in QUANTILES.items():  # quantiles come from the unrounded probabilities; only cdf is rounded
+        result[name] = next(x for x, c in exact if c >= level - 1e-9)
     result.update({
         "stdev": _round(stdev),
         "skew": _round(skew),

@@ -124,6 +124,30 @@ def test_rate_limit_counts_todays_issues(world):
     assert gh.replies(second)[-1]["errors"][0]["code"] == "E_RATE_LIMIT" and gh.issues[second]["state"] == "open"
 
 
+def test_issues_from_another_account_do_not_use_up_an_actors_cap(world):
+    root, gh = world["root"], world["gh"]
+    path = root / "registry" / "agents" / "john.research.yaml"
+    write_yaml(path, {**load_yaml(path), "daily_proposal_cap": 1})
+    Git(root).commit("test: lower the cap", {})
+    forged = submit(world, OUTSIDER, "create_idea", "john.research", {**IDEA, "id": "msft-a-2027"})
+    genuine = submit(world, JOHN, "create_idea", "john.research", {**IDEA, "id": "msft-b-2027"})
+    run(world)
+    assert gh.replies(forged)[-1]["status"] == "rejected" and gh.replies(genuine)[-1]["status"] == "accepted"
+
+
+def test_issues_opened_in_the_same_second_count_in_number_order(world):
+    root, gh = world["root"], world["gh"]
+    path = root / "registry" / "agents" / "john.research.yaml"
+    write_yaml(path, {**load_yaml(path), "daily_proposal_cap": 1})
+    Git(root).commit("test: lower the cap", {})
+    first = submit(world, JOHN, "create_idea", "john.research", {**IDEA, "id": "msft-a-2027"})
+    second = submit(world, JOHN, "create_idea", "john.research", {**IDEA, "id": "msft-b-2027"})
+    gh.issues[second]["created_at"] = gh.issues[first]["created_at"]
+    run(world)
+    assert gh.replies(first)[-1]["status"] == "accepted"
+    assert gh.replies(second)[-1]["errors"][0]["code"] == "E_RATE_LIMIT"
+
+
 def test_push_failure_posts_no_replies(world):
     class BrokenPush(Git):
         def push(self):

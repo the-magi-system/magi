@@ -44,6 +44,11 @@ def test_no_downside_gives_no_ratio():
     assert d["prob_loss"] == 0 and d["expected_downside"] == 0 and d["upside_downside_ratio"] is None
 
 
+def test_quantiles_use_unrounded_probabilities():
+    d = derive({"prices": [1, 2, 3], "probs": [0.0999996, 0.4000004, 0.5], "labels": [None] * 3}, 2.0, "long")
+    assert d["p10"] == 2 and d["cdf"][0] == [1, 0.1]
+
+
 def test_quantile_on_exact_boundary():
     d = derive({"prices": [1, 2, 3, 4], "probs": [0.1, 0.4, 0.4, 0.1], "labels": [None] * 4}, 2.0, "long")
     assert (d["p10"], d["p50"], d["p90"]) == (1, 2, 3)
