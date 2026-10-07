@@ -47,6 +47,24 @@ def test_changelog_records_v1_4():
     assert "## v1.4" in latest and "`publish_profile`" in latest and "`access: non-public`" in latest
 
 
+def test_changelog_records_v1_5():
+    changelog = (REPO_ROOT / "protocol" / "CHANGELOG.md").read_text(encoding="utf-8")
+    latest = changelog.split("## v1.4")[0]
+    assert "## v1.5" in latest and "Caspar.Magi" in latest and "`publish_judgement`" in latest
+    assert "`input_commit`" in latest and "same GitHub account" in latest
+
+
+def test_protocol_describes_system_agents():
+    text = (REPO_ROOT / "protocol" / "PROTOCOL.md").read_text(encoding="utf-8")
+    for needle in ["## 15. System agents", "`role: system`", "`E_FORBIDDEN`", "`ideas/<idea>/judgements/caspar.magi/<actor>.yaml`",
+                   "`falsifiability`", "`reports/caspar/<year>-W<week>.md`", "`magi:fact-layer`", "`magi:suggestion`",
+                   "preview mode", "`agents/caspar/`", "`input_commit`", "`probe` scope", "up to four weeks back",
+                   "it does not open links", "does not make the content private"]:
+        assert needle in text, needle
+    guide = (REPO_ROOT / "protocol" / "AGENT_GUIDE.md").read_text(encoding="utf-8")
+    assert "## 9. Reviews by Caspar.Magi" in guide and "`views[].reviews`" in guide
+
+
 def test_protocol_describes_data_requests():
     text = (REPO_ROOT / "protocol" / "PROTOCOL.md").read_text(encoding="utf-8")
     assert "data-request@1" in text and "`provider_ref`" in text and "`magi:data-request`" in text
