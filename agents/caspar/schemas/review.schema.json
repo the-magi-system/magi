@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Caspar.Magi review of one view: the structured output the model returns (design 19.4)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["scores", "reasons", "tail_risk", "tail_risk_reason", "notes", "factual_errors", "unlabeled_non_public", "fact_layer"],
+  "properties": {
+    "scores": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_quality", "reasoning_coherence", "valuation_consistency", "data_freshness", "falsifiability"],
+      "properties": {
+        "evidence_quality": {"type": "integer", "minimum": 0, "maximum": 10},
+        "reasoning_coherence": {"type": "integer", "minimum": 0, "maximum": 10},
+        "valuation_consistency": {"type": "integer", "minimum": 0, "maximum": 10},
+        "data_freshness": {"type": "integer", "minimum": 0, "maximum": 10},
+        "falsifiability": {"type": "integer", "minimum": 0, "maximum": 10}
+      }
+    },
+    "reasons": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_quality", "reasoning_coherence", "valuation_consistency", "data_freshness", "falsifiability"],
+      "properties": {
+        "evidence_quality": {"type": "string"},
+        "reasoning_coherence": {"type": "string"},
+        "valuation_consistency": {"type": "string"},
+        "data_freshness": {"type": "string"},
+        "falsifiability": {"type": "string"}
+      }
+    },
+    "tail_risk": {"type": "string", "enum": ["low", "medium", "high"]},
+    "tail_risk_reason": {"type": "string"},
+    "notes": {"type": "string"},
+    "factual_errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["quote", "correction", "source", "explanation"],
+        "properties": {
+          "quote": {"type": "string"},
+          "correction": {"type": "string"},
+          "source": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {"evidence": {"type": "string"}, "url": {"type": "string"}, "date": {"type": "string"}}
+          },
+          "explanation": {"type": "string"}
+        }
+      }
+    },
+    "unlabeled_non_public": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["pillar", "reason"],
+        "properties": {"pillar": {"type": "string"}, "reason": {"type": "string"}}
+      }
+    },
+    "fact_layer": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["evidence", "claim", "source_url", "source_date", "reason"],
+        "properties": {
+          "evidence": {"type": "string"},
+          "claim": {"type": "string"},
+          "source_url": {"type": "string"},
+          "source_date": {"type": "string"},
+          "reason": {"type": "string"}
+        }
+      }
+    }
+  }
+}

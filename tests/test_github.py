@@ -37,6 +37,17 @@ def test_request_sends_auth_and_json():
     assert request.get_header("Authorization") == "Bearer tok" and json.loads(request.data) == {"body": "hi"}
 
 
+def test_issues_and_comments_can_be_edited():
+    gh, opener = client([None, None])
+    gh.edit_issue(5, "New title", "New body")
+    gh.edit_comment(1001, "Edited")
+    first, second = opener.requests
+    assert (first.get_method(), first.full_url, json.loads(first.data)) == (
+        "PATCH", "https://api.github.com/repos/o/r/issues/5", {"title": "New title", "body": "New body"})
+    assert (second.get_method(), second.full_url, json.loads(second.data)) == (
+        "PATCH", "https://api.github.com/repos/o/r/issues/comments/1001", {"body": "Edited"})
+
+
 def test_pagination_and_pull_requests_filtered():
     page_one = [{"number": i, "created_at": "2026-10-02T00:00:00Z"} for i in range(100)]
     page_one[0]["pull_request"] = {}
