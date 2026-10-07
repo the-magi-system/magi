@@ -14,6 +14,8 @@
 
 **进度（2026-10-07）：** 计划已写，同日依据 Agent C 的独立审阅修订一次（设计第 19.13 节）：工具与文件访问的限制和权限探测、按 schema 复核与逐项隔离、改写旧评论、待办补做（漏跑的周报、报告 issue、超额的转交、轮换起点）、评审记录输入、评审提示词两处措辞，另加 Task 9 两处引擎修正。Task 2–10 的全部代码先在本机临时工作树里写过一遍，再按本计划从全新工作树逐步重放：每一步之后的代码树都与预演一致，每一步的测试结果就是下文各步的 Expected，最后为 `362 passed`。按新规则检查正式仓库现有数据，一致性为 `[]`，快照协议版本为 1.5。
 
+**进度（2026-10-08）：** Task 1–11 与 Task 12 Step 1–2 完成。PR #9（文档）、#10（Task 2–10，与预演逐提交一致）、#11（登记 `caspar.magi`）、#12（sandbox 实测发现的修正：模型 schema 去掉 `$schema`、欢迎只发在记录的注册 issue 上、引号还原、探测允许 `StructuredOutput`）均已合并，main `08ec0ed`，`363 passed`。sandbox 端到端 39 步全过；正式仓库 `preview` 核对无误。切到 `live` 要等用户看过一份有内容的评审预览，也就是 Pendragon 的第一个观点之后，而那要先完成预测契约（决策 D28）。
+
 ## 执行路线
 
 | 任务 | 执行者 | 说明 |
@@ -74,7 +76,7 @@
 **Interfaces:**
 - Produces: 云端会话从 `docs/plans/2026-10-07-impl-5-caspar.md` 读本计划。
 
-- [ ] **Step 1: 建分支并复制两份文件（换成 LF 换行）**
+- [x] **Step 1: 建分支并复制两份文件（换成 LF 换行）**
 
 ```powershell
 git -C <magi-clone> switch -q main
@@ -84,7 +86,7 @@ git -C <magi-clone> switch -q -c docs/plan-5
 
 用 Python 按字节复制，把 CRLF 换成 LF：源文件 `<vault>\_Collab\Magi System\The Magi System Design v0.2.md` → `<magi-clone>\docs\design\2026-10-01-magi-phase1-design.md`；`<vault>\_Collab\Magi System\The Magi System Implementation 5 - Caspar.md` → `<magi-clone>\docs\plans\2026-10-07-impl-5-caspar.md`。
 
-- [ ] **Step 2: 扫描与测试**
+- [x] **Step 2: 扫描与测试**
 
 ```powershell
 $env:MAGI_SCRUB_MAP = "$env:TEMP\magi-scrub\replacements.txt"
@@ -95,7 +97,7 @@ $env:MAGI_SCRUB_MAP = "$env:TEMP\magi-scrub\replacements.txt"
 
 Expected: `worktree clean: 12 replacement rules checked`；`292 passed`（本任务不改代码）；一致性 `[]`。
 
-- [ ] **Step 3: 提交、开 PR、合并**
+- [x] **Step 3: 提交、开 PR、合并**
 
 ```powershell
 git -C <magi-clone> add docs
@@ -105,6 +107,8 @@ gh pr create -R the-magi-system/magi --base main --head docs/plan-5 --title "doc
 ```
 
 PR 的 ci 为 success 后 squash 合并，删除分支。本 PR 只改 `docs/`，合并推送的 `ci`、`audit` 都应为 success，不开审计 issue。
+
+**执行记录（2026-10-08）：** PR #9，squash 合并为 main `a7f2953`；扫描 clean，`292 passed`，一致性 `[]`；PR 的 ci 与合并推送的 `ci`、`audit` 都为 success，没有开审计 issue。本机的 `gh pr create` 两次挂起不返回，改用 REST 接口（`gh api repos/the-magi-system/magi/pulls -X POST`）开 PR，合并也用 REST；远端分支由仓库设置在合并时自动删除。
 
 ---
 
@@ -120,7 +124,7 @@ PR 的 ci 为 success 后 squash 合并，删除分支。本 PR 只改 `docs/`�
 - 测试夹具：`tests.util.CASPAR`（`caspar.magi` 的 agent 记录，已写进夹具仓库）、`tests.util.system_profile_source(**overrides) -> dict`。
 - 一致性：`.magi` agent 按 `system/agent` schema 整体校验；`kind: system` 的档案按 `system/profile` schema 校验；事件日志每行须有 `issue` 或 `run`。审计：`registry/agents/*.magi.yaml` 与研究者记录一样属于维护者管理的文件。
 
-- [ ] **Step 0: 准备替换脚本（不进仓库）**
+- [x] **Step 0: 准备替换脚本（不进仓库）**
 
 把下面的脚本存为 `/tmp/plan5/edit.py`。Task 2–10 的每一步改动都用它执行：`FILES` 里的文件整份写入，`DELETES` 里的文件删除，`EDITS` 按「原文、新文、出现次数」精确替换，次数不符就停下报错。
 
@@ -164,7 +168,7 @@ for rel, old, new, count in getattr(module, "EDITS", []):
     print(f"edited {rel} ({count})")
 `````
 
-- [ ] **Step 1: 写测试改动**
+- [x] **Step 1: 写测试改动**
 
 把下面的内容存为 `/tmp/plan5/task2_tests.py`，然后运行 `python /tmp/plan5/edit.py . /tmp/plan5/task2_tests.py`。
 
@@ -345,12 +349,12 @@ def _agent(agent_id: str, role: str = "research-agent", status: str = "active") 
 ]
 `````
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
 Expected: 收集阶段报错并中止：`ERROR tests/test_sysagent.py`（`engine.sysagent` 还不存在），最后一行 `Interrupted: 1 error during collection`。
 
-- [ ] **Step 3: 实现**
+- [x] **Step 3: 实现**
 
 把下面的内容存为 `/tmp/plan5/task2_impl.py`，然后运行 `python /tmp/plan5/edit.py . /tmp/plan5/task2_impl.py`。
 
@@ -742,12 +746,12 @@ def validate_payload(root: Path, action: str, payload: dict) -> list[MagiError]:
 ]
 `````
 
-- [ ] **Step 4: 运行，确认通过**
+- [x] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
 Expected: `302 passed`
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```bash
 git add -A engine protocol tests
@@ -770,7 +774,7 @@ git commit -m "feat(engine): system agents: maintainer-registered records, syste
 - Produces: 评审文件 `ideas/<idea>/judgements/<judge>/<actor>.yaml`，格式见新的 `judgement.schema.json`（设计 19.9 第 4 项），其中记下评审的输入：`input_commit`（40 位提交号）、`methodology_version`、`profile_version`（整数或 `null`）、`prompt_sha256`（64 位）、`model`；`RepoState.judgements: dict[tuple[str, str, str], dict]`，键为（idea、评审者、被评观点的 actor）；`engine.eventlog.read_log(root) -> list[dict]`；每份评审的每个版本在事件日志里有一行 `action: review`，`entity` 为不带 `.yaml` 的文件路径，`version` 为评审版本。
 - 测试夹具：夹具里的 `arthur.judge` 改为普通研究 agent `arthur.macro`；新增 `tests.util.CRITERIA` 与 `tests.util.judgement_record(**overrides) -> dict`。
 
-- [ ] **Step 1: 写测试改动**
+- [x] **Step 1: 写测试改动**
 
 把下面的内容存为 `/tmp/plan5/task3_tests.py`，然后运行 `python /tmp/plan5/edit.py . /tmp/plan5/task3_tests.py`。
 
@@ -1162,7 +1166,7 @@ def system_profile_source(**overrides) -> dict:
 ]
 `````
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
 Expected: `7 failed, 296 passed`。失败的正是这 7 个：
@@ -1177,7 +1181,7 @@ FAILED tests/test_schemas.py::test_capabilities_cover_every_action
 FAILED tests/test_schemas.py::test_agents_are_registered_only_as_research_agents
 ```
 
-- [ ] **Step 3: 实现**
+- [x] **Step 3: 实现**
 
 把下面的内容存为 `/tmp/plan5/task3_impl.py`，然后运行 `python /tmp/plan5/edit.py . /tmp/plan5/task3_impl.py`。
 
@@ -1764,12 +1768,12 @@ limits:
 ]
 `````
 
-- [ ] **Step 4: 运行，确认通过**
+- [x] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
 Expected: `303 passed`
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```bash
 git add -A engine protocol tests AGENTS.md
@@ -1789,7 +1793,7 @@ git commit -m "feat(protocol): reviews are stored per view and written only by s
 - Consumes: Task 3 的 `RepoState.judgements`。
 - Produces: `engine.behaviour.actor_behaviour(state, actor) -> dict`（键：`actor`、`views`、`declared`、`horizon_months`、`positions`、`sectors`、`views_outside_declared_sectors`、`asset_types`、`views_outside_declared_asset_types`、`methodologies`、`non_public_pillar_share`）；`engine.behaviour.all_behaviour(state) -> list[dict]`（每个有观点或有参与者档案的 actor 一行）。快照新增 `behaviour.json`、`reports.json`，`ideas.json` 每个观点附 `reviews`，`manifest.json` 的计数增加 `reviews`、`reports`。
 
-- [ ] **Step 1: 写测试改动**
+- [x] **Step 1: 写测试改动**
 
 把下面的内容存为 `/tmp/plan5/task4_tests.py`，然后运行 `python /tmp/plan5/edit.py . /tmp/plan5/task4_tests.py`。
 
@@ -1960,12 +1964,12 @@ SCHEMA_DIR = REPO_ROOT / "protocol" / "schemas" / "snapshot"
 ]
 `````
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
 Expected: 收集阶段报错并中止：`ERROR tests/test_behaviour.py`（`engine.behaviour` 还不存在），最后一行 `Interrupted: 1 error during collection`。
 
-- [ ] **Step 3: 实现**
+- [x] **Step 3: 实现**
 
 把下面的内容存为 `/tmp/plan5/task4_impl.py`，然后运行 `python /tmp/plan5/edit.py . /tmp/plan5/task4_impl.py`。
 
@@ -2261,12 +2265,12 @@ from .eventlog import LOG_DIR
 ]
 `````
 
-- [ ] **Step 4: 运行，确认通过**
+- [x] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
 Expected: `307 passed`
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```bash
 git add -A engine protocol tests
@@ -2286,7 +2290,7 @@ git commit -m "feat(snapshot): reviews in view summaries, declared style against
 - Consumes: Task 3 的 `RepoState.judgements`；`engine.queue.BOT_LOGIN`。
 - Produces: `engine.caspar.common` 的 `CASPAR == "caspar.magi"`、`SOURCE_DIR == "agents/caspar"`、`MAX_REVIEWS`、`MAX_FACT_LAYER_ISSUES`、`MAX_SUGGESTION_ISSUES`、`MAX_POST`、`CRITERIA`、各标签名、`marker(kind, target) -> str`、`find_marked(comments, kind, target) -> dict | None`、`sanitize(text) -> str`、`cap(body) -> str`；`engine.caspar.work.pending_reviews(state) -> list[tuple[str, str, int]]`、`take_turn(pending, limit, turn) -> list`（多于 `limit` 项时起点为 `turn * limit` 对总数取余）、`methodology_at(state, method_id, version) -> dict | None`（版本不同时从 git 历史取）、`thread_comments(gh, number) -> list[dict]`、`review_bundle(state, gh, idea_id, actor) -> dict`（`methodology` 为观点声明的那一版；找不到时为 `None`，并加 `methodology_note`）、`pending_welcomes(state, gh) -> list[dict]`（每项 `{"issue", "kind", "subject"}`）；`engine.caspar.welcome.welcome_body(source_root, kind, subject, repo) -> str`。
 
-- [ ] **Step 1: 写测试改动**
+- [x] **Step 1: 写测试改动**
 
 把下面的内容存为 `/tmp/plan5/task5_tests.py`，然后运行 `python /tmp/plan5/edit.py . /tmp/plan5/task5_tests.py`。
 
@@ -2421,12 +2425,12 @@ EDITS = [
 ]
 `````
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
 Expected: 收集阶段报错并中止：`ERROR tests/test_caspar_work.py`（`engine.caspar` 还不存在），最后一行 `Interrupted: 1 error during collection`。
 
-- [ ] **Step 3: 实现**
+- [x] **Step 3: 实现**
 
 把下面的内容存为 `/tmp/plan5/task5_impl.py`，然后运行 `python /tmp/plan5/edit.py . /tmp/plan5/task5_impl.py`。
 
@@ -2645,12 +2649,12 @@ EDITS = [
 ]
 `````
 
-- [ ] **Step 4: 运行，确认通过**
+- [x] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
 Expected: `316 passed`
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```bash
 git add -A engine agents tests
@@ -2669,7 +2673,7 @@ git commit -m "feat(caspar): work list, model inputs and welcome posts"
 - Consumes: Task 2 的 `system_log_entry`；Task 5 的 `CASPAR`、`CRITERIA`、`MAX_FACT_LAYER_ISSUES`、`marker`、`sanitize`、`cap`。
 - Produces: `engine.caspar.review` 的 `ReviewRejected`（分数不可用时抛出）、`LABELS`、`view_text(view) -> list[str]`、`check_review(state, idea_id, actor, output, now) -> tuple[dict, list[str]]`（返回校验后的评审与每个被丢弃条目的说明；来源日期须是真实日期且不晚于 `now` 当天；标为非公开的支柱里的引句不再整条丢弃；一份评审最多 3 条转交）、`INPUT_FIELDS`、`review_changes(state, idea_id, actor, view_version, checked, comment_url, inputs, now, run) -> ChangeSet`（`inputs` 含 `INPUT_FIELDS` 五项；日志行带 `scores` 与被指出的原句）、`review_comment(idea_id, actor, view_version, checked) -> str`、`fact_layer_issue(referral, idea_id, actor, view_version) -> tuple[str, str]`。
 
-- [ ] **Step 1: 写测试改动**
+- [x] **Step 1: 写测试改动**
 
 把下面的内容存为 `/tmp/plan5/task6_tests.py`，然后运行 `python /tmp/plan5/edit.py . /tmp/plan5/task6_tests.py`。
 
@@ -2842,12 +2846,12 @@ EDITS = [
 ]
 `````
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
 Expected: 收集阶段报错并中止：`ERROR tests/test_caspar_review.py`（`engine.caspar.review` 还不存在），最后一行 `Interrupted: 1 error during collection`。
 
-- [ ] **Step 3: 实现**
+- [x] **Step 3: 实现**
 
 把下面的内容存为 `/tmp/plan5/task6_impl.py`，然后运行 `python /tmp/plan5/edit.py . /tmp/plan5/task6_impl.py`。
 
@@ -3080,12 +3084,12 @@ EDITS = [
 ]
 `````
 
-- [ ] **Step 4: 运行，确认通过**
+- [x] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
 Expected: `328 passed`
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```bash
 git add -A engine tests
@@ -3105,7 +3109,7 @@ git commit -m "feat(caspar): checked reviews: integer scores, factual errors wit
 - Consumes: Task 4 的 `actor_behaviour`；Task 5 的 `pending_reviews`；Task 6 的 `LABELS`、`view_text`；Task 3 的 `read_log`。
 - Produces: `ChangeSet.texts: dict[str, str]`（原样写入的文件，`write_changes` 一并写出）；`reports/` 列入 `gitops.DATA_DIRS` 与审计的研究数据目录；每份 `reports/*/*.md` 须在事件日志里有一行 `action: report`。`engine.caspar.weekly` 的 `LOOK_BACK_WEEKS == 4`、`WAITING_HOURS == 24`、`QUIET`、`week_window(now) -> tuple[str, datetime, datetime]`、`report_path(root, week) -> Path`、`missing_weeks(root, now) -> list[tuple[str, datetime, datetime]]`（最近 4 个已结束、没有报告文件的周，不早于事件日志第一条所在的周，最早的在前）、`quiet_report(week, start, end) -> str`、`is_quiet(text) -> bool`、`waiting_reviews(state, now) -> list[dict]`、`weekly_material(root, state, gh, week, start, end, now) -> dict | None`（新增 `waiting`；被指出的错误状态为 `quote removed`、`still present` 或 `no new version`）、`check_numbers(text, data) -> bool`、`check_weekly(material, output) -> tuple[dict, list[str]]`、`report_markdown(material, checked) -> str`、`report_changes(text, week, now, run) -> ChangeSet`、`suggestion_posts(checked, material, maintainers) -> list[dict]`。
 
-- [ ] **Step 1: 写测试改动**
+- [x] **Step 1: 写测试改动**
 
 把下面的内容存为 `/tmp/plan5/task7_tests.py`，然后运行 `python /tmp/plan5/edit.py . /tmp/plan5/task7_tests.py`。
 
@@ -3298,12 +3302,12 @@ EDITS = [
 ]
 `````
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
 Expected: 收集阶段报错并中止：`ERROR tests/test_caspar_weekly.py`（`engine.caspar.weekly` 还不存在），最后一行 `Interrupted: 1 error during collection`。
 
-- [ ] **Step 3: 实现**
+- [x] **Step 3: 实现**
 
 把下面的内容存为 `/tmp/plan5/task7_impl.py`，然后运行 `python /tmp/plan5/edit.py . /tmp/plan5/task7_impl.py`。
 
@@ -3756,12 +3760,12 @@ PUSH_RETRY_DELAYS = (10, 30)  # seconds; GitHub sometimes answers a push with a 
 ]
 `````
 
-- [ ] **Step 4: 运行，确认通过**
+- [x] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
 Expected: `337 passed`
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```bash
 git add -A engine tests
@@ -3783,7 +3787,7 @@ git commit -m "feat(caspar): weekly report and suggestions"
 - Produces: `engine.caspar.run` 的 `MODEL == "claude-opus-5-5"`、`MODES`、`SCOPES`（`all`、`regular`、`reviews`、`welcome`、`weekly`、`probe`）、`MAX_WEEKLY == 2`、`DECOY_PATH == "/tmp/caspar-decoy/secret.txt"`、`TOOLS`、`resolve_mode(value) -> str`、`prepare(root, gh, out, scope, mode, now, turn=0) -> dict`（写 `out/plan.json` 与每个模型任务的 `out/<task>/input.json`；评审任务带 `inputs`，周报任务的编号为 `weekly-<周>`，计划里另列 `quiet_weeks`）、`write(root, gh, git, work, mode, run, now) -> dict`（读 `work/results/<task>.json`，先按 `agents/caspar/schemas/<kind>.schema.json` 复核；返回值含 `reviews`、`reports`、`probe`、`dropped`、`commit`，预览模式另带 `preview` 文本）、`LiveSink`、`PreviewSink`（两者都有 `edit_comment`、`edit_issue`）；`GitHubClient.edit_issue(number, title, body)`、`GitHubClient.edit_comment(comment_id, body)`；命令行 `python -m engine caspar prepare --repo . --out work --scope <scope> --mode <mode> --run-number <n>`（有 `GITHUB_OUTPUT` 时写出 `tasks` 与 `count`）与 `python -m engine caspar write --repo . --work work --mode <mode> --run-id <id>`（预览文本写到 `work/preview.md`；权限探测失败时退出码为 1）。
 - `agents/caspar/profile.yaml` 的 `identity` 与 `identity_en` 逐字取自设计第 18.10 节。
 
-- [ ] **Step 1: 写测试改动**
+- [x] **Step 1: 写测试改动**
 
 把下面的内容存为 `/tmp/plan5/task8_tests.py`，然后运行 `python /tmp/plan5/edit.py . /tmp/plan5/task8_tests.py`。
 
@@ -4227,12 +4231,12 @@ def test_pagination_and_pull_requests_filtered():
 ]
 `````
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
 Expected: 收集阶段报错并中止：`ERROR tests/test_caspar_run.py`（`engine.caspar.run` 还不存在），最后一行 `Interrupted: 1 error during collection`。
 
-- [ ] **Step 3: 实现**
+- [x] **Step 3: 实现**
 
 把下面的内容存为 `/tmp/plan5/task8_impl.py`，然后运行 `python /tmp/plan5/edit.py . /tmp/plan5/task8_impl.py`。
 
@@ -5125,12 +5129,12 @@ from .errors import E_INTERNAL, MagiError
 ]
 `````
 
-- [ ] **Step 4: 运行，确认通过**
+- [x] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
 Expected: `357 passed`
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```bash
 git add -A engine agents .github/workflows/caspar.yml tests
@@ -5149,7 +5153,7 @@ git commit -m "feat(caspar): prepare and write steps, prompts, profile source, t
 - 行为：计算某个 issue 当天已用的额度时，只计同一 GitHub 账户（`user.id`）在它之前为同一 actor 发出、带提案标记的 issue，先后按（`created_at`，issue 编号）比较。其他账户冒用这个 actor 的 issue 不再占用它的额度。`derive()` 的 `p10`、`p50`、`p90` 按未舍入的累积概率取，`cdf` 仍舍入到 6 位。
 - 正式仓库目前没有观点，分位数的修正不影响已有数据。
 
-- [ ] **Step 1: 写测试改动**
+- [x] **Step 1: 写测试改动**
 
 把下面的内容存为 `/tmp/plan5/task9_tests.py`，然后运行 `python /tmp/plan5/edit.py . /tmp/plan5/task9_tests.py`。
 
@@ -5219,7 +5223,7 @@ def test_push_failure_posts_no_replies(world):
 ]
 `````
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
 Expected: `3 failed, 357 passed`。失败的正是这 3 个：
@@ -5230,7 +5234,7 @@ FAILED tests/test_intake.py::test_issues_from_another_account_do_not_use_up_an_a
 FAILED tests/test_intake.py::test_issues_opened_in_the_same_second_count_in_number_order
 ```
 
-- [ ] **Step 3: 实现**
+- [x] **Step 3: 实现**
 
 把下面的内容存为 `/tmp/plan5/task9_impl.py`，然后运行 `python /tmp/plan5/edit.py . /tmp/plan5/task9_impl.py`。
 
@@ -5308,12 +5312,12 @@ def _proposals_today(issue: dict, today: list[dict]) -> int:
 ]
 `````
 
-- [ ] **Step 4: 运行，确认通过**
+- [x] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
 Expected: `360 passed`
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```bash
 git add -A engine tests
@@ -5332,7 +5336,7 @@ git commit -m "fix(engine): the daily cap counts only the sender's own proposals
 - Produces: 快照的 `protocol_version` 为 `1.5`；端到端脚本在观点被接受后以 `scope: regular` 手动触发 `caspar.yml`，再以 `scope: probe` 触发一次，新增六步：`caspar workflow succeeded`、`caspar stored a review of the view`、`caspar posted the review in the thread`、`caspar welcomed the new agent`、`caspar recorded what the review was based on`、`caspar probe: the model cannot read outside its work directory`；`Runner.run_workflow(workflow, inputs=None)` 可传 workflow 输入。
 - 文档另写明：`access: non-public` 不使内容保密，开 issue 之前须确认有权公开；`ledger_correction` 目前只记录、不改变计算；每日额度只计同一账户的提案。
 
-- [ ] **Step 1: 写测试改动**
+- [x] **Step 1: 写测试改动**
 
 把下面的内容存为 `/tmp/plan5/task10_tests.py`，然后运行 `python /tmp/plan5/edit.py . /tmp/plan5/task10_tests.py`。
 
@@ -5393,7 +5397,7 @@ def test_views_carry_now_metrics(repo):
 ]
 `````
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
 Expected: `3 failed, 359 passed`。失败的正是这 3 个：
@@ -5404,7 +5408,7 @@ FAILED tests/test_protocol_doc.py::test_protocol_describes_system_agents
 FAILED tests/test_snapshot.py::test_compile_on_fixture
 ```
 
-- [ ] **Step 3: 实现**
+- [x] **Step 3: 实现**
 
 把下面的内容存为 `/tmp/plan5/task10_impl.py`，然后运行 `python /tmp/plan5/edit.py . /tmp/plan5/task10_impl.py`。
 
@@ -5620,7 +5624,7 @@ def scenario(r: Runner) -> None:
 ]
 `````
 
-- [ ] **Step 4: 运行，确认通过，并做端到端脚本的离线检查**
+- [x] **Step 4: 运行，确认通过，并做端到端脚本的离线检查**
 
 ```bash
 python -m pytest
@@ -5630,30 +5634,32 @@ python tools/e2e_sandbox.py --repo the-magi-system/magi; echo "exit $?"
 
 Expected: `362 passed`；编译无输出；端到端脚本打印 `refusing to run against a repository that is not a sandbox`，`exit 2`。
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```bash
 git add -A protocol tools tests
 git commit -m "docs(protocol): v1.5, system agents and Caspar.Magi; end-to-end checks for Caspar"
 ```
 
-- [ ] **Step 6: 推送并开 PR**
+- [x] **Step 6: 推送并开 PR**
 
 推送会话分支，开一个指向 `main` 的 PR，标题 `Plan 5: Caspar.Magi, system agents and per-view reviews (protocol v1.5)`。正文列出 Task 2–10 的提交与每一步的测试结果，并写明：端到端脚本只做了离线检查；Caspar 的 workflow 尚未在任何仓库运行过，要等 Task 11 存入令牌、登记 `caspar.magi` 之后在 sandbox 实测。
+
+**执行记录（2026-10-08）：** 新开的云端会话按本计划完成 Task 2–10，开 PR #10（9 个提交，74 个文件）。每一步的两次测试都与 Expected 一致，最后 `362 passed`，一致性 `[]`；端到端脚本只做了离线检查（`exit 2`）。本机逐个比对：9 个提交的代码树与每个提交的改动都与预演分支 `rev-c`（b117cbd … f9076ba）相同，唯一的差别是 PR #9 已合并的 `docs/` 两个文件；PR #10 不改 `docs/`。PR 的 ci 为 success，可以无冲突合并。云端为在容器里跑测试用 `--ignore-installed` 重装了 PyYAML，只影响那个容器。
 
 ---
 
 ### Task 11（用户本人 + 本机）：令牌、合并、登记与 sandbox 端到端测试
 
-- [ ] **Step 1（用户本人）: 生成订阅令牌并存入两个仓库**
+- [x] **Step 1（用户本人）: 生成订阅令牌并存入两个仓库**
 
 在本机终端运行 `claude setup-token`，按提示登录 Claude 订阅账户，得到一个令牌。然后在 GitHub 网页上，分别打开 `the-magi-system/magi` 与 `the-magi-system/magi-sandbox` 的 Settings → Secrets and variables → Actions → New repository secret，名称 `CLAUDE_CODE_OAUTH_TOKEN`，值为该令牌。令牌只在终端与 GitHub 页面之间复制，不发进任何对话，不写进任何文件。
 
-- [ ] **Step 2（用户本人）: 审阅 PR**
+- [x] **Step 2（用户本人）: 审阅 PR**
 
 PR 的 ci 为 success 后，重点看：`.github/workflows/caspar.yml` 三个 job 的权限，令牌只出现在 `think` job，`claude_args` 的五行工具限制；`agents/caspar/prompts/` 三份提示词（评审提示词里「估值一致性」与「非公开支柱」两段按设计第 19.4 节修订）；`agents/caspar/profile.yaml` 的 `identity_en`（Caspar 身份说明的英文译文，设计第 18.10 节注明待用户核对）；`protocol/PROTOCOL.md` 第 15 节；`protocol/CHANGELOG.md` 的 v1.5。
 
-- [ ] **Step 3（本机）: 合并并核对**
+- [x] **Step 3（本机）: 合并并核对**
 
 临时开启 rebase 合并，以 rebase 方式合并 PR，再关闭 rebase 合并。
 
@@ -5666,7 +5672,7 @@ git -C <magi-clone> pull -q
 
 Expected: `362 passed`；一致性 `[]`；合并推送的 `ci`、`audit` 均为 success。此时 `caspar.magi` 还没登记，定时运行的 `caspar.yml` 在 `prepare` 输出 `notice`，`think` 跳过，`write` 什么都不写，运行结果为 success。
 
-- [ ] **Step 4（本机）: 登记 `caspar.magi`（maintainer PR）**
+- [x] **Step 4（本机）: 登记 `caspar.magi`（maintainer PR）**
 
 新建分支 `registry/caspar`，写入 `registry/agents/caspar.magi.yaml`（`registered_at` 为当天 UTC 零点）：
 
@@ -5686,18 +5692,18 @@ registered_at: '<YYYY-MM-DD>T00:00:00Z'
 
 本机跑一致性（`[]`）后提交（`chore(registry): register the system agent caspar.magi`），开 PR，ci 为 success 后 squash 合并。这个文件属于维护者管理的文件，合并推送不开审计 issue。
 
-- [ ] **Step 5（本机）: 设置 `CASPAR_MODE`**
+- [x] **Step 5（本机）: 设置 `CASPAR_MODE`**
 
 ```powershell
 gh variable set CASPAR_MODE -R the-magi-system/magi-sandbox --body live
 gh variable set CASPAR_MODE -R the-magi-system/magi --body preview
 ```
 
-- [ ] **Step 6（本机）: 重置 sandbox**
+- [x] **Step 6（本机）: 重置 sandbox**
 
 做法与计划 4 Task 8 Step 3 相同，包括它执行记录里的做法：关闭遗留的打开 issue（讨论串除外），从 main 建临时工作树，删掉 `registry/agents/*.avalon.yaml` 与 `log/`，写入三份种子文件，强制推送 `HEAD:refs/heads/main`，删除 sandbox 的 `snapshot` 分支。**保留 `registry/agents/caspar.magi.yaml`**，Caspar 要靠它在 sandbox 运行。重置触发的 `magi:audit` issue 只应列出「history rewritten」与 `john.research.yaml`，核对后关闭。
 
-- [ ] **Step 7（本机）: 运行端到端脚本**
+- [x] **Step 7（本机）: 运行端到端脚本**
 
 ```powershell
 Set-Location <magi-clone>
@@ -5706,11 +5712,26 @@ Set-Location <magi-clone>
 
 Expected: 全部步骤 `PASS`，最后一行 `all steps passed`，包括六个新步骤 `caspar workflow succeeded`、`caspar stored a review of the view`、`caspar posted the review in the thread`、`caspar welcomed the new agent`、`caspar recorded what the review was based on`、`caspar probe: the model cannot read outside its work directory`。之后打开 sandbox 的两次 `caspar` 运行，核对：`think` job 用的是 `claude-opus-5-5`；`probe` 那次运行的 `think` 日志里，模型读取诱饵文件被拒绝，列出的工具只有五个；讨论串里的评审评论排版正常；`registry/profiles/caspar.magi.yaml` 已发布。任何一步失败，先看 `think` 与 `write` job 的输出与运行摘要，再决定修什么，不手工改 sandbox 的数据。如果失败是因为锁定版本的 Action 不接受 `--tools` 或 `--restricted`，停下报告，正式仓库不切 `live`，另行修订 workflow。
 
+**执行记录（2026-10-08）：**
+- Step 1–2：用户存好两个仓库的 secret、审完 PR。
+- Step 3：PR #10 以 rebase 方式合并，main `ce69be2`，`362 passed`，一致性 `[]`，`ci`、`audit` success。
+- Step 4：PR #11 登记 `caspar.magi`，squash 为 `823c07f`，没有审计 issue。
+- Step 5：`CASPAR_MODE` 已设，sandbox 为 `live`，正式仓库为 `preview`。
+- Step 6：sandbox 重置为种子 `7d17230`（保留 `caspar.magi.yaml`），审计 #64 只有预期两条，已关闭。第一次推送因 `git add` 引用了已删除的 `log/` 而中止，重做后正常。
+- Step 7 第一次：前 27 步 PASS，`caspar workflow succeeded` FAIL。`think` 报 `--json-schema is not a valid JSON Schema: no schema with key or ref "https://json-schema.org/draft/2020-12/schema"`：Claude Code 自带的 schema 检查不认识 2020-12 版的元 schema 地址。
+- 修正与核对：在 sandbox 测试分支（sandbox main 加修正）上手动触发。`regular` 运行三个 job 都成功：评审文件格式合格，输入字段齐全；讨论串评论排版正常；欢迎帖已发。另外发现两处问题：
+  - 欢迎帖也发给了同一 agent 的旧注册 issue（#47）；放在正式仓库，已注销的 `arthur.avalon`（#3）也会收到欢迎。
+  - 评语里出现模型写的 `\"`。
+- 权限探测：模型读取诱饵被拒绝（`permission_denials_count: 1`，`read: false`），工具只有五个加 `StructuredOutput`（`--json-schema` 用来交回结果的工具），说明 `--tools` 与读取限制都生效；但判定把 `StructuredOutput` 当成多出的工具。
+- 修正分支 `fix/caspar-schema` 两个提交：`813b0b4` 去掉三份模型 schema 的 `$schema`；`0639f65` 欢迎只发在 agent 记录的 `registered_via_issue` 上且只发给在用的 agent、研究者只欢迎最近一次加入申请、模型文字里的 `\"` 还原成引号、探测允许 `StructuredOutput`。`363 passed`。`write` job 总是用 main 的代码，所以这两处要合进 main 后再完整重跑端到端测试。
+- 修正 PR #12（两个提交）以 rebase 方式合并，main `08ec0ed`，`363 passed`，`ci`、`audit` success，没有审计 issue。sandbox 再次重置（种子 `33738ec`，审计 #81 只有预期两条，已关闭），删掉测试分支与旧快照。
+- Step 7 第二次：39 步全部 PASS，`all steps passed`，含 Caspar 的六个新步骤。欢迎帖只发在 agent 记录写明的新注册 #82 上，旧注册没有收到新欢迎；评审评论排版正常，没有 `\"`；权限探测判定 `passed`（读取诱饵被拒绝，工具为五个加 `StructuredOutput`）；`registry/profiles/caspar.magi.yaml` 已在 sandbox 发布。
+
 ---
 
 ### Task 12（本机 + 用户决定）：正式仓库以 `preview` 运行
 
-- [ ] **Step 1: 手动触发一次并核对**
+- [x] **Step 1: 手动触发一次并核对**
 
 ```powershell
 gh workflow run caspar.yml -R the-magi-system/magi -f scope=all
@@ -5718,9 +5739,11 @@ gh workflow run caspar.yml -R the-magi-system/magi -f scope=all
 
 等运行结束，打开它的运行摘要。Expected：`prepare` 找到一个欢迎（issue #8，`pendragon.avalon`），没有评审任务；`write` 的运行摘要里有 Caspar 档案文件的预览与给 #8 的欢迎帖预览，「Dropped」为 `- none`；#8 没有新评论；`main` 没有新提交。正式仓库的事件日志从 2026-W41 开始，所以在 2026-10-12 之前运行时没有周报任务，`think` 跳过；在那之后运行，`prepare` 会为 2026-W41 生成一个周报任务，`think` 调用一次模型，运行摘要里另有周报文件与报告 issue 的预览。
 
-- [ ] **Step 2: 记录**
+- [x] **Step 2: 记录**
 
 在 `<vault>\_Collab\Magi System\The Magi System Implementation 5 - Caspar.md` 开头写进度：PR 编号与合并后的 main、测试数、`caspar.magi` 的登记 PR、sandbox 端到端结果、正式仓库预览的核对结果。更新记忆中 Magi 项目的条目。
+
+**执行记录（2026-10-08）：** 正式仓库手动触发 `scope: all`（运行 37665231932），三个 job：`prepare`、`write` success，`think` 跳过。`prepare` 只找到一个欢迎（#8，`pendragon.avalon`），已注销的 `arthur.avalon`（#3）不在其中；没有评审与周报任务。`write` 的摘要为 `welcomes: 1`、`dropped: []`、`commit: null`；#8 没有新评论，main 仍为 `08ec0ed`。
 
 - [ ] **Step 3（用户决定）: 切到 `live`**
 
@@ -5730,10 +5753,10 @@ gh workflow run caspar.yml -R the-magi-system/magi -f scope=all
 
 ## 计划 5 完成标准
 
-- [ ] Task 2–10 的 PR 已合并；main 上 `362 passed`，一致性 `[]`，ci 与 audit 为 success。
-- [ ] `caspar.magi` 已登记；两个仓库都有 secret `CLAUDE_CODE_OAUTH_TOKEN` 与变量 `CASPAR_MODE`。
-- [ ] sandbox 端到端测试 `all steps passed`，含 Caspar 的六个新步骤（其中一步是权限探测）。
-- [ ] 正式仓库的预览运行核对无误；用户看过至少一份有内容的评审预览之后，再决定是否切到 `live`。
+- [x] Task 2–10 的 PR 已合并；main 上 `362 passed`，一致性 `[]`，ci 与 audit 为 success（之后修正 PR #12 合并，`363 passed`）。
+- [x] `caspar.magi` 已登记；两个仓库都有 secret `CLAUDE_CODE_OAUTH_TOKEN` 与变量 `CASPAR_MODE`。
+- [x] sandbox 端到端测试 `all steps passed`，含 Caspar 的六个新步骤（其中一步是权限探测）。
+- [x] 正式仓库的预览运行核对无误；用户看过至少一份有内容的评审预览之后，再决定是否切到 `live`。
 
 ---
 
