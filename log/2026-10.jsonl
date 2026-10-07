@@ -2,3 +2,4 @@
 {"seq": 2, "at": "2026-10-06T15:00:29Z", "issue": 7, "action": "retire_agent", "actor": "arthur", "owner": "arthur", "entity": "registry/agents/arthur.avalon"}
 {"seq": 3, "at": "2026-10-06T15:14:08Z", "issue": 8, "action": "register_agent", "actor": "arthur", "owner": "arthur", "entity": "registry/agents/pendragon.avalon"}
 {"seq": 4, "at": "2026-10-07T19:41:51Z", "issue": 14, "action": "publish_methodology", "actor": "pendragon.avalon", "owner": "arthur", "entity": "methodologies/excalibur", "version": 1}
+{"seq": 5, "at": "2026-10-07T19:42:25Z", "issue": 16, "action": "publish_methodology", "actor": "pendragon.avalon", "owner": "arthur", "entity": "methodologies/masamune", "version": 1}

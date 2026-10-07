@@ -1,0 +1,59 @@
+schema: magi/methodology@1
+id: masamune
+name: 'Masamune: beneficiaries of real technology inflections'
+summary: Find companies on the beneficiary side of a nameable technology inflection that has crossed the chasm and is still in its expansion phase, with exponential room to grow. Valuation guides only the timing of entry; it never rejects a top-quality company.
+edge: Once a technology has crossed the chasm, the gap between early users and the mainstream market described by Geoffrey Moore, markets tend to underestimate how much of the adoption curve is still ahead. They also confuse cyclical, fiscal or inventory-driven demand with technology inflections. Separating the two, and finding the companies whose own revenue rides the expanding part of the curve, is the edge.
+process:
+- Name the inflection and date it, and judge from adoption evidence where it stands on the adoption curve.
+- Rule out the three false inflections in criterion c1-inflection.
+- Show from company disclosures, a stated derivation or a marked assumption that the company's revenue sits on the expanding part of the inflection.
+- Draw the value chain and decide whether the company gains or loses from the inflection.
+- Check that the company survives if its big bet fails.
+- Before judging the moat, ask whether a competitor of similar scale copies the same play.
+- Rate the four pillars, then read valuation and crowding as a guide to timing only.
+- Record, for every company rejected, the criterion it failed.
+criteria:
+- id: c1-inflection
+  text: A nameable, datable technology inflection has crossed the chasm into scaled real-world deployment and is still in its expansion phase. It is not a cyclical or fiscal surge, a recovery from destocking, or a technology that is already the industry baseline.
+- id: c1-exposure
+  text: The company's own revenue sits on the expanding part of that inflection, shown from company figures, a stated derivation or a marked assumption, and not by a whole product line or segment that mixes in other business.
+- id: c2-beneficiary
+  text: The inflection is a tailwind for the company's specific play, deepening its moat or widening its market; the company is not the old method that the inflection threatens.
+- id: c3-self-sustaining
+  text: The company has a self-sustaining core and survives if the big bet fails; it does not depend on a single readout, approval or contract, and its profitability is judged on unadjusted figures.
+- id: pa-ceiling
+  text: The room to grow is exponential, shown by the observed slope of orders, design wins or deployments.
+- id: pb-moat
+  text: 'The engine can win and keep its share: engineering depth, winner-take-most dynamics and independence from other platforms, tested against any competitor of similar scale that copies the same play.'
+- id: pc-helmsman
+  text: Leadership has vision and reinvests for the long term, and its incentives are tied to the share price.
+- id: pd-mispricing
+  text: The market misframes the company and the trade is not crowded.
+scope:
+  asset_types:
+  - equity
+  sectors:
+  - information-technology
+  - communication-services
+  - health-care
+  - industrials
+  - financials
+  - consumer-discretionary
+  - materials
+  - energy
+  markets:
+  - US
+  - JP
+  - KR
+  - EU
+  - AU
+  - CA
+  horizon_months:
+    min: 12
+    max: 18
+exclusions: Technologies that have not crossed the chasm; demand driven by budgets, fiscal policy or the end of destocking; technologies that are already the industry baseline; companies whose exposure to the inflection cannot be shown; companies whose survival rests on one binary event.
+failure_modes: Misjudging the stage of adoption; a competitor of similar scale copying the play; the inflection stalling before the mainstream market; exposure turning out smaller than it looked; long drawdowns while the trade is crowded, which the method accepts by treating valuation as a matter of timing.
+owner: pendragon.avalon
+version: 1
+published_at: '2026-10-07T19:42:25Z'
+thread: null
