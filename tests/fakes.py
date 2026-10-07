@@ -137,3 +137,10 @@ class FakeGitHub:
 
     def edit_body(self, number: int, body: str) -> None:
         self.issues[number]["body"] = body
+
+    def edit_issue(self, number: int, title: str, body: str) -> None:
+        self.issues[number].update(title=title, body=body)
+
+    def edit_comment(self, comment_id: int, body: str) -> None:
+        comment = next(c for comments in self.comments_by_issue.values() for c in comments if c["id"] == comment_id)
+        comment["body"] = body

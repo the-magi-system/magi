@@ -3,11 +3,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import tempfile
 from pathlib import Path
 
 from .apply import apply_proposal
 from .audit import audit_push, report
+from .caspar.run import SCOPES
+from .caspar.run import prepare as caspar_prepare
+from .caspar.run import write as caspar_write
 from .changes import ApplyError
 from .consistency import check_repository
 from .errors import E_INTERNAL, MagiError
@@ -106,6 +110,30 @@ def _audit(args) -> int:
     return 0
 
 
+def _caspar_prepare(args) -> int:
+    plan = caspar_prepare(args.repo, GitHubClient.from_env(), args.out, args.scope, args.mode, utc_now(),
+                          args.run_number)
+    tasks = [{"id": task["id"], "kind": task["kind"]} for task in plan["tasks"]]
+    output = os.environ.get("GITHUB_OUTPUT")
+    if output:
+        with open(output, "a", encoding="utf-8") as handle:
+            handle.write(f"tasks={json.dumps(tasks)}\ncount={len(tasks)}\n")
+    print(json.dumps({"mode": plan["mode"], "notice": plan["notice"], "tasks": tasks,
+                      "welcomes": len(plan["welcomes"]), "quiet_weeks": [w["week"] for w in plan["quiet_weeks"]]},
+                     indent=2))
+    return 0
+
+
+def _caspar_write(args) -> int:
+    summary = caspar_write(args.repo, GitHubClient.from_env(), Git(args.repo), args.work, args.mode, args.run_id,
+                           utc_now())
+    preview = summary.pop("preview", None)
+    if preview is not None:
+        (Path(args.work) / "preview.md").write_text(preview, encoding="utf-8")
+    print(json.dumps(summary, indent=2, ensure_ascii=False))
+    return 1 if (summary["probe"] or "").startswith("failed") else 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m engine", description="The Magi System intake engine")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -155,6 +183,24 @@ def build_parser() -> argparse.ArgumentParser:
     audit.add_argument("--after", required=True, help="commit after the push")
     audit.add_argument("--pusher", required=True, help="GitHub login that pushed")
     audit.set_defaults(handler=_audit, json_errors=False)
+
+    caspar = commands.add_parser("caspar", help="Caspar.Magi, the moderator system agent (run by the caspar workflow)")
+    steps = caspar.add_subparsers(dest="step", required=True)
+    plan = steps.add_parser("prepare", help="find the work and write the data for the model; never writes to GitHub")
+    plan.add_argument("--repo", type=Path, default=Path("."), help="repository root")
+    plan.add_argument("--out", type=Path, required=True, help="directory for plan.json and the model inputs")
+    plan.add_argument("--scope", choices=sorted(SCOPES), default="regular", help="which kinds of work to look for")
+    plan.add_argument("--mode", default="", help="CASPAR_MODE: preview (the default when empty), live or off")
+    plan.add_argument("--run-number", type=int, default=0,
+                      help="the workflow run number; it moves the starting point of a long review queue")
+    plan.set_defaults(handler=_caspar_prepare, json_errors=False)
+    write = steps.add_parser("write", help="check the model's results; post and commit them in live mode; "
+                                           "exit 1 when the permission probe fails")
+    write.add_argument("--repo", type=Path, default=Path("."), help="repository root")
+    write.add_argument("--work", type=Path, required=True, help="the prepare directory, with results/<task>.json")
+    write.add_argument("--mode", default="", help="CASPAR_MODE: preview (the default when empty), live or off")
+    write.add_argument("--run-id", type=int, required=True, help="the workflow run id, recorded instead of an issue")
+    write.set_defaults(handler=_caspar_write, json_errors=False)
     return parser
 
 

@@ -97,6 +97,12 @@ class GitHubClient:
     def edit_body(self, number: int, body: str) -> None:
         self.request("PATCH", self._issue_path(number), {"body": body})
 
+    def edit_issue(self, number: int, title: str, body: str) -> None:
+        self.request("PATCH", self._issue_path(number), {"title": title, "body": body})
+
+    def edit_comment(self, comment_id: int, body: str) -> None:
+        self.request("PATCH", f"/repos/{self.repo}/issues/comments/{comment_id}", {"body": body})
+
     def get_file(self, path: str, ref: str = "main") -> str | None:
         try:
             data = self.request("GET", f"/repos/{self.repo}/contents/{urllib.parse.quote(path)}", query={"ref": ref})
