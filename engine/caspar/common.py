@@ -37,7 +37,8 @@ def find_marked(comments: list[dict], kind: str, target: str) -> dict | None:
 
 
 def sanitize(text: str) -> str:
-    """Model text in a post: no @mentions, and links only to https addresses."""
+    """Model text in a post: no @mentions, links only to https addresses, and no JSON escapes left in quotes."""
+    text = text.replace('\\"', '"')
     text = _LINK.sub(lambda m: m.group(0) if m.group(2).strip().startswith("https://") else m.group(1), text)
     text = _BARE.sub("", text)
     return _MENTION.sub("", text)

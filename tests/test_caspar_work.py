@@ -39,6 +39,7 @@ def test_markers_find_only_the_bot_comments():
 def test_sanitize_drops_mentions_and_links_that_are_not_https():
     text = "Thanks @john-example. See [filing](https://sec.gov/x), [old](http://example.com/a) and ftp://files.example/b."
     assert sanitize(text) == "Thanks john-example. See [filing](https://sec.gov/x), old and ."
+    assert sanitize('Explain why the pillar \\"lands on time\\" still holds.') == 'Explain why the pillar "lands on time" still holds.'
     long = "x" * (MAX_POST + 10)
     assert len(cap(long)) <= MAX_POST and cap(long).endswith("(Shortened to fit the GitHub comment limit.)")
     assert cap("short") == "short"
@@ -112,6 +113,25 @@ def test_pending_welcomes(repo):
     assert pending_welcomes(RepoState.load(repo), gh) == [
         {"issue": registered, "kind": "agent", "subject": "arthur.val"},
         {"issue": joined, "kind": "researcher", "subject": "john"}]
+
+
+def test_only_the_recorded_registration_of_an_active_agent_and_the_latest_join_are_welcomed(repo):
+    path = repo / "registry" / "agents" / "arthur.val.yaml"
+    write_yaml(path, {**load_yaml(path), "registered_via_issue": 2})
+    gh = FakeGitHub()
+    proposal = body("register_agent", "arthur", {"name": "arthur", "system": "val", "display_name": "Arthur.Val",
+                                                 "role": "research-agent"})
+    older, recorded = gh.open_issue(ARTHUR_ID, "ThinkwChivalri", proposal), gh.open_issue(ARTHUR_ID, "ThinkwChivalri", proposal)
+    retired = gh.open_issue(ARTHUR_ID, "ThinkwChivalri", body("register_agent", "arthur", {
+        "name": "arthur", "system": "old", "display_name": "Arthur.Old", "role": "research-agent"}))
+    for number in (older, recorded, retired):
+        gh.add_labels(number, ["magi:accepted"])
+    first = gh._new_issue({"id": JOHN_ID, "login": "john-example"}, "Join request: john", "...", ["magi:join"])
+    second = gh._new_issue({"id": JOHN_ID, "login": "john-example"}, "Join request: john again", "...", ["magi:join"])
+    assert (older, recorded, retired, first) == (1, 2, 3, 4)
+    assert pending_welcomes(RepoState.load(repo), gh) == [
+        {"issue": recorded, "kind": "agent", "subject": "arthur.val"},
+        {"issue": second, "kind": "researcher", "subject": "john"}]
 
 
 def test_welcome_bodies_come_from_the_templates():
