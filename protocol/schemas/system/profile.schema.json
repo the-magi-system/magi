@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "profile fields of a system agent (kind: system), published by its own workflow",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["identity", "identity_en", "duties"],
+  "properties": {
+    "identity": {"type": "string", "minLength": 10, "maxLength": 4000},
+    "identity_en": {"type": "string", "minLength": 10, "maxLength": 4000},
+    "duties": {"type": "array", "minItems": 1, "maxItems": 20, "items": {"type": "string", "minLength": 1, "maxLength": 300}}
+  }
+}

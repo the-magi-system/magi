@@ -30,6 +30,14 @@ def test_code_only_push_is_clean(git):
     assert audit_push(git, before, _commit(git), "ThinkwChivalri") == []
 
 
+def test_system_agent_records_are_managed_by_maintainers(git):
+    before = git.run("rev-parse", "HEAD")
+    write_yaml(git.root / "registry" / "agents" / "melchior.magi.yaml", {"schema": "magi/agent@1"})
+    write_yaml(git.root / "registry" / "agents" / "arthur.extra.yaml", {"schema": "magi/agent@1"})
+    findings = audit_push(git, before, _commit(git), "ThinkwChivalri")
+    assert [f.path for f in findings] == ["registry/agents/arthur.extra.yaml"]
+
+
 def test_data_change_by_a_person_is_flagged(git):
     before = git.run("rev-parse", "HEAD")
     write_yaml(git.root / "evidence" / "extra.yaml", {"schema": "magi/evidence@1"})

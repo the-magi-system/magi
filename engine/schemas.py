@@ -24,6 +24,14 @@ def load_action_schema(root: Path, action: str) -> dict:
         return json.load(handle)
 
 
+def system_errors(root: Path, name: str, data: dict) -> list[str]:
+    """Check a record written by maintainers or system agents against protocol/schemas/system/<name>."""
+    with open(Path(root) / "protocol" / "schemas" / "system" / f"{name}{SUFFIX}", encoding="utf-8") as handle:
+        validator = Draft202012Validator(json.load(handle))
+    found = sorted(validator.iter_errors(data), key=lambda e: [str(part) for part in e.absolute_path])
+    return [f"{''.join(f'/{part}' for part in e.absolute_path) or '/'}: {e.message}" for e in found]
+
+
 def validate_payload(root: Path, action: str, payload: dict) -> list[MagiError]:
     validator = Draft202012Validator(
         load_action_schema(root, action), format_checker=Draft202012Validator.FORMAT_CHECKER

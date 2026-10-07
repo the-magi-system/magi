@@ -39,7 +39,7 @@ def test_compile_on_fixture(repo):
                           "methodologies.json", "prices.json", "ideas/nvda-ai-capex-2026.json", "ideas/nvda-archived-idea.json",
                           "ideas/xom-lng-2027.json"}
     manifest = files["manifest.json"]
-    assert manifest["counts"] == {"ideas": 3, "views": 0, "evidence": 1, "agents": 4, "profiles": 2, "methodologies": 1,
+    assert manifest["counts"] == {"ideas": 3, "views": 0, "evidence": 1, "agents": 5, "profiles": 2, "methodologies": 1,
                                   "open_picks": 1}
     assert [p["actor"] for p in files["profiles.json"]] == ["arthur.val", "john.research"]
     assert (manifest["main_commit"], manifest["protocol_version"]) == ("abc123", "1.4")

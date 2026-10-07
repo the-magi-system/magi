@@ -1,8 +1,8 @@
 """Pipeline step 2: is the issue author allowed to speak for this actor? (spec 7.2, 8)"""
 from __future__ import annotations
 
-from .errors import E_IDENTITY, MagiError
-from .ids import is_agent_id, is_handle
+from .errors import E_FORBIDDEN, E_IDENTITY, MagiError
+from .ids import is_agent_id, is_handle, is_system_agent
 from .repo import RepoState
 
 
@@ -16,6 +16,9 @@ def check_identity(state: RepoState, author_id: int, actor: str) -> tuple[dict |
         if actor != handle:
             return None, [MagiError(E_IDENTITY, "/actor", f"you are '{handle}' and cannot act as '{actor}'")]
         return researcher, []
+    if is_system_agent(actor):
+        return None, [MagiError(E_FORBIDDEN, "/actor", f"'{actor}' is a system agent; system agents write only "
+                                                        "through their own workflow, never through proposals")]
     if is_agent_id(actor):
         agent = state.agents.get(actor)
         if agent is None:

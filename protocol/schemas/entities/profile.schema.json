@@ -7,10 +7,11 @@
   "properties": {
     "schema": {"const": "magi/profile@1"},
     "actor": {"type": "string", "minLength": 1},
-    "kind": {"enum": ["contributor"]},
+    "kind": {"enum": ["contributor", "system"]},
     "version": {"type": "integer", "minimum": 1},
     "published_at": {"$ref": "#/$defs/timestamp"},
-    "published_via_issue": {"type": "integer", "minimum": 0}
+    "published_via_issue": {"type": "integer", "minimum": 0},
+    "published_via_run": {"type": "integer", "minimum": 1}
   },
   "$defs": {"timestamp": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"}}
 }

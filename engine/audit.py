@@ -11,6 +11,11 @@ DATA_PREFIXES = ("registry/", "evidence/", "methodologies/", "ideas/", "ledger/"
 MAINTAINER_MANAGED = ("registry/researchers/",)
 
 
+def _maintainer_managed(path: str) -> bool:
+    """Researcher records and system agent records are changed by maintainers through pull requests."""
+    return path.startswith(MAINTAINER_MANAGED) or (path.startswith("registry/agents/") and path.endswith(".magi.yaml"))
+
+
 def _changes(git: Git, before: str, after: str) -> list[tuple[str, str]]:
     if before == ZERO:
         return [("A", path) for path in git.run("ls-tree", "-r", "--name-only", after).splitlines() if path]
@@ -36,7 +41,7 @@ def audit_push(git: Git, before: str, after: str, pusher: str) -> list[Finding]:
         if path.startswith("ledger/") and status != "A":
             change = "deleted" if status == "D" else "modified"
             findings.append(Finding(path, f"ledger file {change}; the ledger only grows"))
-        elif pusher != BOT_LOGIN and path.startswith(DATA_PREFIXES) and not path.startswith(MAINTAINER_MANAGED):
+        elif pusher != BOT_LOGIN and path.startswith(DATA_PREFIXES) and not _maintainer_managed(path):
             findings.append(Finding(path, f"research data changed by {pusher} outside the intake engine"))
     return findings
 
