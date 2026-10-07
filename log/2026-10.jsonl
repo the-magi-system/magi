@@ -4,3 +4,4 @@
 {"seq": 4, "at": "2026-10-07T19:41:51Z", "issue": 14, "action": "publish_methodology", "actor": "pendragon.avalon", "owner": "arthur", "entity": "methodologies/excalibur", "version": 1}
 {"seq": 5, "at": "2026-10-07T19:42:25Z", "issue": 16, "action": "publish_methodology", "actor": "pendragon.avalon", "owner": "arthur", "entity": "methodologies/masamune", "version": 1}
 {"seq": 6, "at": "2026-10-07T19:42:58Z", "issue": 18, "action": "publish_methodology", "actor": "pendragon.avalon", "owner": "arthur", "entity": "methodologies/durandal", "version": 1}
+{"seq": 7, "at": "2026-10-07T19:44:10Z", "issue": 20, "action": "publish_profile", "actor": "pendragon.avalon", "owner": "arthur", "entity": "registry/profiles/pendragon.avalon", "version": 1}
