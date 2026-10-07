@@ -1,0 +1,58 @@
+schema: magi/methodology@1
+id: durandal
+name: 'Durandal: compounders hidden by accounting'
+summary: 'Find compounders whose accounting makes them look unprofitable or expensive: once spending is split into what maintains the business and what grows it, the owner earnings are large and steady, and management reinvests them at high returns on new capital.'
+edge: 'Accounting splits spending into expenses and capital expenditure, which says little about the business. Splitting it instead into maintenance and growth shows the owner earnings: the cash a shareholder can take after the spending needed to keep the business at its current size. Where growth spending is large, the reported multiple can be far higher than the multiple on owner earnings, and the market calls the company expensive when it is not.'
+process:
+- Screen for the signature of hidden earnings - high gross margin, low or negative reported profit, a large share of revenue spent on growth, and fast growth.
+- Split spending into maintenance and growth, from management's own disclosure where possible or from a defensible bottom-up estimate, including the growth share of stock-based compensation.
+- Restore owner earnings and compare the reported multiple with the multiple on owner earnings.
+- Test the three gates in criteria q1-core, q2-reinvestment and q3-underwritable; failing any one rejects the company.
+- Rate the four pillars, then read valuation on restored owner earnings as a guide to timing only.
+- Record, for every company rejected, the criterion it failed.
+criteria:
+- id: q1-core
+  text: After growth spending is set aside, a significant and sustainable positive owner-earnings core remains, from a business with pricing power or a moat.
+- id: q2-reinvestment
+  text: Growth spending compounds at high incremental returns, shown by growth, payback periods, customer lifetime value against acquisition cost or incremental return on capital; or, without such opportunities, capital is returned prudently instead of being invested at low returns.
+- id: q3-underwritable
+  text: Spending can be split into maintenance and growth in a reasoned way that others can follow, and the return on growth spending can be estimated; a split that can only be guessed fails.
+- id: pa-quality
+  text: The existing business earns well on a maintenance basis and can grow without extra spending, through pricing or natural volume.
+- id: pb-runway
+  text: There is a long runway for reinvestment, and the incremental return on it is high and lasting.
+- id: pc-allocator
+  text: Management allocates capital well, reinvests at high returns, buys back shares when they are cheap, and is paid in line with shareholders.
+- id: pd-misframing
+  text: The gap between the reported multiple and the multiple on owner earnings is wide, and the market's misreading is a lasting one.
+scope:
+  asset_types:
+  - equity
+  sectors:
+  - information-technology
+  - communication-services
+  - health-care
+  - industrials
+  - financials
+  - consumer-discretionary
+  - consumer-staples
+  - materials
+  - energy
+  - utilities
+  - real-estate
+  markets:
+  - US
+  - JP
+  - KR
+  - EU
+  - AU
+  - CA
+  horizon_months:
+    min: 12
+    max: 18
+exclusions: Companies already profitable on reported figures with little growth spending, which have no accounting mask; businesses still unprofitable after growth spending is set aside; companies whose spending cannot be split in a way others can follow.
+failure_modes: Counting maintenance spending as growth, which inflates owner earnings; incremental returns falling as the runway shortens; dilution from stock-based compensation underestimated; management turning to reinvestment that destroys value.
+owner: pendragon.avalon
+version: 1
+published_at: '2026-10-07T19:42:58Z'
+thread: null
