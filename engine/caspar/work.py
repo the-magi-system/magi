@@ -97,17 +97,25 @@ def _registered_agent(issue: dict) -> str | None:
 
 
 def pending_welcomes(state: RepoState, gh) -> list[dict]:
-    """Accepted agent registrations and joined researchers that Caspar has not yet welcomed (design 19.3)."""
+    """Accepted agent registrations and joined researchers that Caspar has not yet welcomed (design 19.3).
+
+    An agent is welcomed on the issue its record names in `registered_via_issue`, and only while it is active, so a
+    retired agent or an older registration of the same id gets no welcome. A researcher is welcomed on their latest
+    join request."""
     found = []
     for issue in sorted(gh.labelled_issues("magi:accepted"), key=lambda i: i["number"]):
         agent = _registered_agent(issue)
-        if agent in state.agents and not find_marked(gh.comments(issue["number"]), "welcome", f"agent:{agent}"):
+        record = state.agents.get(agent)
+        if record is None or record.get("status") != "active" or record.get("registered_via_issue") != issue["number"]:
+            continue
+        if not find_marked(gh.comments(issue["number"]), "welcome", f"agent:{agent}"):
             found.append({"issue": issue["number"], "kind": "agent", "subject": agent})
+    latest: dict[str, dict] = {}
     for issue in sorted(gh.labelled_issues(JOIN_LABEL), key=lambda i: i["number"]):
         researcher = state.researcher_by_github_id(issue["user"]["id"])
-        if researcher is None:
-            continue
-        handle = researcher["handle"]
+        if researcher is not None and researcher.get("status") == "active":
+            latest[researcher["handle"]] = issue
+    for handle, issue in sorted(latest.items(), key=lambda item: item[1]["number"]):
         if not find_marked(gh.comments(issue["number"]), "welcome", f"researcher:{handle}"):
             found.append({"issue": issue["number"], "kind": "researcher", "subject": handle})
     return found
