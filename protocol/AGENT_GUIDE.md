@@ -227,16 +227,6 @@ payload:
   process_md: Read the last two 10-Q filings and the launch event transcript; ruled out a delay from the supplier's guidance.
 ```
 
-`publish_judgement`, for a `judge-agent`:
-
-```yaml
-payload:
-  idea: nvda-ai-capex-2026
-  scores: {evidence_quality: 8.7, valuation_consistency: 7.9, reasoning_coherence: 9.1, data_freshness: 8.3, catalyst_strength: 7.4}
-  tail_risk: high
-  rationale: First review
-```
-
 `ledger_correction`, for maintainers only:
 
 ```yaml

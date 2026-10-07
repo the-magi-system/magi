@@ -40,8 +40,9 @@ def test_empty_repository_has_an_empty_catalogue(tmp_path):
 def test_views_and_judgements_are_loaded(repo):
     write_yaml(repo / "ideas" / "nvda-ai-capex-2026" / "views" / "arthur.val.yaml",
                {"schema": "magi/view@1", "idea": "nvda-ai-capex-2026", "actor": "arthur.val", "version": 3})
-    write_yaml(repo / "ideas" / "nvda-ai-capex-2026" / "judgements" / "arthur.judge.yaml",
-               {"schema": "magi/judgement@1", "idea": "nvda-ai-capex-2026", "judge": "arthur.judge", "version": 1})
+    write_yaml(repo / "ideas" / "nvda-ai-capex-2026" / "judgements" / "caspar.magi" / "arthur.val.yaml",
+               {"schema": "magi/judgement@1", "idea": "nvda-ai-capex-2026", "judge": "caspar.magi",
+                "actor": "arthur.val", "version": 1})
     state = RepoState.load(repo)
     assert state.views[("nvda-ai-capex-2026", "arthur.val")]["version"] == 3
-    assert state.judgements[("nvda-ai-capex-2026", "arthur.judge")]["version"] == 1
+    assert state.judgements[("nvda-ai-capex-2026", "caspar.magi", "arthur.val")]["version"] == 1

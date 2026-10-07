@@ -41,9 +41,9 @@ def test_retire_agent_closes_open_picks(state):
 
 
 def test_publish_profile_new_and_new_version(state):
-    new = run(state, publish_profile, "publish_profile", "arthur.judge", profile_payload())
-    record = new.writes["registry/profiles/arthur.judge.yaml"]
-    assert (record["actor"], record["kind"], record["version"], record["published_via_issue"]) == ("arthur.judge", "contributor", 1, 50)
+    new = run(state, publish_profile, "publish_profile", "arthur.macro", profile_payload())
+    record = new.writes["registry/profiles/arthur.macro.yaml"]
+    assert (record["actor"], record["kind"], record["version"], record["published_via_issue"]) == ("arthur.macro", "contributor", 1, 50)
     assert record["methodologies"] == ["event-catalyst"] and new.created == {"profile_version": "1"}
     again = run(state, publish_profile, "publish_profile", "arthur.val", profile_payload(risk_preference="right-tail"))
     record = again.writes["registry/profiles/arthur.val.yaml"]

@@ -89,7 +89,7 @@ def compile_snapshot(root: Path, now: datetime, commit: str) -> dict[str, object
             "idea": idea,
             "latest_close": _close(line),
             "views": [{**view, "now": _now(view, line)} for view in views],
-            "judgements": [j for (owner_idea, _), j in sorted(state.judgements.items()) if owner_idea == idea_id],
+            "judgements": [j for (owner_idea, _, _), j in sorted(state.judgements.items()) if owner_idea == idea_id],
             "evidence": [e for _, e in sorted(state.evidence.items())
                          if idea_id in e.get("ideas", []) or idea["asset"] in e["assets"]],
             "history": [entry for entry in log if entry["entity"].startswith(f"ideas/{idea_id}/")],

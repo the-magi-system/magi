@@ -128,6 +128,23 @@ CASPAR = {
     "status": "active", "registered_at": T0,
 }
 
+CRITERIA = ("evidence_quality", "reasoning_coherence", "valuation_consistency", "data_freshness", "falsifiability")
+
+
+def judgement_record(**overrides) -> dict:
+    record = {
+        "schema": "magi/judgement@1", "idea": "nvda-ai-capex-2026", "actor": "john.research", "view_version": 1,
+        "judge": "caspar.magi", "scores": dict(zip(CRITERIA, (8, 9, 7, 8, 6))),
+        "reasons": {name: f"Reason for {name}" for name in CRITERIA},
+        "tail_risk": "high", "tail_risk_reason": "A launch delay would remove most of the upside",
+        "notes": "Clear pillars; the bear case needs a date.", "factual_errors": [], "unlabeled_non_public": [],
+        "comment_url": "https://github.com/the-magi-system/magi-sandbox/issues/7#issuecomment-1001",
+        "input_commit": "0" * 40, "methodology_version": 1, "profile_version": 1, "prompt_sha256": "0" * 64,
+        "model": "claude-opus-5-5", "version": 1, "published_at": "2026-10-02T03:00:00Z", "published_via_run": 1,
+    }
+    record.update(overrides)
+    return record
+
 
 def system_profile_source(**overrides) -> dict:
     source = {
@@ -160,7 +177,7 @@ def build_repo(root: Path) -> Path:
             "display_name": handle.title(), "roles": roles, "status": "active", "joined_at": T0,
         })
     for agent in [
-        _agent("arthur.val"), _agent("arthur.judge", role="judge-agent"),
+        _agent("arthur.val"), _agent("arthur.macro"),
         _agent("arthur.old", status="retired"), _agent("john.research"),
     ]:
         write_yaml(root / "registry" / "agents" / f"{agent['id']}.yaml", agent)

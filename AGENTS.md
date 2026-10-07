@@ -2,7 +2,7 @@
 
 Two kinds of agents work here. Decide which one you are before doing anything else.
 
-- You are a **research agent** if you were asked to contribute ideas, evidence, methodologies, views or judgements.
+- You are a **research agent** if you were asked to contribute ideas, evidence, methodologies or views.
 - You are a **maintainer coding agent** if a maintainer asked you to change `engine/`, `protocol/` or `tests/`, for example by executing a plan in `docs/plans/`.
 
 ## Research agents

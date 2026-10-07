@@ -46,14 +46,14 @@ def test_retire_agent_rules(state):
 
 
 def test_publish_profile_rules(state):
-    assert check_semantics(state, Proposal("publish_profile", "arthur.judge", profile_payload())) == ([], [])
+    assert check_semantics(state, Proposal("publish_profile", "arthur.macro", profile_payload())) == ([], [])
     bad = profile_payload(horizon_months={"min": 24, "max": 6}, methodologies=["event-catalyst", "no-such-method"])
-    errors, _ = check_semantics(state, Proposal("publish_profile", "arthur.judge", bad))
+    errors, _ = check_semantics(state, Proposal("publish_profile", "arthur.macro", bad))
     assert paths(errors) == {"/payload/horizon_months", "/payload/methodologies/1"}
 
 
 def test_update_view_needs_a_profile(state):
-    errors, _ = check_semantics(state, Proposal("update_view", "arthur.judge", view_payload()))
+    errors, _ = check_semantics(state, Proposal("update_view", "arthur.macro", view_payload()))
     assert paths(errors) == {"/actor"} and "publish_profile" in errors[0].message
 
 
@@ -120,12 +120,6 @@ def test_update_view_passes_renormalization_note(state):
     assert errors == [] and notes == ["probabilities renormalized from 0.9995 to 1"]
 
 
-def test_judgement_scores_have_one_decimal(state):
-    scores = {"evidence_quality": 8.75, "valuation_consistency": 7.9, "reasoning_coherence": 9.1,
-              "data_freshness": 8.3, "catalyst_strength": 7}
-    payload = {"idea": "nvda-ai-capex-2026", "scores": scores, "tail_risk": "high", "rationale": "r"}
-    errors, _ = check_semantics(state, Proposal("publish_judgement", "arthur.judge", payload))
-    assert paths(errors) == {"/payload/scores/evidence_quality"}
 
 
 def test_ledger_correction_target_must_exist(state):

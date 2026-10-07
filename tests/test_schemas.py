@@ -12,8 +12,7 @@ from tests.util import (
 ACTIONS_DIR = REPO_ROOT / "protocol" / "schemas" / "actions"
 ALL_ACTIONS = {
     "register_agent", "retire_agent", "publish_profile", "register_asset", "declare_strategies", "add_strategy",
-    "publish_methodology", "create_idea", "add_evidence", "supersede_evidence", "update_view",
-    "publish_judgement", "ledger_correction",
+    "publish_methodology", "create_idea", "add_evidence", "supersede_evidence", "update_view", "ledger_correction",
 }
 YAML_BOOLEAN_WORDS = {"y", "n", "yes", "no", "on", "off", "true", "false"}
 
@@ -35,9 +34,6 @@ VALID = {
     "add_evidence": evidence_payload(),
     "supersede_evidence": evidence_payload(supersedes="ev-20261001-msft-fy27-capex"),
     "update_view": view_payload(),
-    "publish_judgement": {"idea": "nvda-ai-capex-2026", "scores": {
-        "evidence_quality": 8.7, "valuation_consistency": 7.9, "reasoning_coherence": 9.1,
-        "data_freshness": 8.3, "catalyst_strength": 7.4}, "tail_risk": "high", "rationale": "First review"},
     "ledger_correction": {"corrects": "ledger/events/2026/10/20261001T023000Z-pk-000001-pick_opened.yaml",
                           "reason": "Wrong currency recorded", "fields": {"price": {"currency": "USD"}}},
 }
@@ -192,3 +188,8 @@ def test_evidence_provider_ref():
     assert validate_payload(REPO_ROOT, "add_evidence", evidence_payload(provider_ref="avalon:20261002:nvda-mgmt-01")) == []
     errors = validate_payload(REPO_ROOT, "add_evidence", evidence_payload(provider_ref="Bad Ref!"))
     assert [e.path for e in errors] == ["/payload/provider_ref"]
+
+
+def test_agents_are_registered_only_as_research_agents():
+    payload = {**VALID["register_agent"], "role": "judge-agent"}
+    assert [e.path for e in validate_payload(REPO_ROOT, "register_agent", payload)] == ["/payload/role"]

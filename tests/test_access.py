@@ -56,8 +56,6 @@ def test_role_permissions(state):
     arthur, john = state.researchers["arthur"], state.researchers["john"]
     assert check_capability(state, arthur, "arthur.val", "update_view", 0) == []
     assert check_capability(state, arthur, "arthur.val", "publish_methodology", 0) == []
-    assert check_capability(state, arthur, "arthur.val", "publish_judgement", 0)[0].code == E_FORBIDDEN
-    assert check_capability(state, arthur, "arthur.judge", "publish_judgement", 0) == []
     assert check_capability(state, arthur, "arthur.val", "register_agent", 0)[0].code == E_FORBIDDEN
     assert check_capability(state, arthur, "arthur", "ledger_correction", 0) == []
     assert check_capability(state, john, "john", "ledger_correction", 0)[0].code == E_FORBIDDEN
@@ -81,10 +79,8 @@ def test_per_agent_limit(repo):
 def test_approval_reasons(state):
     arthur = state.researchers["arthur"]
     add = Proposal("add_strategy", "arthur.val", {})
-    judge = Proposal("register_agent", "arthur", {"name": "j2", "display_name": "J2", "role": "judge-agent"})
     plain = Proposal("register_agent", "arthur", {"name": "r2", "display_name": "R2", "role": "research-agent"})
     assert approval_reasons(state, arthur, add) == ["add_strategy:always"]
-    assert approval_reasons(state, arthur, judge) == ["register_agent:role_is_judge"]
     assert approval_reasons(state, arthur, plain) == []
 
 

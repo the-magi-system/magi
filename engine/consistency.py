@@ -15,7 +15,7 @@ from jsonschema import Draft202012Validator
 from .basis import non_public_pillars
 from .derive import derive
 from .distribution import check_distribution
-from .eventlog import LOG_DIR
+from .eventlog import LOG_DIR, read_log
 from .ids import is_system_agent
 from .ledger import ordered_events
 from .repo import RepoState
@@ -24,12 +24,12 @@ from .yamlio import load_yaml
 
 YAML_DIRS = ["registry", "evidence", "methodologies", "ideas", "ledger"]
 ENTITY_DIR = Path("protocol") / "schemas" / "entities"
-WHOLE = {"magi/researcher@1": "researcher", "magi/strategies@1": "strategies", "magi/ledger-event@1": "ledger-event"}
+WHOLE = {"magi/researcher@1": "researcher", "magi/strategies@1": "strategies", "magi/ledger-event@1": "ledger-event",
+         "magi/judgement@1": "judgement"}
 SPLIT = {"magi/agent@1": "agent", "magi/asset@1": "asset", "magi/methodology@1": "methodology", "magi/idea@1": "idea",
-         "magi/evidence@1": "evidence", "magi/view@1": "view", "magi/judgement@1": "judgement",
-         "magi/profile@1": "profile"}
+         "magi/evidence@1": "evidence", "magi/view@1": "view", "magi/profile@1": "profile"}
 ACTIONS = {"asset": "register_asset", "methodology": "publish_methodology", "idea": "create_idea",
-           "view": "update_view", "judgement": "publish_judgement", "profile": "publish_profile"}
+           "view": "update_view", "profile": "publish_profile"}
 LOG_KEYS = ("seq", "at", "action", "actor", "owner", "entity")  # and "issue" or, for system agents, "run"
 
 
@@ -139,12 +139,26 @@ def _references(state: RepoState) -> list[Finding]:
             found.append(Finding(path, f"supersedes {evidence['supersedes']!r}, which does not exist"))
     for (idea_id, actor), view in state.views.items():
         found += _view_findings(state, f"ideas/{idea_id}/views/{actor}.yaml", view, actors)
-    for (idea_id, judge), _ in state.judgements.items():
-        path = f"ideas/{idea_id}/judgements/{judge}.yaml"
-        if idea_id not in state.ideas:
-            found.append(Finding(path, f"idea {idea_id!r} does not exist"))
-        if state.agents.get(judge, {}).get("role") != "judge-agent":
-            found.append(Finding(path, f"{judge!r} is not a judge-agent"))
+    for (idea_id, judge, actor), review in state.judgements.items():
+        path = f"ideas/{idea_id}/judgements/{judge}/{actor}.yaml"
+        if state.agents.get(judge, {}).get("role") != "system":
+            found.append(Finding(path, f"{judge!r} is not a system agent"))
+        view = state.views.get((idea_id, actor))
+        if view is None:
+            found.append(Finding(path, f"reviews a view of {actor!r} on {idea_id!r}, which does not exist"))
+        elif review["view_version"] > view["version"]:
+            found.append(Finding(path, f"reviews version {review['view_version']}, but the view of {actor!r} "
+                                       f"is at version {view['version']}"))
+    return found
+
+
+def _reviews_logged(root: Path, state: RepoState) -> list[Finding]:
+    logged = {(entry["entity"], entry.get("version")) for entry in read_log(root) if entry.get("action") == "review"}
+    found = []
+    for (idea_id, judge, actor), review in state.judgements.items():
+        path = f"ideas/{idea_id}/judgements/{judge}/{actor}.yaml"
+        if (path.removesuffix(".yaml"), review["version"]) not in logged:
+            found.append(Finding(path, f"version {review['version']} of this review has no line in the event log"))
     return found
 
 
@@ -247,4 +261,4 @@ def check_repository(root: Path) -> list[Finding]:
         state = RepoState.load(root)
     except Exception as exc:
         return [Finding("", f"repository could not be loaded: {type(exc).__name__}: {exc}")]
-    return _references(state) + _ledger(root) + _log(root)
+    return _references(state) + _reviews_logged(root, state) + _ledger(root) + _log(root)

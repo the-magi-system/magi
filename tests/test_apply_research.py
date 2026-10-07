@@ -14,8 +14,6 @@ from tests.fakes import NOW, FakePrices
 from tests.util import REPO_ROOT, evidence_payload, non_public_evidence_payload, view_payload
 
 IDEA = {"id": "msft-copilot-2027", "asset": "msft", "title": "Copilot", "summary": "Copilot monetisation"}
-SCORES = {"evidence_quality": 8.7, "valuation_consistency": 7.9, "reasoning_coherence": 9.1,
-          "data_freshness": 8.3, "catalyst_strength": 7.4}
 OPENED = "ledger/events/2026/10/20261001T023000Z-pk-000001-pick_opened.yaml"
 
 
@@ -125,14 +123,6 @@ def test_currency_drift_is_internal(state):
     with pytest.raises(ApplyError) as err:
         run(state, "update_view", "john.research", view_payload(), prices=FakePrices(currency={"NVDA": "EUR"}))
     assert err.value.error.code == E_INTERNAL
-
-
-def test_judgement_versions(repo):
-    payload = {"idea": "nvda-ai-capex-2026", "scores": SCORES, "tail_risk": "high", "rationale": "First"}
-    write_changes(repo, run(RepoState.load(repo), "publish_judgement", "arthur.judge", payload))
-    second = run(RepoState.load(repo), "publish_judgement", "arthur.judge", {**payload, "rationale": "Second"})
-    record = second.writes["ideas/nvda-ai-capex-2026/judgements/arthur.judge.yaml"]
-    assert (record["version"], record["judge"]) == (2, "arthur.judge") and "notes" not in record
 
 
 def test_ledger_correction_event(state):
