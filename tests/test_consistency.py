@@ -4,18 +4,18 @@ import shutil
 import engine.cli as cli
 from engine.apply import apply_proposal, write_changes
 from engine.consistency import check_repository
+from engine.eventlog import append
 from engine.ledger import load_book
 from engine.proposal import Proposal
 from engine.repo import RepoState
 from engine.yamlio import load_yaml, write_yaml
 from tests.fakes import NOW, FakePrices
 from tests.util import (
-    REPO_ROOT, evidence_payload, methodology_payload, non_public_evidence_payload, profile_payload, view_payload,
+    REPO_ROOT, evidence_payload, judgement_record, methodology_payload, non_public_evidence_payload, profile_payload,
+    view_payload,
 )
 
 OPENED = "ledger/events/2026/10/20261001T023000Z-pk-000001-pick_opened.yaml"
-SCORES = {"evidence_quality": 8.7, "valuation_consistency": 7.9, "reasoning_coherence": 9.1,
-          "data_freshness": 8.3, "catalyst_strength": 7.4}
 AMD = {"id": "amd", "name": "Advanced Micro Devices", "type": "equity", "sector": "information-technology",
        "currency": "USD", "price_source": {"provider": "yahoo", "symbol": "AMD"}}
 
@@ -50,12 +50,44 @@ def test_records_written_by_the_engine_are_consistent(repo):
     _apply(repo, "supersede_evidence", "macro.atlas", evidence_payload(supersedes="ev-20261002-msft-fy27-capex"))
     _apply(repo, "update_view", "john.research", view_payload(), prices=FakePrices({"NVDA": 180.2}))
     _apply(repo, "update_view", "john.research", view_payload(position="neutral", rationale="Flat"))
-    _apply(repo, "publish_judgement", "arthur.judge", {"idea": "nvda-ai-capex-2026", "scores": SCORES,
-                                                       "tail_risk": "high", "rationale": "Review"})
     _apply(repo, "retire_agent", "arthur", {"agent": "arthur.val", "reason": "replaced"})
     _apply(repo, "ledger_correction", "arthur", {"corrects": OPENED, "reason": "Wrong currency",
                                                  "fields": {"price": {"currency": "USD"}}})
     assert check_repository(repo) == []
+
+
+def _review(repo, logged=True, **overrides):
+    record = judgement_record(**overrides)
+    path = f"ideas/{record['idea']}/judgements/{record['judge']}/{record['actor']}.yaml"
+    write_yaml(repo / path, record)
+    if logged:
+        append(repo, [{"at": record["published_at"], "run": 1, "action": "review", "actor": record["judge"],
+                       "owner": "magi", "entity": path.removesuffix(".yaml"), "version": record["version"]}])
+
+
+def test_reviews_by_a_system_agent_are_consistent(repo):
+    _apply(repo, "update_view", "john.research", view_payload(), prices=FakePrices({"NVDA": 180.2}))
+    _review(repo)
+    assert check_repository(repo) == []
+
+
+def test_review_problems_are_reported(repo):
+    _apply(repo, "update_view", "john.research", view_payload(), prices=FakePrices({"NVDA": 180.2}))
+    _review(repo, view_version=2)
+    _review(repo, actor="arthur.val")
+    _review(repo, judge="melchior.magi")
+    _review(repo, idea="xom-lng-2027", logged=False)
+    found = problems(repo)
+    assert "reviews version 2, but the view of 'john.research' is at version 1" in found
+    assert "reviews a view of 'arthur.val' on 'nvda-ai-capex-2026', which does not exist" in found
+    assert "'melchior.magi' is not a system agent" in found
+    assert "version 1 of this review has no line in the event log" in found
+
+
+def test_a_review_records_what_it_was_based_on(repo):
+    _apply(repo, "update_view", "john.research", view_payload(), prices=FakePrices({"NVDA": 180.2}))
+    _review(repo, input_commit="abc123")
+    assert any(p.startswith("/input_commit:") for p in problems(repo))
 
 
 def test_profile_references_are_checked(repo):

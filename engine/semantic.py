@@ -131,16 +131,6 @@ def _update_view(state: RepoState, actor: str, payload: dict) -> Result:
     return errors, notes
 
 
-def _publish_judgement(state: RepoState, actor: str, payload: dict) -> Result:
-    errors = []
-    if payload["idea"] not in state.ideas:
-        errors.append(_error("/payload/idea", f"idea '{payload['idea']}' does not exist"))
-    for name, value in payload["scores"].items():
-        if round(value, 1) != value:
-            errors.append(_error(f"/payload/scores/{name}", f"score {value} must have at most one decimal place"))
-    return errors, []
-
-
 def _ledger_correction(state: RepoState, actor: str, payload: dict) -> Result:
     if payload["corrects"] not in state.ledger_files:
         return [_error("/payload/corrects", f"ledger event '{payload['corrects']}' does not exist")], []
@@ -159,7 +149,6 @@ CHECKS: dict[str, Callable[[RepoState, str, dict], Result]] = {
     "add_evidence": _evidence,
     "supersede_evidence": _evidence,
     "update_view": _update_view,
-    "publish_judgement": _publish_judgement,
     "ledger_correction": _ledger_correction,
 }
 

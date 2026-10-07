@@ -20,6 +20,13 @@ def last_seq(root: Path) -> int:
     return 0
 
 
+def read_log(root: Path) -> list[dict]:
+    entries: list[dict] = []
+    for path in _files(root):
+        entries += [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    return entries
+
+
 def append(root: Path, entries: list[dict]) -> list[int]:
     seq, assigned = last_seq(root), []
     for entry in entries:

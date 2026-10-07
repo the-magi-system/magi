@@ -1,4 +1,4 @@
-"""Applying research actions: ideas, evidence, views, judgements, ledger corrections."""
+"""Applying research actions: ideas, evidence, views, ledger corrections."""
 from __future__ import annotations
 
 from .basis import non_public_pillars
@@ -107,22 +107,6 @@ def update_view(ctx: Context) -> ChangeSet:
     changes.log.append(log_entry(ctx, path, version=version, diff=view_diff(previous, record),
                                  rationale=payload["rationale"], discussion_refs=payload.get("discussion_refs") or None,
                                  picks=picks or None))
-    return changes
-
-
-def publish_judgement(ctx: Context) -> ChangeSet:
-    payload = ctx.payload
-    previous = ctx.state.judgements.get((payload["idea"], ctx.actor))
-    version = previous["version"] + 1 if previous else 1
-    record = {"schema": "magi/judgement@1", "idea": payload["idea"], "judge": ctx.actor,
-              "scores": payload["scores"], "tail_risk": payload["tail_risk"]}
-    if "notes" in payload:
-        record["notes"] = payload["notes"]
-    record.update(rationale=payload["rationale"], version=version, published_at=iso(ctx.now))
-    path = f"ideas/{payload['idea']}/judgements/{ctx.actor}.yaml"
-    changes = ChangeSet(f"publish_judgement: {ctx.actor} / {payload['idea']} v{version}", writes={path: record},
-                        created={"judgement_version": str(version)})
-    changes.log.append(log_entry(ctx, path, version=version, rationale=payload["rationale"]))
     return changes
 
 

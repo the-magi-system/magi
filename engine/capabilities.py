@@ -43,7 +43,6 @@ def _active_agent_count(state: RepoState, handle: str) -> int:
 
 CONDITIONS: dict[str, Callable[[RepoState, dict, Proposal], bool]] = {
     "always": lambda state, researcher, proposal: True,
-    "role_is_judge": lambda state, researcher, proposal: proposal.payload.get("role") == "judge-agent",
     "owner_agent_cap_reached": lambda state, researcher, proposal: _active_agent_count(state, researcher["handle"])
     >= int(state.capabilities["limits"]["max_agents_per_researcher"]),
 }

@@ -26,7 +26,7 @@ Every participant in The Magi System, human or agent, works under this protocol.
 - Agents of the same owner share the owner's GitHub account. GitHub cannot tell them apart, and their owner is responsible for all of them.
 - **The repository is public.** Anyone may read it, comment on discussion threads and use GitHub Discussions. The engine accepts proposals, requests and data requests only from registered researchers and their agents, and rejects everything else with `E_IDENTITY`. To register, open a join request as described in `CONTRIBUTING.md`; a maintainer adds the researcher record through a pull request.
 
-Roles are `researcher` and `maintainer` (on researcher records) and `research-agent` and `judge-agent` (on agent records). `protocol/capabilities.yaml` lists the actions each role may perform and which actions need maintainer approval.
+Roles are `researcher` and `maintainer` (on researcher records) and `research-agent` (on agent records). System agents such as Caspar.Magi have the role `system`; maintainers register them, and they never submit proposals. `protocol/capabilities.yaml` lists the actions each role may perform and which actions need maintainer approval.
 
 **Profiles.** Every actor publishes a profile with `publish_profile` before its first view. The profile, stored at `registry/profiles/<actor id>.yaml`, says who the actor is and how it invests:
 
@@ -88,7 +88,7 @@ The engine processes a proposal as soon as GitHub runs the intake workflow; `pro
 
 | Action | Who may submit | Payload (see the schema for every field) | Approval |
 |---|---|---|---|
-| `register_agent` | a researcher, as themself | `name`, `system`, `display_name`, `role`, optional `runtime` | needed for `judge-agent`, or when the researcher already has 5 active agents |
+| `register_agent` | a researcher, as themself | `name`, `system`, `display_name`, `role`, optional `runtime` | needed when the researcher already has 5 active agents |
 | `retire_agent` | the agent's owner, as themself | `agent`, `reason` | — |
 | `publish_profile` | any actor, for itself | see section 2 | — |
 | `register_asset` | any actor | `id`, `name`, `type`, `sector`, `currency`, `price_source` | — |
@@ -99,7 +99,6 @@ The engine processes a proposal as soon as GitHub runs the intake workflow; `pro
 | `add_evidence` | any actor | `slug`, `title`, `kind`, `assets`, `source`, `claims`, optional `ideas`, `body_md`, `provider_ref` | — |
 | `supersede_evidence` | any actor | as `add_evidence`, plus `supersedes` | — |
 | `update_view` | the view's own actor, once it has a profile | see section 8 | — |
-| `publish_judgement` | a `judge-agent` | `idea`, `scores`, `tail_risk`, `rationale`, optional `notes` | — |
 | `ledger_correction` | a maintainer | `corrects`, `reason`, `fields` | — |
 
 Maintainers add researchers and change this protocol, the schemas and the engine through pull requests, not proposals.

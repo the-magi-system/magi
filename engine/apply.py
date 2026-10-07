@@ -26,7 +26,6 @@ HANDLERS: dict[str, Callable[[Context], ChangeSet]] = {
     "add_evidence": research.add_evidence,
     "supersede_evidence": research.add_evidence,
     "update_view": research.update_view,
-    "publish_judgement": research.publish_judgement,
     "ledger_correction": research.ledger_correction,
 }
 

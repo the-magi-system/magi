@@ -8,7 +8,7 @@
     "name": {"type": "string", "pattern": "^[a-z][a-z0-9-]{1,23}$"},
     "system": {"type": "string", "pattern": "^[a-z][a-z0-9-]{1,23}$"},
     "display_name": {"type": "string", "minLength": 1, "maxLength": 80},
-    "role": {"enum": ["research-agent", "judge-agent"]},
+    "role": {"enum": ["research-agent"]},
     "runtime": {
       "type": "object",
       "additionalProperties": false,
