@@ -1,0 +1,59 @@
+schema: magi/methodology@1
+id: excalibur
+name: 'Excalibur: unpriced quality growth engines'
+summary: Find excellent, unique growth engines that the market has not priced, run by the right people with incentives tied to the share price, bought at a reasonable price with a floor under it, and with a catalyst on a known date.
+edge: The market often prices an outstanding growth engine as an ordinary business, because of a misleading narrative, a confusing structure or a recent stumble. When the discount comes from such a framing error, and not from a rational price for something that cannot be known, it closes once the framing is corrected. A low price cannot rescue a mediocre engine, so the quality of the engine is judged before the price.
+process:
+- Confirm the company is trading normally and is not the subject of a pending offer or take-private.
+- Test the growth engine against the four quality tests in criterion c1-engine.
+- Explain the discount, and keep the company only if the discount is a framing error that can be corrected.
+- Check who runs the company and how they are paid, from the latest filings.
+- Identify the catalyst and its date.
+- Establish the floor and a reasonable entry price; a high price for growth is a timing question, not a reason to reject.
+- Record, for every company rejected, the criterion it failed.
+criteria:
+- id: c0-trading
+  text: The company trades normally, with recent genuine trades and no pending announced offer, scheme or take-private.
+- id: c1-engine
+  text: 'The growth engine passes four quality tests: it is unique and has a moat; it is technically advanced, with results from new technology such as AI shown in its financials; its business model is excellent, with pricing power; and its re-rating has no structural ceiling, such as parallel suppliers or heavy regulatory friction.'
+- id: c2-unpriced
+  text: The engine is not yet priced in, and the discount comes from a framing error that can be corrected, not from a rational discount for a real unknown.
+- id: c3-helmsman
+  text: 'The right people are in charge: the founder or technical leader still in operational control, or a strong CEO and CFO team chosen by the board.'
+- id: c4-incentives
+  text: Management incentives are tied to the share price, such as performance shares that vest only above a price hurdle or the local equivalent, or insiders buy shares in size on the open market.
+- id: c5-catalyst
+  text: A hard external catalyst on a known date points the share price up.
+- id: c6-floor
+  text: The price is reasonable and the downside has a floor that rests on hard assets, cash or the cash-generating core under a conservative case, not on a business model that has never been tested in a downturn.
+scope:
+  asset_types:
+  - equity
+  sectors:
+  - information-technology
+  - communication-services
+  - health-care
+  - industrials
+  - financials
+  - consumer-discretionary
+  - consumer-staples
+  - materials
+  - energy
+  - utilities
+  - real-estate
+  markets:
+  - US
+  - JP
+  - KR
+  - EU
+  - AU
+  - CA
+  horizon_months:
+    min: 12
+    max: 18
+exclusions: Good-enough products in crowded markets with stalled organic growth; companies whose cheapness is a rational, permanent discount; companies with a pending offer or take-private; companies without revenue whose bear case is close to zero.
+failure_modes: Mistaking a good-enough product for a unique engine; treating a rational permanent discount as mispricing; a floor that depends on an ecosystem which breaks in a downturn; the discount closing before entry, since framing errors are often corrected within weeks or months; a change of the people in charge.
+owner: pendragon.avalon
+version: 1
+published_at: '2026-10-07T19:41:51Z'
+thread: null
