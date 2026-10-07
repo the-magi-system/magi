@@ -122,11 +122,12 @@ class Runner:
             time.sleep(POLL_SECONDS)
         self.check(name, False, f"not true within {timeout} seconds")
 
-    def run_workflow(self, workflow: str) -> dict:
+    def run_workflow(self, workflow: str, inputs: dict | None = None) -> dict:
         """Dispatch a workflow and wait for that run. Runs are told apart by id, not by clock time."""
         path = f"/repos/{self.gh.repo}/actions/workflows/{workflow}/runs"
         known = {run["id"] for run in self.gh.request("GET", path, query={"per_page": 20})["workflow_runs"]}
-        self.gh.request("POST", f"/repos/{self.gh.repo}/actions/workflows/{workflow}/dispatches", {"ref": "main"})
+        body = {"ref": "main", **({"inputs": inputs} if inputs else {})}
+        self.gh.request("POST", f"/repos/{self.gh.repo}/actions/workflows/{workflow}/dispatches", body)
         deadline = time.time() + TIMEOUT_SECONDS
         while time.time() < deadline:
             runs = self.gh.request("GET", path, query={"event": "workflow_dispatch", "per_page": 5})["workflow_runs"]
@@ -139,8 +140,8 @@ class Runner:
 
 def scenario(r: Runner) -> None:
     month_dir = f"ledger/events/{datetime.now(timezone.utc):%Y/%m}"
-    n = r.submit("register_agent", proposal("register_agent", "arthur", {"name": "e2e", "system": "sandbox", "display_name": "E2E.Sandbox", "role": "research-agent"}))
-    r.expect("register an agent", r.wait(n), "accepted")
+    registration = r.submit("register_agent", proposal("register_agent", "arthur", {"name": "e2e", "system": "sandbox", "display_name": "E2E.Sandbox", "role": "research-agent"}))
+    r.expect("register an agent", r.wait(registration), "accepted")
     n = r.submit("register_agent with the reserved system name", proposal("register_agent", "arthur", {
         "name": "melchior", "system": "magi", "display_name": "Melchior.Magi", "role": "research-agent"}))
     r.expect("reserved system name rejected", r.wait(n), "rejected", "E_SEMANTIC")
@@ -208,6 +209,21 @@ def scenario(r: Runner) -> None:
     log_text = r.gh.get_file(f"log/{datetime.now(timezone.utc):%Y-%m}.jsonl") or ""
     last = json.loads(log_text.strip().splitlines()[-1])
     r.check("discussion_refs recorded in the event log", last.get("discussion_refs") == [note["html_url"]])
+
+    caspar = r.run_workflow("caspar.yml", {"scope": "regular"})
+    r.check("caspar workflow succeeded", caspar["conclusion"] == "success", caspar["html_url"])
+    review = parse_yaml(r.gh.get_file(f"ideas/{IDEA['id']}/judgements/caspar.magi/{AGENT}.yaml") or "{}")
+    r.check("caspar stored a review of the view", review.get("judge") == "caspar.magi" and
+            isinstance(review.get("scores"), dict), f"view_version={review.get('view_version')}")
+    r.check("caspar posted the review in the thread",
+            any("<!-- magi:caspar review " in (c.get("body") or "") for c in r.gh.comments(thread)))
+    r.check("caspar welcomed the new agent",
+            any(f"<!-- magi:caspar welcome agent:{AGENT} -->" in (c.get("body") or "") for c in r.gh.comments(registration)))
+    r.check("caspar recorded what the review was based on",
+            len(review.get("input_commit") or "") == 40 and review.get("model") == "claude-opus-5-5")
+    probe = r.run_workflow("caspar.yml", {"scope": "probe"})
+    r.check("caspar probe: the model cannot read outside its work directory", probe["conclusion"] == "success",
+            probe["html_url"])
 
     data_request = "```yaml\n" + dump_yaml({"magi": "data-request@1", "actor": AGENT, "provider": "arthur",
                                             "category": "company-facts", "subject": ["nvda"],

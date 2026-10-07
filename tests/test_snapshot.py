@@ -51,7 +51,7 @@ def test_compile_on_fixture(repo):
     assert manifest["counts"] == {"ideas": 3, "views": 0, "evidence": 1, "agents": 5, "profiles": 2, "methodologies": 1,
                                   "open_picks": 1, "reviews": 0, "reports": 0}
     assert [p["actor"] for p in files["profiles.json"]] == ["arthur.val", "john.research"]
-    assert (manifest["main_commit"], manifest["protocol_version"]) == ("abc123", "1.4")
+    assert (manifest["main_commit"], manifest["protocol_version"]) == ("abc123", "1.5")
 
 
 def test_views_carry_now_metrics(repo):
