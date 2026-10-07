@@ -152,6 +152,14 @@ def _references(state: RepoState) -> list[Finding]:
     return found
 
 
+def _reports_logged(root: Path) -> list[Finding]:
+    logged = {entry["entity"] for entry in read_log(root) if entry.get("action") == "report"}
+    directory = root / "reports"
+    paths = sorted(directory.glob("*/*.md")) if directory.is_dir() else []
+    return [Finding(rel, "this report has no line in the event log")
+            for rel in (path.relative_to(root).as_posix() for path in paths) if rel not in logged]
+
+
 def _reviews_logged(root: Path, state: RepoState) -> list[Finding]:
     logged = {(entry["entity"], entry.get("version")) for entry in read_log(root) if entry.get("action") == "review"}
     found = []
@@ -261,4 +269,4 @@ def check_repository(root: Path) -> list[Finding]:
         state = RepoState.load(root)
     except Exception as exc:
         return [Finding("", f"repository could not be loaded: {type(exc).__name__}: {exc}")]
-    return _references(state) + _reviews_logged(root, state) + _ledger(root) + _log(root)
+    return _references(state) + _reviews_logged(root, state) + _reports_logged(root) + _ledger(root) + _log(root)

@@ -38,4 +38,8 @@ def apply_proposal(state: RepoState, proposal: Proposal, *, issue: int, owner: s
 def write_changes(root: Path, changes: ChangeSet) -> list[int]:
     for path, data in changes.writes.items():
         write_yaml(Path(root) / path, data)
+    for path, text in changes.texts.items():
+        target = Path(root) / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(text, encoding="utf-8", newline="\n")
     return append(Path(root), changes.log)

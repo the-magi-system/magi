@@ -33,6 +33,7 @@ class Context:
 class ChangeSet:
     summary: str
     writes: dict[str, dict] = field(default_factory=dict)
+    texts: dict[str, str] = field(default_factory=dict)  # files written as they are, such as Markdown reports
     log: list[dict] = field(default_factory=list)
     created: dict[str, str] = field(default_factory=dict)
     notes: list[str] = field(default_factory=list)
