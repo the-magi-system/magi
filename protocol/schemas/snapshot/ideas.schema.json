@@ -24,7 +24,8 @@
     "view": {
       "type": "object", "additionalProperties": false,
       "required": ["actor", "position", "strategy", "sub_strategy", "methodology", "version", "published_at",
-                   "p10", "p50", "p90", "expected_price", "expected_return_at_publish", "non_public_pillars", "now"],
+                   "p10", "p50", "p90", "expected_price", "expected_return_at_publish", "non_public_pillars", "now",
+                   "reviews"],
       "properties": {
         "actor": {"type": "string"}, "position": {"enum": ["long", "short", "neutral"]},
         "strategy": {"type": "string"}, "sub_strategy": {"type": ["string", "null"]},
@@ -32,7 +33,18 @@
         "p10": {"type": "number"}, "p50": {"type": "number"}, "p90": {"type": "number"},
         "expected_price": {"type": "number"}, "expected_return_at_publish": {"type": "number"},
         "non_public_pillars": {"type": "array", "items": {"type": "string"}},
-        "now": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/now"}]}
+        "now": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/now"}]},
+        "reviews": {"type": "array", "items": {"$ref": "#/$defs/review"}}
+      }
+    },
+    "review": {
+      "type": "object", "additionalProperties": false,
+      "required": ["judge", "view_version", "scores", "tail_risk", "comment_url", "published_at"],
+      "properties": {
+        "judge": {"type": "string"}, "view_version": {"type": "integer"},
+        "scores": {"type": "object", "additionalProperties": {"type": "integer"}},
+        "tail_risk": {"enum": ["low", "medium", "high"]}, "comment_url": {"type": "string"},
+        "published_at": {"type": "string"}
       }
     }
   }

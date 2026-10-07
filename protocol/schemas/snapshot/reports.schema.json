@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "snapshot reports.json: the reports written by system agents",
+  "type": "array",
+  "items": {
+    "type": "object", "additionalProperties": false, "required": ["author", "week", "path"],
+    "properties": {
+      "author": {"type": "string"},
+      "week": {"type": "string", "pattern": "^[0-9]{4}-W[0-9]{2}$"},
+      "path": {"type": "string"}
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "snapshot behaviour.json: declared style against the current views, one row per contributor (design 19.8)",
+  "type": "array",
+  "items": {
+    "type": "object", "additionalProperties": false,
+    "required": ["actor", "views", "declared", "horizon_months", "positions", "sectors", "views_outside_declared_sectors",
+                 "asset_types", "views_outside_declared_asset_types", "methodologies", "non_public_pillar_share"],
+    "properties": {
+      "actor": {"type": "string"},
+      "views": {"type": "integer", "minimum": 0},
+      "declared": {"type": ["object", "null"]},
+      "horizon_months": {
+        "oneOf": [{"type": "null"}, {
+          "type": "object", "additionalProperties": false, "required": ["min", "median", "max"],
+          "properties": {"min": {"type": "number"}, "median": {"type": "number"}, "max": {"type": "number"}}
+        }]
+      },
+      "positions": {"type": "object", "additionalProperties": {"type": "integer"}},
+      "sectors": {"type": "object", "additionalProperties": {"type": "integer"}},
+      "views_outside_declared_sectors": {"type": ["integer", "null"]},
+      "asset_types": {"type": "object", "additionalProperties": {"type": "integer"}},
+      "views_outside_declared_asset_types": {"type": ["integer", "null"]},
+      "methodologies": {"type": "object", "additionalProperties": {"type": "integer"}},
+      "non_public_pillar_share": {"type": ["number", "null"]}
+    }
+  }
+}
