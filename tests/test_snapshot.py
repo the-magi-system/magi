@@ -12,7 +12,8 @@ from engine.proposal import Proposal
 from engine.repo import RepoState
 from engine.snapshot import compile_snapshot, write_snapshot
 from tests.fakes import NOW, FakePrices, init_git_repo
-from tests.util import REPO_ROOT, build_repo, view_payload
+from engine.yamlio import write_yaml
+from tests.util import REPO_ROOT, build_repo, judgement_record, view_payload
 
 SCHEMA_DIR = REPO_ROOT / "protocol" / "schemas" / "snapshot"
 
@@ -22,6 +23,14 @@ def _view(repo, price=180.2):
     changes = apply_proposal(state, Proposal("update_view", "john.research", view_payload()), issue=61, owner="john",
                              now=NOW, prices=FakePrices({"NVDA": price}))
     write_changes(repo, changes)
+
+
+def _review_and_report(repo):
+    write_yaml(repo / "ideas" / "nvda-ai-capex-2026" / "judgements" / "caspar.magi" / "john.research.yaml",
+               judgement_record())
+    report = repo / "reports" / "caspar" / "2026-W40.md"
+    report.parent.mkdir(parents=True)
+    report.write_text("# Caspar.Magi weekly report, 2026-W40\n", encoding="utf-8")
 
 
 def _close(repo, asset, value, currency="USD", date="2026-10-02"):
@@ -36,11 +45,11 @@ def _close(repo, asset, value, currency="USD", date="2026-10-02"):
 def test_compile_on_fixture(repo):
     files = compile_snapshot(repo, NOW, "abc123")
     assert set(files) == {"manifest.json", "ideas.json", "agents.json", "profiles.json", "strategies.json",
-                          "methodologies.json", "prices.json", "ideas/nvda-ai-capex-2026.json", "ideas/nvda-archived-idea.json",
-                          "ideas/xom-lng-2027.json"}
+                          "methodologies.json", "prices.json", "behaviour.json", "reports.json",
+                          "ideas/nvda-ai-capex-2026.json", "ideas/nvda-archived-idea.json", "ideas/xom-lng-2027.json"}
     manifest = files["manifest.json"]
     assert manifest["counts"] == {"ideas": 3, "views": 0, "evidence": 1, "agents": 5, "profiles": 2, "methodologies": 1,
-                                  "open_picks": 1}
+                                  "open_picks": 1, "reviews": 0, "reports": 0}
     assert [p["actor"] for p in files["profiles.json"]] == ["arthur.val", "john.research"]
     assert (manifest["main_commit"], manifest["protocol_version"]) == ("abc123", "1.4")
 
@@ -65,6 +74,19 @@ def test_view_summary_lists_non_public_pillars(repo):
     assert compile_snapshot(repo, NOW, "x")["ideas.json"][0]["views"][0]["non_public_pillars"] == ["contacts"]
 
 
+def test_views_carry_their_reviews_and_reports_are_listed(repo):
+    _view(repo)
+    _review_and_report(repo)
+    files = compile_snapshot(repo, NOW, "x")
+    review = judgement_record()
+    assert files["ideas.json"][0]["views"][0]["reviews"] == [{
+        "judge": "caspar.magi", "view_version": 1, "scores": review["scores"], "tail_risk": "high",
+        "comment_url": review["comment_url"], "published_at": review["published_at"]}]
+    assert files["reports.json"] == [{"author": "caspar.magi", "week": "2026-W40", "path": "reports/caspar/2026-W40.md"}]
+    assert (files["manifest.json"]["counts"]["reviews"], files["manifest.json"]["counts"]["reports"]) == (1, 1)
+    assert [row["actor"] for row in files["behaviour.json"]] == ["arthur.val", "john.research"]
+
+
 def test_now_metrics_need_a_close_in_the_same_currency(repo):
     _view(repo)
     assert compile_snapshot(repo, NOW, "x")["ideas.json"][0]["views"][0]["now"] is None
@@ -82,6 +104,7 @@ def test_history_and_evidence_per_idea(repo):
 def test_snapshot_matches_its_schemas(repo):
     _view(repo)
     _close(repo, "nvda", 200.0)
+    _review_and_report(repo)
     for name, data in compile_snapshot(repo, NOW, "x").items():
         schema_name = "idea" if name.startswith("ideas/") else name.removesuffix(".json")
         schema = json.loads((SCHEMA_DIR / f"{schema_name}.schema.json").read_text(encoding="utf-8"))

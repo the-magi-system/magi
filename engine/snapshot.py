@@ -6,6 +6,7 @@ import re
 from datetime import datetime
 from pathlib import Path
 
+from .behaviour import all_behaviour
 from .derive import derive
 from .distribution import check_distribution
 from .eventlog import LOG_DIR
@@ -51,13 +52,28 @@ def _now(view: dict, line: dict | None) -> dict | None:
             "prob_loss": metrics["prob_loss"]}
 
 
-def _view_summary(view: dict, line: dict | None) -> dict:
+def _reviews(state: RepoState, idea_id: str, actor: str) -> list[dict]:
+    return [{"judge": judge, "view_version": review["view_version"], "scores": review["scores"],
+             "tail_risk": review["tail_risk"], "comment_url": review["comment_url"], "published_at": review["published_at"]}
+            for (owner_idea, judge, reviewed), review in sorted(state.judgements.items())
+            if owner_idea == idea_id and reviewed == actor]
+
+
+def _reports(root: Path) -> list[dict]:
+    """reports/<name>/<week>.md, written by the system agent <name>.magi."""
+    directory = Path(root) / "reports"
+    paths = sorted(directory.glob("*/*.md")) if directory.is_dir() else []
+    return [{"author": f"{path.parent.name}.magi", "week": path.stem, "path": path.relative_to(root).as_posix()}
+            for path in paths]
+
+
+def _view_summary(view: dict, line: dict | None, reviews: list[dict]) -> dict:
     derived = view["derived"]
     return {"actor": view["actor"], "position": view["position"], "strategy": view["strategy"],
             "sub_strategy": view.get("sub_strategy"), "methodology": view["methodology"], "version": view["version"],
             "published_at": view["published_at"], "p10": derived["p10"], "p50": derived["p50"], "p90": derived["p90"],
             "expected_price": derived["expected_price"], "expected_return_at_publish": derived["expected_return"],
-            "non_public_pillars": view.get("non_public_pillars", []), "now": _now(view, line)}
+            "non_public_pillars": view.get("non_public_pillars", []), "now": _now(view, line), "reviews": reviews}
 
 
 def _agent_summary(agent: dict, events: list[dict]) -> dict:
@@ -84,7 +100,7 @@ def compile_snapshot(root: Path, now: datetime, commit: str) -> dict[str, object
         views = [view for (owner_idea, _), view in sorted(state.views.items()) if owner_idea == idea_id]
         summaries.append({"id": idea_id, "asset": idea["asset"], "title": idea["title"], "status": idea["status"],
                           "thread": idea.get("thread"), "latest_close": _close(line),
-                          "views": [_view_summary(view, line) for view in views]})
+                          "views": [_view_summary(view, line, _reviews(state, idea_id, view["actor"])) for view in views]})
         files[f"ideas/{idea_id}.json"] = {
             "idea": idea,
             "latest_close": _close(line),
@@ -107,11 +123,14 @@ def compile_snapshot(root: Path, now: datetime, commit: str) -> dict[str, object
                                     "thread": m.get("thread"), "scope": m["scope"], "view_count": method_counts.get(mid, 0)}
                                    for mid, m in sorted(state.methodologies.items())]
     files["prices.json"] = {asset: _close(line) for asset, line in sorted(closes.items())}
+    files["behaviour.json"] = all_behaviour(state)
+    files["reports.json"] = _reports(root)
     files["manifest.json"] = {
         "generated_at": iso(now), "main_commit": commit, "protocol_version": protocol_version(root),
         "counts": {"ideas": len(state.ideas), "views": len(state.views), "evidence": len(state.evidence),
                    "agents": len(state.agents), "profiles": len(state.profiles), "methodologies": len(state.methodologies),
-                   "open_picks": len(load_book(root).open)},
+                   "open_picks": len(load_book(root).open), "reviews": len(state.judgements),
+                   "reports": len(files["reports.json"])},
     }
     return files
 
