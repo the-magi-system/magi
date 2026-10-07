@@ -16,9 +16,10 @@ from .basis import non_public_pillars
 from .derive import derive
 from .distribution import check_distribution
 from .eventlog import LOG_DIR
+from .ids import is_system_agent
 from .ledger import ordered_events
 from .repo import RepoState
-from .schemas import validate_payload
+from .schemas import system_errors, validate_payload
 from .yamlio import load_yaml
 
 YAML_DIRS = ["registry", "evidence", "methodologies", "ideas", "ledger"]
@@ -29,7 +30,7 @@ SPLIT = {"magi/agent@1": "agent", "magi/asset@1": "asset", "magi/methodology@1":
          "magi/profile@1": "profile"}
 ACTIONS = {"asset": "register_asset", "methodology": "publish_methodology", "idea": "create_idea",
            "view": "update_view", "judgement": "publish_judgement", "profile": "publish_profile"}
-LOG_KEYS = ("seq", "at", "issue", "action", "actor", "owner", "entity")
+LOG_KEYS = ("seq", "at", "action", "actor", "owner", "entity")  # and "issue" or, for system agents, "run"
 
 
 @dataclass(frozen=True)
@@ -69,6 +70,8 @@ def _errors(schema: dict, data: dict) -> list[str]:
 
 def _payload(name: str, record: dict, system_keys: set[str]) -> tuple[str, dict]:
     payload = {key: value for key, value in record.items() if key not in system_keys}
+    if name == "profile" and record.get("kind") == "system":
+        return "system:profile", payload
     if name == "agent":
         payload["name"], payload["system"] = record["id"].split(".", 1)
         return "register_agent", payload
@@ -94,6 +97,8 @@ def check_file(root: Path, path: Path) -> list[Finding]:
         return [Finding(rel, message) for message in _errors(_schema(root, WHOLE[kind]), record)]
     if kind not in SPLIT:
         return [Finding(rel, f"unknown schema {kind!r}")]
+    if kind == "magi/agent@1" and is_system_agent(str(record.get("id", ""))):
+        return [Finding(rel, message) for message in system_errors(root, "agent", record)]
     name = SPLIT[kind]
     schema = _schema(root, name)
     system_keys = set(schema["properties"])
@@ -101,6 +106,8 @@ def check_file(root: Path, path: Path) -> list[Finding]:
     if found:
         return found
     action, payload = _payload(name, record, system_keys)
+    if action.startswith("system:"):
+        return [Finding(rel, message) for message in system_errors(root, action[7:], payload)]
     return [Finding(rel, f"{e.path}: {e.message}") for e in validate_payload(root, action, payload)]
 
 
@@ -108,13 +115,15 @@ def _references(state: RepoState) -> list[Finding]:
     found: list[Finding] = []
     actors = set(state.agents) | set(state.researchers)
     for agent_id, agent in state.agents.items():
-        if agent["owner"] not in state.researchers:
+        if not is_system_agent(agent_id) and agent["owner"] not in state.researchers:
             found.append(Finding(f"registry/agents/{agent_id}.yaml", f"owner {agent['owner']!r} is not a registered researcher"))
     for actor, profile in state.profiles.items():
         path = f"registry/profiles/{actor}.yaml"
         if actor not in actors:
             found.append(Finding(path, f"actor {actor!r} is not registered"))
-        found += [Finding(path, f"methodology {m!r} does not exist") for m in profile["methodologies"]
+        if (profile["kind"] == "system") != is_system_agent(actor):
+            found.append(Finding(path, f"a {profile['kind']} profile does not fit actor {actor!r}"))
+        found += [Finding(path, f"methodology {m!r} does not exist") for m in profile.get("methodologies", [])
                   if m not in state.methodologies]
     for method_id, method in state.methodologies.items():
         if method["owner"] not in actors:
@@ -209,6 +218,8 @@ def _log(root: Path) -> list[Finding]:
                 found.append(Finding(f"{rel}:{number}", "is not valid JSON"))
                 continue
             missing = [key for key in LOG_KEYS if key not in entry]
+            if "issue" not in entry and "run" not in entry:
+                missing.append("issue or run")
             if missing:
                 found.append(Finding(f"{rel}:{number}", f"lacks {', '.join(missing)}"))
             seq = entry.get("seq")

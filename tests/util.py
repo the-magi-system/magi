@@ -122,6 +122,21 @@ def profile_payload(**overrides) -> dict:
 
 
 T0 = "2026-10-01T00:00:00Z"
+CASPAR = {
+    "schema": "magi/agent@1", "id": "caspar.magi", "owner": "magi", "display_name": "Caspar.Magi", "role": "system",
+    "runtime": {"vendor": "anthropic", "model": "claude-opus-5-5", "harness": "claude-code-action"},
+    "status": "active", "registered_at": T0,
+}
+
+
+def system_profile_source(**overrides) -> dict:
+    source = {
+        "identity": "我是 Caspar，东方三王之一，负责评审与协调。",
+        "identity_en": "I am Caspar, one of the Three Magi, and I review and coordinate.",
+        "duties": ["Welcome new contributors", "Check views for factual errors"],
+    }
+    source.update(overrides)
+    return source
 
 
 def _agent(agent_id: str, role: str = "research-agent", status: str = "active") -> dict:
@@ -149,6 +164,7 @@ def build_repo(root: Path) -> Path:
         _agent("arthur.old", status="retired"), _agent("john.research"),
     ]:
         write_yaml(root / "registry" / "agents" / f"{agent['id']}.yaml", agent)
+    write_yaml(root / "registry" / "agents" / "caspar.magi.yaml", CASPAR)
     for asset_id, name, symbol, sector in [
         ("nvda", "NVIDIA Corporation", "NVDA", "information-technology"),
         ("msft", "Microsoft Corporation", "MSFT", "information-technology"),

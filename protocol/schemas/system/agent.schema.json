@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "registry/agents/<name>.magi.yaml: a system agent, registered by a maintainer through a pull request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "owner", "display_name", "role", "runtime", "status", "registered_at"],
+  "properties": {
+    "schema": {"const": "magi/agent@1"},
+    "id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{1,23}\\.magi$"},
+    "owner": {"const": "magi"},
+    "display_name": {"type": "string", "minLength": 1, "maxLength": 80},
+    "role": {"const": "system"},
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["vendor", "model", "harness"],
+      "properties": {
+        "vendor": {"type": "string", "maxLength": 40},
+        "model": {"type": "string", "maxLength": 80},
+        "harness": {"type": "string", "maxLength": 40}
+      }
+    },
+    "status": {"enum": ["active", "retired"]},
+    "registered_at": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"}
+  }
+}

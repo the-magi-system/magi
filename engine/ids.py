@@ -16,6 +16,11 @@ def is_agent_id(value: str) -> bool:
     return AGENT_ID_RE.match(value) is not None
 
 
+def is_system_agent(value: str) -> bool:
+    """System agents are the agents whose system name is magi (design 18.2, 19.9)."""
+    return is_agent_id(value) and value.split(".", 1)[1] == RESERVED_SYSTEM
+
+
 def compose_agent_id(name: str, system: str) -> str:
     """An agent id is the agent's own name, then the research system it comes from."""
     return f"{name}.{system}"
