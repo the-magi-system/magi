@@ -104,11 +104,25 @@ def test_percent_probabilities_rejected_with_pointer():
     assert any("maximum" in e.message for e in errors)
 
 
-def test_fewer_than_three_points_rejected():
-    payload = view_payload(distribution={"form": "points", "points": [
-        {"price": 110, "p": 0.5}, {"price": 230, "p": 0.5}]})
+def test_fewer_than_two_points_rejected():
+    payload = view_payload(distribution={"form": "points", "points": [{"price": 110, "p": 1.0}]})
     errors = validate_payload(REPO_ROOT, "update_view", payload)
     assert [e.path for e in errors] == ["/payload/distribution/points"]
+
+
+def test_two_prices_are_enough():
+    points = view_payload(distribution={"form": "points", "points": [{"price": 30, "p": 0.25}, {"price": 50, "p": 0.75}]})
+    arrays = view_payload(distribution={"form": "points", "prices": [30, 50], "probs": [0.25, 0.75]})
+    assert validate_payload(REPO_ROOT, "update_view", points) == []
+    assert validate_payload(REPO_ROOT, "update_view", arrays) == []
+
+
+def test_a_price_may_be_zero_but_not_negative():
+    zero = view_payload(distribution={"form": "points", "points": [{"price": 0, "p": 0.3}, {"price": 50, "p": 0.7}]})
+    negative = view_payload(distribution={"form": "points", "points": [{"price": -1, "p": 0.3}, {"price": 50, "p": 0.7}]})
+    assert validate_payload(REPO_ROOT, "update_view", zero) == []
+    errors = validate_payload(REPO_ROOT, "update_view", negative)
+    assert "/payload/distribution/points/0/price" in [e.path for e in errors]
 
 
 def test_array_form_accepted():

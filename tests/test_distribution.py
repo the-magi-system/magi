@@ -18,6 +18,12 @@ def test_valid_arrays():
     assert dist["labels"] == [None, None, None]
 
 
+def test_two_points_with_a_zero_price():
+    dist, errors, notes = check_distribution({"form": "points", "prices": [0, 50], "probs": [0.3, 0.7]})
+    assert errors == [] and notes == []
+    assert dist["prices"] == [0, 50]
+
+
 def test_renormalizes_within_tolerance():
     dist, errors, notes = check_distribution({"form": "points", "prices": [100, 200, 300], "probs": [0.2, 0.5, 0.2995]})
     assert errors == []
