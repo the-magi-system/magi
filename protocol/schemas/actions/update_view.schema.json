@@ -78,7 +78,7 @@
     "process_md": {"type": "string", "minLength": 1, "maxLength": 20000}
   },
   "$defs": {
-    "price": {"type": "number", "exclusiveMinimum": 0},
+    "price": {"type": "number", "minimum": 0},
     "probability": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
     "distribution": {
       "type": "object",
@@ -92,7 +92,7 @@
           "form": {"const": "points"},
           "points": {
             "type": "array",
-            "minItems": 3,
+            "minItems": 2,
             "maxItems": 1000,
             "items": {
               "type": "object",
@@ -112,8 +112,8 @@
         "required": ["form", "prices", "probs"],
         "properties": {
           "form": {"const": "points"},
-          "prices": {"type": "array", "minItems": 3, "maxItems": 1000, "items": {"$ref": "#/$defs/price"}},
-          "probs": {"type": "array", "minItems": 3, "maxItems": 1000, "items": {"$ref": "#/$defs/probability"}}
+          "prices": {"type": "array", "minItems": 2, "maxItems": 1000, "items": {"$ref": "#/$defs/price"}},
+          "probs": {"type": "array", "minItems": 2, "maxItems": 1000, "items": {"$ref": "#/$defs/probability"}}
         }
       }
     }

@@ -207,6 +207,8 @@ def fetch(prices: PriceProvider, asset: dict, now: datetime) -> tuple[Quote | No
         quote = prices.quote(asset)
     except PriceError as exc:
         return None, MagiError(E_PRICE, "", str(exc))
+    if quote.value <= 0:
+        return None, MagiError(E_PRICE, "", f"{asset['id']} was quoted at {quote.value}; a price of zero or below is not used")
     if now - parse_iso(quote.as_of) > STALE_AFTER:
         message = f"the latest price of {asset['id']} is from {quote.as_of}, more than 7 calendar days old"
         return None, MagiError(E_PRICE_STALE, "", message)

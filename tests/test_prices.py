@@ -78,6 +78,12 @@ def test_fetch_outage():
     assert quote is None and error.code == E_PRICE and error.retryable
 
 
+def test_fetch_rejects_a_quote_of_zero_or_below():
+    for value in (0.0, -1.0):
+        quote, error = fetch(FakePrices({"NVDA": value}), NVDA, NOW)
+        assert quote is None and error.code == E_PRICE and error.retryable
+
+
 def test_fixed_prices():
     assert FixedPrices(50.0, NOW).quote(NVDA) == Quote(50.0, "USD", iso(NOW), "fixed")
 

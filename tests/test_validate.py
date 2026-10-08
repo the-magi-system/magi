@@ -37,6 +37,11 @@ def test_system_field_reported_before_schema(state):
     assert [(e.code, e.path) for e in result.errors] == [(E_SEMANTIC, "/payload/derived")]
 
 
+def test_a_two_point_view_with_a_zero_price_is_ok(state):
+    payload = view_payload(distribution={"form": "points", "points": [{"price": 0, "p": 0.3}, {"price": 230, "p": 0.7}]})
+    assert validate(state, body("update_view", "arthur.val", payload), ARTHUR_ID).status == "ok"
+
+
 def test_rate_limited(state):
     result = validate(state, body("update_view", "arthur.val", view_payload()), ARTHUR_ID, proposals_today=50)
     assert [e.code for e in result.errors] == [E_RATE_LIMIT]
