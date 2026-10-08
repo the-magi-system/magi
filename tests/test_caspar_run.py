@@ -390,3 +390,10 @@ def test_model_schemas_prompts_and_profile():
     assert "The median alone never shows a mismatch." in review
     profile = load_yaml(REPO_ROOT / "agents" / "caspar" / "profile.yaml")
     assert system_errors(REPO_ROOT, "profile", profile) == [] and profile["identity_en"].startswith("I am Caspar")
+
+
+def test_review_prompt_judges_valuation_against_the_target_date():
+    review = (REPO_ROOT / "agents" / "caspar" / "prompts" / "review.md").read_text(encoding="utf-8")
+    for phrase in ("`view.target_date`", "intrinsic value", "market price on the target date",
+                   "The median alone never shows a mismatch."):
+        assert phrase in review
