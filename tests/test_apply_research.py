@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -9,6 +9,7 @@ from engine.errors import E_INTERNAL, E_PRICE
 from engine.proposal import Proposal
 from engine.repo import RepoState
 from engine.schemas import known_actions
+from engine.timeutil import iso
 from engine.yamlio import load_yaml
 from tests.fakes import NOW, FakePrices
 from tests.util import REPO_ROOT, evidence_payload, non_public_evidence_payload, view_payload
@@ -60,7 +61,7 @@ def test_new_view_opens_a_pick(state):
     assert view["price_at_publish"]["value"] == 180.2 and view["derived"]["expected_price"] == pytest.approx(255.5)
     opened = ledger_events(changes, "pick_opened.yaml")
     assert len(opened) == 1 and opened[0]["pick_id"] == "pk-000002"
-    assert opened[0]["original"] == {"p50": 230, "expected_price": 255.5, "horizon_months": 18}
+    assert opened[0]["original"] == {"p50": 230, "expected_price": 255.5, "horizon_months": 18, "target_date": "2028-04-02"}
     assert changes.log[0]["picks"] == [{"pick_id": "pk-000002", "event": "pick_opened"}]
     assert changes.log[0]["diff"]["position"] == [None, "long"]
 
@@ -88,7 +89,21 @@ def test_second_version_diff(repo):
     write_changes(repo, run(RepoState.load(repo), "update_view", "john.research", view_payload()))
     second = run(RepoState.load(repo), "update_view", "john.research", view_payload(horizon_months=12, rationale="Shorter horizon"))
     entry = second.log[0]
-    assert entry["version"] == 2 and entry["diff"] == {"horizon_months": [18, 12]} and entry["rationale"] == "Shorter horizon"
+    assert entry["version"] == 2 and entry["rationale"] == "Shorter horizon"
+    assert entry["diff"] == {"horizon_months": [18, 12], "target_date": ["2028-04-02", "2027-10-02"]}
+
+
+def test_each_version_records_its_own_target_date(repo):
+    first = run(RepoState.load(repo), "update_view", "john.research", view_payload())
+    view = first.writes["ideas/nvda-ai-capex-2026/views/john.research.yaml"]
+    assert view["target_date"] == "2028-04-02" and first.log[0]["target_date"] == "2028-04-02"
+    write_changes(repo, first)
+    later = NOW + timedelta(days=1)
+    second = run(RepoState.load(repo), "update_view", "john.research", view_payload(), now=later,
+                 prices=FakePrices(as_of=iso(later)))
+    assert second.writes["ideas/nvda-ai-capex-2026/views/john.research.yaml"]["target_date"] == "2028-04-03"
+    assert second.log[0]["target_date"] == "2028-04-03"
+    assert second.log[0]["diff"] == {"target_date": ["2028-04-02", "2028-04-03"]}
 
 
 def test_out_of_scope_is_recorded(state):

@@ -3,12 +3,13 @@
   "title": "engine-written fields of ideas/<idea>/views/<actor>.yaml",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "actor", "version", "published_at", "price_at_publish", "methodology_version", "out_of_scope", "non_public_pillars", "derived"],
+  "required": ["schema", "actor", "version", "published_at", "target_date", "price_at_publish", "methodology_version", "out_of_scope", "non_public_pillars", "derived"],
   "properties": {
     "schema": {"const": "magi/view@1"},
     "actor": {"type": "string", "minLength": 1},
     "version": {"type": "integer", "minimum": 1},
     "published_at": {"$ref": "#/$defs/timestamp"},
+    "target_date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
     "price_at_publish": {
       "type": "object", "additionalProperties": false, "required": ["value", "currency", "as_of", "source"],
       "properties": {"value": {"type": "number", "exclusiveMinimum": 0}, "currency": {"type": "string"},

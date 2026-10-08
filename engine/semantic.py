@@ -13,7 +13,7 @@ from .repo import RepoState
 from .strategies import check_add_strategy, check_declaration, check_view_strategy
 
 SYSTEM_FIELDS = frozenset({
-    "actor", "owner", "version", "published_at", "price_at_publish", "derived", "status", "merged_into",
+    "actor", "owner", "version", "published_at", "target_date", "price_at_publish", "derived", "status", "merged_into",
     "methodology_version", "out_of_scope", "non_public_pillars", "discussion", "thread",
     "created_by", "created_at", "submitted_by", "submitted_at",
     "registered_by", "registered_at", "registered_via_issue", "declared_by", "declared_via_issue",

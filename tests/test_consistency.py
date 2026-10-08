@@ -141,6 +141,19 @@ def test_tampered_derived_field_is_reported(repo):
     assert any("derived fields differ" in p for p in problems(repo))
 
 
+def test_a_wrong_or_missing_target_date_is_reported(repo):
+    _apply(repo, "update_view", "john.research", view_payload())
+    assert check_repository(repo) == []
+    path = repo / "ideas" / "nvda-ai-capex-2026" / "views" / "john.research.yaml"
+    record = load_yaml(path)
+    record["target_date"] = "2030-01-01"
+    write_yaml(path, record)
+    assert any("target_date" in p for p in problems(repo))
+    del record["target_date"]
+    write_yaml(path, record)
+    assert any("'target_date' is a required property" in p for p in problems(repo))
+
+
 def test_schema_violation_is_reported(repo):
     path = repo / "ideas" / "nvda-ai-capex-2026" / "idea.yaml"
     write_yaml(path, {**load_yaml(path), "colour": "red"})

@@ -7,11 +7,11 @@ from .derive import derive
 from .distribution import check_distribution
 from .ledger import EVENT_SCHEMA, closed_event, event_path, load_book, opened_event, pick_id
 from .methodology import scope_gaps
-from .timeutil import iso
+from .timeutil import iso, target_date
 from .yamlio import load_yaml
 
 DIRECTIONS = ("long", "short")
-DIFF_FIELDS = ["position", "strategy", "sub_strategy", "horizon_months", "confidence", "methodology", "non_public_pillars",
+DIFF_FIELDS = ["position", "strategy", "sub_strategy", "horizon_months", "target_date", "confidence", "methodology", "non_public_pillars",
                "derived.expected_price", "derived.expected_return", "derived.p10", "derived.p50", "derived.p90"]
 
 
@@ -75,7 +75,9 @@ def update_view(ctx: Context) -> ChangeSet:
     version = previous["version"] + 1 if previous else 1
     record = {"schema": "magi/view@1", "idea": idea_id, "actor": ctx.actor}
     record.update({key: value for key, value in payload.items() if key != "idea"})
-    record.update(version=version, published_at=iso(ctx.now), price_at_publish=quote.to_dict(),
+    published_at = iso(ctx.now)
+    record.update(version=version, published_at=published_at,
+                  target_date=target_date(published_at, payload["horizon_months"]), price_at_publish=quote.to_dict(),
                   methodology_version=methodology["version"],
                   out_of_scope=scope_gaps(methodology, asset, payload["horizon_months"]),
                   non_public_pillars=non_public_pillars(payload["pillars"], state.evidence),
@@ -97,14 +99,15 @@ def update_view(ctx: Context) -> ChangeSet:
         event_file = event_path(ctx.now, new_id, "pick_opened", taken)
         taken.add(event_file)
         original = {"p50": record["derived"]["p50"], "expected_price": record["derived"]["expected_price"],
-                    "horizon_months": payload["horizon_months"]}
+                    "horizon_months": payload["horizon_months"], "target_date": record["target_date"]}
         writes[event_file] = opened_event(pick_id=new_id, actor=ctx.actor, idea=idea_id, direction=direction,
                                           now=ctx.now, quote=quote, view_version=version, original=original,
                                           issue=ctx.issue)
         picks.append({"pick_id": new_id, "event": "pick_opened"})
     changes = ChangeSet(f"update_view: {ctx.actor} / {idea_id} v{version}", writes=writes, notes=list(notes),
                         created={"view_version": str(version)})
-    changes.log.append(log_entry(ctx, path, version=version, diff=view_diff(previous, record),
+    changes.log.append(log_entry(ctx, path, version=version, target_date=record["target_date"],
+                                 diff=view_diff(previous, record),
                                  rationale=payload["rationale"], discussion_refs=payload.get("discussion_refs") or None,
                                  picks=picks or None))
     return changes
