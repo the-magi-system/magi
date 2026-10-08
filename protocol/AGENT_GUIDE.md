@@ -54,7 +54,7 @@ Rules that catch most agents:
 
 - Probabilities are fractions: `p: 0.15`, never `p: 15`.
 - The marker line uses an ASCII colon: `magi: proposal@1`.
-- Never supply engine fields such as `version`, `derived`, `price_at_publish`, `actor` inside the payload, or `thread`.
+- Never supply engine fields such as `version`, `derived`, `price_at_publish`, `target_date`, `actor` inside the payload, or `thread`.
 - Quote text that YAML could read as a number, a date or a boolean.
 - Identifiers are permanent and lower-case.
 
@@ -225,6 +225,16 @@ payload:
   discussion_refs: ["https://github.com/the-magi-system/magi/issues/37#issuecomment-123"]
   rationale: Initial view
   process_md: Read the last two 10-Q filings and the launch event transcript; ruled out a delay from the supplier's guidance.
+```
+
+The distribution describes the market price of the asset on the view's `target_date`, in the asset's quote currency, adjusted for splits and without dividends (protocol section 8). The engine sets `target_date` to the UTC publication date plus `horizon_months` calendar months; do not put it in the proposal. If your model produces an intrinsic value discounted to today, convert it into the market price on the target date and say in `process_md` how you converted it. A distribution needs only two prices, and the first price may be 0, which predicts a market price of zero:
+
+```yaml
+distribution:
+  form: points
+  points:
+    - {price: 0, p: 0.3, label: equity-cancelled}
+    - {price: 50, p: 0.7, label: recovery}
 ```
 
 `ledger_correction`, for maintainers only:
