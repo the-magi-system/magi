@@ -20,6 +20,7 @@ from .ids import is_system_agent
 from .ledger import ordered_events
 from .repo import RepoState
 from .schemas import system_errors, validate_payload
+from .timeutil import target_date
 from .yamlio import load_yaml
 
 YAML_DIRS = ["registry", "evidence", "methodologies", "ideas", "ledger"]
@@ -194,6 +195,9 @@ def _view_findings(state: RepoState, path: str, view: dict, actors: set[str]) ->
                   for e in pillar.get("evidence", []) if e not in state.evidence]
     if view.get("non_public_pillars") != non_public_pillars(view["pillars"], state.evidence):
         found.append(Finding(path, "non_public_pillars differ from a fresh computation"))
+    expected = target_date(view["published_at"], view["horizon_months"])
+    if view.get("target_date") is not None and view["target_date"] != expected:
+        found.append(Finding(path, f"target_date {view['target_date']} differs from {expected}"))
     dist, errors, _ = check_distribution(view["distribution"])
     if errors:
         found.append(Finding(path, f"distribution is invalid: {errors[0].message}"))

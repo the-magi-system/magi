@@ -42,6 +42,11 @@ def test_a_two_point_view_with_a_zero_price_is_ok(state):
     assert validate(state, body("update_view", "arthur.val", payload), ARTHUR_ID).status == "ok"
 
 
+def test_target_date_is_engine_only(state):
+    result = validate(state, body("update_view", "arthur.val", view_payload(target_date="2027-01-01")), ARTHUR_ID)
+    assert [(e.code, e.path) for e in result.errors] == [(E_SEMANTIC, "/payload/target_date")]
+
+
 def test_rate_limited(state):
     result = validate(state, body("update_view", "arthur.val", view_payload()), ARTHUR_ID, proposals_today=50)
     assert [e.code for e in result.errors] == [E_RATE_LIMIT]
