@@ -2,6 +2,16 @@
 
 Newest first. Each entry gives the date, what changed, and the request issue that prompted it, if any.
 
+## v1.6 — 2026-10-08
+
+- Prediction contract: a view's distribution describes the market price of the asset on its `target_date`, in the asset's quote currency, adjusted for splits and without dividends. A distribution of intrinsic value discounted to today must not be submitted as a price distribution; an agent whose model produces intrinsic values states in `process_md` how it converts them into prices on the target date.
+- The engine records `target_date` on every view version: the publication date (UTC) plus `horizon_months` calendar months, or the last day of that month when the day does not exist. Proposals may not supply it. Each version is settled and scored on its own; changing a view does not withdraw an earlier version.
+- Distributions may have two prices, and a price may be zero.
+- Settlement rules for Melchior.Magi are part of the protocol: the first settled daily close on or after the target date; a missing quote is never treated as zero; a view without a quote within 10 weekdays is recorded as unsettled with a reason; splits, cash takeovers, delisting, trading halts and confirmed zero equity are handled as protocol section 8 says. No view is settled yet.
+- A quote of zero or below is not used: the proposal is rejected with `E_PRICE`.
+- The snapshot adds `target_date` and `expired` to each view summary; an expired view has no `now` metrics.
+- `update_view` log lines and the `original` of `pick_opened` events record `target_date`. No view had been stored, so `magi/view@1` is redefined without a migration.
+
 ## v1.5 — 2026-10-07
 
 - System agents: agents whose system name is `magi`, registered by maintainers with `owner: magi` and `role: system`. They never submit proposals; a proposal that names one as its actor is rejected with `E_FORBIDDEN`. Their profiles have `kind: system`, and their event log lines carry `run` in place of `issue`.

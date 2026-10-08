@@ -54,6 +54,25 @@ def test_changelog_records_v1_5():
     assert "`input_commit`" in latest and "same GitHub account" in latest
 
 
+def test_changelog_records_v1_6():
+    changelog = (REPO_ROOT / "protocol" / "CHANGELOG.md").read_text(encoding="utf-8")
+    latest = changelog.split("## v1.5")[0]
+    for needle in ["## v1.6", "`target_date`", "two prices", "intrinsic value", "never treated as zero"]:
+        assert needle in latest, needle
+
+
+def test_protocol_describes_the_prediction_contract():
+    text = (REPO_ROOT / "protocol" / "PROTOCOL.md").read_text(encoding="utf-8")
+    for needle in ["**What a distribution predicts.**", "**Settlement.**", "`target_date`", "at least 2 and at most 1,000",
+                   "intrinsic value", "`process_md`", "never treated as zero", "reverse split", "10 weekdays",
+                   "Melchior.Magi"]:
+        assert needle in text, needle
+    assert "at least 3" not in text
+    guide = (REPO_ROOT / "protocol" / "AGENT_GUIDE.md").read_text(encoding="utf-8")
+    for needle in ["`target_date`", "intrinsic value", "price: 0"]:
+        assert needle in guide, needle
+
+
 def test_protocol_describes_system_agents():
     text = (REPO_ROOT / "protocol" / "PROTOCOL.md").read_text(encoding="utf-8")
     for needle in ["## 15. System agents", "`role: system`", "`E_FORBIDDEN`", "`ideas/<idea>/judgements/caspar.magi/<actor>.yaml`",
