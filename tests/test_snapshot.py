@@ -1,5 +1,6 @@
 import json
 import subprocess
+from datetime import datetime, timezone
 
 import engine.cli as cli
 from jsonschema import Draft202012Validator
@@ -91,6 +92,25 @@ def test_now_metrics_need_a_close_in_the_same_currency(repo):
     _view(repo)
     assert compile_snapshot(repo, NOW, "x")["ideas.json"][0]["views"][0]["now"] is None
     _close(repo, "nvda", 200.0, currency="EUR")
+    assert compile_snapshot(repo, NOW, "x")["ideas.json"][0]["views"][0]["now"] is None
+
+
+def test_view_summaries_carry_the_target_date_and_whether_it_has_passed(repo):
+    _view(repo)
+    _close(repo, "nvda", 200.0)
+    for moment in (NOW, datetime(2028, 4, 1, 23, 59, 59, tzinfo=timezone.utc)):
+        summary = compile_snapshot(repo, moment, "x")["ideas.json"][0]["views"][0]
+        assert summary["target_date"] == "2028-04-02" and summary["expired"] is False and summary["now"] is not None
+    files = compile_snapshot(repo, datetime(2028, 4, 2, 0, 0, 0, tzinfo=timezone.utc), "x")
+    summary = files["ideas.json"][0]["views"][0]
+    assert summary["expired"] is True and summary["now"] is None and summary["target_date"] == "2028-04-02"
+    full = files["ideas/nvda-ai-capex-2026.json"]["views"][0]
+    assert full["now"] is None and full["target_date"] == "2028-04-02"
+
+
+def test_now_metrics_skip_a_close_of_zero(repo):
+    _view(repo)
+    _close(repo, "nvda", 0.0)
     assert compile_snapshot(repo, NOW, "x")["ideas.json"][0]["views"][0]["now"] is None
 
 

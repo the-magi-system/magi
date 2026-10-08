@@ -41,8 +41,15 @@ def _close(line: dict | None) -> dict | None:
     return {"value": line["close"], "currency": line["currency"], "date": line["date"], "source": line["source"]}
 
 
-def _now(view: dict, line: dict | None) -> dict | None:
+def _expired(view: dict, today: str) -> bool:
+    return today >= view["target_date"]
+
+
+def _now(view: dict, line: dict | None, today: str) -> dict | None:
+    """Metrics at the latest close. None once the target date has come: the view is then settled, not compared."""
     if line is None or line["currency"] != view["price_at_publish"]["currency"]:
+        return None
+    if _expired(view, today) or line["close"] <= 0:
         return None
     dist, errors, _ = check_distribution(view["distribution"])
     if errors:
@@ -67,13 +74,14 @@ def _reports(root: Path) -> list[dict]:
             for path in paths]
 
 
-def _view_summary(view: dict, line: dict | None, reviews: list[dict]) -> dict:
+def _view_summary(view: dict, line: dict | None, reviews: list[dict], today: str) -> dict:
     derived = view["derived"]
     return {"actor": view["actor"], "position": view["position"], "strategy": view["strategy"],
             "sub_strategy": view.get("sub_strategy"), "methodology": view["methodology"], "version": view["version"],
-            "published_at": view["published_at"], "p10": derived["p10"], "p50": derived["p50"], "p90": derived["p90"],
+            "published_at": view["published_at"], "target_date": view["target_date"],
+            "expired": _expired(view, today), "p10": derived["p10"], "p50": derived["p50"], "p90": derived["p90"],
             "expected_price": derived["expected_price"], "expected_return_at_publish": derived["expected_return"],
-            "non_public_pillars": view.get("non_public_pillars", []), "now": _now(view, line), "reviews": reviews}
+            "non_public_pillars": view.get("non_public_pillars", []), "now": _now(view, line, today), "reviews": reviews}
 
 
 def _agent_summary(agent: dict, events: list[dict]) -> dict:
@@ -93,6 +101,7 @@ def compile_snapshot(root: Path, now: datetime, commit: str) -> dict[str, object
     closes = latest_closes(root)
     log = _log(root)
     events = _events(root)
+    today = iso(now)[:10]
     files: dict[str, object] = {}
     summaries = []
     for idea_id, idea in sorted(state.ideas.items()):
@@ -100,11 +109,12 @@ def compile_snapshot(root: Path, now: datetime, commit: str) -> dict[str, object
         views = [view for (owner_idea, _), view in sorted(state.views.items()) if owner_idea == idea_id]
         summaries.append({"id": idea_id, "asset": idea["asset"], "title": idea["title"], "status": idea["status"],
                           "thread": idea.get("thread"), "latest_close": _close(line),
-                          "views": [_view_summary(view, line, _reviews(state, idea_id, view["actor"])) for view in views]})
+                          "views": [_view_summary(view, line, _reviews(state, idea_id, view["actor"]), today)
+                                    for view in views]})
         files[f"ideas/{idea_id}.json"] = {
             "idea": idea,
             "latest_close": _close(line),
-            "views": [{**view, "now": _now(view, line)} for view in views],
+            "views": [{**view, "now": _now(view, line, today)} for view in views],
             "judgements": [j for (owner_idea, _, _), j in sorted(state.judgements.items()) if owner_idea == idea_id],
             "evidence": [e for _, e in sorted(state.evidence.items())
                          if idea_id in e.get("ideas", []) or idea["asset"] in e["assets"]],
