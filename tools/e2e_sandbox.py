@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from engine.github import GitHubClient  # noqa: E402
 from engine.queue import body_sha, engine_replies  # noqa: E402
+from engine.timeutil import target_date  # noqa: E402
 from engine.yamlio import dump_yaml, parse_yaml  # noqa: E402
 
 POLL_SECONDS = 15
@@ -173,6 +174,10 @@ def scenario(r: Runner) -> None:
     stored = parse_yaml(r.gh.get_file(f"ideas/{IDEA['id']}/views/{AGENT}.yaml") or "{}")
     r.check("pillar resting on non-public evidence is flagged", stored.get("non_public_pillars") == ["launch"],
             str(stored.get("non_public_pillars")))
+    r.check("view records its target date", "published_at" in stored
+            and stored.get("target_date") == target_date(stored["published_at"], 12), str(stored.get("target_date")))
+    n = r.submit("update_view with a target_date", proposal("update_view", AGENT, view(evidence_id, target_date="2030-01-01")))
+    r.expect("target_date in a proposal rejected", r.wait(n), "rejected", "E_SEMANTIC")
 
     bad = view(evidence_id, distribution={"form": "points", "points": [{"price": 100, "p": 15}, {"price": 200, "p": 55}, {"price": 300, "p": 30}]})
     n = r.submit("update_view (percent probabilities)", proposal("update_view", AGENT, bad))
@@ -181,6 +186,10 @@ def scenario(r: Runner) -> None:
     r.gh.edit_body(n, proposal("update_view", AGENT, view(evidence_id, position="neutral", rationale="Going flat")))
     r.expect("edited body accepted", r.wait(n), "accepted")
     r.check("pick closed in the ledger", any(name.endswith("pick_closed.yaml") for name in r.gh.list_dir(month_dir)))
+    two = view(evidence_id, position="neutral", rationale="Two outcomes, one of them zero",
+               distribution={"form": "points", "points": [{"price": 0, "p": 0.3}, {"price": 200, "p": 0.7}]})
+    n = r.submit("update_view (two prices with a zero)", proposal("update_view", AGENT, two))
+    r.expect("two prices with a zero accepted", r.wait(n), "accepted")
 
     sub = {"parent": "event-driven", "sub": {"id": "index-inclusion", "name": "Index Inclusion", "definition": "Forced buying around index changes"}}
     n = r.submit("add_strategy", proposal("add_strategy", AGENT, sub))
@@ -240,6 +249,10 @@ def scenario(r: Runner) -> None:
         return any(item["id"] == IDEA["id"] and item["views"] for item in ideas)
 
     r.eventually("snapshot lists the idea with its views", snapshot_lists_idea)
+    ideas = json.loads(r.gh.get_file("ideas.json", ref="snapshot") or "[]")
+    summaries = [v for item in ideas if item["id"] == IDEA["id"] for v in item["views"] if v.get("actor") == AGENT]
+    r.check("snapshot view carries target_date", bool(summaries) and bool(summaries[0].get("target_date"))
+            and summaries[0].get("expired") is False, str(summaries[0] if summaries else None))
 
     run = r.run_workflow("prices.yml")
     r.check("prices workflow succeeded", run["conclusion"] == "success", run["html_url"])
