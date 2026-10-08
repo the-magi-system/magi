@@ -74,6 +74,7 @@ def review_bundle(state: RepoState, gh, idea_id: str, actor: str) -> dict:
         "idea": idea,
         "asset": state.assets[idea["asset"]],
         "view": view,
+        "target_date": view["target_date"],
         "evidence": [state.evidence[ident] for ident in _cited(view) if ident in state.evidence],
         "profile": state.profiles.get(actor),
         "methodology": methodology,

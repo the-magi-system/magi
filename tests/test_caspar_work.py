@@ -97,6 +97,12 @@ def test_review_bundle_holds_the_view_its_evidence_and_the_thread(repo):
         "john.research", "event-catalyst", None)
 
 
+def test_review_bundle_carries_the_target_date(repo):
+    _view(repo)
+    bundle = review_bundle(RepoState.load(repo), FakeGitHub(), IDEA, "john.research")
+    assert bundle["target_date"] == "2028-04-02" == bundle["view"]["target_date"]
+
+
 def test_pending_welcomes(repo):
     gh = FakeGitHub()
     registered = gh.open_issue(ARTHUR_ID, "ThinkwChivalri", body("register_agent", "arthur", {
