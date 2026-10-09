@@ -199,14 +199,15 @@ def scenario(r: Runner) -> None:
 
     n = r.submit("update_view as someone else's agent", proposal("update_view", "john.research", view(evidence_id)))
     r.expect("foreign agent rejected", r.wait(n), "rejected", "E_IDENTITY")
-    r.check("non-retryable rejection closes the issue", r.issue(n)["state"] == "closed")
+    r.eventually("non-retryable rejection closes the issue", lambda: r.issue(n)["state"] == "closed", timeout=120)
 
     request = "```yaml\n" + dump_yaml({"magi": "request@1", "actor": AGENT, "kind": "question", "area": "docs",
                                        "blocking": True, "summary": "E2E request", "details": "Checks the triage workflow"}) + "```\n"
     n = r.submit("request", request)
     r.expect("request received", r.wait(n), "received")
-    labels = {label["name"] for label in r.issue(n)["labels"]}
-    r.check("request labelled", {"magi:request", "magi:blocking"} <= labels, str(sorted(labels)))
+    r.eventually("request labelled",
+                 lambda: {"magi:request", "magi:blocking"} <= {label["name"] for label in r.issue(n)["labels"]},
+                 timeout=120)
 
     thread = parse_yaml(r.gh.get_file(f"ideas/{IDEA['id']}/idea.yaml") or "{}").get("thread")
     r.check("idea has a thread issue", isinstance(thread, int), str(thread))
@@ -239,10 +240,13 @@ def scenario(r: Runner) -> None:
                                             "purpose": "E2E check of the data request channel"}) + "```\n"
     n = r.submit("data request", data_request)
     r.expect("data request received", r.wait(n), "received")
-    issue = r.issue(n)
-    r.check("data request labelled and assigned to the provider",
-            "magi:data-request" in {label["name"] for label in issue["labels"]}
-            and "ThinkwChivalri" in {person["login"] for person in issue["assignees"]})
+
+    def data_request_routed() -> bool:
+        issue = r.issue(n)
+        return ("magi:data-request" in {label["name"] for label in issue["labels"]}
+                and "ThinkwChivalri" in {person["login"] for person in issue["assignees"]})
+
+    r.eventually("data request labelled and assigned to the provider", data_request_routed, timeout=120)
 
     def snapshot_lists_idea() -> bool:
         ideas = json.loads(r.gh.get_file("ideas.json", ref="snapshot") or "[]")
