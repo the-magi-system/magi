@@ -12,7 +12,7 @@
 
 **上游：** 计划 5 已完成（main `08ec0ed` 之后又合并了 PR #13 与几次方法论、档案的提交；本计划写成时 main 为 `56381f1`，`363 passed`）。正式仓库已有 `pendragon.avalon` 的档案与三套方法论，还没有任何观点。
 
-**进度（2026-10-08）：** 计划已写，随设计第 20 节一起作为文档 PR 提交，等维护者审阅。
+**进度（2026-10-09）：** 计划 6 全部完成。Task 1：PR #21（squash，main `d1afa64`）。Task 2–7：PR #22，6 个提交，以 rebase 方式合并，main `65d12b9`，`381 passed`。Task 8：合并前核对过正式仓库没有观点；sandbox 端到端测试第一、二轮各暴露一处与本计划无关的时序问题，分别由 PR #23（main `fd7a085`，`382 passed`）与 PR #24（main `3a505d2`）修正；第三轮 43 步全部通过，含本计划的四个新步骤。之后 Pendragon 可以提交第一个观点。
 
 ## 执行路线
 
@@ -100,7 +100,7 @@ Expected: `363 passed`（本任务不改代码）。
 - `engine.prices.fetch(prices, asset, now)`：报价的 `value` 不大于 0 时返回 `(None, MagiError(E_PRICE, "", "<asset id> was quoted at <value>; a price of zero or below is not used"))`。先判断过时（`E_PRICE_STALE`）还是先判断数值，按现有代码顺序：先取价，再查数值，再查过时。
 - `engine/distribution.py` 与 `engine/derive.py` 不改：设计第 20.6 节已核对，派生字段在零价格下都有定义。本任务为它们补测试。
 
-- [ ] **Step 1: 写测试**
+- [x] **Step 1: 写测试**
 
 1. `tests/test_schemas.py`：
    - 把 `test_fewer_than_three_points_rejected` 改名为 `test_fewer_than_two_points_rejected`，改用一个价位的分布，报错路径仍为 `["/payload/distribution/points"]`。
@@ -111,7 +111,7 @@ Expected: `363 passed`（本任务不改代码）。
 4. `tests/test_prices.py`：新增 `test_fetch_rejects_a_quote_of_zero_or_below`：`FakePrices({"NVDA": 0.0})` 与 `FakePrices({"NVDA": -1.0})` 各取一次，`quote is None`，`error.code == E_PRICE`，`error.retryable` 为真。
 5. `tests/test_validate.py`：新增 `test_a_two_point_view_with_a_zero_price_is_ok`：`validate(state, body("update_view", "arthur.val", view_payload(distribution=<两个价位、首个为 0>)), ARTHUR_ID).status == "ok"`。
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
 Expected: `4 failed, 365 passed`。失败的正是：
@@ -125,16 +125,16 @@ FAILED tests/test_validate.py::test_a_two_point_view_with_a_zero_price_is_ok
 
 `test_distribution.py` 与 `test_derive.py` 的两个新测试在实现之前已经通过：它们确认现有代码在零价格下的数值，防止以后改坏。
 
-- [ ] **Step 3: 实现**
+- [x] **Step 3: 实现**
 
 按 Interfaces 修改 schema 与 `fetch`。
 
-- [ ] **Step 4: 运行，确认通过**
+- [x] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
 Expected: `369 passed`。
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```
 git add protocol/schemas/actions/update_view.schema.json engine/prices.py tests
@@ -161,7 +161,7 @@ git commit -m "feat(protocol): distributions may have two prices and a price of 
 - `protocol/schemas/entities/view.schema.json`：`required` 增加 `"target_date"`，属性 `{"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"}`。
 - 一致性：每个 view 文件的 `target_date` 必须等于 `target_date(view["published_at"], view["horizon_months"])`，不符时报告 `target_date <文件里的值> differs from <重算的值>`；缺少字段由 entity schema 报告。
 
-- [ ] **Step 1: 写测试**
+- [x] **Step 1: 写测试**
 
 1. 新建 `tests/test_target_date.py`，用 `import engine.timeutil as timeutil` 引入模块（这样在实现之前测试是失败而不是收集错误）：
    - `test_target_date_adds_calendar_months`：`target_date("2026-10-02T03:00:00Z", 18) == "2028-04-02"`；`target_date("2026-10-02T03:00:00Z", 120) == "2036-10-02"`；`add_months(date(2026, 11, 15), 2) == date(2027, 1, 15)`。
@@ -174,7 +174,7 @@ git commit -m "feat(protocol): distributions may have two prices and a price of 
 3. `tests/test_validate.py`：新增 `test_target_date_is_engine_only`：`view_payload(target_date="2027-01-01")` 的结果为 `[(E_SEMANTIC, "/payload/target_date")]`，与 `test_system_field_reported_before_schema` 的写法相同。
 4. `tests/test_consistency.py`：新增 `test_a_wrong_or_missing_target_date_is_reported`：用引擎写入一个观点，确认一致性为 `[]`；把文件里的 `target_date` 改成 `"2030-01-01"`，报告里有一条含 `target_date`；删掉这个字段，一致性校验不抛异常，报告里有一条 schema 错误（重新计算时用 `view.get("target_date")`）。
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
 Expected: `8 failed, 367 passed`。失败的正是：
@@ -190,16 +190,16 @@ FAILED tests/test_validate.py::test_target_date_is_engine_only
 FAILED tests/test_consistency.py::test_a_wrong_or_missing_target_date_is_reported
 ```
 
-- [ ] **Step 3: 实现**
+- [x] **Step 3: 实现**
 
 按 Interfaces 修改五个文件。`add_months` 用标准库 `calendar.monthrange` 求月末，不引入新依赖。
 
-- [ ] **Step 4: 运行，确认通过**
+- [x] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
 Expected: `375 passed`。另跑 `python -m engine consistency --repo .`，Expected `[]`（仓库里没有观点）。
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```
 git add engine protocol/schemas/entities/view.schema.json tests
@@ -221,7 +221,7 @@ git commit -m "feat(engine): every view version records its target date: publica
 - `_view_summary` 增加 `"target_date"` 与 `"expired"` 两个字段。`ideas/<idea>.json` 的完整观点本来就带 `target_date`，其 `now` 改用同一个 `_now(view, line, today)`。
 - `ideas.schema.json` 的 `view`：`required` 增加 `"target_date"`、`"expired"`，属性 `target_date` 为 `{"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"}`，`expired` 为 `{"type": "boolean"}`。`idea.schema.json` 的 `views.items.required` 增加 `"target_date"`。
 
-- [ ] **Step 1: 写测试**
+- [x] **Step 1: 写测试**
 
 `tests/test_snapshot.py` 新增：
 
@@ -233,7 +233,7 @@ git commit -m "feat(engine): every view version records its target date: publica
 
 已有的 `test_snapshot_matches_its_schemas` 在实现之后按新的 schema 检查这两个字段。
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
 Expected: `2 failed, 375 passed`。失败的正是：
@@ -245,16 +245,16 @@ FAILED tests/test_snapshot.py::test_now_metrics_skip_a_close_of_zero
 
 第二个测试在实现之前因为除以零（`ZeroDivisionError`）而失败。
 
-- [ ] **Step 3: 实现**
+- [x] **Step 3: 实现**
 
 按 Interfaces 修改 `engine/snapshot.py` 与两份快照 schema。
 
-- [ ] **Step 4: 运行，确认通过**
+- [x] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
 Expected: `377 passed`。
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```
 git add engine/snapshot.py protocol/schemas/snapshot tests/test_snapshot.py
@@ -277,12 +277,12 @@ git commit -m "feat(snapshot): view summaries carry target_date and expired; no 
   - 原有的「The median alone never shows a mismatch.」与右尾策略的说明保持不变。
 - 输出 schema `agents/caspar/schemas/review.schema.json` 不改。
 
-- [ ] **Step 1: 写测试**
+- [x] **Step 1: 写测试**
 
 1. `tests/test_caspar_work.py`：新增 `test_review_bundle_carries_the_target_date`：用引擎写入观点后，`review_bundle(...)["target_date"] == "2028-04-02" == bundle["view"]["target_date"]`。
 2. `tests/test_caspar_run.py`：新增 `test_review_prompt_judges_valuation_against_the_target_date`：`review.md` 含 `` `view.target_date` ``、`intrinsic value`、`market price on the target date`，并且仍含 `The median alone never shows a mismatch.`。
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
 Expected: `2 failed, 377 passed`。失败的正是：
@@ -292,16 +292,16 @@ FAILED tests/test_caspar_work.py::test_review_bundle_carries_the_target_date
 FAILED tests/test_caspar_run.py::test_review_prompt_judges_valuation_against_the_target_date
 ```
 
-- [ ] **Step 3: 实现**
+- [x] **Step 3: 实现**
 
 按 Interfaces 修改两个文件。
 
-- [ ] **Step 4: 运行，确认通过**
+- [x] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
 Expected: `379 passed`。
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```
 git add engine/caspar/work.py agents/caspar/prompts/review.md tests
@@ -340,14 +340,14 @@ git commit -m "feat(caspar): reviews see the target date and judge valuation con
 - `update_view` log lines and the `original` of `pick_opened` events record `target_date`. No view had been stored, so `magi/view@1` is redefined without a migration.
 ```
 
-- [ ] **Step 1: 写测试**
+- [x] **Step 1: 写测试**
 
 1. `tests/test_protocol_doc.py`：
    - 新增 `test_changelog_records_v1_6`：CHANGELOG 中 `## v1.5` 之前的部分含 `## v1.6`、`` `target_date` ``、`two prices`、`intrinsic value`、`never treated as zero`。
    - 新增 `test_protocol_describes_the_prediction_contract`：PROTOCOL 含 `**What a distribution predicts.**`、`**Settlement.**`、`` `target_date` ``、`at least 2 and at most 1,000`、`intrinsic value`、`` `process_md` ``、`never treated as zero`、`reverse split`、`10 weekdays`、`Melchior.Magi`，并且不再含 `at least 3`；AGENT_GUIDE 含 `` `target_date` ``、`intrinsic value`、`price: 0`。
 2. `tests/test_snapshot.py`：`test_compile_on_fixture` 的 `protocol_version` 期望值由 `"1.5"` 改为 `"1.6"`。
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
 Expected: `3 failed, 378 passed`。失败的正是：
@@ -358,16 +358,16 @@ FAILED tests/test_protocol_doc.py::test_protocol_describes_the_prediction_contra
 FAILED tests/test_snapshot.py::test_compile_on_fixture
 ```
 
-- [ ] **Step 3: 实现**
+- [x] **Step 3: 实现**
 
 按 Interfaces 修改三份文档。文字用英文，与现有文档的写法一致；不改与本计划无关的段落。
 
-- [ ] **Step 4: 运行，确认通过**
+- [x] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
 Expected: `381 passed`。
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```
 git add protocol/PROTOCOL.md protocol/AGENT_GUIDE.md protocol/CHANGELOG.md tests
@@ -389,11 +389,11 @@ git commit -m "docs(protocol): v1.6, the prediction contract: target dates, two-
   4. `snapshot view carries target_date`：在已有的快照检查里，确认该 idea 的观点摘要有 `target_date`，`expired` 为假。
 - 其余步骤不变。脚本对非 sandbox 仓库仍拒绝运行。
 
-- [ ] **Step 1: 修改脚本**
+- [x] **Step 1: 修改脚本**
 
 按 Interfaces 增加四步。
 
-- [ ] **Step 2: 离线检查**
+- [x] **Step 2: 离线检查**
 
 ```
 python -m pytest
@@ -403,14 +403,14 @@ python tools/e2e_sandbox.py --repo the-magi-system/magi; echo "exit $?"
 
 Expected: `381 passed`；编译没有输出；端到端脚本打印 `refusing to run against a repository that is not a sandbox`，`exit 2`。会话里不运行脚本去连 sandbox。
 
-- [ ] **Step 3: 提交**
+- [x] **Step 3: 提交**
 
 ```
 git add tools/e2e_sandbox.py
 git commit -m "test(e2e): the sandbox run checks target dates, two-price distributions with a zero and the snapshot fields"
 ```
 
-- [ ] **Step 4: 推送并开 PR**
+- [x] **Step 4: 推送并开 PR**
 
 推送会话分支，开一个指向 `main` 的 PR，标题 `Plan 6: the prediction contract (protocol v1.6)`。正文列出 Task 2–7 的提交与每一步的测试结果，并写明：端到端脚本只做了离线检查，要等 Task 8 在 sandbox 实测；合并之前维护者须确认正式仓库没有观点。
 
@@ -418,11 +418,11 @@ git commit -m "test(e2e): the sandbox run checks target dates, two-price distrib
 
 ### Task 8（维护者）：合并与 sandbox 端到端测试
 
-- [ ] **Step 1: 合并前核对正式仓库没有观点**
+- [x] **Step 1: 合并前核对正式仓库没有观点**
 
 在正式仓库 main 上列出 `ideas/*/views/` 下的文件。Expected：没有任何文件。如果已经有观点，停下，不合并：`magi/view@1` 的重新定义要求仓库里没有旧格式的观点，这时需要另写迁移脚本或改为 `magi/view@2`，由维护者决定。
 
-- [ ] **Step 2: 审阅并合并**
+- [x] **Step 2: 审阅并合并**
 
 PR 的 ci 为 success 后，重点看：`update_view.schema.json` 的两处改动；`engine/timeutil.py` 的加月算法；`engine/snapshot.py` 的到期判断；`agents/caspar/prompts/review.md` 的新句子；PROTOCOL 第 8 节的「What a distribution predicts」与「Settlement」两段是否与设计第 20 节一致；CHANGELOG v1.6。合并方式与计划 5 相同。合并后在 main 上运行：
 
@@ -433,11 +433,11 @@ python -m engine consistency --repo .
 
 Expected: `381 passed`；一致性 `[]`；合并推送的 `ci`、`audit` 为 success。
 
-- [ ] **Step 3: 重置 sandbox**
+- [x] **Step 3: 重置 sandbox**
 
 做法与计划 5 Task 11 Step 6 相同，保留 `registry/agents/caspar.magi.yaml`。重置触发的 `magi:audit` issue 只应列出「history rewritten」与 `john.research.yaml`，核对后关闭。
 
-- [ ] **Step 4: 运行端到端脚本**
+- [x] **Step 4: 运行端到端脚本**
 
 ```
 python -u tools/e2e_sandbox.py --repo the-magi-system/magi-sandbox
@@ -445,18 +445,26 @@ python -u tools/e2e_sandbox.py --repo the-magi-system/magi-sandbox
 
 Expected: 全部步骤 `PASS`，最后一行 `all steps passed`，包括四个新步骤 `view records its target date`、`target_date in a proposal rejected`、`two prices with a zero accepted`、`snapshot view carries target_date`；计划 5 的 Caspar 六步照常通过。另打开 sandbox 那次 `caspar` 运行的评审评论，核对估值一致性的理由按目标日期的价格来写。任何一步失败，先看 intake 与 `caspar` 的运行输出，再决定修什么，不手工改 sandbox 的数据。
 
-- [ ] **Step 5: 记录**
+- [x] **Step 5: 记录**
 
 在本计划开头写进度：PR 编号与合并后的 main、测试数、sandbox 端到端结果。之后 Pendragon 可以提交第一个观点。
+
+**执行记录（2026-10-08 至 10-09）：**
+- Step 1：正式仓库 main 上没有 `ideas/` 目录，没有任何观点。
+- Step 2：PR #22 的 `ci` 为 success；改动只在 Task 2–7 列出的文件里，测试里删掉的几行都是本计划要求改的旧期望值。实现者在计划之外多写的两句都接受：Caspar 的评审提示词说明从内在价值出发本身没有问题，只有缺少换算才扣分；协议第 10 节说明报价为零或负数等于没有报价。以 rebase 方式合并，main `65d12b9`，`381 passed`，一致性 `[]`，合并推送的 `ci`、`audit` 为 success，没有审计 issue。
+- Step 3：种子须与上次重置（`33738ec`）的内容一致，所以除 `registry/agents/*.avalon.yaml` 与 `log/` 之外，还删掉了计划 5 之后正式仓库新增的 `methodologies/` 与 `registry/profiles/`（Pendragon 的三套方法论与档案），否则 sandbox 里会留下指向不存在 agent 的记录。种子 `fc1a9c6`，审计 #99 只有预期的两条，已关闭。
+- Step 4 第一轮：前 6 步 PASS，`add evidence`（#106）30 分钟没有回复。原因：`intake.yml` 与 `prices.yml` 的 `actions/checkout` 默认检出触发事件那一刻的 main。#106 触发的运行在 `magi-writer` 并发组里排队时，上一次运行又推送了「chore: link discussion threads」（`cc75fe9`），这次运行于是从 `ba83e1c` 出发，推送被拒（non-fast-forward），没有回复。正式仓库尚未碰上。修正 PR #23：两个 workflow 的检出加 `ref: main`（与 `caspar.yml` 的 `write` job 相同），新增 `tests/test_workflows.py`，检查 `magi-writer` 并发组里的每个 job 都检出 `main`；squash 为 main `fd7a085`，`382 passed`。
+- Step 4 第二轮（种子 `f3f1d19`，审计 #107）：前 23 步 PASS，含本计划的前三个新步骤；`non-retryable rejection closes the issue` FAIL。intake 先发回复、再加标签、最后关闭 issue（#123：21:14:11 回复，21:14:13 关闭），脚本一见回复就读 issue 的状态，正好落在两者之间。triage 也是先回复、再加标签与指派，所以 `request labelled` 与 `data request labelled and assigned to the provider` 有同样的问题。引擎的行为没有错。修正 PR #24：这三步改为 `r.eventually(..., timeout=120)`；squash 为 main `3a505d2`，`382 passed`。
+- Step 4 第三轮（种子 `8874adc`，审计 #124）：43 步全部 PASS，最后一行 `all steps passed`。四个新步骤：观点记录的目标日期为 `2027-10-09`（2026-10-09 发布，期限 12 个月）；提案填 `target_date` 以 `E_SEMANTIC` 驳回；两个价位、含零价格的分布被接受；快照的观点摘要带 `target_date` 与 `expired: false`。Caspar 的六步照常通过；评审的估值一致性理由按目标日期写（「expected return of about -8.9% for 2027-10-09」），尾部风险的理由也以 2027-10-09 为期。
 
 ---
 
 ## 计划 6 完成标准
 
-- [ ] Task 1 的文档 PR 已合并。
-- [ ] Task 2–7 的 PR 已合并；main 上 `381 passed`，一致性 `[]`，ci 与 audit 为 success。
-- [ ] 合并前核对过正式仓库没有观点。
-- [ ] sandbox 端到端测试 `all steps passed`，含四个新步骤。
+- [x] Task 1 的文档 PR 已合并。
+- [x] Task 2–7 的 PR 已合并；main 上 `381 passed`，一致性 `[]`，ci 与 audit 为 success。
+- [x] 合并前核对过正式仓库没有观点。
+- [x] sandbox 端到端测试 `all steps passed`，含四个新步骤。
 
 ---
 
