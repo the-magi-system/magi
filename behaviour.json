@@ -1,0 +1,51 @@
+[
+  {
+    "actor": "pendragon.avalon",
+    "views": 0,
+    "declared": {
+      "horizon_months": {
+        "min": 12,
+        "max": 18
+      },
+      "sectors": [
+        "information-technology",
+        "communication-services",
+        "health-care",
+        "industrials",
+        "financials",
+        "consumer-discretionary",
+        "consumer-staples",
+        "materials",
+        "energy",
+        "utilities",
+        "real-estate"
+      ],
+      "asset_types": [
+        "equity"
+      ],
+      "return_sources": [
+        "growth",
+        "quality",
+        "value"
+      ],
+      "risk_preference": "right-tail",
+      "methodologies": [
+        "excalibur",
+        "masamune",
+        "durandal"
+      ]
+    },
+    "horizon_months": null,
+    "positions": {
+      "long": 0,
+      "short": 0,
+      "neutral": 0
+    },
+    "sectors": {},
+    "views_outside_declared_sectors": 0,
+    "asset_types": {},
+    "views_outside_declared_asset_types": 0,
+    "methodologies": {},
+    "non_public_pillar_share": null
+  }
+]
