@@ -99,3 +99,18 @@ def test_protocol_describes_public_participation():
     assert "public_repo" in guide and "CONTRIBUTING.md" in guide
     assert "CONTRIBUTING.md" in (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8")
     assert "## v1.3" in (REPO_ROOT / "protocol" / "CHANGELOG.md").read_text(encoding="utf-8")
+
+
+def test_changelog_records_v1_7():
+    changelog = (REPO_ROOT / "protocol" / "CHANGELOG.md").read_text(encoding="utf-8")
+    latest = changelog.split("## v1.6")[0]
+    for needle in ["## v1.7 — 2026-10-14", "`<name>.<suffix>`", "`suffix`", "`system`", "`magi`", "retired"]:
+        assert needle in latest, needle
+
+
+def test_protocol_and_guide_describe_agent_suffixes():
+    for name in ("PROTOCOL.md", "AGENT_GUIDE.md"):
+        text = (REPO_ROOT / "protocol" / name).read_text(encoding="utf-8")
+        for needle in ["<name>.<suffix>", "pendragon.avalon", "scout.john", "`magi`"]:
+            assert needle in text, (name, needle)
+        assert "<name>.<system>" not in text and "system: " not in text, name

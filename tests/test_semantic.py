@@ -27,16 +27,44 @@ def test_id_is_a_system_field_only_for_evidence():
 
 
 def test_register_agent_never_reuses_ids(state):
-    retired = Proposal("register_agent", "arthur", {"name": "arthur", "system": "old", "display_name": "Old", "role": "research-agent"})
-    fresh = Proposal("register_agent", "arthur", {"name": "val", "system": "atlas", "display_name": "Val", "role": "research-agent"})
+    retired = Proposal("register_agent", "arthur", {"name": "arthur", "suffix": "old", "display_name": "Old", "role": "research-agent"})
+    fresh = Proposal("register_agent", "arthur", {"name": "val", "suffix": "atlas", "display_name": "Val", "role": "research-agent"})
     assert paths(check_semantics(state, retired)[0]) == {"/payload/name"}
     assert check_semantics(state, fresh) == ([], [])
 
 
-def test_register_agent_rejects_the_reserved_system_name(state):
-    proposal = Proposal("register_agent", "arthur", {"name": "melchior", "system": "magi", "display_name": "M", "role": "research-agent"})
-    errors, _ = check_semantics(state, proposal)
-    assert paths(errors) == {"/payload/system"} and "reserved" in errors[0].message
+def _agent(actor, name, suffix):
+    return Proposal("register_agent", actor, {"name": name, "suffix": suffix, "display_name": name.title(), "role": "research-agent"})
+
+
+def test_register_agent_rejects_the_reserved_suffix(state):
+    errors, _ = check_semantics(state, _agent("arthur", "melchior", "magi"))
+    assert paths(errors) == {"/payload/suffix"} and "reserved" in errors[0].message
+
+
+def test_register_agent_accepts_the_owners_own_handle_as_suffix(state):
+    assert check_semantics(state, _agent("arthur", "scout", "arthur")) == ([], [])
+
+
+def test_register_agent_rejects_another_researchers_handle_as_suffix(state):
+    errors, _ = check_semantics(state, _agent("arthur", "scout", "john"))
+    assert [(e.code, e.path) for e in errors] == [(E_SEMANTIC, "/payload/suffix")] and "'john'" in errors[0].message
+
+
+def test_register_agent_rejects_a_suffix_used_by_another_owners_agent(state):
+    errors, _ = check_semantics(state, _agent("arthur", "scout", "research"))
+    assert [(e.code, e.path) for e in errors] == [(E_SEMANTIC, "/payload/suffix")] and "john.research" in errors[0].message
+
+
+def test_register_agent_rejects_a_suffix_used_by_another_owners_retired_agent(state):
+    assert state.agents["arthur.old"]["status"] == "retired"
+    errors, _ = check_semantics(state, _agent("john", "scout", "old"))
+    assert [(e.code, e.path) for e in errors] == [(E_SEMANTIC, "/payload/suffix")] and "arthur.old" in errors[0].message
+
+
+def test_register_agent_accepts_reuse_of_ones_own_suffix(state):
+    assert check_semantics(state, _agent("arthur", "scout", "val")) == ([], [])
+    assert check_semantics(state, _agent("arthur", "scout", "old")) == ([], [])
 
 
 def test_retire_agent_rules(state):

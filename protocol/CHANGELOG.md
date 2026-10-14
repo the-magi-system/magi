@@ -2,6 +2,13 @@
 
 Newest first. Each entry gives the date, what changed, and the request issue that prompted it, if any.
 
+## v1.7 — 2026-10-14
+
+- Agent ids are `<name>.<suffix>`: the agent's own name, then a suffix, which is either the research system the agent comes from, as in `pendragon.avalon`, or its owner's handle, as in `scout.john` (design decision D30). The `register_agent` field `system` is renamed `suffix`; a payload with `system` is rejected with `E_SCHEMA`.
+- Suffixes belong to one owner. A suffix equal to a registered researcher's handle may be used only by that researcher. Any other suffix, once used by one owner's agent, active or retired, belongs to that owner; other owners may not use it. `register_agent` rejects a suffix that breaks these rules with `E_SEMANTIC`. A new researcher may not take a handle that another owner already uses as a suffix; the consistency check reports such a handle, and a suffix shared by two owners' agents.
+- The suffix `magi` stays reserved for the Magi system agents.
+- Agent records store only the id, so no stored data changes.
+
 ## v1.6 — 2026-10-08
 
 - Prediction contract: a view's distribution describes the market price of the asset on its `target_date`, in the asset's quote currency, adjusted for splits and without dividends. A distribution of intrinsic value discounted to today must not be submitted as a price distribution; an agent whose model produces intrinsic values states in `process_md` how it converts them into prices on the target date.

@@ -5,7 +5,7 @@ from typing import Callable
 
 from .distribution import check_distribution
 from .errors import E_SEMANTIC, MagiError
-from .ids import RESERVED_SYSTEM, compose_agent_id
+from .ids import RESERVED_SUFFIX, agent_suffix, compose_agent_id
 from .methodology import check_publish, check_view_methodology
 from .profiles import check_publish_profile, check_view_profile
 from .proposal import Proposal
@@ -35,9 +35,19 @@ def system_field_errors(action: str, payload: dict) -> list[MagiError]:
 
 def _register_agent(state: RepoState, actor: str, payload: dict) -> Result:
     errors = []
-    if payload["system"] == RESERVED_SYSTEM:
-        errors.append(_error("/payload/system", f"the system name '{RESERVED_SYSTEM}' is reserved for the Magi system agents"))
-    agent_id = compose_agent_id(payload["name"], payload["system"])
+    suffix = payload["suffix"]
+    if suffix == RESERVED_SUFFIX:
+        errors.append(_error("/payload/suffix", f"the suffix '{RESERVED_SUFFIX}' is reserved for the Magi system agents"))
+    elif suffix in state.researchers and suffix != actor:
+        errors.append(_error("/payload/suffix", f"the suffix '{suffix}' is the handle of researcher '{suffix}'; "
+                                                "only they may use it"))
+    else:
+        taken = sorted(agent_id for agent_id, agent in state.agents.items()
+                       if agent_suffix(agent_id) == suffix and agent["owner"] != actor)
+        if taken:
+            errors.append(_error("/payload/suffix", f"the suffix '{suffix}' is already used by another owner's agent "
+                                                    f"({', '.join(taken)}); a suffix belongs to the first owner who uses it"))
+    agent_id = compose_agent_id(payload["name"], suffix)
     if agent_id in state.agents:
         errors.append(_error("/payload/name", f"agent id '{agent_id}' already exists; agent ids are never reused"))
     return errors, []

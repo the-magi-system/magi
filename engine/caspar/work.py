@@ -92,9 +92,10 @@ def _registered_agent(issue: dict) -> str | None:
     if errors or proposal is None or proposal.action != "register_agent":
         return None
     payload = proposal.payload
-    if not isinstance(payload.get("name"), str) or not isinstance(payload.get("system"), str):
+    suffix = payload.get("suffix", payload.get("system"))  # registrations accepted before protocol 1.7 say "system"
+    if not isinstance(payload.get("name"), str) or not isinstance(suffix, str):
         return None
-    return compose_agent_id(payload["name"], payload["system"])
+    return compose_agent_id(payload["name"], suffix)
 
 
 def pending_welcomes(state: RepoState, gh) -> list[dict]:

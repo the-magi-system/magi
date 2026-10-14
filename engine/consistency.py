@@ -16,7 +16,7 @@ from .basis import non_public_pillars
 from .derive import derive
 from .distribution import check_distribution
 from .eventlog import LOG_DIR, read_log
-from .ids import is_system_agent
+from .ids import agent_suffix, is_system_agent
 from .ledger import ordered_events
 from .repo import RepoState
 from .schemas import system_errors, validate_payload
@@ -74,7 +74,7 @@ def _payload(name: str, record: dict, system_keys: set[str]) -> tuple[str, dict]
     if name == "profile" and record.get("kind") == "system":
         return "system:profile", payload
     if name == "agent":
-        payload["name"], payload["system"] = record["id"].split(".", 1)
+        payload["name"], payload["suffix"] = record["id"].split(".", 1)
         return "register_agent", payload
     if name == "evidence":
         payload["slug"] = record["id"][12:]
@@ -118,6 +118,7 @@ def _references(state: RepoState) -> list[Finding]:
     for agent_id, agent in state.agents.items():
         if not is_system_agent(agent_id) and agent["owner"] not in state.researchers:
             found.append(Finding(f"registry/agents/{agent_id}.yaml", f"owner {agent['owner']!r} is not a registered researcher"))
+    found += _suffixes(state)
     for actor, profile in state.profiles.items():
         path = f"registry/profiles/{actor}.yaml"
         if actor not in actors:
@@ -150,6 +151,25 @@ def _references(state: RepoState) -> list[Finding]:
         elif review["view_version"] > view["version"]:
             found.append(Finding(path, f"reviews version {review['view_version']}, but the view of {actor!r} "
                                        f"is at version {view['version']}"))
+    return found
+
+
+def _suffixes(state: RepoState) -> list[Finding]:
+    """A suffix that is a researcher's handle is theirs; any other belongs to the first owner who used it (design 18.2)."""
+    found: list[Finding] = []
+    owners: dict[str, set[str]] = {}
+    for agent_id, agent in sorted(state.agents.items()):
+        suffix = agent_suffix(agent_id)
+        owners.setdefault(suffix, set()).add(agent["owner"])
+        if suffix in state.researchers and agent["owner"] != suffix:
+            found.append(Finding(f"registry/researchers/{suffix}.yaml",
+                                 f"handle {suffix!r} is used as a suffix by {agent_id!r}, an agent of {agent['owner']!r}"))
+    for agent_id in sorted(state.agents):
+        shared = owners[agent_suffix(agent_id)]
+        if len(shared) > 1:
+            found.append(Finding(f"registry/agents/{agent_id}.yaml",
+                                 f"suffix {agent_suffix(agent_id)!r} is used by agents of more than one owner: "
+                                 f"{', '.join(sorted(shared))}"))
     return found
 
 

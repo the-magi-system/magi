@@ -59,7 +59,7 @@ def world(tmp_path):
     write_changes(root, apply_proposal(state, Proposal("update_view", "john.research", view_payload()), issue=74,
                                        owner="john", now=NOW, prices=FakePrices({"NVDA": 180.2})))
     registration = gh.open_issue(JOHN_ID, "john-example", body("register_agent", "john", {
-        "name": "john", "system": "research", "display_name": "John.Research", "role": "research-agent"}))
+        "name": "john", "suffix": "research", "display_name": "John.Research", "role": "research-agent"}))
     gh.add_labels(registration, ["magi:accepted"])
     agent = root / "registry" / "agents" / "john.research.yaml"
     write_yaml(agent, {**load_yaml(agent), "registered_via_issue": registration})

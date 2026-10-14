@@ -13,7 +13,7 @@ CATALOGUE = "registry/strategies.yaml"
 
 def register_agent(ctx: Context) -> ChangeSet:
     payload = ctx.payload
-    agent_id = compose_agent_id(payload["name"], payload["system"])
+    agent_id = compose_agent_id(payload["name"], payload["suffix"])
     record = {"schema": "magi/agent@1", "id": agent_id, "owner": ctx.actor,
               "display_name": payload["display_name"], "role": payload["role"]}
     if "runtime" in payload:

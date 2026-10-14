@@ -106,11 +106,11 @@ def test_review_bundle_carries_the_target_date(repo):
 def test_pending_welcomes(repo):
     gh = FakeGitHub()
     registered = gh.open_issue(ARTHUR_ID, "ThinkwChivalri", body("register_agent", "arthur", {
-        "name": "arthur", "system": "val", "display_name": "Arthur.Val", "role": "research-agent"}))
+        "name": "arthur", "suffix": "val", "display_name": "Arthur.Val", "role": "research-agent"}))
     welcomed = gh.open_issue(JOHN_ID, "john-example", body("register_agent", "john", {
-        "name": "john", "system": "research", "display_name": "John.Research", "role": "research-agent"}))
+        "name": "john", "suffix": "research", "display_name": "John.Research", "role": "research-agent"}))
     unknown = gh.open_issue(JOHN_ID, "john-example", body("register_agent", "john", {
-        "name": "ghost", "system": "research", "display_name": "Ghost", "role": "research-agent"}))
+        "name": "ghost", "suffix": "research", "display_name": "Ghost", "role": "research-agent"}))
     for number in (registered, welcomed, unknown):
         gh.add_labels(number, ["magi:accepted"])
     gh.comment(welcomed, welcome_body(REPO_ROOT, "agent", "john.research", gh.repo))
@@ -125,11 +125,11 @@ def test_only_the_recorded_registration_of_an_active_agent_and_the_latest_join_a
     path = repo / "registry" / "agents" / "arthur.val.yaml"
     write_yaml(path, {**load_yaml(path), "registered_via_issue": 2})
     gh = FakeGitHub()
-    proposal = body("register_agent", "arthur", {"name": "arthur", "system": "val", "display_name": "Arthur.Val",
+    proposal = body("register_agent", "arthur", {"name": "arthur", "suffix": "val", "display_name": "Arthur.Val",
                                                  "role": "research-agent"})
     older, recorded = gh.open_issue(ARTHUR_ID, "ThinkwChivalri", proposal), gh.open_issue(ARTHUR_ID, "ThinkwChivalri", proposal)
     retired = gh.open_issue(ARTHUR_ID, "ThinkwChivalri", body("register_agent", "arthur", {
-        "name": "arthur", "system": "old", "display_name": "Arthur.Old", "role": "research-agent"}))
+        "name": "arthur", "suffix": "old", "display_name": "Arthur.Old", "role": "research-agent"}))
     for number in (older, recorded, retired):
         gh.add_labels(number, ["magi:accepted"])
     first = gh._new_issue({"id": JOHN_ID, "login": "john-example"}, "Join request: john", "...", ["magi:join"])
@@ -146,3 +146,11 @@ def test_welcome_bodies_come_from_the_templates():
     assert "`publish_profile`" in text and "https://github.com/the-magi-system/magi/blob/main/protocol/AGENT_GUIDE.md" in text
     researcher = welcome_body(REPO_ROOT, "researcher", "john", "the-magi-system/magi")
     assert "`register_agent`" in researcher and "@" not in researcher
+
+
+def test_a_registration_accepted_before_protocol_1_7_is_still_welcomed(repo):
+    gh = FakeGitHub()
+    registered = gh.open_issue(ARTHUR_ID, "ThinkwChivalri", body("register_agent", "arthur", {
+        "name": "arthur", "system": "val", "display_name": "Arthur.Val", "role": "research-agent"}))
+    gh.add_labels(registered, ["magi:accepted"])
+    assert pending_welcomes(RepoState.load(repo), gh) == [{"issue": registered, "kind": "agent", "subject": "arthur.val"}]
