@@ -124,14 +124,18 @@ class Runner:
         self.check(name, False, f"not true within {timeout} seconds")
 
     def run_workflow(self, workflow: str, inputs: dict | None = None) -> dict:
-        """Dispatch a workflow and wait for that run. Runs are told apart by id, not by clock time."""
+        """Dispatch a workflow and wait for that run. Runs are told apart by id, not by clock time.
+
+        The known runs come from the same query the wait polls, so every run the poll can return was either known
+        before the dispatch or is new. Scheduled runs would otherwise push older manual runs out of the known set."""
         path = f"/repos/{self.gh.repo}/actions/workflows/{workflow}/runs"
-        known = {run["id"] for run in self.gh.request("GET", path, query={"per_page": 20})["workflow_runs"]}
+        query = {"event": "workflow_dispatch", "per_page": 100}
+        known = {run["id"] for run in self.gh.request("GET", path, query=query)["workflow_runs"]}
         body = {"ref": "main", **({"inputs": inputs} if inputs else {})}
         self.gh.request("POST", f"/repos/{self.gh.repo}/actions/workflows/{workflow}/dispatches", body)
         deadline = time.time() + TIMEOUT_SECONDS
         while time.time() < deadline:
-            runs = self.gh.request("GET", path, query={"event": "workflow_dispatch", "per_page": 5})["workflow_runs"]
+            runs = self.gh.request("GET", path, query=query)["workflow_runs"]
             done = [run for run in runs if run["id"] not in known and run["status"] == "completed"]
             if done:
                 return done[0]
