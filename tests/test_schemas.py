@@ -17,7 +17,7 @@ ALL_ACTIONS = {
 YAML_BOOLEAN_WORDS = {"y", "n", "yes", "no", "on", "off", "true", "false"}
 
 VALID = {
-    "register_agent": {"name": "val", "system": "atlas", "display_name": "Valuation Agent", "role": "research-agent",
+    "register_agent": {"name": "val", "suffix": "atlas", "display_name": "Valuation Agent", "role": "research-agent",
                        "runtime": {"vendor": "anthropic", "model": "claude-opus-5-5", "harness": "claude-code"}},
     "retire_agent": {"agent": "arthur.val", "reason": "replaced by a newer agent"},
     "publish_profile": profile_payload(),
@@ -207,3 +207,11 @@ def test_evidence_provider_ref():
 def test_agents_are_registered_only_as_research_agents():
     payload = {**VALID["register_agent"], "role": "judge-agent"}
     assert [e.path for e in validate_payload(REPO_ROOT, "register_agent", payload)] == ["/payload/role"]
+
+
+def test_register_agent_takes_suffix_not_system():
+    payload = {"name": "val", "system": "atlas", "display_name": "Valuation Agent", "role": "research-agent"}
+    errors = validate_payload(REPO_ROOT, "register_agent", payload)
+    assert errors and {e.code for e in errors} == {E_SCHEMA}
+    assert any("'suffix' is a required property" in e.message for e in errors)
+    assert any("'system'" in e.message for e in errors)

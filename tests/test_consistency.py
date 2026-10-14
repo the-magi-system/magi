@@ -37,7 +37,7 @@ def test_fixture_repository_is_consistent(repo):
 
 
 def test_records_written_by_the_engine_are_consistent(repo):
-    _apply(repo, "register_agent", "john", {"name": "macro", "system": "atlas", "display_name": "Macro.Atlas", "role": "research-agent"})
+    _apply(repo, "register_agent", "john", {"name": "macro", "suffix": "atlas", "display_name": "Macro.Atlas", "role": "research-agent"})
     _apply(repo, "register_asset", "macro.atlas", AMD)
     _apply(repo, "declare_strategies", "macro.atlas", {"strategies": {"deep-value": {
         "name": "Deep Value", "definition": "Assets priced well below liquidation value"}}})
@@ -53,6 +53,32 @@ def test_records_written_by_the_engine_are_consistent(repo):
     _apply(repo, "retire_agent", "arthur", {"agent": "arthur.val", "reason": "replaced"})
     _apply(repo, "ledger_correction", "arthur", {"corrects": OPENED, "reason": "Wrong currency",
                                                  "fields": {"price": {"currency": "USD"}}})
+    assert check_repository(repo) == []
+
+
+def _agent_record(repo, agent_id, owner):
+    write_yaml(repo / "registry" / "agents" / f"{agent_id}.yaml", {
+        "schema": "magi/agent@1", "id": agent_id, "owner": owner, "display_name": agent_id, "role": "research-agent",
+        "daily_proposal_cap": 50, "status": "active", "registered_at": "2026-10-01T00:00:00Z", "registered_via_issue": 61})
+
+
+def test_a_handle_used_as_another_owners_suffix_is_reported(repo):
+    _agent_record(repo, "scout.arthur", "john")
+    assert [f.to_dict() for f in check_repository(repo)] == [
+        {"path": "registry/researchers/arthur.yaml", "owner": "maintainer",
+         "problem": "handle 'arthur' is used as a suffix by 'scout.arthur', an agent of 'john'"}]
+
+
+def test_a_suffix_shared_by_two_owners_is_reported(repo):
+    _agent_record(repo, "scout.research", "arthur")
+    assert problems(repo) == ["suffix 'research' is used by agents of more than one owner: arthur, john"] * 2
+    assert [f.path for f in check_repository(repo)] == ["registry/agents/john.research.yaml",
+                                                         "registry/agents/scout.research.yaml"]
+
+
+def test_an_owners_own_handle_and_suffixes_are_consistent(repo):
+    _agent_record(repo, "scout.arthur", "arthur")
+    _agent_record(repo, "scout.val", "arthur")
     assert check_repository(repo) == []
 
 

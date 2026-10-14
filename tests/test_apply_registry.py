@@ -23,7 +23,7 @@ def run(state, handler, action, actor, payload, prices=None, issue=50):
 
 def test_register_agent(state):
     changes = run(state, register_agent, "register_agent", "john",
-                  {"name": "macro", "system": "atlas", "display_name": "Macro.Atlas", "role": "research-agent"})
+                  {"name": "macro", "suffix": "atlas", "display_name": "Macro.Atlas", "role": "research-agent"})
     record = changes.writes["registry/agents/macro.atlas.yaml"]
     assert (record["id"], record["owner"], record["status"], record["daily_proposal_cap"]) == ("macro.atlas", "john", "active", 50)
     assert record["registered_via_issue"] == 50 and changes.created == {"agent_id": "macro.atlas"}

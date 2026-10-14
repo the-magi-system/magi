@@ -141,11 +141,17 @@ class Runner:
 
 def scenario(r: Runner) -> None:
     month_dir = f"ledger/events/{datetime.now(timezone.utc):%Y/%m}"
-    registration = r.submit("register_agent", proposal("register_agent", "arthur", {"name": "e2e", "system": "sandbox", "display_name": "E2E.Sandbox", "role": "research-agent"}))
+    registration = r.submit("register_agent", proposal("register_agent", "arthur", {"name": "e2e", "suffix": "sandbox", "display_name": "E2E.Sandbox", "role": "research-agent"}))
     r.expect("register an agent", r.wait(registration), "accepted")
-    n = r.submit("register_agent with the reserved system name", proposal("register_agent", "arthur", {
-        "name": "melchior", "system": "magi", "display_name": "Melchior.Magi", "role": "research-agent"}))
-    r.expect("reserved system name rejected", r.wait(n), "rejected", "E_SEMANTIC")
+    n = r.submit("register_agent with the reserved suffix", proposal("register_agent", "arthur", {
+        "name": "melchior", "suffix": "magi", "display_name": "Melchior.Magi", "role": "research-agent"}))
+    r.expect("reserved suffix rejected", r.wait(n), "rejected", "E_SEMANTIC")
+    n = r.submit("register_agent with another researcher's handle as suffix", proposal("register_agent", "arthur", {
+        "name": "e2e2", "suffix": "john", "display_name": "E2E2.John", "role": "research-agent"}))
+    r.expect("suffix of another researcher's handle rejected", r.wait(n), "rejected", "E_SEMANTIC")
+    n = r.submit("register_agent with a suffix another owner uses", proposal("register_agent", "arthur", {
+        "name": "e2e3", "suffix": "research", "display_name": "E2E3.Research", "role": "research-agent"}))
+    r.expect("suffix of another owner's agents rejected", r.wait(n), "rejected", "E_SEMANTIC")
     n = r.submit("register_asset", proposal("register_asset", AGENT, NVDA))
     r.expect("register an asset with a live price", r.wait(n), "accepted")
     n = r.submit("declare_strategies", proposal("declare_strategies", AGENT, {"strategies": STRATEGIES}))
