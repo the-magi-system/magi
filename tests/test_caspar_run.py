@@ -362,20 +362,21 @@ def test_workflow_keeps_the_token_away_from_write_access_and_the_model_inside_it
     assert text.count("secrets.ANTHROPIC_API_KEY") == 2
     assert "CLAUDE_CODE_OAUTH_TOKEN" not in (REPO_ROOT / ".github" / "workflows" / "caspar.yml").read_text(encoding="utf-8")
     assert "secrets." not in yaml.safe_dump(jobs["prepare"]) and "secrets." not in yaml.safe_dump(jobs["write"])
-    model = next(step for step in jobs["think"]["steps"] if step.get("id") == "model")
-    assert model["uses"].startswith("anthropics/claude-code-action@") and len(model["uses"].split("@")[1]) == 40
-    assert model["with"]["anthropic_api_key"] == "${{ secrets.ANTHROPIC_API_KEY }}"
-    assert "claude_code_oauth_token" not in model["with"]
-    args = model["with"]["claude_args"]
-    tools = ",".join(TOOLS)
-    for line in (f"--model {MODEL}", f"--tools {tools}", f"--allowedTools {tools}", "--restricted"):
-        assert f"{line}\n" in args
-    assert "--disallowedTools 'Bash,Edit,Write,MultiEdit,NotebookEdit,mcp__*'\n" in args
+    assert "github.token" not in yaml.safe_dump(jobs["think"]) and "claude-code-action" not in text
     steps = jobs["think"]["steps"]
+    install = next(step for step in steps if "pip install" in step.get("run", ""))
+    assert "-r requirements-think.txt" in install["run"]
+    pins = [line for line in (REPO_ROOT / "requirements-think.txt").read_text(encoding="utf-8").splitlines()
+            if line and not line.startswith("#")]
+    assert len(pins) == 1 and pins[0].startswith("claude-agent-sdk==")
+    model = next(step for step in steps if step.get("id") == "model")
+    answer = '"$RUNNER_TEMP/caspar/$TASK.json"'
+    assert model["run"].startswith("python -m engine caspar think ") and f"--out {answer}" in model["run"]
+    assert model["env"]["ANTHROPIC_API_KEY"] == "${{ secrets.ANTHROPIC_API_KEY }}" and "${{" not in model["run"]
     decoy = next(step for step in steps if step.get("name", "").startswith("Plant a decoy"))
-    assert DECOY_PATH in decoy["run"] and steps.index(decoy) < steps.index(model)
+    assert DECOY_PATH in decoy["run"] and steps.index(install) < steps.index(decoy) < steps.index(model)
     kept = next(step for step in steps if step.get("name", "").startswith("Keep the result"))
-    assert "structured_output" in kept["env"]["RESULT"] and "structured_output" not in kept["run"]
+    assert f'RESULT="$(cat {answer})"' in kept["run"] and "${{" not in kept["run"]
     assert kept["env"]["TOKEN"] == "${{ secrets.ANTHROPIC_API_KEY }}"
     assert '*"$TOKEN"*|*"$DECOY"*) ' in kept["run"] and DECOY_PATH in kept["run"]
 
