@@ -12,6 +12,8 @@ from .audit import audit_push, report
 from .caspar.run import SCOPES
 from .caspar.run import prepare as caspar_prepare
 from .caspar.run import write as caspar_write
+from .caspar.think import KINDS as CASPAR_KINDS
+from .caspar.think import think as caspar_think
 from .changes import ApplyError
 from .consistency import check_repository
 from .errors import E_INTERNAL, MagiError
@@ -124,6 +126,10 @@ def _caspar_prepare(args) -> int:
     return 0
 
 
+def _caspar_think(args) -> int:
+    return caspar_think(args.repo, args.task, args.kind, args.out)
+
+
 def _caspar_write(args) -> int:
     summary = caspar_write(args.repo, GitHubClient.from_env(), Git(args.repo), args.work, args.mode, args.run_id,
                            utc_now())
@@ -194,6 +200,13 @@ def build_parser() -> argparse.ArgumentParser:
     plan.add_argument("--run-number", type=int, default=0,
                       help="the workflow run number; it moves the starting point of a long review queue")
     plan.set_defaults(handler=_caspar_prepare, json_errors=False)
+    model = steps.add_parser("think", help="run the model on one task through the Claude Agent SDK; needs "
+                                           "ANTHROPIC_API_KEY and the packages in requirements-think.txt")
+    model.add_argument("--repo", type=Path, default=Path("."), help="repository root, with work/<task>/input.json")
+    model.add_argument("--task", required=True, help="the task id from the prepare step")
+    model.add_argument("--kind", choices=CASPAR_KINDS, required=True, help="the task kind")
+    model.add_argument("--out", type=Path, required=True, help="file for the model's answer, as JSON")
+    model.set_defaults(handler=_caspar_think, json_errors=False)
     write = steps.add_parser("write", help="check the model's results; post and commit them in live mode; "
                                            "exit 1 when the permission probe fails")
     write.add_argument("--repo", type=Path, default=Path("."), help="repository root")
