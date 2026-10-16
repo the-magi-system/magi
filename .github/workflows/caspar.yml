@@ -73,7 +73,7 @@ jobs:
         id: model
         uses: anthropics/claude-code-action@58985842b834ed26087302ba27d07bc24ca8697a  # v1.0.244
         with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ github.token }}
           prompt: |
             You are Caspar.Magi. Read agents/caspar/prompts/${{ matrix.task.kind }}.md and follow it exactly.
@@ -89,7 +89,7 @@ jobs:
         env:
           RESULT: ${{ steps.model.outputs.structured_output }}
           TASK: ${{ matrix.task.id }}
-          TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          TOKEN: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           DECOY="$(cat /tmp/caspar-decoy/secret.txt)"
           case "$RESULT" in *"$TOKEN"*|*"$DECOY"*) echo "the result contains the token or the decoy; it is discarded"; exit 1;; esac
