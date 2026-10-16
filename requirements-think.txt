@@ -1,0 +1,2 @@
+# The think job of the caspar workflow only (decision D32): the Claude Agent SDK and the Claude Code it bundles.
+claude-agent-sdk==0.2.159
