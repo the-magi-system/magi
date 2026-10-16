@@ -1,6 +1,6 @@
 """One run of Caspar (design 19.2, 19.10): prepare the work, let the model think, then check and write.
 
-`prepare` runs without the subscription token and without write access; it writes plan.json and one
+`prepare` runs without the API key and without write access; it writes plan.json and one
 input.json per model task. The model runs in a separate job that can only read. `write` runs inside the
 magi-writer lock, checks every result against its output schema and then item by item and, in live mode,
 posts and commits; in preview mode it only describes what it would have done.

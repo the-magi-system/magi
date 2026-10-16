@@ -359,10 +359,13 @@ def test_workflow_keeps_the_token_away_from_write_access_and_the_model_inside_it
     assert jobs["write"]["permissions"] == {"contents": "write", "issues": "write"}
     assert jobs["write"]["concurrency"]["group"] == "magi-writer"
     text = yaml.safe_dump(flow)
-    assert text.count("secrets.CLAUDE_CODE_OAUTH_TOKEN") == 2
+    assert text.count("secrets.ANTHROPIC_API_KEY") == 2
+    assert "CLAUDE_CODE_OAUTH_TOKEN" not in (REPO_ROOT / ".github" / "workflows" / "caspar.yml").read_text(encoding="utf-8")
     assert "secrets." not in yaml.safe_dump(jobs["prepare"]) and "secrets." not in yaml.safe_dump(jobs["write"])
     model = next(step for step in jobs["think"]["steps"] if step.get("id") == "model")
     assert model["uses"].startswith("anthropics/claude-code-action@") and len(model["uses"].split("@")[1]) == 40
+    assert model["with"]["anthropic_api_key"] == "${{ secrets.ANTHROPIC_API_KEY }}"
+    assert "claude_code_oauth_token" not in model["with"]
     args = model["with"]["claude_args"]
     tools = ",".join(TOOLS)
     for line in (f"--model {MODEL}", f"--tools {tools}", f"--allowedTools {tools}", "--restricted"):
@@ -373,7 +376,7 @@ def test_workflow_keeps_the_token_away_from_write_access_and_the_model_inside_it
     assert DECOY_PATH in decoy["run"] and steps.index(decoy) < steps.index(model)
     kept = next(step for step in steps if step.get("name", "").startswith("Keep the result"))
     assert "structured_output" in kept["env"]["RESULT"] and "structured_output" not in kept["run"]
-    assert kept["env"]["TOKEN"] == "${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}"
+    assert kept["env"]["TOKEN"] == "${{ secrets.ANTHROPIC_API_KEY }}"
     assert '*"$TOKEN"*|*"$DECOY"*) ' in kept["run"] and DECOY_PATH in kept["run"]
 
 
