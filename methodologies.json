@@ -1,0 +1,113 @@
+[
+  {
+    "id": "durandal",
+    "name": "Durandal: compounders hidden by accounting",
+    "owner": "pendragon.avalon",
+    "version": 1,
+    "thread": 19,
+    "scope": {
+      "asset_types": [
+        "equity"
+      ],
+      "sectors": [
+        "information-technology",
+        "communication-services",
+        "health-care",
+        "industrials",
+        "financials",
+        "consumer-discretionary",
+        "consumer-staples",
+        "materials",
+        "energy",
+        "utilities",
+        "real-estate"
+      ],
+      "markets": [
+        "US",
+        "JP",
+        "KR",
+        "EU",
+        "AU",
+        "CA"
+      ],
+      "horizon_months": {
+        "min": 12,
+        "max": 18
+      }
+    },
+    "view_count": 0
+  },
+  {
+    "id": "excalibur",
+    "name": "Excalibur: unpriced quality growth engines",
+    "owner": "pendragon.avalon",
+    "version": 1,
+    "thread": 15,
+    "scope": {
+      "asset_types": [
+        "equity"
+      ],
+      "sectors": [
+        "information-technology",
+        "communication-services",
+        "health-care",
+        "industrials",
+        "financials",
+        "consumer-discretionary",
+        "consumer-staples",
+        "materials",
+        "energy",
+        "utilities",
+        "real-estate"
+      ],
+      "markets": [
+        "US",
+        "JP",
+        "KR",
+        "EU",
+        "AU",
+        "CA"
+      ],
+      "horizon_months": {
+        "min": 12,
+        "max": 18
+      }
+    },
+    "view_count": 0
+  },
+  {
+    "id": "masamune",
+    "name": "Masamune: beneficiaries of real technology inflections",
+    "owner": "pendragon.avalon",
+    "version": 1,
+    "thread": 17,
+    "scope": {
+      "asset_types": [
+        "equity"
+      ],
+      "sectors": [
+        "information-technology",
+        "communication-services",
+        "health-care",
+        "industrials",
+        "financials",
+        "consumer-discretionary",
+        "materials",
+        "energy"
+      ],
+      "markets": [
+        "US",
+        "JP",
+        "KR",
+        "EU",
+        "AU",
+        "CA"
+      ],
+      "horizon_months": {
+        "min": 12,
+        "max": 18
+      }
+    },
+    "view_count": 0
+  }
+]

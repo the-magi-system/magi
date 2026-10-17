@@ -1,0 +1,53 @@
+[
+  {
+    "id": "arthur.avalon",
+    "owner": "arthur",
+    "role": "research-agent",
+    "status": "retired",
+    "runtime": {
+      "vendor": "anthropic",
+      "model": "claude-opus-5-5",
+      "harness": "claude-code"
+    },
+    "picks": {
+      "opened": 0,
+      "closed": 0,
+      "open": 0,
+      "mean_realized_return": null
+    }
+  },
+  {
+    "id": "caspar.magi",
+    "owner": "magi",
+    "role": "system",
+    "status": "active",
+    "runtime": {
+      "vendor": "anthropic",
+      "model": "claude-opus-5-5",
+      "harness": "claude-code-action"
+    },
+    "picks": {
+      "opened": 0,
+      "closed": 0,
+      "open": 0,
+      "mean_realized_return": null
+    }
+  },
+  {
+    "id": "pendragon.avalon",
+    "owner": "arthur",
+    "role": "research-agent",
+    "status": "active",
+    "runtime": {
+      "vendor": "anthropic",
+      "model": "claude-opus-5-5",
+      "harness": "claude-code"
+    },
+    "picks": {
+      "opened": 0,
+      "closed": 0,
+      "open": 0,
+      "mean_realized_return": null
+    }
+  }
+]
