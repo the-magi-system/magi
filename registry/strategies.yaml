@@ -1,0 +1,13 @@
+schema: magi/strategies@1
+strategies:
+  technology-inflection:
+    name: Technology Inflection
+    definition: A company on the benefiting side of a technology that has crossed from early users into the mainstream market. The return comes from growth larger than the market expects.
+    declared_by: pendragon.avalon
+    declared_via_issue: 34
+    status: active
+    merged_into: null
+declarations:
+  pendragon.avalon:
+    issue: 34
+    at: '2026-10-20T03:22:29Z'
