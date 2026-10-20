@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from types import SimpleNamespace
 
 import pytest
+import yaml
 
 import engine.caspar.think as think_module
 import engine.cli as cli
@@ -52,7 +53,8 @@ def test_options_give_the_model_only_its_five_read_only_tools():
     assert opts["cwd"] == str(REPO_ROOT.resolve())
     schema = json.loads((REPO_ROOT / "agents" / "caspar" / "schemas" / "review.schema.json").read_text(encoding="utf-8"))
     assert opts["output_format"] == {"type": "json_schema", "schema": schema}
-    # Nothing overrides the SDK's own entry point, which bills the call as Agent SDK use (decision D32)
+    # Nothing overrides the SDK's own settings: no environment (it would replace the SDK's entry point), no other
+    # Claude Code and no permission mode (decision D32)
     assert "env" not in opts and "cli_path" not in opts and "permission_mode" not in opts
 
 
@@ -61,6 +63,12 @@ def test_options_are_accepted_by_the_pinned_sdk():
     for kind in think_module.KINDS:
         built = sdk.ClaudeAgentOptions(**options(REPO_ROOT, kind))
         assert built.tools == list(TOOLS) and built.extra_args == {"restricted": None}
+
+
+def test_ci_installs_the_pinned_sdk_so_the_test_above_runs():
+    flow = yaml.safe_load((REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8"))
+    install = next(step for step in flow["jobs"]["test"]["steps"] if "pip install" in step.get("run", ""))
+    assert "-r requirements-think.txt" in install["run"]
 
 
 def test_an_answer_is_written_as_json_and_the_model_text_stays_out_of_the_log(tmp_path, capsys):
