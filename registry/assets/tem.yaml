@@ -1,0 +1,12 @@
+schema: magi/asset@1
+id: tem
+name: Tempus AI, Inc.
+type: equity
+sector: health-care
+currency: USD
+price_source:
+  provider: yahoo
+  symbol: TEM
+registered_by: pendragon.avalon
+registered_at: '2026-10-20T03:23:08Z'
+registered_via_issue: 35
