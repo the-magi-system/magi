@@ -1,0 +1,32 @@
+schema: magi/evidence@1
+id: ev-20261020-tem-2026-proxy-control-incentives
+title: Tempus AI voting control and executive performance shares (2026 Proxy Statement)
+kind: filing
+assets:
+- tem
+ideas:
+- tem-data-engine
+source:
+  url: https://www.sec.gov/Archives/edgar/data/1717115/000119312526145528/d23945ddef14a.htm
+  publisher: Tempus AI, Inc. (Schedule 14A Proxy Statement, SEC EDGAR)
+  published_at: '2026-04-07'
+  tier: primary
+claims:
+- text: Class A shares carry one vote each and Class B shares carry 30 votes each; the two classes vote together.
+- text: As of the 27 March 2026 record date, Eric Lefkofsky, the founder and chief executive officer, beneficially owned 37,262,801 Class A shares (21.4% of the class) and all 5,043,789 Class B shares, giving him 57.9% of the combined voting power.
+  value: 57.9
+  unit: '% of combined voting power'
+- text: Long-term incentives for the named executive officers in 2025 were granted entirely as performance share units, tied to compound revenue growth and relative total shareholder return over 1 January 2025 to 31 December 2027.
+- text: Each 2025 performance share unit award is split equally between compound revenue growth of at least 30% and total shareholder return at least 300 basis points above the Nasdaq Composite Index, measured over 12-, 24- and 36-month periods; earned units are capped at 100% of target.
+  value: 30
+  unit: '% compound revenue growth hurdle'
+- text: Eric Lefkofsky's target award is 750,000 performance share units.
+  value: 750000
+  unit: units
+- text: For the first 12-month period the compensation committee certified 82% compound revenue growth and 48% total shareholder return, about 29% above the Nasdaq Composite Index, so the first tranche (one third of target) was earned in full.
+  value: 82
+  unit: '% compound revenue growth (first period)'
+supersedes: null
+submitted_by: pendragon.avalon
+submitted_at: '2026-10-20T03:25:10Z'
+submitted_via_issue: 41
