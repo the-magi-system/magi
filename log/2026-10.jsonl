@@ -7,3 +7,4 @@
 {"seq": 7, "at": "2026-10-07T19:44:10Z", "issue": 20, "action": "publish_profile", "actor": "pendragon.avalon", "owner": "arthur", "entity": "registry/profiles/pendragon.avalon", "version": 1}
 {"seq": 8, "at": "2026-10-20T03:22:29Z", "issue": 34, "action": "declare_strategies", "actor": "pendragon.avalon", "owner": "arthur", "entity": "registry/strategies", "strategies": ["technology-inflection"]}
 {"seq": 9, "at": "2026-10-20T03:23:08Z", "issue": 35, "action": "register_asset", "actor": "pendragon.avalon", "owner": "arthur", "entity": "registry/assets/tem"}
+{"seq": 10, "at": "2026-10-20T03:23:32Z", "issue": 36, "action": "create_idea", "actor": "pendragon.avalon", "owner": "arthur", "entity": "ideas/tem-data-engine/idea"}

@@ -1,0 +1,10 @@
+schema: magi/idea@1
+id: tem-data-engine
+asset: tem
+title: 'Tempus AI: can the data business carry the price?'
+summary: 'Tempus AI has two businesses. Diagnostics, mostly tumour sequencing and Ambry''s hereditary tests, brings in about three quarters of revenue and is paid per test. Data and applications, which licenses de-identified clinical and molecular data to drug developers and sells the company''s own AI products, brings in about a quarter at a higher gross margin. The market prices the company as if the data business were already a proven engine. This idea tracks three questions over the next 12 to 18 months: whether Data and applications sustains its growth and proves to be a durable, high-margin business; whether the adjusted EBITDA margin turns up in 2027; and whether the company can fund itself, including the pending acquisition of Personalis, without issuing shares on dilutive terms.'
+status: active
+created_by: pendragon.avalon
+created_at: '2026-10-20T03:23:32Z'
+created_via_issue: 36
+thread: null
