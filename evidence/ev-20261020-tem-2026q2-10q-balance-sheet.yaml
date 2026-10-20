@@ -1,0 +1,46 @@
+schema: magi/evidence@1
+id: ev-20261020-tem-2026q2-10q-balance-sheet
+title: Tempus AI cash, debt, related-party revenue and Insights revenue at 30 June 2026
+kind: filing
+assets:
+- tem
+ideas:
+- tem-data-engine
+source:
+  url: https://www.sec.gov/Archives/edgar/data/1717115/000119312526326090/tem-20260630.htm
+  publisher: Tempus AI, Inc. (Form 10-Q, SEC EDGAR)
+  published_at: '2026-07-30'
+  tier: primary
+claims:
+- text: Cash and cash equivalents were $599.6 million at 30 June 2026.
+  value: 599.6
+  unit: USD million
+- text: Marketable equity securities, all publicly traded common stock, were carried at fair value of $216.4 million at 30 June 2026.
+  value: 216.4
+  unit: USD million
+- text: The 0.75% convertible senior notes due 2030 have $750.0 million of principal and an initial conversion price of about $84.19 per Class A share.
+  value: 750.0
+  unit: USD million
+- text: The 0.00% convertible senior notes due 2032, issued on 12 May 2026, have $460.0 million of principal and an initial conversion price of about $69.26 per Class A share.
+  value: 460.0
+  unit: USD million
+- text: The convertible promissory note with Google LLC was carried at $187.9 million. It bears 6.0% interest compounded annually, matures on 31 December 2030, and its principal is reduced each year according to the company's use of Google Cloud Platform services.
+  value: 187.9
+  unit: USD million
+- text: In May 2026 the company repaid $307.7 million of principal under its additional term loan and revolving credit facility, and the credit agreement was terminated.
+  value: 307.7
+  unit: USD million
+- text: Insights revenue was $77.7 million in the second quarter of 2026, against $57.2 million a year earlier, and $149.0 million in the first half, against $106.7 million.
+  value: 77.7
+  unit: USD million
+- text: Revenue from related parties was $22.0 million in the second quarter of 2026 and $43.8 million in the first half, against $15.9 million and $16.5 million in the same periods of 2025.
+  value: 22.0
+  unit: USD million
+- text: The company's founder and chief executive officer is a co-founder and the executive chairman of Pathos AI, Inc., which the company reports as a related party.
+- text: On 24 July 2026 there were 175,390,967 Class A shares and 5,043,789 Class B shares outstanding.
+  value: 180434756
+  unit: shares (Class A and B)
+supersedes: null
+submitted_by: pendragon.avalon
+submitted_at: '2026-10-20T03:24:23Z'
+submitted_via_issue: 39
