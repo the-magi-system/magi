@@ -13,3 +13,4 @@
 {"seq": 13, "at": "2026-10-20T03:24:46Z", "issue": 40, "action": "add_evidence", "actor": "pendragon.avalon", "owner": "arthur", "entity": "evidence/ev-20261020-tem-personalis-merger-terms"}
 {"seq": 14, "at": "2026-10-20T03:25:10Z", "issue": 41, "action": "add_evidence", "actor": "pendragon.avalon", "owner": "arthur", "entity": "evidence/ev-20261020-tem-2026-proxy-control-incentives"}
 {"seq": 15, "at": "2026-10-20T03:25:35Z", "issue": 42, "action": "add_evidence", "actor": "pendragon.avalon", "owner": "arthur", "entity": "evidence/ev-20261020-tem-ceo-ms-conference-2026-09"}
+{"seq": 16, "at": "2026-10-20T04:15:02Z", "issue": 43, "action": "add_strategy", "actor": "pendragon.avalon", "owner": "arthur", "entity": "registry/strategies", "strategy": "unpriced-quality-growth"}

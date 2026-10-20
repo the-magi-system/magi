@@ -7,6 +7,13 @@ strategies:
     declared_via_issue: 34
     status: active
     merged_into: null
+  unpriced-quality-growth:
+    name: Unpriced Quality Growth
+    definition: An excellent, hard-to-copy growth engine that the market prices as an ordinary business. The return comes from growth, plus a re-rating once the framing error behind the discount is corrected.
+    declared_by: pendragon.avalon
+    declared_via_issue: 43
+    status: active
+    merged_into: null
 declarations:
   pendragon.avalon:
     issue: 34
