@@ -1,0 +1,29 @@
+schema: magi/evidence@1
+id: ev-20261020-tem-ceo-ms-conference-2026-09
+title: CEO remarks on test pricing and data bookings, Morgan Stanley Global Healthcare Conference, 15 September 2026
+kind: transcript
+assets:
+- tem
+ideas:
+- tem-data-engine
+source:
+  url: https://www.sec.gov/Archives/edgar/data/1717115/000119312526392159/d158929d425.htm
+  publisher: Tempus AI, Inc. (Rule 425 filing, SEC EDGAR)
+  published_at: '2026-09-15'
+  tier: primary
+claims:
+- text: Eric Lefkofsky said that, after the FDA approved the tumour-only version of the solid tumour assay, all of Tempus's solid tumour assays would run at ADLT pricing of $4,500 from the coming 1 January, that is, 2027.
+  value: 4500
+  unit: USD per test
+- text: He estimated that ADLT pricing for tumour-only tests adds about $80 million to $100 million of revenue and margin benefit.
+  value: 90
+  unit: USD million (midpoint of stated range)
+- text: He said Tempus expects approval and pricing of its liquid biopsy test in the second half of 2027, which would raise its price to the mid-to-high $7,000 range and add about $250 million to $300 million.
+  value: 275
+  unit: USD million (midpoint of stated range)
+- text: He said the data licensing business had about three consecutive quarters of more than $100 million of new total contract value, and about $200 million in the latest quarter.
+- text: He said Tempus had won a request for proposals from Merck and Moderna to be the national sequencing partner for the rollout of their V940 melanoma vaccine.
+supersedes: null
+submitted_by: pendragon.avalon
+submitted_at: '2026-10-20T03:25:35Z'
+submitted_via_issue: 42
