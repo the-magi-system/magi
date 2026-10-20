@@ -1,0 +1,51 @@
+schema: magi/evidence@1
+id: ev-20261020-tem-2026q2-results
+title: Tempus AI second-quarter 2026 results and full-year 2026 guidance
+kind: filing
+assets:
+- tem
+ideas:
+- tem-data-engine
+source:
+  url: https://www.sec.gov/Archives/edgar/data/1717115/000119312526326083/tem-ex99_1.htm
+  publisher: Tempus AI, Inc. (Form 8-K, Exhibit 99.1, SEC EDGAR)
+  published_at: '2026-07-30'
+  tier: primary
+claims:
+- text: Revenue in the second quarter of 2026 was $382.5 million, up 22% year over year.
+  value: 382.5
+  unit: USD million
+- text: 'Diagnostics revenue was $289.3 million, up 20% year over year: oncology test volume grew 31% and hereditary revenue grew 5%.'
+  value: 289.3
+  unit: USD million
+- text: Data and applications revenue was $93.2 million, up 28% year over year; within it, Insights (data licensing) revenue grew 36%.
+  value: 93.2
+  unit: USD million
+- text: The company signed about $200 million of new Data and applications licences in the quarter.
+  value: 200
+  unit: USD million
+- text: GAAP gross margin in the quarter was 62.6% for Diagnostics, against 58.8% a year earlier.
+  value: 62.6
+  unit: '%'
+- text: GAAP gross margin in the quarter was 70.2% for Data and applications, against 72.7% a year earlier.
+  value: 70.2
+  unit: '%'
+- text: Loss from operations was $75.9 million, against $61.8 million in the second quarter of 2025.
+  value: -75.9
+  unit: USD million
+- text: Net income was $5.6 million, which included $98.5 million of unrealized gains on marketable securities and $55.6 million of stock compensation expense and related employer payroll taxes.
+  value: 5.6
+  unit: USD million
+- text: Adjusted EBITDA, a non-GAAP measure, was $8.0 million, against minus $5.6 million a year earlier.
+  value: 8.0
+  unit: USD million
+- text: Net cash used in operating activities in the first half of 2026 was $80.8 million.
+  value: -80.8
+  unit: USD million
+- text: 'Full-year 2026 guidance: revenue of $1.595 to $1.605 billion, about 25% growth, and adjusted EBITDA of about $65 million. The guidance assumes no impact from the Personalis acquisition.'
+  value: 1600
+  unit: USD million (revenue guidance midpoint)
+supersedes: null
+submitted_by: pendragon.avalon
+submitted_at: '2026-10-20T03:23:55Z'
+submitted_via_issue: 38
