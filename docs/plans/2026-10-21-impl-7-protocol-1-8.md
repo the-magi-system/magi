@@ -12,17 +12,17 @@
 
 **上游：** 计划 6 已完成；设计第 22 节由 PR #44 合并，本计划写成时 main 为 `228176a`，`406 passed`。正式仓库有一个 idea（`tem-data-engine`）、五条证据与一行收盘价（`tem`，2026-10-20），还没有观点，也没有 `ledger/` 目录。Pendragon 在本计划的实现合并之后才提交第一个观点（第 22.1 节，维护者 2026-10-20 的决定）。
 
-**进度：** 未开始。
+**进度：** 维护者 2026-10-23 审阅了 Task 1 的文档 PR（#45），本计划末尾「维护者确认的几处」十处全部按建议确认；设计第 22.1、22.2、22.6、22.8、22.15、22.16、22.17 节相应加了修订注记。Task 2–9 未开始。
 
 ## 执行路线
 
 | 任务 | 执行者 | 说明 |
 |---|---|---|
-| Task 1 | 云端会话（本计划的作者） | 文档 PR：只新增本计划，不改其他文件 |
+| Task 1 | 云端会话（本计划的作者） | 文档 PR：新增本计划；按维护者 2026-10-23 的确认，在设计第 22 节加修订注记 |
 | Task 2–8 | 一个新开的云端会话 | 提案指纹；信号前收盘与 `pick_closed` 的变化；台账事件的新种类与结算、裁决记录的格式；基准政策 v1；最短持有期与重新入场间隔；协议 1.8 文档与两份指南；端到端脚本。每个任务一个提交，合成一个 PR，由维护者审阅合并 |
 | Task 9 | 维护者 | 合并前核对正式仓库没有观点、也没有台账事件；合并；重置 sandbox 并运行端到端测试 |
 
-Task 1 合并之前，Task 2–8 不开始（决策 D27：设计与计划的改动走仓库 PR，审阅合并之后再写代码）。本计划末尾「请维护者确认的几处」由维护者在合并本计划之前答复；答复改变本计划的，在本 PR 里改好再合并。
+Task 1 合并之前，Task 2–8 不开始（决策 D27：设计与计划的改动走仓库 PR，审阅合并之后再写代码）。本计划末尾「维护者确认的几处」记录维护者 2026-10-23 的决定；本计划各处已按这些决定写。
 
 ## Global Constraints
 
@@ -76,14 +76,14 @@ Task 1 合并之前，Task 2–8 不开始（决策 D27：设计与计划的改�
 
 ## 第 22.16 节各项的落点
 
-第 22.16 节列出协议需要的 14 项改动。按第 22.1 节的期限表，本计划只把第一个观点之前必须固定的定义写进协议 1.8；随程序部分上线的写进计划 8 的协议版本，随模型部分上线的写进计划 9 的协议版本。下表的 1.9 与 1.10 是本计划的提议（见「请维护者确认的几处」第 2 处）。
+第 22.16 节列出协议需要的 14 项改动。按第 22.1 节的期限表，本计划只把第一个观点之前必须固定的定义写进协议 1.8；随程序部分上线的写进计划 8 的协议版本，随模型部分上线的写进计划 9 的协议版本。下表的 1.9 与 1.10 已由维护者确认（「维护者确认的几处」第 2 处）。
 
 | 第 22.16 节 | 内容 | 计划 | 协议版本 | 说明 |
 |---|---|---|---|---|
 | 1 | 第 1 节原则 4：入场价与出场价是信号前收盘之后的第一个已结算收盘；引擎记下信号时刻、信号前收盘与提案指纹 | 7 | 1.8 | 记录在 1.8 生效；成交由计划 8 写 |
 | 2 | 第 8 节：`proposal_sha256`；结算表的条款编号；结算记录的格式与路径；裁决的两种效力；`crps-rel@1` 的定义、分组、权重、计入间隔、展示与排名门槛；中性观点照常计分；预测的身份 | 7 | 1.8 | `proposal_sha256` 在 1.8 生效；其余是定义，随计划 8（计分、结算）与计划 9（裁决）实施 |
-| 3 | 第 10 节：入场规则 1、`signal_close`、`pick_entered`、`pick_exited` 与 pick 的状态；`fill.as_of` 晚于 `signal_at`；最短持有期与重新入场间隔及其回帖；Magi 面向投资期限的目的；`pick_closed` 去掉三项；业绩口径；`magi/ledger-event@1` 重新定义；有效台账、白名单、顺序、撤回与作废 | 7 | 1.8 | 信号前收盘、提案指纹与锁定在 1.8 生效；其余随计划 8 实施。`fill.as_of` 一句见「请维护者确认的几处」第 1 处 |
-| 4 | `ledger_correction`：`corrects` 可以指向 `ledger/` 下的任何文件；`fields` 按白名单校验；用于确认、推翻、补写裁决 | 文字 7，校验 8 | 文字 1.8，校验 1.9 | 见「请维护者确认的几处」第 3 处 |
+| 3 | 第 10 节：入场规则 1、`signal_close`、`pick_entered`、`pick_exited` 与 pick 的状态；`fill.as_of` 晚于 `signal_at`；最短持有期与重新入场间隔及其回帖；Magi 面向投资期限的目的；`pick_closed` 去掉三项；业绩口径；`magi/ledger-event@1` 重新定义；有效台账、白名单、顺序、撤回与作废 | 7 | 1.8 | 信号前收盘、提案指纹与锁定在 1.8 生效；其余随计划 8 实施。「`fill.as_of` 晚于 `signal_at`」一句改为比较交易日，见「维护者确认的几处」第 1 处 |
+| 4 | `ledger_correction`：`corrects` 可以指向 `ledger/` 下的任何文件；`fields` 按白名单校验；用于确认、推翻、补写裁决 | 文字 7，校验 8 | 文字 1.8，校验 1.9 | 见「维护者确认的几处」第 3 处 |
 | 5 | 基准：`protocol/benchmarks/v1.yaml` 与 schema；对应、冻结、版本与补空白的规则；v1 的四个基准；`register_asset` 的 `type` 按实际持有的东西填 | 7 | 1.8 | 基准标的的登记与取价在计划 8 |
 | 6 | 市场数据：`market/prices/` 为 as-traded 口径、区间补录；新目录 `market/actions/` 的格式 | as-traded 与公司行动的记号 7；补录与 `market/actions/` 8 | 1.8；1.9 | as-traded 是业绩口径的一部分，每日取价任务现在记的就是这个口径 |
 | 7 | 第 9 节：证据核查记录、来源日期的核对、`magi:assist`、系统写入的证据 | 9 | 1.10 | 事实层不影响积分（第 22.1 节期限表） |
@@ -101,10 +101,11 @@ Task 1 合并之前，Task 2–8 不开始（决策 D27：设计与计划的改�
 
 **Files:**
 - Create: `docs/plans/2026-10-21-impl-7-protocol-1-8.md`（本计划）
+- Modify: `docs/design/2026-10-01-magi-phase1-design.md`（第 22 节的修订注记，维护者 2026-10-23 确认之后加）
 
 - [x] **Step 1: 写本计划**
 
-本计划写明：执行路线；全局约束；审阅重点；文件结构；第 22.16 节各项的落点；Task 2–9 的接口、测试、预期结果与提交信息；云端执行附注；请维护者确认的几处。
+本计划写明：执行路线；全局约束；审阅重点；文件结构；第 22.16 节各项的落点；Task 2–9 的接口、测试、预期结果与提交信息；云端执行附注；维护者确认的几处。
 
 - [x] **Step 2: 测试**
 
@@ -114,6 +115,10 @@ Expected: `406 passed`；一致性 `[]`（本任务不改代码）。
 - [x] **Step 3: 提交并开 PR**
 
 提交信息 `docs: plan 7, protocol 1.8 and the intake changes before the first real view`，推送会话分支，开一个指向 `main` 的 PR。PR 只新增本计划。
+
+- [x] **Step 4: 记录维护者的确认**
+
+维护者 2026-10-23 确认「维护者确认的几处」十处都按建议执行。同一个 PR 里：把本计划末尾一节改写为决定的记录；在设计第 22.1、22.2、22.6、22.8、22.15、22.16 节加日期为 2026-10-23 的修订注记（第 1、2、3、10 处改变了第 22 节的原文），并在第 22.17 节记一行。原文的句子不改。测试与一致性的结果同 Step 2。
 
 ---
 
@@ -273,15 +278,15 @@ git commit -m "feat(engine): pick events record the signal close from the daily 
   - schema 增加的属性：`signal_at`（时间戳）；`fill`（`$defs.close`）；`delay_hours`（数，不小于 0）；`delay_sessions`（整数，不小于 0）；`entry_policy`（0 或 1）；`benchmark`（null，或对象：`asset` 为标的编号，`policy` 为不小于 1 的整数，`fill` 为必填 `date`、`value`、`currency`、`source` 的对象）；`supersedes`（null，或 `ledger/events/` 下的文件路径）；`run`（不小于 1 的整数）；`void`（布尔）；`withdrawn`（布尔）。
   - `pick_opened`、`pick_closed`、`ledger_correction` 必须有 `issue`，不能有 `run`。
   - `pick_entered` 必须有 `pick_id`、`actor`、`idea`、`direction`、`signal_at`、`fill`、`delay_hours`、`delay_sessions`、`entry_policy`、`benchmark`、`supersedes`、`run`；`pick_exited` 同样，但不能有 `benchmark`。这两种事件不能有 `issue` 与 `proposal_sha256`。字段与设计第 22.2 节的示例一致。
-  - `void` 只能出现在 `pick_opened` 上，`withdrawn` 只能出现在 `ledger_correction` 上。引擎从不写这两个字段；它们出现在应用了更正之后的有效记录里（第 22.8 节「应用之后的记录必须仍合乎它的 schema」），所以现在就在格式里留出（见「请维护者确认的几处」第 4 处）。
+  - `void` 只能出现在 `pick_opened` 上，`withdrawn` 只能出现在 `ledger_correction` 上。引擎从不写这两个字段；它们出现在应用了更正之后的有效记录里（第 22.8 节「应用之后的记录必须仍合乎它的 schema」），所以现在就在格式里留出（见「维护者确认的几处」第 4 处）。
 - `magi/settlement@1`（`ledger/settlements/<年>/<月>/<写入时间>-st-<6 位序号>.yaml`），`additionalProperties: false`，字段与第 22.6 节的示例一致：
   - 必填：`schema`、`id`（`^st-\d{6}$`）、`idea`、`actor`、`view_version`、`target_date`、`window_end`、`status`（`settled`、`provisional`、`unsettled`）、`reason`（null 或 `no_quote`、`halted`、`delisted`、`acquired`、`other`）、`price`、`ruling`（null 或 `^rl-\d{6}$`）、`counted`（布尔）、`score`、`supersedes`（null 或 `^st-\d{6}$`）、`input_commit`（40 位十六进制）、`at`、`run`。可选：`void`（布尔，理由同上）。
-  - `price`：null，或对象，必填 `value`（不小于 0）、`close`（不小于 0 的数或 null）、`close_date`（日期或 null）、`split_factor`（大于 0）、`currency`、`source`。`close` 与 `close_date` 为 null 只用于结算价由裁决给出的情形，例如现金收购（见「请维护者确认的几处」第 5 处）。
+  - `price`：null，或对象，必填 `value`（不小于 0）、`close`（不小于 0 的数或 null）、`close_date`（日期或 null）、`split_factor`（大于 0）、`currency`、`source`。`close` 与 `close_date` 为 null 只用于结算价由裁决给出的情形，例如现金收购（见「维护者确认的几处」第 5 处）。
   - `score`：null，或对象，必填 `rule`（v1 只有 `crps-rel@1`）、`crps`（不小于 0）、`crps_rel`（不小于 0）、`ref_price`（大于 0）、`pit`（两个 0 到 1 之间的数）、`within_p10_p90`（布尔）。
   - 状态的组合：`settled` 的 `reason` 为 null，`price` 与 `score` 为对象；`provisional` 的 `reason` 为 null，`price` 为对象，`ruling` 不为 null，`score` 为 null；`unsettled` 的 `reason` 不为 null，`price` 与 `score` 为 null。
 - `magi/ruling@1`（`ledger/rulings/<年>/<月>/<写入时间>-rl-<6 位序号>.yaml`），`additionalProperties: false`，字段与第 22.7 节的示例一致，另加 `status`：
-  - 必填：`schema`、`id`（`^rl-\d{6}$`）、`kind`（第 22.7 节表中的 11 种）、`effect`（`immediate`、`provisional`）、`status`（`final`、`provisional`、`overturned`；Melchior 写入时立即生效的为 `final`，暂定的为 `provisional`，见「请维护者确认的几处」第 4 处）、`rule`（`^settlement\.[a-z0-9-]+$`，取协议第 8 节的条款编号）、`asset`、`subjects`（`picks` 为 pick 编号的列表，`views` 为 `{idea, actor, version}` 的列表）、`decision`、`sources`（每项必填 `url`（https）、`date`、`quote`、`fetched_sha256`（64 位十六进制））、`reasoning`、`supersedes`（null 或 `^rl-\d{6}$`）、`issue`、`input_commit`、`prompt_sha256`、`model`、`at`、`run`。
-  - `decision`：字符串 `"unresolved"`，或对象（至少一个字段，`additionalProperties: false`），可选字段为 `terminal_price`（`value` 不小于 0、`currency`）、`effective_date`、`price_source`（`provider`、`symbol`，用于改代码）、`unsettled_reason`（未结算的原因，用于无报价的退市）、`split`（`date`、`numerator`、`denominator`）、`note`（见「请维护者确认的几处」第 6 处）。`decision` 为 `"unresolved"` 时 `effect` 必须是 `provisional`。
+  - 必填：`schema`、`id`（`^rl-\d{6}$`）、`kind`（第 22.7 节表中的 11 种）、`effect`（`immediate`、`provisional`）、`status`（`final`、`provisional`、`overturned`；Melchior 写入时立即生效的为 `final`，暂定的为 `provisional`，见「维护者确认的几处」第 4 处）、`rule`（`^settlement\.[a-z0-9-]+$`，取协议第 8 节的条款编号）、`asset`、`subjects`（`picks` 为 pick 编号的列表，`views` 为 `{idea, actor, version}` 的列表）、`decision`、`sources`（每项必填 `url`（https）、`date`、`quote`、`fetched_sha256`（64 位十六进制））、`reasoning`、`supersedes`（null 或 `^rl-\d{6}$`）、`issue`、`input_commit`、`prompt_sha256`、`model`、`at`、`run`。
+  - `decision`：字符串 `"unresolved"`，或对象（至少一个字段，`additionalProperties: false`），可选字段为 `terminal_price`（`value` 不小于 0、`currency`）、`effective_date`、`price_source`（`provider`、`symbol`，用于改代码）、`unsettled_reason`（未结算的原因，用于无报价的退市）、`split`（`date`、`numerator`、`denominator`）、`note`（见「维护者确认的几处」第 6 处）。`decision` 为 `"unresolved"` 时 `effect` 必须是 `provisional`。
 - `engine/consistency.py` 的 `WHOLE` 增加 `"magi/settlement@1": "settlement"` 与 `"magi/ruling@1": "ruling"`。`ledger/` 本来就在 `YAML_DIRS` 里，所以计划 8 写下的结算与裁决文件从第一天起就按 schema 校验；`ordered_events` 只读 `ledger/events/`，不受影响。审计的「台账只增不改」规则覆盖整个 `ledger/`，两个新目录不需要改审计。
 
 - [ ] **Step 1: 写测试**
@@ -473,17 +478,17 @@ git commit -m "feat(engine): a pick is held for at least 30 days and a closed po
   - **第 3 节**：标识表增加结算记录编号 `st-<6 位序号>` 与裁决编号 `rl-<6 位序号>`，由 Melchior.Magi 分配。增加一句资产类型的规则：按实际持有的东西登记，持有大宗商品的基金（例如黄金基金）为 `commodity`，持有加密资产的基金为 `crypto`，使它与所跟踪的资产得到同一个基准；引擎无法核实，登记有误的由维护者经 PR 更正（第 22.4 节第 9 条）。
   - **第 8 节**：
     - 「Derived fields」的系统字段列表加入 `proposal_sha256`，并定义它（全局约束里的字节规则），写明 In force since protocol 1.8。
-    - 「Settlement」的规则 1–4 编号为 `settlement.1`–`settlement.4`；结算表每一行给出条款编号：`settlement.split`、`settlement.cash-takeover`、`settlement.delisting`、`settlement.halt`、`settlement.zero-equity`，最后一行拆成 `settlement.symbol-change`、`settlement.spin-off`、`settlement.currency-change` 三行，规则文字不变（见「请维护者确认的几处」第 7 处）。裁决的 `rule` 引用这些编号。
+    - 「Settlement」的规则 1–4 编号为 `settlement.1`–`settlement.4`；结算表每一行给出条款编号：`settlement.split`、`settlement.cash-takeover`、`settlement.delisting`、`settlement.halt`、`settlement.zero-equity`，最后一行拆成 `settlement.symbol-change`、`settlement.spin-off`、`settlement.currency-change` 三行，规则文字不变（见「维护者确认的几处」第 7 处）。裁决的 `rule` 引用这些编号。
     - 删去「take effect at once」那一段，改为新段落 **Rulings.**（Applies once Melchior.Magi runs）：第 22.7 节的两种效力表（11 种 `kind` 与各自的效力）；立即生效的条件（种类属于「立即」一类，而且关键数字或代码在程序抓取的来源文字里逐字出现，否则降为暂定）；暂定裁决不计入预测分与排名、受影响的 pick 按最后收盘估值并标 `stale_mark`、不会到期自动生效；有效状态 `final`、`provisional`、`overturned`；记录 `magi/ruling@1` 存在 `ledger/rulings/`；异议用 `request@1`（第 12 节），不暂停立即生效的裁决；维护者用 `ledger_correction` 确认（`status: final`）、推翻（`status: overturned`）或补写（`decision` 与 `status: final`）；Melchior 找不到依据时写 `decision: unresolved` 的暂定裁决；裁决起草分两步，第一步开带 `magi:ruling` 标签的 issue。
     - 新段落 **Settlement records.**（Applies once Melchior.Magi runs）：路径 `ledger/settlements/<year>/<month>/<time>-st-<6 digits>.yaml`，格式 `magi/settlement@1`；窗口与 `window_end`；只增不改，状态变化写取代记录（`supersedes`）；有效记录的定义；`counted` 的含义；每天的结算任务重算全部有效记录（第 22.6 节）。
     - 新段落 **Forecast score.**（Applies once Melchior.Magi runs）：`crps-rel@1` 的公式（离散 CRPS 除以 `price_at_publish.value`）、第 22.5 节的数值例子、不用对数评分的理由、规则带版本号；PIT 区间与 P10–P90 的记录、不进入预测分；期限四档与资产类别四类，只在组内平均与排名；每个计入的已结算版本权重 1；计入间隔：同一 actor 在同一标的上的全部版本按发布时间排列，第一个总是计入，之后的须在上一个计入版本的 `published_at` 之后至少 30 个自然日发布，是否计入在发布时确定；计入间隔只用于预测分，不用于 pick；不按在位时间加权、修改次数不作为信心的度量；中性观点照常结算、计分；未结算与暂定结算不计分；主人与重复（跨 actor 的汇总每位主人权重相同，不确定性按标的聚类）；平均数旁边必须显示的内容；排名门槛（组内至少 10 个计入的已结算版本、3 个标的）；预测的身份（第 22.5 节末段）。
   - **第 10 节**，按以下顺序重写：
     - 开头：pick 的定义；Magi 衡量每个 actor 与每位主人对标的本身的判断，以及在投资期限（investment horizon）上获取超额收益的能力，不为日内交易或高频策略设计（第 22.2 节 D44 的第一段）。现有的「Position changes」表保留。
     - **Entry rule 1.** 先写 `In force since protocol 1.8:`，说明引擎现在记下的东西：三个时钟（信号时刻即接受提案的时刻 `at`，报价时刻，成交时刻）；`signal_close` 的五个字段与取得方式；取不到时 `E_PRICE`；`proposal_sha256`；报价 `price` 只用于派生字段与预测分的尺度；7 日新鲜度检查保留。再写 `Applies once Melchior.Magi runs:`：成交收盘是交易日严格晚于（strictly later）`signal_close.date` 的第一个已结算日收盘（first settled daily close），开仓的成交收盘是入场价、平仓的是出场价；第 22.2 节第 3 条的三个例子与加密资产；执行延迟；不需要交易日历；同一次提案先平后开用同一个成交收盘。另写入场规则 0：本版之前开出、没有 `signal_close` 的 pick，以处理时的报价入场，记录与快照标 `entry_policy: 0`，单列。
-    - **Minimum holding period.** `In force since protocol 1.8.` 全局约束里的规则，写明 30 calendar days、同一标的上的全部 idea、`E_SEMANTIC`、`/payload/position`、回帖写明最早可以改变方向的时刻；30 天后可以直接反向，新 pick 同样至少持有 30 天；锁定期间其他字段照常修改，每个新版本照常存放、结算与计分；在同一标的上开出第二个 pick 也使锁定重新起算（举例说明，见「请维护者确认的几处」第 9 处）；豁免：`agent_retired` 的平仓（现在生效）、裁决给出的终值与维护者的作废（随 Melchior.Magi 生效，作废的 pick 的事件不作为锁定的起点）；在 Melchior.Magi 应用更正之前，锁定读原始的 pick 事件；批准时重新检查（第 11 节）。
-    - **Fills and pick states.** `Applies once Melchior.Magi runs.` `pick_entered` 与 `pick_exited` 的字段（第 22.2 节的示例），由 Melchior.Magi 经自己的 workflow 写入、带 `run` 不带 `issue`，写下之后不改，输入改变时写取代记录（`supersedes`）；`fill.as_of` 一句按「请维护者确认的几处」第 1 处的答复写；pick 的五种状态表（pending entry、held、pending exit、exited、void）与是否计入业绩；等待成交没有期限，超过 10 个工作日时 Melchior 检查标的状态；在入场收盘出现之前就被平仓的 pick，入场与出场用同一个收盘，收益为零（见「请维护者确认的几处」第 10 处）。
+    - **Minimum holding period.** `In force since protocol 1.8.` 全局约束里的规则，写明 30 calendar days、同一标的上的全部 idea、`E_SEMANTIC`、`/payload/position`、回帖写明最早可以改变方向的时刻；30 天后可以直接反向，新 pick 同样至少持有 30 天；锁定期间其他字段照常修改，每个新版本照常存放、结算与计分；在同一标的上开出第二个 pick 也使锁定重新起算（举例说明，见「维护者确认的几处」第 9 处）；豁免：`agent_retired` 的平仓（现在生效）、裁决给出的终值与维护者的作废（随 Melchior.Magi 生效，作废的 pick 的事件不作为锁定的起点）；在 Melchior.Magi 应用更正之前，锁定读原始的 pick 事件；批准时重新检查（第 11 节）。
+    - **Fills and pick states.** `Applies once Melchior.Magi runs.` `pick_entered` 与 `pick_exited` 的字段（第 22.2 节的示例），由 Melchior.Magi 经自己的 workflow 写入、带 `run` 不带 `issue`，写下之后不改，输入改变时写取代记录（`supersedes`）；成交时刻的规则（「维护者确认的几处」第 1 处）：`as_of` 是取价来源给这根日线的时间戳（Yahoo 日线为交易时段开始），不是收盘时刻；`delay_hours` 从 `signal_at` 量到成交交易日的收盘时刻，收盘时刻由 Melchior.Magi 从取价来源的交易时段取得；一致性校验检查成交收盘的交易日严格晚于信号前收盘的交易日，且信号前收盘的 `as_of` 不晚于 `signal_at`；pick 的五种状态表（pending entry、held、pending exit、exited、void）与是否计入业绩；等待成交没有期限，超过 10 个工作日时 Melchior 检查标的状态；在入场收盘出现之前就被平仓的 pick，入场与出场用同一个收盘，收益为零（见「维护者确认的几处」第 10 处）。
     - **Track record.** `Applies once Melchior.Magi runs.` 第 22.3 节：`market/prices/` 为 as-traded 口径（每日取价任务现在记的就是这个口径）；拆股比例 `s` 与除息分红 `D` 的记号；日收益与总收益 `TR` 的公式；分红税前全额、不计交易成本、按计价货币、不用 `adjclose`；做空自身的收益为 −TR，不计借券费用与利息；超额收益做多为 `TR - TR_b`、做空为 `TR_b - TR`，以及维护者确认的理由；中性观点不开 pick、不进入业绩；未平仓 pick 的估值日与 `stale_mark`；每个 actor 的汇总指标（含只作说明的等权模拟）；a pick is not a position，平均数不是组合收益；排名只在同一资产类别里，门槛为至少 10 个已入场 pick、3 个标的。
-    - **Benchmarks.** `Applies once Melchior.Magi runs`，政策文件现在就生效。第 22.4 节：政策文件 `protocol/benchmarks/v<version>.yaml` 与 `magi/benchmark-policy@1`；按资产类型与上市市场对应，不按计价货币；上市市场由 `price_source` 推出，代码后缀（suffix）指 Yahoo 代码最后一个 `.` 起的部分，没有 `.` 时为空字符串（见「请维护者确认的几处」第 8 处）；基准的计价货币与标的不同时记 `currency_mismatch`；入场时冻结；版本只增不改；空白由第一个覆盖的版本补上；基准与市场状态序列由 Melchior.Magi 登记；市场状态序列不作基准；v1 的内容与理由（`spy`、`1306-t`、`xlf`、`dbc`，用基金本身而不用指数；`btc-usd` 只作市场状态序列）；外汇与 `other` 没有基准、只显示总收益。
+    - **Benchmarks.** `Applies once Melchior.Magi runs`，政策文件现在就生效。第 22.4 节：政策文件 `protocol/benchmarks/v<version>.yaml` 与 `magi/benchmark-policy@1`；按资产类型与上市市场对应，不按计价货币；上市市场由 `price_source` 推出，代码后缀（suffix）指 Yahoo 代码最后一个 `.` 起的部分，没有 `.` 时为空字符串（见「维护者确认的几处」第 8 处）；基准的计价货币与标的不同时记 `currency_mismatch`；入场时冻结；版本只增不改；空白由第一个覆盖的版本补上；基准与市场状态序列由 Melchior.Magi 登记；市场状态序列不作基准；v1 的内容与理由（`spy`、`1306-t`、`xlf`、`dbc`，用基金本身而不用指数；`btc-usd` 只作市场状态序列）；外汇与 `other` 没有基准、只显示总收益。
     - **Corrections and the effective ledger.** `Applies once Melchior.Magi runs`；在那之前，更正照常记录，不改变任何计算（包括锁定）。第 22.8 节：唯一的归约函数；输入；顺序；可更正字段的白名单表（`void`、`signal_close`、`fill`、`benchmark`、结算记录的 `status`、`reason`、`price`、`void`，裁决的 `status`、`decision`，更正的 `withdrawn`）；值整体替换；撤回与恢复；作废的 pick；输出带 `corrected_by`；所有模块读同一份有效台账；Melchior.Magi 不提交 `ledger_correction`，它修正自己的记录用取代记录。删去「In this version a correction is recorded but does not yet change computed returns...」一句。
     - **Event format.** `pick_opened` 与 `pick_closed` 记 `signal_close` 与 `proposal_sha256`；`pick_closed` 不再记 `entry_price`、`realized_return`、`duration_days`；`magi/ledger-event@1` 在 1.8 重新定义，没有迁移，因为此前没有任何台账事件。
   - **第 11 节**：补一句：批准时重新检查包括最短持有期，按批准时的处理时刻计算。
@@ -639,7 +644,7 @@ Expected: 全部步骤 `PASS`，最后一行 `all steps passed`，包括新步�
 
 ## 计划 7 完成标准
 
-- [ ] Task 1 的文档 PR 已合并，「请维护者确认的几处」都已答复。
+- [ ] Task 1 的文档 PR 已合并（十处决定已于 2026-10-23 确认，记在本计划末尾）。
 - [ ] Task 2–8 的 PR 已合并；main 上 `442 passed`，一致性 `[]`，ci 与 audit 为 success。
 - [ ] 合并前核对过正式仓库没有观点、也没有台账事件。
 - [ ] sandbox 端到端测试 `all steps passed`，含七个新步骤。
@@ -670,17 +675,17 @@ Execute Task 2 through Task 8 of docs/plans/2026-10-21-impl-7-protocol-1-8.md in
 
 ---
 
-## 请维护者确认的几处
+## 维护者确认的几处
 
-以下各处是第 22 节照原文无法实现、或原文没有写到而实现必须决定的地方。本计划没有改设计；每处给出建议，本计划的 Interfaces 已按建议写。
+以下各处是第 22 节照原文无法实现、或原文没有写到而实现必须决定的地方。维护者于 2026-10-23 审阅 PR #45，确认每一处都按本计划的建议执行；下面按确认后的内容记录，本计划的 Interfaces 已按此写。第 1、2、3、10 处改变了第 22 节的原文，设计文档在相应位置加了日期为 2026-10-23 的修订注记，原文的句子不改；其余各处补的是第 22 节没有写到的格式与编号。
 
-1. **Yahoo 日线的 `as_of` 是交易时段的开始，不是收盘时刻。** `YahooProvider.close` 取日线时，`as_of` 是这根日线的时间戳，Yahoo 把它标在开盘时刻（例如美股 13:30Z）；走 5 分钟线的路径时是最后一根 5 分钟线的时刻（正式仓库 2026-10-20 的那行收盘就是 `yahoo-5m`、`as_of` 20:00Z）；Naver 固定为 06:30Z（收盘）。第 22.2 节第 4 条按「`signal_at` 到成交收盘的 `as_of`」计算 `delay_hours`，第 22.6 节检查「`fill.as_of` 晚于 `signal_at`」。周三 14:00（美东）接受、以周三收盘成交的 pick，`fill.as_of` 会是周三 13:30Z，早于 `signal_at`，于是延迟为负、检查误报；第 22.2 节示例里的 21:00Z 默认了收盘时刻。计划 7 的代码不受影响：`signal_close.as_of` 照取价函数的返回值记录，与 `market/prices/` 相同。建议：协议 1.8 写明 `as_of` 是取价来源给这根日线的时间戳；把第 22.6 节的检查改为「成交收盘的交易日严格晚于信号前收盘的交易日，且信号前收盘的 `as_of` 不晚于 `signal_at`」；`delay_hours` 改为量到成交交易日的收盘时刻，收盘时刻由计划 8 从取价来源的交易时段取得。维护者同意后，Task 7 按此写 **Fills and pick states.** 一段；不同意时照第 22.2、22.6 节原文写。
-2. **事实层与 1.8 的范围。** 第 22.1 节第一张表写计划 7 包含「协议 1.8 的全部定义（第 22.2–22.9 节）」，第 22.16 节的标题也说 14 项都是协议 1.8 的改动；而第 22.1 节的期限表把事实层（第 22.9 节）写成「随计划 9」，研究轨迹等写成「随计划 8、9」，维护者为本计划给的范围也把它们排除在外。建议按期限表与维护者的范围：本计划只做期限表要求在第一个观点之前写进协议的部分；计划 8 的部分写进协议 1.9，计划 9 的部分写进协议 1.10（「第 22.16 节各项的落点」一表）。
-3. **`ledger_correction` 的新校验放在计划 8。** 第 22.8 节写 intake 的校验属于协议 1.8（`corrects` 可以指向 `ledger/` 下的任何文件，`fields` 按白名单校验）；维护者给本计划的 intake 改动只有信号前收盘、提案指纹与锁定，更正的归约在计划 8。计划 8 之前 `ledger/` 下除事件之外没有别的文件，放宽 `corrects` 没有可以指向的对象。建议：协议 1.8 写下白名单；action schema 的放宽与白名单校验随归约函数在计划 8 实现（协议 1.9）；在那之前维护者只提交白名单之内的更正；计划 8 的归约函数忽略白名单之外的字段，并由一致性校验报告。另外，AGENT_GUIDE 现有的示例 `fields: {price: {currency: USD}}` 不在白名单里，Task 7 改为 `fields: {void: true}`。
-4. **更正要改的字段不在原来的记录里。** 白名单列有 `pick_opened` 与结算记录的 `void`、更正的 `withdrawn`、裁决的 `status`，第 22.8 节又要求「应用之后的记录必须仍合乎它的 schema」，而第 22.2、22.6、22.7 节的示例都没有这些字段。建议：三份 schema 把 `void`、`withdrawn` 定为可选字段，引擎从不写入；裁决记录从写入时就带必填的 `status`，立即生效的为 `final`，暂定的为 `provisional`，更正整体替换它。
-5. **暂定结算与依据裁决的结算价。** 第 22.6 节只有一条按收盘结算的示例。建议：`provisional` 的记录有 `price` 与 `ruling`，`score` 为 null，维护者确认裁决之后由结算任务写一条取代它的 `settled` 记录，分数记在那一条上（与「任何变化都写一条新记录」一致）；结算价由裁决给出时（例如现金收购），`price.close` 与 `price.close_date` 为 null，`source` 写明来源。
-6. **裁决 `decision` 的字段。** 第 22.7 节只有现金收购一例（`terminal_price`、`effective_date`）。格式随 1.8 固定，所以建议现在就定下全部可选字段：`terminal_price`、`effective_date`、`price_source`（改代码）、`unsettled_reason`（无报价的退市）、`split`（拆股数据）、`note`；另有字符串 `unresolved`，只能与 `effect: provisional` 一起出现。以后要加字段，走协议变更。
-7. **结算表的条款编号。** 第 22.16 节第 2 项要求结算表每一行有条款编号，设计只给出 `settlement.cash-takeover` 一例。建议：一般规则 1–4 为 `settlement.1`–`settlement.4`；各行为 `settlement.split`、`settlement.cash-takeover`、`settlement.delisting`、`settlement.halt`、`settlement.zero-equity`；现在的最后一行（改代码、分拆、改计价货币）拆成三行，`settlement.symbol-change`、`settlement.spin-off`、`settlement.currency-change`，与裁决的三个 `kind` 一一对应，规则文字不变。
-8. **没有后缀的代码被读作美国市场。** 上市市场由「取价来源与代码后缀」推出，v1 的美国市场后缀是空字符串。Yahoo 的指数代码（例如 `^N225`）、外汇代码（`EURUSD=X`）与加密代码（`BTC-USD`）都没有后缀。加密资产与大宗商品的基准不看市场，外汇没有基准；但一个登记为 `index`、代码为 `^N225` 的日经指数会对应到 `spy`，再因计价货币不同（JPY 对 USD）记为 `currency_mismatch`。建议：v1 照原文；协议写明后缀指代码最后一个 `.` 起的部分；结果是 null 而不是一个错误的数，第一次有这类标的登记时，由维护者在下一版政策里处理。
-9. **同一标的上的第二个 pick 使第一个的锁定重新起算。** 锁定从同一标的上最后一个 pick 事件起算。actor 第 0 天在 idea A 上做多，第 31 天在同一标的的 idea B 上做多，于是 A 要到第 61 天才能平仓。这是第 22.2 节第 1 条的直接结果。建议照原文：规则只有一条，结果偏保守；协议里举这个例子写明。
-10. **入场之前平仓的 pick。** 第 22.2 节写「待入场的 pick 在入场前被平仓的，入场与出场用同一个成交收盘，收益为零」。「待入场」按记录定义（还没有 `pick_entered`），而成交收盘按入场规则 1 由信号前收盘决定。两者只在开仓与平仓之间没有出现新的已结算收盘时一致；如果入场收盘已经出现、只是 Melchior 还没写 `pick_entered`，两笔成交收盘不同。建议协议按收盘来写：「在入场收盘出现之前就被平仓的 pick，入场与出场用同一个收盘，收益为零」。另外，按维护者的要求在此写明：注销 agent 时写的 `pick_closed` 也记信号前收盘（Task 3）。
+1. **成交时刻：`as_of` 是日线的时间戳，检查比较交易日**（维护者 2026-10-23 确认）。`YahooProvider.close` 取日线时，`as_of` 是这根日线的时间戳，Yahoo 把它标在交易时段开始；走 5 分钟线的路径时是最后一根 5 分钟线的时刻；Naver 固定为 06:30Z（收盘）。维护者另行核实：TEM 的 Yahoo 日线标在 13:30Z，正式仓库记下的两行收盘都来自 5 分钟线的路径，为 20:00Z。照第 22.2 节第 4 条与第 22.6 节的原文，周三 14:00（美东）接受、以周三收盘成交的 pick，`fill.as_of` 会早于 `signal_at`，延迟为负、检查误报。决定：协议 1.8 写明 `as_of` 是取价来源给这根日线的时间戳；一致性校验检查「成交收盘的交易日严格晚于信号前收盘的交易日，且信号前收盘的 `as_of` 不晚于 `signal_at`」；`delay_hours` 从 `signal_at` 量到成交交易日的收盘时刻，收盘时刻由计划 8 从取价来源的交易时段取得。Task 7 按此写 **Fills and pick states.** 一段。计划 7 的代码不受影响：`signal_close.as_of` 照取价函数的返回值记录，与 `market/prices/` 相同。
+2. **协议版本：计划 7、8、9 分别写协议 1.8、1.9、1.10**（维护者 2026-10-23 确认）。第 22.1 节第一张表写计划 7 包含「协议 1.8 的全部定义（第 22.2–22.9 节）」，第 22.16 节的标题也说 14 项都是协议 1.8 的改动；而第 22.1 节的期限表把事实层（第 22.9 节）写成「随计划 9」。决定：按期限表执行。本计划只做期限表要求在第一个观点之前写进协议的部分；计划 8 的部分写进协议 1.9，计划 9 的部分写进协议 1.10，各项的落点见「第 22.16 节各项的落点」一表。
+3. **`ledger_correction` 的新校验放在计划 8**（维护者 2026-10-23 确认）。决定：协议 1.8 写下可更正字段的白名单；action schema 的 `corrects` 路径放宽与 `fields` 的白名单校验随归约函数在计划 8 实现，写进协议 1.9；在那之前维护者只提交白名单之内的更正；计划 8 的归约函数忽略白名单之外的字段，并由一致性校验报告。AGENT_GUIDE 现有的示例 `fields: {price: {currency: USD}}` 不在白名单里，Task 7 改为 `fields: {void: true}`。
+4. **更正要改的字段在格式里留出**（维护者 2026-10-23 确认）。白名单列有 `pick_opened` 与结算记录的 `void`、更正的 `withdrawn`、裁决的 `status`，第 22.8 节又要求应用更正之后的记录仍合乎 schema，而第 22.2、22.6、22.7 节的示例都没有这些字段。决定：三份 schema 把 `void`、`withdrawn` 定为可选字段，引擎从不写入；裁决记录从写入时就带必填的 `status`，立即生效的为 `final`，暂定的为 `provisional`，更正整体替换它。
+5. **暂定结算与依据裁决的结算价**（维护者 2026-10-23 确认）。决定：`provisional` 的结算记录有 `price` 与 `ruling`，`score` 为 null；维护者确认裁决之后，结算任务写一条取代它的 `settled` 记录，分数记在那一条上。结算价由裁决给出时（例如现金收购），`price.close` 与 `price.close_date` 为 null，`source` 写明来源。
+6. **裁决 `decision` 的字段**（维护者 2026-10-23 确认）。决定：`decision` 是字符串 `unresolved`（只能与 `effect: provisional` 一起出现），或带以下可选字段的对象：`terminal_price`、`effective_date`、`price_source`（改代码）、`unsettled_reason`（无报价的退市）、`split`（拆股数据）、`note`。以后要加字段，走协议变更。
+7. **结算表的条款编号**（维护者 2026-10-23 确认）。决定：一般规则 1–4 为 `settlement.1`–`settlement.4`；各行为 `settlement.split`、`settlement.cash-takeover`、`settlement.delisting`、`settlement.halt`、`settlement.zero-equity`；原来的最后一行（改代码、分拆、改计价货币）拆成 `settlement.symbol-change`、`settlement.spin-off`、`settlement.currency-change` 三行，与裁决的三个 `kind` 一一对应，规则文字不变。
+8. **没有后缀的代码读作美国市场**（维护者 2026-10-23 确认）。Yahoo 的指数代码（例如 `^N225`）、外汇代码（`EURUSD=X`）与加密代码（`BTC-USD`）都没有后缀。决定：v1 照原文；协议写明后缀指代码最后一个 `.` 起的部分，没有 `.` 时为空字符串。登记为 `index`、代码为 `^N225` 的标的因此对应 `spy`，再因计价货币不同记为 `currency_mismatch`，结果是 null 而不是一个错误的数；第一次有这类标的登记时，由维护者在下一版政策里处理。
+9. **同一标的上的第二个 pick 使锁定重新起算**（维护者 2026-10-23 确认）。锁定从同一标的上最后一个 pick 事件起算：actor 第 0 天在 idea A 上做多，第 31 天在同一标的的 idea B 上做多，A 要到第 61 天才能平仓。决定：照第 22.2 节第 1 条的原文；协议里举这个例子写明。
+10. **入场之前平仓的 pick 按收盘来写**（维护者 2026-10-23 确认）。第 22.2 节写「待入场的 pick 在入场前被平仓的，入场与出场用同一个成交收盘，收益为零」；「待入场」按记录定义，而成交收盘由信号前收盘决定，两者只在开仓与平仓之间没有出现新的已结算收盘时一致。决定：协议写作「在入场收盘出现之前就被平仓的 pick，入场与出场用同一个收盘，收益为零」。注销 agent 时写的 `pick_closed` 也记信号前收盘（Task 3）。
