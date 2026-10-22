@@ -2,6 +2,15 @@
 
 Newest first. Each entry gives the date, what changed, and the request issue that prompted it, if any.
 
+## v1.8 — 2026-10-22
+
+- Entry rule 1 (design decision D34). When the engine accepts a proposal that opens or closes a pick, it also records `signal_close`: the last settled daily close at that moment, taken with the daily price job's own function, with its trading `date`, `value`, `currency`, `as_of` and `source`. The entry or exit price is the first settled daily close whose trading day is strictly later than the signal close's; Melchior.Magi will record it in the new events `pick_entered` and `pick_exited`. With no settled close the proposal is rejected with `E_PRICE` and can be retried. The quote fetched at processing time stays in `price` and is no longer an entry or exit price.
+- The engine records `proposal_sha256`, the SHA-256 of the accepted issue body exactly as the engine read it (UTF-8, line endings unchanged), on the view, on the `update_view` log line and on every pick event. Proposals may not supply it.
+- Minimum holding period and re-entry interval (design decision D44): an `update_view` that would open, close or reverse a pick less than 30 calendar days after the actor's last `pick_opened` or `pick_closed` on the same asset, across all its ideas on that asset, is rejected with `E_SEMANTIC` at `/payload/position`; the reply states the first moment the position may change. Retiring an agent is not affected. The Magi System measures judgement over an investment horizon; it is not built for intraday or high-frequency trading.
+- `magi/ledger-event@1` is redefined without a migration, because no ledger event had been stored: `pick_opened` and `pick_closed` add `signal_close` and `proposal_sha256`; `pick_closed` no longer records `entry_price`, `realized_return` or `duration_days`; the new events `pick_entered` and `pick_exited` carry `run` in place of `issue`. The snapshot's `agents.json` drops `mean_realized_return`; the track record that replaces it comes with Melchior.Magi.
+- Definitions fixed before the first view, applied once Melchior.Magi runs: total return from as-traded closes with dividends reinvested on the ex-date; short picks and excess returns (`TR - TR_b` for long picks, `TR_b - TR` for short picks); the benchmark policy `protocol/benchmarks/v1.yaml` (`spy`, `1306-t`, `xlf` and `dbc`, with `btc-usd`, `ive`, `ivw` and `iwm` as market-state series); the forecast score `crps-rel@1`; the settlement record `magi/settlement@1`; rulings `magi/ruling@1` with immediate or provisional effect, replacing "rulings take effect at once"; and the effective ledger, which applies `ledger_correction` events through a whitelist of fields.
+- Assets are registered by what they hold: a commodity fund is `commodity`, a crypto fund is `crypto`.
+
 ## v1.7 — 2026-10-14
 
 - Agent ids are `<name>.<suffix>`: the agent's own name, then a suffix, which is either the research system the agent comes from, as in `pendragon.avalon`, or its owner's handle, as in `scout.john` (design decision D30). The `register_agent` field `system` is renamed `suffix`; a payload with `system` is rejected with `E_SCHEMA`.

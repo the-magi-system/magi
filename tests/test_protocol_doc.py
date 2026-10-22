@@ -114,3 +114,51 @@ def test_protocol_and_guide_describe_agent_suffixes():
         for needle in ["<name>.<suffix>", "pendragon.avalon", "scout.john", "`magi`"]:
             assert needle in text, (name, needle)
         assert "<name>.<system>" not in text and "system: " not in text, name
+
+
+def test_changelog_records_v1_8():
+    changelog = (REPO_ROOT / "protocol" / "CHANGELOG.md").read_text(encoding="utf-8")
+    latest = changelog.split("## v1.7")[0]
+    for needle in ["## v1.8", "`signal_close`", "`proposal_sha256`", "30 calendar days", "`pick_entered`", "`crps-rel@1`",
+                   "`protocol/benchmarks/v1.yaml`", "`mean_realized_return`", "without a migration"]:
+        assert needle in latest, needle
+
+
+def test_protocol_marks_what_is_in_force_now():
+    text = (REPO_ROOT / "protocol" / "PROTOCOL.md").read_text(encoding="utf-8")
+    for needle in ["In force since protocol 1.8", "Applies once Melchior.Magi runs", "**Entry rule 1.**", "`signal_close`",
+                   "`proposal_sha256`", "first settled daily close", "strictly later", "**Minimum holding period.**",
+                   "30 calendar days", "`/payload/position`", "`agent_retired`", "investment horizon", "`pick_entered`",
+                   "`pick_exited`"]:
+        assert needle in text, needle
+    assert "does not yet change computed returns" not in text
+
+
+def test_protocol_defines_the_track_record_benchmarks_and_forecast_scores():
+    text = (REPO_ROOT / "protocol" / "PROTOCOL.md").read_text(encoding="utf-8")
+    for needle in ["as-traded", "`adjclose`", "`TR - TR_b`", "`TR_b - TR`", "not a position",
+                   "`protocol/benchmarks/v<version>.yaml`", "`currency_mismatch`", "`xlf`", "`dbc`", "`crps-rel@1`", "PIT",
+                   "`counted`", "`commodity`"]:
+        assert needle in text, needle
+
+
+def test_protocol_defines_settlement_records_rulings_and_corrections():
+    text = (REPO_ROOT / "protocol" / "PROTOCOL.md").read_text(encoding="utf-8")
+    for needle in ["`magi/settlement@1`", "`ledger/settlements/`", "`magi/ruling@1`", "`ledger/rulings/`",
+                   "`settlement.cash-takeover`", "`settlement.split`", "provisional", "`overturned`", "`withdrawn`", "`void`",
+                   "`corrected_by`", "`magi:ruling`"]:
+        assert needle in text, needle
+    assert "take effect at once" not in text
+
+
+def test_guides_describe_entry_the_lock_and_neutral_views():
+    guide = (REPO_ROOT / "protocol" / "AGENT_GUIDE.md").read_text(encoding="utf-8")
+    for needle in ["`signal_close`", "30 days", "next settled close"]:
+        assert needle in guide, needle
+    assert "fields: {price:" not in guide
+    first_view = (REPO_ROOT / "docs" / "guides" / "first-view-for-agents.md").read_text(encoding="utf-8")
+    for needle in ["next settled close", "30 days", "neutral", "forecast score"]:
+        assert needle in first_view, needle
+    getting_started = (REPO_ROOT / "docs" / "guides" / "getting-started.zh.md").read_text(encoding="utf-8")
+    for needle in ["30 天", "中性", "收盘"]:
+        assert needle in getting_started, needle
