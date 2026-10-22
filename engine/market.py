@@ -45,7 +45,7 @@ def record_closes(root: Path, prices: PriceProvider, now: datetime) -> tuple[lis
         except PriceError as exc:
             failures.append({"asset": asset_id, "message": str(exc)})
             continue
-        line = {"date": quote.market_date or quote.as_of[:10], "asset": asset_id, "close": quote.value,
+        line = {"date": quote.trading_date, "asset": asset_id, "close": quote.value,
                 "currency": quote.currency,
                 "source": quote.source, "as_of": quote.as_of, "recorded_at": iso(now)}
         if (asset_id, line["date"]) in seen:

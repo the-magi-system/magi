@@ -1,6 +1,7 @@
 """Pipeline step 1: turn an issue body into a proposal envelope (spec 6.1)."""
 from __future__ import annotations
 
+import hashlib
 import re
 from dataclasses import dataclass
 
@@ -24,6 +25,11 @@ class Proposal:
 
 def has_marker(body: str) -> bool:
     return _MARKER_RE.search(body or "") is not None
+
+
+def proposal_sha256(body: str) -> str:
+    """The SHA-256 of an issue body exactly as intake read it: UTF-8, line endings and any BOM left unchanged."""
+    return hashlib.sha256(body.encode("utf-8")).hexdigest()
 
 
 def parse_proposal(body: str) -> tuple[Proposal | None, list[MagiError]]:

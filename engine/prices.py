@@ -31,6 +31,15 @@ class Quote:
     def to_dict(self) -> dict:
         return {"value": self.value, "currency": self.currency, "as_of": self.as_of, "source": self.source}
 
+    @property
+    def trading_date(self) -> str:
+        """The trading day a close belongs to: the exchange's own day, else the date of as_of."""
+        return self.market_date or self.as_of[:10]
+
+    def as_close(self) -> dict:
+        return {"date": self.trading_date, "value": self.value, "currency": self.currency, "as_of": self.as_of,
+                "source": self.source}
+
 
 class PriceError(Exception):
     """No usable price could be obtained; maps to E_PRICE."""

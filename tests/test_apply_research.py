@@ -1,3 +1,4 @@
+import hashlib
 import json
 from datetime import datetime, timedelta, timezone
 
@@ -6,16 +7,20 @@ import pytest
 from engine.apply import HANDLERS, apply_proposal, write_changes
 from engine.changes import ApplyError
 from engine.errors import E_INTERNAL, E_PRICE
+from engine.prices import Quote
 from engine.proposal import Proposal
+from engine.queue import body_sha
 from engine.repo import RepoState
 from engine.schemas import known_actions
 from engine.timeutil import iso
 from engine.yamlio import load_yaml
 from tests.fakes import NOW, FakePrices
-from tests.util import REPO_ROOT, evidence_payload, non_public_evidence_payload, view_payload
+from tests.util import REPO_ROOT, body, evidence_payload, non_public_evidence_payload, view_payload
 
 IDEA = {"id": "msft-copilot-2027", "asset": "msft", "title": "Copilot", "summary": "Copilot monetisation"}
 OPENED = "ledger/events/2026/10/20261001T023000Z-pk-000001-pick_opened.yaml"
+FRIDAY = Quote(178.5, "USD", "2026-10-01T13:30:00Z", "yahoo", "2026-10-01")
+SIGNAL = {"date": "2026-10-01", "value": 178.5, "currency": "USD", "as_of": "2026-10-01T13:30:00Z", "source": "yahoo"}
 
 
 def run(state, action, actor, payload, prices=None, issue=50, now=NOW):
@@ -66,6 +71,30 @@ def test_new_view_opens_a_pick(state):
     assert changes.log[0]["diff"]["position"] == [None, "long"]
 
 
+def _sha256(text):
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def test_the_proposal_hash_is_recorded(state):
+    text = body("update_view", "john.research", view_payload())
+    changes = apply_proposal(state, Proposal("update_view", "john.research", view_payload()), issue=50, owner="john",
+                             now=NOW, prices=FakePrices(), body=text)
+    view = changes.writes["ideas/nvda-ai-capex-2026/views/john.research.yaml"]
+    opened = ledger_events(changes, "pick_opened.yaml")
+    assert view["proposal_sha256"] == changes.log[0]["proposal_sha256"] == opened[0]["proposal_sha256"] == _sha256(text)
+
+
+def test_the_proposal_hash_keeps_line_endings(state):
+    payload = view_payload(position="short")
+    crlf, lf = body("update_view", "arthur.val", payload, newline="\r\n"), body("update_view", "arthur.val", payload)
+    changes = apply_proposal(state, Proposal("update_view", "arthur.val", payload), issue=50, owner="arthur",
+                             now=NOW, prices=FakePrices(), body=crlf)
+    events = ledger_events(changes, "pick_closed.yaml") + ledger_events(changes, "pick_opened.yaml")
+    assert len(events) == 2
+    assert all(event["proposal_sha256"] == _sha256(crlf) != _sha256(lf) for event in events)
+    assert body_sha(crlf) == body_sha(lf)
+
+
 def test_same_direction_keeps_existing_pick(state):
     changes = run(state, "update_view", "arthur.val", view_payload())
     assert not [path for path in changes.writes if path.startswith("ledger/")] and "picks" not in changes.log[0]
@@ -83,6 +112,42 @@ def test_flipping_closes_then_opens(state):
     assert closed[0]["pick_id"] == "pk-000001"
     assert (opened[0]["pick_id"], opened[0]["direction"]) == ("pk-000002", "short")
     assert [p["event"] for p in changes.log[0]["picks"]] == ["pick_closed", "pick_opened"]
+
+
+def test_opening_records_the_signal_close(state):
+    prices = FakePrices({"NVDA": 180.2}, closes={"NVDA": FRIDAY})
+    opened = ledger_events(run(state, "update_view", "john.research", view_payload(), prices=prices), "pick_opened.yaml")
+    assert opened[0]["signal_close"] == SIGNAL and opened[0]["price"]["value"] == 180.2
+    assert prices.close_calls == ["NVDA"]
+
+
+def test_a_flip_records_one_signal_close_on_both_events(state):
+    prices = FakePrices({"NVDA": 180.2}, closes={"NVDA": FRIDAY})
+    changes = run(state, "update_view", "arthur.val", view_payload(position="short"), prices=prices)
+    closed, opened = ledger_events(changes, "pick_closed.yaml"), ledger_events(changes, "pick_opened.yaml")
+    assert closed[0]["signal_close"] == opened[0]["signal_close"] == SIGNAL
+    assert prices.close_calls == ["NVDA"]
+
+
+def test_a_view_that_keeps_its_direction_fetches_no_close(state):
+    prices = FakePrices({"NVDA": 180.2}, closes={"NVDA": FRIDAY})
+    run(state, "update_view", "arthur.val", view_payload(), prices=prices)
+    assert prices.close_calls == []
+
+
+def test_no_settled_close_rejects_with_e_price(state):
+    zero = Quote(0.0, "USD", "2026-10-01T13:30:00Z", "yahoo", "2026-10-01")
+    for prices in (FakePrices(fail_close={"NVDA"}), FakePrices(closes={"NVDA": zero})):
+        with pytest.raises(ApplyError) as err:
+            run(state, "update_view", "arthur.val", view_payload(position="neutral"), prices=prices)
+        assert err.value.error.code == E_PRICE and err.value.error.retryable
+
+
+def test_pick_closed_records_no_returns(state):
+    changes = run(state, "update_view", "arthur.val", view_payload(position="neutral"), prices=FakePrices({"NVDA": 200.0}))
+    closed = ledger_events(changes, "pick_closed.yaml")[0]
+    assert {"price", "signal_close", "reason", "proposal_sha256"} <= set(closed)
+    assert not {"entry_price", "realized_return", "duration_days"} & set(closed)
 
 
 def test_second_version_diff(repo):

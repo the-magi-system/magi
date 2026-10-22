@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime
 
 from .capabilities import approval_reasons, check_capability
 from .errors import E_PARSE, MagiError
@@ -35,7 +36,8 @@ def _rejected(proposal: Proposal | None, errors: list[MagiError], notes: list[st
     return ValidationResult("rejected", proposal, errors, notes or [])
 
 
-def validate(state: RepoState, body: str, author_id: int, proposals_today: int = 0) -> ValidationResult:
+def validate(state: RepoState, body: str, author_id: int, proposals_today: int = 0,
+             now: datetime | None = None) -> ValidationResult:
     proposal, errors = parse_proposal(body)
     if errors:
         return _rejected(None, errors)
@@ -53,7 +55,7 @@ def validate(state: RepoState, body: str, author_id: int, proposals_today: int =
     errors = validate_payload(state.root, proposal.action, proposal.payload)
     if errors:
         return _rejected(proposal, errors)
-    errors, notes = check_semantics(state, proposal)
+    errors, notes = check_semantics(state, proposal, now)
     if errors:
         return _rejected(proposal, errors, notes)
     reasons = approval_reasons(state, researcher, proposal)

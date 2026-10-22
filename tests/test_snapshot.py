@@ -52,7 +52,12 @@ def test_compile_on_fixture(repo):
     assert manifest["counts"] == {"ideas": 3, "views": 0, "evidence": 1, "agents": 5, "profiles": 2, "methodologies": 1,
                                   "open_picks": 1, "reviews": 0, "reports": 0}
     assert [p["actor"] for p in files["profiles.json"]] == ["arthur.val", "john.research"]
-    assert (manifest["main_commit"], manifest["protocol_version"]) == ("abc123", "1.7")
+    assert (manifest["main_commit"], manifest["protocol_version"]) == ("abc123", "1.8")
+
+
+def test_agents_json_counts_picks_without_a_mean_return(repo):
+    agents = {agent["id"]: agent for agent in compile_snapshot(repo, NOW, "abc123")["agents.json"]}
+    assert agents["arthur.val"]["picks"] == {"opened": 1, "closed": 0, "open": 1}
 
 
 def test_views_carry_now_metrics(repo):

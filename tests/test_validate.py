@@ -47,6 +47,11 @@ def test_target_date_is_engine_only(state):
     assert [(e.code, e.path) for e in result.errors] == [(E_SEMANTIC, "/payload/target_date")]
 
 
+def test_proposal_sha256_is_engine_only(state):
+    result = validate(state, body("update_view", "arthur.val", view_payload(proposal_sha256="0" * 64)), ARTHUR_ID)
+    assert [(e.code, e.path) for e in result.errors] == [(E_SEMANTIC, "/payload/proposal_sha256")]
+
+
 def test_rate_limited(state):
     result = validate(state, body("update_view", "arthur.val", view_payload()), ARTHUR_ID, proposals_today=50)
     assert [e.code for e in result.errors] == [E_RATE_LIMIT]

@@ -31,8 +31,8 @@ HANDLERS: dict[str, Callable[[Context], ChangeSet]] = {
 
 
 def apply_proposal(state: RepoState, proposal: Proposal, *, issue: int, owner: str, now: datetime,
-                   prices: PriceProvider) -> ChangeSet:
-    return HANDLERS[proposal.action](Context(state, proposal, issue, owner, now, prices))
+                   prices: PriceProvider, body: str = "") -> ChangeSet:
+    return HANDLERS[proposal.action](Context(state, proposal, issue, owner, now, prices, body))
 
 
 def write_changes(root: Path, changes: ChangeSet) -> list[int]:

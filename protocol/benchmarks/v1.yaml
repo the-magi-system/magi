@@ -1,0 +1,21 @@
+# Benchmark policy v1 (protocol section 10). A version in force is never edited; a change is a new version file.
+schema: magi/benchmark-policy@1
+version: 1
+effective_from: 2026-10-22          # picks whose entry trading day is on or after this date use this version
+markets:                            # the listing market follows from an asset's price_source
+  - {market: US, provider: yahoo, suffixes: [""]}
+  - {market: JP, provider: yahoo, suffixes: [".T"]}
+benchmarks:                         # (asset type, market) -> benchmark; market "any" ignores the listing market
+  - {asset_types: [equity, fund, index], market: US, benchmark: spy}
+  - {asset_types: [equity, fund, index], market: JP, benchmark: 1306-t}
+  - {asset_types: [crypto], market: any, benchmark: xlf}
+  - {asset_types: [commodity], market: any, benchmark: dbc}
+series:                             # registered by Melchior.Magi and priced every day
+  spy:     {role: benchmark, name: "SPDR S&P 500 ETF Trust", type: fund, sector: multi-asset, currency: USD, price_source: {provider: yahoo, symbol: SPY}}
+  1306-t:  {role: benchmark, name: "NEXT FUNDS TOPIX ETF", type: fund, sector: multi-asset, currency: JPY, price_source: {provider: yahoo, symbol: 1306.T}}
+  xlf:     {role: benchmark, name: "Financial Select Sector SPDR Fund", type: fund, sector: financials, currency: USD, price_source: {provider: yahoo, symbol: XLF}}
+  dbc:     {role: benchmark, name: "Invesco DB Commodity Index Tracking Fund", type: commodity, sector: commodities, currency: USD, price_source: {provider: yahoo, symbol: DBC}}
+  btc-usd: {role: market-state, name: "Bitcoin", type: crypto, sector: digital-assets, currency: USD, price_source: {provider: yahoo, symbol: BTC-USD}}
+  ive:     {role: market-state, name: "iShares S&P 500 Value ETF", type: fund, sector: multi-asset, currency: USD, price_source: {provider: yahoo, symbol: IVE}}
+  ivw:     {role: market-state, name: "iShares S&P 500 Growth ETF", type: fund, sector: multi-asset, currency: USD, price_source: {provider: yahoo, symbol: IVW}}
+  iwm:     {role: market-state, name: "iShares Russell 2000 ETF", type: fund, sector: multi-asset, currency: USD, price_source: {provider: yahoo, symbol: IWM}}

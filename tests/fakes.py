@@ -14,12 +14,16 @@ NOW = datetime(2026, 10, 2, 3, 0, 0, tzinfo=timezone.utc)
 
 class FakePrices:
     def __init__(self, values: dict[str, float] | None = None, fail: set[str] | None = None,
-                 as_of: str | None = None, currency: dict[str, str] | None = None):
+                 as_of: str | None = None, currency: dict[str, str] | None = None,
+                 closes: dict[str, Quote] | None = None, fail_close: set[str] | None = None):
         self.values = values or {}
         self.fail = fail or set()
         self.as_of = as_of or iso(NOW)
         self.currency = currency or {}
+        self.closes = closes or {}
+        self.fail_close = fail_close or set()
         self.calls: list[str] = []
+        self.close_calls: list[str] = []
 
     def quote(self, asset: dict) -> Quote:
         symbol = asset["price_source"]["symbol"]
@@ -29,6 +33,12 @@ class FakePrices:
         return Quote(self.values.get(symbol, 100.0), self.currency.get(symbol, asset["currency"]), self.as_of, "fake")
 
     def close(self, asset: dict) -> Quote:
+        symbol = asset["price_source"]["symbol"]
+        self.close_calls.append(symbol)
+        if symbol in self.fail_close:
+            raise PriceError(f"simulated missing close for {symbol}")
+        if symbol in self.closes:
+            return self.closes[symbol]
         return self.quote(asset)
 
 

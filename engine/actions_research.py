@@ -2,15 +2,14 @@
 from __future__ import annotations
 
 from .basis import non_public_pillars
-from .changes import ChangeSet, Context, log_entry, quote_for
+from .changes import ChangeSet, Context, log_entry, quote_for, signal_close_for
 from .derive import derive
 from .distribution import check_distribution
-from .ledger import EVENT_SCHEMA, closed_event, event_path, load_book, opened_event, pick_id
+from .ledger import EVENT_SCHEMA, closed_event, event_path, load_book, opened_event, pick_changes, pick_id
 from .methodology import scope_gaps
 from .timeutil import iso, target_date
 from .yamlio import load_yaml
 
-DIRECTIONS = ("long", "short")
 DIFF_FIELDS = ["position", "strategy", "sub_strategy", "horizon_months", "target_date", "confidence", "methodology", "non_public_pillars",
                "derived.expected_price", "derived.expected_return", "derived.p10", "derived.p50", "derived.p90"]
 
@@ -77,7 +76,8 @@ def update_view(ctx: Context) -> ChangeSet:
     record.update({key: value for key, value in payload.items() if key != "idea"})
     published_at = iso(ctx.now)
     record.update(version=version, published_at=published_at,
-                  target_date=target_date(published_at, payload["horizon_months"]), price_at_publish=quote.to_dict(),
+                  target_date=target_date(published_at, payload["horizon_months"]),
+                  proposal_sha256=ctx.proposal_sha256, price_at_publish=quote.to_dict(),
                   methodology_version=methodology["version"],
                   out_of_scope=scope_gaps(methodology, asset, payload["horizon_months"]),
                   non_public_pillars=non_public_pillars(payload["pillars"], state.evidence),
@@ -87,27 +87,30 @@ def update_view(ctx: Context) -> ChangeSet:
     book = load_book(state.root)
     taken = set(book.paths)
     open_pick = book.open.get((ctx.actor, idea_id))
-    direction = payload["position"] if payload["position"] in DIRECTIONS else None
-    if open_pick is not None and open_pick.direction != direction:
+    closing, direction = pick_changes(open_pick, payload["position"])
+    signal_close = signal_close_for(ctx, asset) if closing or direction is not None else None
+    if closing:
         event_file = event_path(ctx.now, open_pick.pick_id, "pick_closed", taken)
         taken.add(event_file)
-        writes[event_file] = closed_event(pick=open_pick, now=ctx.now, quote=quote, reason="position_change",
-                                          issue=ctx.issue, view_version=version)
+        writes[event_file] = closed_event(pick=open_pick, now=ctx.now, quote=quote, signal_close=signal_close,
+                                          reason="position_change", issue=ctx.issue,
+                                          proposal_sha256=ctx.proposal_sha256, view_version=version)
         picks.append({"pick_id": open_pick.pick_id, "event": "pick_closed"})
-    if direction is not None and (open_pick is None or open_pick.direction != direction):
+    if direction is not None:
         new_id = pick_id(book.next_number)
         event_file = event_path(ctx.now, new_id, "pick_opened", taken)
         taken.add(event_file)
         original = {"p50": record["derived"]["p50"], "expected_price": record["derived"]["expected_price"],
                     "horizon_months": payload["horizon_months"], "target_date": record["target_date"]}
         writes[event_file] = opened_event(pick_id=new_id, actor=ctx.actor, idea=idea_id, direction=direction,
-                                          now=ctx.now, quote=quote, view_version=version, original=original,
-                                          issue=ctx.issue)
+                                          now=ctx.now, quote=quote, signal_close=signal_close,
+                                          view_version=version, original=original,
+                                          issue=ctx.issue, proposal_sha256=ctx.proposal_sha256)
         picks.append({"pick_id": new_id, "event": "pick_opened"})
     changes = ChangeSet(f"update_view: {ctx.actor} / {idea_id} v{version}", writes=writes, notes=list(notes),
                         created={"view_version": str(version)})
     changes.log.append(log_entry(ctx, path, version=version, target_date=record["target_date"],
-                                 diff=view_diff(previous, record),
+                                 proposal_sha256=ctx.proposal_sha256, diff=view_diff(previous, record),
                                  rationale=payload["rationale"], discussion_refs=payload.get("discussion_refs") or None,
                                  picks=picks or None))
     return changes

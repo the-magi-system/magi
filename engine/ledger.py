@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 
 from .prices import Quote
-from .timeutil import iso, parse_iso, stamp
+from .timeutil import iso, stamp
 from .yamlio import load_yaml
 
 LEDGER_DIR = "ledger/events"
@@ -19,8 +19,14 @@ class OpenPick:
     actor: str
     idea: str
     direction: str
-    entry_price: float
     opened_at: str
+
+
+@dataclass(frozen=True)
+class PickEvent:
+    at: str
+    pick_id: str
+    event: str
 
 
 @dataclass
@@ -28,6 +34,7 @@ class Book:
     open: dict[tuple[str, str], OpenPick]
     next_number: int
     paths: set[str]
+    last_event: dict[tuple[str, str], PickEvent]  # the last pick_opened or pick_closed per (actor, idea)
 
 
 _EVENT_ORDER = {"pick_opened": 0, "pick_closed": 1, "ledger_correction": 2}
@@ -52,19 +59,30 @@ def ordered_events(root: Path) -> list[tuple[str, dict]]:
 
 
 def load_book(root: Path) -> Book:
+    """Read the raw events. A ledger_correction changes nothing here until Melchior.Magi applies corrections."""
     open_picks: dict[tuple[str, str], OpenPick] = {}
+    last_event: dict[tuple[str, str], PickEvent] = {}
     highest, paths = 0, set()
     for path, event in ordered_events(root):
         paths.add(path)
         if event.get("pick_id"):
             highest = max(highest, int(event["pick_id"].split("-")[1]))
         key = (event.get("actor"), event.get("idea"))
+        if event["event"] in ("pick_opened", "pick_closed"):
+            last_event[key] = PickEvent(event["at"], event["pick_id"], event["event"])
         if event["event"] == "pick_opened":
-            open_picks[key] = OpenPick(event["pick_id"], event["actor"], event["idea"], event["direction"],
-                                       float(event["price"]["value"]), event["at"])
+            open_picks[key] = OpenPick(event["pick_id"], event["actor"], event["idea"], event["direction"], event["at"])
         elif event["event"] == "pick_closed":
             open_picks.pop(key, None)
-    return Book(open_picks, highest + 1, paths)
+    return Book(open_picks, highest + 1, paths, last_event)
+
+
+def pick_changes(open_pick: OpenPick | None, position: str) -> tuple[bool, str | None]:
+    """Whether a view with this position closes the open pick, and the direction of the pick it opens, if any."""
+    direction = position if position in ("long", "short") else None
+    closing = open_pick is not None and open_pick.direction != direction
+    opening = direction if direction is not None and (open_pick is None or open_pick.direction != direction) else None
+    return closing, opening
 
 
 def pick_id(number: int) -> str:
@@ -79,24 +97,19 @@ def event_path(now: datetime, pick: str, event: str, taken: set[str]) -> str:
     return path
 
 
-def realized_return(direction: str, entry: float, exit_: float) -> float:
-    change = exit_ / entry - 1.0
-    return round(-change if direction == "short" else change, 6)
-
-
 def opened_event(*, pick_id: str, actor: str, idea: str, direction: str, now: datetime, quote: Quote,
-                 view_version: int, original: dict, issue: int) -> dict:
+                 signal_close: dict, view_version: int, original: dict, issue: int, proposal_sha256: str) -> dict:
     return {"schema": EVENT_SCHEMA, "event": "pick_opened", "pick_id": pick_id, "actor": actor, "idea": idea,
-            "direction": direction, "at": iso(now), "price": quote.to_dict(), "view_version": view_version,
-            "original": original, "issue": issue}
+            "direction": direction, "at": iso(now), "price": quote.to_dict(), "signal_close": signal_close,
+            "view_version": view_version,
+            "original": original, "issue": issue, "proposal_sha256": proposal_sha256}
 
 
-def closed_event(*, pick: OpenPick, now: datetime, quote: Quote, reason: str, issue: int,
-                 view_version: int | None = None) -> dict:
+def closed_event(*, pick: OpenPick, now: datetime, quote: Quote, signal_close: dict, reason: str, issue: int,
+                 proposal_sha256: str, view_version: int | None = None) -> dict:
     event = {"schema": EVENT_SCHEMA, "event": "pick_closed", "pick_id": pick.pick_id, "actor": pick.actor,
              "idea": pick.idea, "direction": pick.direction, "at": iso(now), "price": quote.to_dict(),
-             "entry_price": pick.entry_price, "realized_return": realized_return(pick.direction, pick.entry_price, quote.value),
-             "duration_days": (now - parse_iso(pick.opened_at)).days, "reason": reason, "issue": issue}
+             "signal_close": signal_close, "reason": reason, "issue": issue, "proposal_sha256": proposal_sha256}
     if view_version is not None:
         event["view_version"] = view_version
     return event
