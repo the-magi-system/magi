@@ -8,19 +8,20 @@ Each step prints PASS or FAIL; the script stops at the first FAIL and exits with
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import subprocess
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from engine.github import GitHubClient  # noqa: E402
 from engine.queue import body_sha, engine_replies  # noqa: E402
-from engine.timeutil import target_date  # noqa: E402
+from engine.timeutil import iso, parse_iso, target_date  # noqa: E402
 from engine.yamlio import dump_yaml, parse_yaml  # noqa: E402
 
 POLL_SECONDS = 15
@@ -87,6 +88,15 @@ class Runner:
 
     def issue(self, number: int) -> dict:
         return self.gh.request("GET", f"/repos/{self.gh.repo}/issues/{number}")
+
+    def body_sha256(self, number: int) -> str:
+        """The SHA-256 of the issue body as the REST API returns it, as the engine computes proposal_sha256."""
+        return hashlib.sha256((self.issue(number)["body"] or "").encode("utf-8")).hexdigest()
+
+    def ledger_event(self, month_dir: str, suffix: str) -> dict:
+        """The last ledger event in the month directory whose file name ends with suffix."""
+        names = sorted(name for name in self.gh.list_dir(month_dir) if name.endswith(suffix))
+        return parse_yaml(self.gh.get_file(f"{month_dir}/{names[-1]}") or "{}") if names else {}
 
     def submit(self, title: str, text: str) -> int:
         return self.gh.create_issue(title, text, [])["number"]
@@ -181,6 +191,13 @@ def scenario(r: Runner) -> None:
     n = r.submit("update_view (long)", proposal("update_view", AGENT, view(evidence_id, pillars=pillars)))
     r.expect("open a long view", r.wait(n), "accepted")
     r.check("pick opened in the ledger", any(name.endswith("pick_opened.yaml") for name in r.gh.list_dir(month_dir)))
+    opened = r.ledger_event(month_dir, "pick_opened.yaml")
+    signal = opened.get("signal_close") or {}
+    r.check("pick_opened records the signal close", bool(signal.get("date")) and (signal.get("value") or 0) > 0
+            and "as_of" in signal and "at" in opened and parse_iso(signal["as_of"]) <= parse_iso(opened["at"]),
+            str(signal))
+    r.check("pick_opened records the proposal hash", opened.get("proposal_sha256") == r.body_sha256(n),
+            str(opened.get("proposal_sha256")))
     stored = parse_yaml(r.gh.get_file(f"ideas/{IDEA['id']}/views/{AGENT}.yaml") or "{}")
     r.check("pillar resting on non-public evidence is flagged", stored.get("non_public_pillars") == ["launch"],
             str(stored.get("non_public_pillars")))
@@ -193,13 +210,18 @@ def scenario(r: Runner) -> None:
     n = r.submit("update_view (percent probabilities)", proposal("update_view", AGENT, bad))
     r.expect("percent probabilities rejected", r.wait(n), "rejected", "E_SCHEMA")
     r.check("retryable rejection keeps the issue open", r.issue(n)["state"] == "open")
-    r.gh.edit_body(n, proposal("update_view", AGENT, view(evidence_id, position="neutral", rationale="Going flat")))
+    r.gh.edit_body(n, proposal("update_view", AGENT, view(evidence_id, rationale="Probabilities as fractions")))
     r.expect("edited body accepted", r.wait(n), "accepted")
-    r.check("pick closed in the ledger", any(name.endswith("pick_closed.yaml") for name in r.gh.list_dir(month_dir)))
-    two = view(evidence_id, position="neutral", rationale="Two outcomes, one of them zero",
+    two = view(evidence_id, rationale="Two outcomes, one of them zero",
                distribution={"form": "points", "points": [{"price": 0, "p": 0.3}, {"price": 200, "p": 0.7}]})
     n = r.submit("update_view (two prices with a zero)", proposal("update_view", AGENT, two))
     r.expect("two prices with a zero accepted", r.wait(n), "accepted")
+    n = r.submit("update_view (neutral within 30 days)",
+                 proposal("update_view", AGENT, view(evidence_id, position="neutral", rationale="Going flat")))
+    locked = r.expect("change of position within 30 days rejected", r.wait(n), "rejected", "E_SEMANTIC")
+    until = iso(parse_iso(opened["at"]) + timedelta(days=30))
+    r.check("the rejection names the first moment the position may change",
+            any(e.get("path") == "/payload/position" and until in e.get("message", "") for e in locked["errors"]), until)
 
     sub = {"parent": "event-driven", "sub": {"id": "index-inclusion", "name": "Index Inclusion", "definition": "Forced buying around index changes"}}
     n = r.submit("add_strategy", proposal("add_strategy", AGENT, sub))
@@ -272,6 +294,16 @@ def scenario(r: Runner) -> None:
     r.check("prices workflow succeeded", run["conclusion"] == "success", run["html_url"])
     prices = json.loads(r.gh.get_file("prices.json", ref="snapshot") or "{}")
     r.check("snapshot carries the daily close", "nvda" in prices, str(prices.get("nvda")))
+
+    n = r.submit("retire_agent", proposal("retire_agent", "arthur", {"agent": AGENT, "reason": "End of the end-to-end run"}))
+    r.expect("retire the agent", r.wait(n), "accepted")
+    closed = r.ledger_event(month_dir, "pick_closed.yaml")
+    r.check("retirement closes the pick within 30 days",
+            closed.get("pick_id") == opened.get("pick_id") and closed.get("reason") == "agent_retired",
+            f"{closed.get('pick_id')} {closed.get('reason')}")
+    r.check("pick_closed records the signal close and the proposal hash",
+            bool((closed.get("signal_close") or {}).get("date")) and closed.get("proposal_sha256") == r.body_sha256(n)
+            and "realized_return" not in closed, str(closed.get("signal_close")))
     open_audits = [i for i in r.gh.labelled_issues("magi:audit")
                    if i["state"] == "open" and i["title"] == "Consistency check found problems"]
     r.check("consistency check is clean", open_audits == [], str([i["number"] for i in open_audits]))
