@@ -12,7 +12,7 @@
 
 **上游：** 计划 6 已完成；设计第 22 节由 PR #44 合并，本计划写成时 main 为 `228176a`，`406 passed`。正式仓库有一个 idea（`tem-data-engine`）、五条证据与一行收盘价（`tem`，2026-10-20），还没有观点，也没有 `ledger/` 目录。Pendragon 在本计划的实现合并之后才提交第一个观点（第 22.1 节，维护者 2026-10-20 的决定）。
 
-**进度：** 维护者 2026-10-23 审阅了 Task 1 的文档 PR（#45），本计划末尾「维护者确认的几处」十处全部按建议确认；设计第 22.1、22.2、22.6、22.8、22.15、22.16、22.17 节相应加了修订注记。Task 2–9 未开始。
+**进度（2026-10-23）：** 计划 7 全部完成。Task 1：PR #45（squash，main `2592081`），末尾「维护者确认的几处」十处全部按建议确认，设计第 22 节相应加了修订注记。Task 2–8：PR #46，7 个提交，每一步的失败数与通过数都与本计划一致；仓库只允许 squash 合并，所以以 squash 合并为 main `0201239`，提交说明列出了 7 个提交，`442 passed`，一致性 `[]`，合并推送的 ci 与 audit 为 success。Task 9：合并前核对正式仓库没有观点、也没有 `ledger/` 下的文件；sandbox 重置后 audit 只报预期的两条；端到端测试 51 步全部通过，含本计划的七个新步骤。之后 Pendragon 可以提交第一个观点。
 
 ## 执行路线
 
@@ -140,7 +140,7 @@ Expected: `406 passed`；一致性 `[]`（本任务不改代码）。
 - `view.schema.json`：`required` 增加 `"proposal_sha256"`，属性 `{"type": "string", "pattern": "^[0-9a-f]{64}$"}`。
 - `ledger-event.schema.json`：增加同样的属性；`pick_opened` 与 `pick_closed` 的 `required` 增加 `"proposal_sha256"`。
 
-- [ ] **Step 1: 写测试**
+- [x] **Step 1: 写测试**
 
 1. `tests/test_apply_research.py`（引入 `hashlib`、`body_sha` 与 `tests.util.body`；新测试直接调用 `apply_proposal(..., body=...)`，不改现有的 `run` 帮助函数，否则这个文件的全部测试都会在实现之前失败）：
    - `test_the_proposal_hash_is_recorded`：正文 `text = body("update_view", "john.research", view_payload())`；view 记录、事件日志行与 `pick_opened` 的 `proposal_sha256` 都等于 `hashlib.sha256(text.encode("utf-8")).hexdigest()`。
@@ -153,7 +153,7 @@ Expected: `406 passed`；一致性 `[]`（本任务不改代码）。
    - `test_ledger_problems_are_reported`：`base` 增加 `"proposal_sha256": "0" * 64`（否则实现之后 schema 先报错，测试看不到台账的问题）。
 6. `tests/test_ledger.py`：`test_closed_event_fields` 传 `proposal_sha256="a" * 64` 并断言事件里有它；`test_opened_event_fields` 传 `proposal_sha256="b" * 64` 并断言事件里有它。
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
 Expected: `9 failed, 403 passed`。失败的正是：
@@ -170,16 +170,16 @@ FAILED tests/test_ledger.py::test_opened_event_fields
 FAILED tests/test_validate.py::test_proposal_sha256_is_engine_only
 ```
 
-- [ ] **Step 3: 实现**
+- [x] **Step 3: 实现**
 
 按 Interfaces 修改十一个文件。`tests/util.py` 的夹具 `pick_opened` 同时增加 `"proposal_sha256": "0" * 64`：夹具是必须合乎 schema 的测试数据，与 schema 在同一步修改。
 
-- [ ] **Step 4: 运行，确认通过**
+- [x] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
 Expected: `412 passed`。另跑 `python -m engine consistency --repo .`，Expected `[]`。
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```
 git add engine protocol/schemas/entities tests
@@ -205,7 +205,7 @@ git commit -m "feat(engine): record proposal_sha256, the SHA-256 of the accepted
 - `ledger-event.schema.json`：`$defs` 增加 `date`（`^\d{4}-\d{2}-\d{2}$`）；属性增加 `signal_close`（对象，`additionalProperties: false`，必填 `date`、`value`（大于 0）、`currency`、`as_of`（时间戳）、`source`）；删除属性 `entry_price`、`realized_return`、`duration_days`；`pick_opened` 的 `required` 增加 `signal_close`；`pick_closed` 的 `required` 改为 `pick_id`、`actor`、`idea`、`direction`、`price`、`signal_close`、`reason`、`proposal_sha256`。
 - 现有的其他读者：用 `grep -rn "entry_price\|realized_return\|duration_days\|mean_realized_return"` 核对过，只有 `engine/ledger.py`、`engine/snapshot.py`、两份 schema 与三个测试文件（`tests/test_ledger.py`、`tests/test_apply_registry.py`、`tests/test_consistency.py`）。Caspar 的周报只用 `load_book().open` 的键，不受影响。
 
-- [ ] **Step 1: 写测试**
+- [x] **Step 1: 写测试**
 
 1. `tests/fakes.py`：`FakePrices.__init__` 增加 `closes: dict[str, Quote] | None = None` 与 `fail_close: set[str] | None = None`，另记 `close_calls: list[str]`。`close(asset)` 先记下代码；代码在 `fail_close` 里时抛 `PriceError`；在 `closes` 里时返回给定的 `Quote`；否则返回 `self.quote(asset)`（现在的行为，现有测试不受影响）。
 2. `tests/test_apply_research.py`（引入 `engine.prices.Quote`）：常量 `FRIDAY = Quote(178.5, "USD", "2026-10-01T13:30:00Z", "yahoo", "2026-10-01")`，`SIGNAL = {"date": "2026-10-01", "value": 178.5, "currency": "USD", "as_of": "2026-10-01T13:30:00Z", "source": "yahoo"}`。
@@ -226,7 +226,7 @@ git commit -m "feat(engine): record proposal_sha256, the SHA-256 of the accepted
    - 新增 `test_a_pick_event_without_a_signal_close_or_with_a_return_is_reported`：去掉夹具 `pick_opened` 的 `signal_close`，报告含 `'signal_close' is a required property`；再写回并加 `realized_return: 0.1`，报告里有一条含 `realized_return`。
 7. `tests/test_snapshot.py`：新增 `test_agents_json_counts_picks_without_a_mean_return`：以 `NOW` 编译夹具，`arthur.val` 的 `picks == {"opened": 1, "closed": 0, "open": 1}`。
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
 Expected: `12 failed, 407 passed`。失败的正是：
@@ -246,16 +246,16 @@ FAILED tests/test_prices.py::test_a_close_is_dated_by_the_exchange_day
 FAILED tests/test_snapshot.py::test_agents_json_counts_picks_without_a_mean_return
 ```
 
-- [ ] **Step 3: 实现**
+- [x] **Step 3: 实现**
 
 按 Interfaces 修改九个文件。`tests/util.py` 的夹具 `pick_opened` 同时增加 `"signal_close": {"date": "2026-09-30", "value": 179.8, "currency": "USD", "as_of": "2026-09-30T13:30:00Z", "source": "yahoo"}`，理由同 Task 2 Step 3。
 
-- [ ] **Step 4: 运行，确认通过**
+- [x] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
 Expected: `419 passed`。另跑 `python -m engine consistency --repo .`，Expected `[]`。
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```
 git add engine protocol/schemas tests
@@ -289,7 +289,7 @@ git commit -m "feat(engine): pick events record the signal close from the daily 
   - `decision`：字符串 `"unresolved"`，或对象（至少一个字段，`additionalProperties: false`），可选字段为 `terminal_price`（`value` 不小于 0、`currency`）、`effective_date`、`price_source`（`provider`、`symbol`，用于改代码）、`unsettled_reason`（未结算的原因，用于无报价的退市）、`split`（`date`、`numerator`、`denominator`）、`note`（见「维护者确认的几处」第 6 处）。`decision` 为 `"unresolved"` 时 `effect` 必须是 `provisional`。
 - `engine/consistency.py` 的 `WHOLE` 增加 `"magi/settlement@1": "settlement"` 与 `"magi/ruling@1": "ruling"`。`ledger/` 本来就在 `YAML_DIRS` 里，所以计划 8 写下的结算与裁决文件从第一天起就按 schema 校验；`ordered_events` 只读 `ledger/events/`，不受影响。审计的「台账只增不改」规则覆盖整个 `ledger/`，两个新目录不需要改审计。
 
-- [ ] **Step 1: 写测试**
+- [x] **Step 1: 写测试**
 
 新建 `tests/test_record_formats.py`。测试在函数里读 schema 文件，所以实现之前是失败而不是收集错误。常量 `ENTERED`、`SETTLED`、`RULING` 照抄第 22.2、22.6、22.7 节的示例，把省略号换成合乎格式的值（例如 `input_commit` 用 40 位十六进制）。
 
@@ -299,21 +299,21 @@ git commit -m "feat(engine): pick events record the signal close from the daily 
 4. `test_the_ruling_examples_match_their_schema`：`RULING` 没有错误；`kind: other`、`effect: provisional`、`status: provisional`、`rule: settlement.1`、`decision: unresolved`、`sources: []` 没有错误；同一份改为 `effect: immediate` 有错误；`kind: merger` 有错误；`status: overturned` 没有错误。
 5. `test_the_consistency_check_reads_settlement_and_ruling_files`：把 `SETTLED` 与 `RULING` 写进夹具仓库的 `ledger/settlements/2027/11/` 与 `ledger/rulings/2027/08/`，`check_repository(repo) == []`；把裁决的 `effect` 改为 `soon`，报告只有这个文件一条。
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
 Expected: `5 failed, 419 passed`。失败的正是 `tests/test_record_formats.py` 的五个测试。
 
-- [ ] **Step 3: 实现**
+- [x] **Step 3: 实现**
 
 按 Interfaces 重写 `ledger-event.schema.json`，新建两份 schema，修改 `engine/consistency.py` 的一行。
 
-- [ ] **Step 4: 运行，确认通过**
+- [x] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
 Expected: `424 passed`。另跑 `python -m engine consistency --repo .`，Expected `[]`。
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```
 git add protocol/schemas/entities engine/consistency.py tests/test_record_formats.py
@@ -357,7 +357,7 @@ series:                             # registered by Melchior.Magi and priced eve
 - `magi/benchmark-policy@1`：必填 `schema`、`version`（不小于 1 的整数）、`effective_from`（日期）、`markets`（至少一项；每项 `market` 为 2–8 个大写字母，`provider` 为 `yahoo` 或 `naver`，`suffixes` 为不重复的列表，每项是空字符串或 `.` 加 1–4 个大写字母或数字）、`benchmarks`（每项 `asset_types` 为不重复的资产类型列表，取值与 `register_asset` 的 `type` 相同；`market` 为某个市场名或 `any`；`benchmark` 为标的编号）、`series`（键为标的编号；值必填 `role`（`benchmark` 或 `market-state`）、`name`、`type`、`sector`、`currency`、`price_source`）。各项内部的值由测试按 `register_asset` 的 schema 核对，schema 里不重复那一份枚举。
 - `protocol/` 不在审计的数据目录里，所以由测试固定文件内容：`tests/test_benchmarks.py` 的 `PINNED = {"v1.yaml": "<v1.yaml 的 SHA-256>"}`。以后的版本要新增文件并在 `PINNED` 里加一行；已有的行不能改。
 
-- [ ] **Step 1: 写测试**
+- [x] **Step 1: 写测试**
 
 新建 `tests/test_benchmarks.py`：
 
@@ -365,21 +365,21 @@ series:                             # registered by Melchior.Magi and priced eve
 2. `test_v1_holds_the_benchmarks_the_maintainer_chose`：(资产类型, 市场) 到基准的对应恰好是 `(equity, fund, index) US → spy`、`(equity, fund, index) JP → 1306-t`、`(crypto) any → xlf`、`(commodity) any → dbc`；`series` 的角色恰好是四个 `benchmark`（`spy`、`1306-t`、`xlf`、`dbc`）与四个 `market-state`（`btc-usd`、`ive`、`ivw`、`iwm`）；`dbc` 的 `type` 为 `commodity`。
 3. `test_a_policy_in_force_is_never_edited`：`{文件名: SHA-256}` 等于 `PINNED`。Step 1 先写占位值 `REPLACE_WITH_THE_SHA256_OF_V1`。
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
 Expected: `3 failed, 424 passed`。失败的正是 `tests/test_benchmarks.py` 的三个测试。
 
-- [ ] **Step 3: 实现**
+- [x] **Step 3: 实现**
 
 新建 `v1.yaml` 与 schema。然后运行 `python -c "import hashlib; print(hashlib.sha256(open('protocol/benchmarks/v1.yaml', 'rb').read()).hexdigest())"`，把结果写进 `PINNED`，替换占位值。仓库的 `.gitattributes` 规定 `eol=lf`，所以各平台检出的字节相同。
 
-- [ ] **Step 4: 运行，确认通过**
+- [x] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
 Expected: `427 passed`。另确认改动 `v1.yaml` 的任何一个字节（例如 `effective_from` 加一天）会使 `test_a_policy_in_force_is_never_edited` 失败，然后改回。
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```
 git add protocol/benchmarks protocol/schemas/entities/benchmark-policy.schema.json tests/test_benchmarks.py
@@ -409,7 +409,7 @@ git commit -m "feat(protocol): benchmark policy v1 (spy, 1306-t, xlf, dbc; marke
 - `engine/cli.py` 的 `_dry_run` 把 `--now` 的时刻传给 `validate`；`validate` 子命令不加参数，用当前时间。
 - `retire_agent` 不调用锁定的检查。裁决的终值与维护者的作废两项豁免随计划 8 生效，本任务不写。
 
-- [ ] **Step 1: 写测试**
+- [x] **Step 1: 写测试**
 
 1. 新建 `tests/test_holding.py`。夹具里 `arthur.val` 的 `pk-000001` 于 `2026-10-01T02:30:00Z` 开出（`OPENED_AT`），锁定到 `2026-10-31T02:30:00Z`（`UNTIL`）。帮助函数 `check(repo, payload, now, actor="arthur.val", author=ARTHUR_ID)` 调用 `validate(..., now=now)`；`write(repo, payload, now)` 用 `apply_proposal` 与 `write_changes` 写入一个版本（`FakePrices(as_of=iso(now))`，避免 7 日新鲜度规则）；`locked(result, until)` 判断错误恰好是 `[(E_SEMANTIC, "/payload/position")]` 且信息含 `until`。
    - `test_closing_within_30_days_is_rejected_and_the_reply_names_the_first_moment`：29 天后改为中性被锁定；差 1 秒满 30 天时改为做空被锁定，两者信息都含 `UNTIL`。
@@ -424,7 +424,7 @@ git commit -m "feat(protocol): benchmark policy v1 (spy, 1306-t, xlf, dbc; marke
 3. `tests/test_intake.py`：新增 `test_intake_checks_the_lock_at_its_processing_time`：`arthur.val` 改为中性，`run(world)`（处理时刻 `NOW`，2026-10-02）；回帖为 `rejected`，第一个错误的路径为 `/payload/position`、信息含 `2026-10-31T02:30:00Z`；issue 保持打开（`E_SEMANTIC` 可以重试）。
 4. `tests/test_dry_run.py`（引入 `view_payload`）：新增 `test_dry_run_checks_the_lock_at_its_now`：`--now 2026-10-02T03:00:00Z` 时退出码 1、错误路径 `/payload/position`；`--now 2026-11-01T00:00:00Z` 时退出码 0、`status == "ok"`。
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
 Expected: `11 failed, 426 passed`。失败的正是：
@@ -445,16 +445,16 @@ FAILED tests/test_ledger.py::test_closed_pick_is_not_open
 
 `tests/test_holding.py` 的测试在实现之前因 `validate` 与 `check_semantics` 不接受 `now` 而失败（`TypeError`）。
 
-- [ ] **Step 3: 实现**
+- [x] **Step 3: 实现**
 
 按 Interfaces 新建 `engine/holding.py`，修改六个文件。
 
-- [ ] **Step 4: 运行，确认通过**
+- [x] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
 Expected: `437 passed`。另跑 `python -m engine consistency --repo .`，Expected `[]`。
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```
 git add engine tests
@@ -516,7 +516,7 @@ git commit -m "feat(engine): a pick is held for at least 30 days and a closed po
 - Assets are registered by what they hold: a commodity fund is `commodity`, a crypto fund is `crypto`.
 ```
 
-- [ ] **Step 1: 写测试**
+- [x] **Step 1: 写测试**
 
 1. `tests/test_protocol_doc.py` 新增五个测试：
    - `test_changelog_records_v1_8`：CHANGELOG 中 `## v1.7` 之前的部分含 `## v1.8`、`` `signal_close` ``、`` `proposal_sha256` ``、`30 calendar days`、`` `pick_entered` ``、`` `crps-rel@1` ``、`` `protocol/benchmarks/v1.yaml` ``、`` `mean_realized_return` ``、`without a migration`。
@@ -526,7 +526,7 @@ git commit -m "feat(engine): a pick is held for at least 30 days and a closed po
    - `test_guides_describe_entry_the_lock_and_neutral_views`：AGENT_GUIDE 含 `` `signal_close` ``、`30 days`、`next settled close`，不再含 `fields: {price:`；`docs/guides/first-view-for-agents.md` 含 `next settled close`、`30 days`、`neutral`、`forecast score`；`docs/guides/getting-started.zh.md` 含 `30 天`、`中性`、`收盘`。
 2. `tests/test_snapshot.py`：`test_compile_on_fixture` 的 `protocol_version` 期望值由 `"1.7"` 改为 `"1.8"`。
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
 Expected: `6 failed, 436 passed`。失败的正是：
@@ -540,16 +540,16 @@ FAILED tests/test_protocol_doc.py::test_guides_describe_entry_the_lock_and_neutr
 FAILED tests/test_snapshot.py::test_compile_on_fixture
 ```
 
-- [ ] **Step 3: 实现**
+- [x] **Step 3: 实现**
 
 按 Interfaces 修改五份文档。改完之后通读 PROTOCOL 第 8、10 节，确认每条规则只写一次、每段都标明了生效的时间，并与设计第 22.2–22.8 节逐条对照。
 
-- [ ] **Step 4: 运行，确认通过**
+- [x] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
 Expected: `442 passed`。
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```
 git add protocol/PROTOCOL.md protocol/AGENT_GUIDE.md protocol/CHANGELOG.md docs/guides tests
@@ -579,11 +579,11 @@ git commit -m "docs(protocol): v1.8, entry rule 1, the 30-day holding period and
   7. `pick_closed records the signal close and the proposal hash`：有 `signal_close.date`；`proposal_sha256` 等于注销 issue 正文的 `body_sha256`；没有 `realized_return`。
 - 其余步骤不变。脚本对非 sandbox 仓库仍拒绝运行。
 
-- [ ] **Step 1: 修改脚本**
+- [x] **Step 1: 修改脚本**
 
 按 Interfaces 修改。引入 `hashlib`、`timedelta` 与 `engine.timeutil` 的 `iso`、`parse_iso`。
 
-- [ ] **Step 2: 离线检查**
+- [x] **Step 2: 离线检查**
 
 ```
 python -m pytest
@@ -594,14 +594,14 @@ python -m engine consistency --repo .
 
 Expected: `442 passed`；编译没有输出；端到端脚本打印 `refusing to run against a repository that is not a sandbox`，`exit 2`；一致性 `[]`。会话里不运行脚本去连 sandbox。
 
-- [ ] **Step 3: 提交**
+- [x] **Step 3: 提交**
 
 ```
 git add tools/e2e_sandbox.py
 git commit -m "test(e2e): the sandbox run checks the signal close, the proposal hash, the 30-day lock and the close at retirement"
 ```
 
-- [ ] **Step 4: 推送并开 PR**
+- [x] **Step 4: 推送并开 PR**
 
 开 PR 之前核对 `protocol/benchmarks/v1.yaml` 的 `effective_from` 与 CHANGELOG v1.8 的日期都是当天的 UTC 日期；如果 Task 5、7 写的是更早的日期，改为当天的日期并更新 `PINNED`，作为本任务的另一个提交（`fix(protocol): effective_from and the v1.8 date are the day the pull request opens`）。推送会话分支，开一个指向 `main` 的 PR，标题 `Plan 7: protocol v1.8 and the intake changes before the first real view`。正文列出 Task 2–8 的提交与每一步的测试结果，并写明：端到端脚本只做了离线检查，要等 Task 9 在 sandbox 实测；合并之前维护者须确认正式仓库没有观点、也没有台账事件。
 
@@ -609,11 +609,11 @@ git commit -m "test(e2e): the sandbox run checks the signal close, the proposal 
 
 ### Task 9（维护者）：合并与 sandbox 端到端测试
 
-- [ ] **Step 1: 合并前核对正式仓库**
+- [x] **Step 1: 合并前核对正式仓库**
 
 在正式仓库 main 上列出 `ideas/*/views/` 与 `ledger/` 下的文件。Expected：都没有任何文件。如果已有观点或台账事件，停下，不合并：`magi/view@1` 与 `magi/ledger-event@1` 的重新定义要求仓库里没有旧格式的记录，这时需要另写迁移脚本或改用新的 schema 版本，由维护者决定。
 
-- [ ] **Step 2: 审阅并合并**
+- [x] **Step 2: 审阅并合并**
 
 PR 的 ci 为 success 后，重点看：`engine/holding.py` 与 `engine/ledger.py` 的 `pick_changes`、`last_event`；`engine/changes.py` 的 `signal_close_for`；`ledger-event.schema.json` 的全貌；三份新 schema 与 `v1.yaml`；PROTOCOL 第 8、10 节是否与设计第 22.2–22.8 节一致、每段是否标明了生效的时间；CHANGELOG v1.8；两份指南的三条。合并方式与计划 6 相同。合并后在 main 上运行：
 
@@ -624,11 +624,11 @@ python -m engine consistency --repo .
 
 Expected: `442 passed`；一致性 `[]`；合并推送的 `ci`、`audit` 为 success。
 
-- [ ] **Step 3: 重置 sandbox**
+- [x] **Step 3: 重置 sandbox**
 
 做法与计划 6 Task 8 Step 3 相同，保留 `registry/agents/caspar.magi.yaml`。种子不能带任何旧格式的观点或台账事件。重置触发的 `magi:audit` issue 只应列出预期的几条，核对后关闭。
 
-- [ ] **Step 4: 运行端到端脚本**
+- [x] **Step 4: 运行端到端脚本**
 
 ```
 python -u tools/e2e_sandbox.py --repo the-magi-system/magi-sandbox
@@ -636,18 +636,20 @@ python -u tools/e2e_sandbox.py --repo the-magi-system/magi-sandbox
 
 Expected: 全部步骤 `PASS`，最后一行 `all steps passed`，包括新步骤 `pick_opened records the signal close`、`pick_opened records the proposal hash`、`change of position within 30 days rejected`、`the rejection names the first moment the position may change`、`retire the agent`、`retirement closes the pick within 30 days`、`pick_closed records the signal close and the proposal hash`；`pick closed in the ledger` 一步已删去。另打开那条 `pick_opened`，核对 `signal_close` 的交易日是接受提案之前最后一个已结算的交易日。任何一步失败，先看 intake 的运行输出，再决定修什么，不手工改 sandbox 的数据。
 
-- [ ] **Step 5: 记录**
+- [x] **Step 5: 记录**
 
 在本计划开头写进度：PR 编号与合并后的 main、测试数、sandbox 端到端结果。之后 Pendragon 可以提交第一个观点。
+
+执行记录（2026-10-23）：合并前 `ideas/*/views/` 与 `ledger/` 都没有文件。合并方式改为 squash，因为仓库现在只允许 squash 合并。sandbox 重置后数据目录只剩四个种子文件，一致性 `[]`；端到端测试 `all steps passed`，共 51 步。新步骤里 `pick_opened` 的 `signal_close` 为 2026-10-21 的收盘（`as_of` 13:30Z，提案在 2026-10-22 18:10Z 美股交易时段内被接受，当天的日线尚未结算，所以取前一个交易日）；转观望被驳回，回帖写明的最早时刻为 2026-11-21T18:10:20Z；注销 agent 写下的 `pick_closed` 记有同一个信号前收盘与注销 issue 正文的指纹。
 
 ---
 
 ## 计划 7 完成标准
 
-- [ ] Task 1 的文档 PR 已合并（十处决定已于 2026-10-23 确认，记在本计划末尾）。
-- [ ] Task 2–8 的 PR 已合并；main 上 `442 passed`，一致性 `[]`，ci 与 audit 为 success。
-- [ ] 合并前核对过正式仓库没有观点、也没有台账事件。
-- [ ] sandbox 端到端测试 `all steps passed`，含七个新步骤。
+- [x] Task 1 的文档 PR 已合并（十处决定已于 2026-10-23 确认，记在本计划末尾）。
+- [x] Task 2–8 的 PR 已合并；main 上 `442 passed`，一致性 `[]`，ci 与 audit 为 success。
+- [x] 合并前核对过正式仓库没有观点、也没有台账事件。
+- [x] sandbox 端到端测试 `all steps passed`，含七个新步骤。
 
 ---
 
