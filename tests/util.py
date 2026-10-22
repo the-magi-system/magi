@@ -244,5 +244,7 @@ def build_repo(root: Path) -> Path:
         "price": {"value": 180.2, "currency": "USD", "as_of": "2026-09-30T20:00:00Z", "source": "yahoo"},
         "view_version": 1, "original": {"p50": 230, "expected_price": 255.5, "horizon_months": 18}, "issue": 42,
         "proposal_sha256": "0" * 64,
+        "signal_close": {"date": "2026-09-30", "value": 179.8, "currency": "USD", "as_of": "2026-09-30T13:30:00Z",
+                         "source": "yahoo"},
     })
     return root

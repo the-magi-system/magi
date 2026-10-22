@@ -197,10 +197,11 @@ def test_unknown_schema_and_unreadable_yaml_are_reported(repo):
 def test_ledger_problems_are_reported(repo):
     base = {"schema": "magi/ledger-event@1", "actor": "arthur.val", "idea": "nvda-ai-capex-2026", "direction": "long",
             "at": "2026-10-02T03:00:00Z", "price": {"value": 1.0, "currency": "USD", "as_of": "2026-10-02T03:00:00Z", "source": "fake"},
-            "issue": 70, "proposal_sha256": "0" * 64}
+            "issue": 70, "proposal_sha256": "0" * 64,
+            "signal_close": {"date": "2026-10-01", "value": 1.0, "currency": "USD", "as_of": "2026-10-01T13:30:00Z",
+                             "source": "fake"}}
     write_yaml(repo / "ledger/events/2026/10/20261002T030000Z-pk-000099-pick_closed.yaml",
-               {**base, "event": "pick_closed", "pick_id": "pk-000099", "entry_price": 1.0, "realized_return": 0.0,
-                "duration_days": 0, "reason": "position_change"})
+               {**base, "event": "pick_closed", "pick_id": "pk-000099", "reason": "position_change"})
     write_yaml(repo / "ledger/events/2026/10/20261002T030001Z-pk-000003-pick_opened.yaml",
                {**base, "event": "pick_opened", "pick_id": "pk-000003", "view_version": 1, "original": {}})
     found = problems(repo)
@@ -212,6 +213,15 @@ def test_a_pick_event_without_a_proposal_hash_is_reported(repo):
     del event["proposal_sha256"]
     write_yaml(repo / OPENED, event)
     assert any("'proposal_sha256' is a required property" in p for p in problems(repo))
+
+
+def test_a_pick_event_without_a_signal_close_or_with_a_return_is_reported(repo):
+    event = load_yaml(repo / OPENED)
+    signal = event.pop("signal_close")
+    write_yaml(repo / OPENED, event)
+    assert any("'signal_close' is a required property" in p for p in problems(repo))
+    write_yaml(repo / OPENED, {**event, "signal_close": signal, "realized_return": 0.1})
+    assert any("realized_return" in p for p in problems(repo))
 
 
 def test_log_gap_is_reported(repo):

@@ -194,3 +194,10 @@ def test_register_asset_accepts_naver():
     payload = {"id": "005930-ks", "name": "Samsung Electronics", "type": "equity", "sector": "information-technology",
                "currency": "KRW", "price_source": {"provider": "naver", "symbol": "005930"}}
     assert validate_payload(REPO_ROOT, "register_asset", payload) == []
+
+
+def test_a_close_is_dated_by_the_exchange_day():
+    close = Quote(41.2, "AUD", "2026-09-21T23:00:00Z", "yahoo", "2026-09-22").as_close()
+    assert close == {"date": "2026-09-22", "value": 41.2, "currency": "AUD", "as_of": "2026-09-21T23:00:00Z",
+                     "source": "yahoo"}
+    assert Quote(180.2, "USD", "2026-09-30T20:00:00Z", "yahoo").as_close()["date"] == "2026-09-30"

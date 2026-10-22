@@ -4,8 +4,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from .errors import E_INTERNAL, E_SEMANTIC, MagiError
-from .prices import PriceProvider, Quote, fetch
+from .errors import E_INTERNAL, E_PRICE, E_SEMANTIC, MagiError
+from .prices import PriceError, PriceProvider, Quote, fetch
 from .proposal import Proposal, proposal_sha256
 from .repo import RepoState
 from .timeutil import iso
@@ -62,6 +62,14 @@ def log_entry(ctx: Context, path: str, **extra) -> dict:
     return entry
 
 
+def _currency_drift(asset: dict, currency: str) -> ApplyError:
+    symbol = asset["price_source"]["symbol"]
+    return ApplyError(MagiError(
+        E_INTERNAL, "",
+        f"the price source quotes {symbol} in {currency} but registry/assets/{asset['id']}.yaml "
+        f"says {asset['currency']}; a maintainer must correct the asset record"))
+
+
 def quote_for(ctx: Context, asset: dict, registering: bool = False) -> Quote:
     quote, error = fetch(ctx.prices, asset, ctx.now)
     if error is not None:
@@ -72,8 +80,22 @@ def quote_for(ctx: Context, asset: dict, registering: bool = False) -> Quote:
             raise ApplyError(MagiError(
                 E_SEMANTIC, "/payload/currency",
                 f"the price source quotes {symbol} in {quote.currency}, not {asset['currency']}"))
-        raise ApplyError(MagiError(
-            E_INTERNAL, "",
-            f"the price source quotes {symbol} in {quote.currency} but registry/assets/{asset['id']}.yaml "
-            f"says {asset['currency']}; a maintainer must correct the asset record"))
+        raise _currency_drift(asset, quote.currency)
     return quote
+
+
+def signal_close_for(ctx: Context, asset: dict) -> dict:
+    """The last settled daily close when a pick opens or closes, from the daily price job's own function.
+
+    Its age is not checked: the freshness rule is for quotes, and a halted asset's signal close can be old.
+    """
+    try:
+        close = ctx.prices.close(asset)
+    except PriceError as exc:
+        raise ApplyError(MagiError(E_PRICE, "", f"no settled close for {asset['id']}: {exc}")) from exc
+    if close.value <= 0:
+        raise ApplyError(MagiError(
+            E_PRICE, "", f"{asset['id']} closed at {close.value}; a price of zero or below is not used"))
+    if close.currency and close.currency != asset["currency"]:
+        raise _currency_drift(asset, close.currency)
+    return close.as_close()

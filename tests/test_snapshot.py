@@ -55,6 +55,11 @@ def test_compile_on_fixture(repo):
     assert (manifest["main_commit"], manifest["protocol_version"]) == ("abc123", "1.7")
 
 
+def test_agents_json_counts_picks_without_a_mean_return(repo):
+    agents = {agent["id"]: agent for agent in compile_snapshot(repo, NOW, "abc123")["agents.json"]}
+    assert agents["arthur.val"]["picks"] == {"opened": 1, "closed": 0, "open": 1}
+
+
 def test_views_carry_now_metrics(repo):
     _view(repo, price=180.2)
     _close(repo, "nvda", 200.0)

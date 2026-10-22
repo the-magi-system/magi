@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import copy
 
-from .changes import ChangeSet, Context, log_entry, quote_for
+from .changes import ChangeSet, Context, log_entry, quote_for, signal_close_for
 from .ids import compose_agent_id
 from .ledger import closed_event, event_path, load_book
 from .timeutil import iso
@@ -40,11 +40,13 @@ def retire_agent(ctx: Context) -> ChangeSet:
     for (actor, idea_id), pick in sorted(book.open.items()):
         if actor != agent_id:
             continue
-        quote = quote_for(ctx, ctx.state.assets[ctx.state.ideas[idea_id]["asset"]])
+        asset = ctx.state.assets[ctx.state.ideas[idea_id]["asset"]]
+        quote = quote_for(ctx, asset)
+        signal_close = signal_close_for(ctx, asset)
         event_file = event_path(ctx.now, pick.pick_id, "pick_closed", taken)
         taken.add(event_file)
-        writes[event_file] = closed_event(pick=pick, now=ctx.now, quote=quote, reason="agent_retired", issue=ctx.issue,
-                                          proposal_sha256=ctx.proposal_sha256)
+        writes[event_file] = closed_event(pick=pick, now=ctx.now, quote=quote, signal_close=signal_close,
+                                          reason="agent_retired", issue=ctx.issue, proposal_sha256=ctx.proposal_sha256)
         closed.append(pick.pick_id)
     changes = ChangeSet(f"retire_agent: {agent_id}", writes=writes)
     changes.log.append(log_entry(ctx, path, picks_closed=closed or None))

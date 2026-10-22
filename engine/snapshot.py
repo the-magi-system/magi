@@ -87,12 +87,9 @@ def _view_summary(view: dict, line: dict | None, reviews: list[dict], today: str
 def _agent_summary(agent: dict, events: list[dict]) -> dict:
     opened = [e for e in events if e["event"] == "pick_opened" and e["actor"] == agent["id"]]
     closed = [e for e in events if e["event"] == "pick_closed" and e["actor"] == agent["id"]]
-    returns = [e["realized_return"] for e in closed]
-    mean = round(sum(returns) / len(returns), 6) if returns else None
     return {"id": agent["id"], "owner": agent["owner"], "role": agent["role"], "status": agent["status"],
             "runtime": agent.get("runtime"),
-            "picks": {"opened": len(opened), "closed": len(closed), "open": len(opened) - len(closed),
-                      "mean_realized_return": mean}}
+            "picks": {"opened": len(opened), "closed": len(closed), "open": len(opened) - len(closed)}}
 
 
 def compile_snapshot(root: Path, now: datetime, commit: str) -> dict[str, object]:

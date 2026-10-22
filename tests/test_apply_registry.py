@@ -38,7 +38,7 @@ def test_retire_agent_closes_open_picks(state):
     assert changes.writes["registry/agents/arthur.val.yaml"]["status"] == "retired"
     closing = [data for path, data in changes.writes.items() if path.startswith("ledger/")]
     assert len(closing) == 1 and closing[0]["reason"] == "agent_retired" and closing[0]["pick_id"] == "pk-000001"
-    assert closing[0]["realized_return"] == round(200.0 / 180.2 - 1, 6)
+    assert closing[0]["signal_close"]["value"] == 200.0 and "realized_return" not in closing[0]
     assert changes.log[0]["picks_closed"] == ["pk-000001"]
 
 
