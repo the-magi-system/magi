@@ -79,7 +79,7 @@ def _process(root: Path, issue: dict, decision: Decision, today: list[dict], pri
     if decision.kind == "reject":
         return _rejected(issue, _parsed(issue), [MagiError(E_FORBIDDEN, "", f"rejected by maintainer: {decision.note}")])
     text = issue.get("body") or ""
-    checked = validate(state, text, issue["user"]["id"], _proposals_today(issue, today))
+    checked = validate(state, text, issue["user"]["id"], _proposals_today(issue, today), now)
     if checked.status == "rejected":
         return _rejected(issue, checked.proposal, checked.errors, checked.notes)
     cc = [m["github_login"] for m in _maintainers(state)]

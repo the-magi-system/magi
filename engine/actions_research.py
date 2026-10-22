@@ -5,12 +5,11 @@ from .basis import non_public_pillars
 from .changes import ChangeSet, Context, log_entry, quote_for, signal_close_for
 from .derive import derive
 from .distribution import check_distribution
-from .ledger import EVENT_SCHEMA, closed_event, event_path, load_book, opened_event, pick_id
+from .ledger import EVENT_SCHEMA, closed_event, event_path, load_book, opened_event, pick_changes, pick_id
 from .methodology import scope_gaps
 from .timeutil import iso, target_date
 from .yamlio import load_yaml
 
-DIRECTIONS = ("long", "short")
 DIFF_FIELDS = ["position", "strategy", "sub_strategy", "horizon_months", "target_date", "confidence", "methodology", "non_public_pillars",
                "derived.expected_price", "derived.expected_return", "derived.p10", "derived.p50", "derived.p90"]
 
@@ -88,10 +87,8 @@ def update_view(ctx: Context) -> ChangeSet:
     book = load_book(state.root)
     taken = set(book.paths)
     open_pick = book.open.get((ctx.actor, idea_id))
-    direction = payload["position"] if payload["position"] in DIRECTIONS else None
-    closing = open_pick is not None and open_pick.direction != direction
-    opening = direction is not None and (open_pick is None or open_pick.direction != direction)
-    signal_close = signal_close_for(ctx, asset) if closing or opening else None
+    closing, direction = pick_changes(open_pick, payload["position"])
+    signal_close = signal_close_for(ctx, asset) if closing or direction is not None else None
     if closing:
         event_file = event_path(ctx.now, open_pick.pick_id, "pick_closed", taken)
         taken.add(event_file)
@@ -99,7 +96,7 @@ def update_view(ctx: Context) -> ChangeSet:
                                           reason="position_change", issue=ctx.issue,
                                           proposal_sha256=ctx.proposal_sha256, view_version=version)
         picks.append({"pick_id": open_pick.pick_id, "event": "pick_closed"})
-    if opening:
+    if direction is not None:
         new_id = pick_id(book.next_number)
         event_file = event_path(ctx.now, new_id, "pick_opened", taken)
         taken.add(event_file)

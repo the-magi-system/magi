@@ -42,7 +42,7 @@ def _dry_run(args) -> int:
     now = parse_iso(args.now) if args.now else utc_now()
     prices = FixedPrices(args.price, now) if args.price is not None else PriceRouter()
     author_id = int(issue["author_id"])
-    checked = validate(state, issue["body"], author_id, int(issue.get("today_count", 0)))
+    checked = validate(state, issue["body"], author_id, int(issue.get("today_count", 0)), now)
     result = checked.to_dict()
     if checked.status != "rejected":
         owner = state.researcher_by_github_id(author_id)["handle"]

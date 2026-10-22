@@ -19,9 +19,11 @@ def test_book_from_fixture(repo):
 def test_closed_pick_is_not_open(repo):
     write_yaml(repo / "ledger/events/2026/10/20261002T030000Z-pk-000001-pick_closed.yaml",
                {"schema": "magi/ledger-event@1", "event": "pick_closed", "pick_id": "pk-000001",
-                "actor": "arthur.val", "idea": "nvda-ai-capex-2026", "direction": "long"})
+                "actor": "arthur.val", "idea": "nvda-ai-capex-2026", "direction": "long", "at": "2026-10-02T03:00:00Z"})
     book = load_book(repo)
     assert book.open == {} and book.next_number == 2
+    last = book.last_event[("arthur.val", "nvda-ai-capex-2026")]
+    assert (last.at, last.pick_id, last.event) == ("2026-10-02T03:00:00Z", "pk-000001", "pick_closed")
 
 
 def test_event_path_avoids_collisions():

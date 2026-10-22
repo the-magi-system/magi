@@ -68,6 +68,16 @@ def test_rejected_retryable_stays_open(world):
     assert len(gh.replies(n)) == 1
 
 
+def test_intake_checks_the_lock_at_its_processing_time(world):
+    gh = world["gh"]
+    n = submit(world, ARTHUR, "update_view", "arthur.val", view_payload(position="neutral"))
+    run(world)
+    reply = gh.replies(n)[-1]
+    assert reply["status"] == "rejected" and reply["errors"][0]["path"] == "/payload/position"
+    assert "2026-10-31T02:30:00Z" in reply["errors"][0]["message"]
+    assert gh.issues[n]["state"] == "open"
+
+
 def test_non_retryable_rejection_closes(world):
     gh = world["gh"]
     n = submit(world, OUTSIDER, "create_idea", "arthur.val", IDEA)

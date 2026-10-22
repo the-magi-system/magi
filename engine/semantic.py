@@ -1,16 +1,19 @@
 """Pipeline step 5: engine-only fields and rules that depend on repository state (spec 5, 6)."""
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Callable
 
 from .distribution import check_distribution
 from .errors import E_SEMANTIC, MagiError
+from .holding import holding_error
 from .ids import RESERVED_SUFFIX, agent_suffix, compose_agent_id
 from .methodology import check_publish, check_view_methodology
 from .profiles import check_publish_profile, check_view_profile
 from .proposal import Proposal
 from .repo import RepoState
 from .strategies import check_add_strategy, check_declaration, check_view_strategy
+from .timeutil import utc_now
 
 SYSTEM_FIELDS = frozenset({
     "actor", "owner", "version", "published_at", "target_date", "proposal_sha256", "price_at_publish", "derived",
@@ -163,5 +166,11 @@ CHECKS: dict[str, Callable[[RepoState, str, dict], Result]] = {
 }
 
 
-def check_semantics(state: RepoState, proposal: Proposal) -> Result:
-    return CHECKS[proposal.action](state, proposal.actor, proposal.payload)
+def check_semantics(state: RepoState, proposal: Proposal, now: datetime | None = None) -> Result:
+    """`now` is the processing time; without it (a local check) the current time is used."""
+    errors, notes = CHECKS[proposal.action](state, proposal.actor, proposal.payload)
+    if proposal.action == "update_view":
+        held = holding_error(state, proposal.actor, proposal.payload, now or utc_now())
+        if held is not None:
+            errors = [*errors, held]
+    return errors, notes
