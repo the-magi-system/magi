@@ -20,6 +20,7 @@
     "view_version": {"type": "integer", "minimum": 1},
     "original": {"type": "object"},
     "issue": {"type": "integer", "minimum": 0},
+    "proposal_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "entry_price": {"type": "number", "exclusiveMinimum": 0},
     "realized_return": {"type": "number"},
     "duration_days": {"type": "integer", "minimum": 0},
@@ -30,9 +31,9 @@
   },
   "allOf": [
     {"if": {"properties": {"event": {"const": "pick_opened"}}},
-     "then": {"required": ["pick_id", "actor", "idea", "direction", "price", "view_version", "original"]}},
+     "then": {"required": ["pick_id", "actor", "idea", "direction", "price", "view_version", "original", "proposal_sha256"]}},
     {"if": {"properties": {"event": {"const": "pick_closed"}}},
-     "then": {"required": ["pick_id", "actor", "idea", "direction", "price", "entry_price", "realized_return", "duration_days", "reason"]}},
+     "then": {"required": ["pick_id", "actor", "idea", "direction", "price", "entry_price", "realized_return", "duration_days", "reason", "proposal_sha256"]}},
     {"if": {"properties": {"event": {"const": "ledger_correction"}}},
      "then": {"required": ["corrects", "fields", "reason", "by"]}}
   ],

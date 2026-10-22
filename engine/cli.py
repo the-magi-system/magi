@@ -48,7 +48,7 @@ def _dry_run(args) -> int:
         owner = state.researcher_by_github_id(author_id)["handle"]
         try:
             changes = apply_proposal(state, checked.proposal, issue=int(issue["number"]), owner=owner,
-                                     now=now, prices=prices)
+                                     now=now, prices=prices, body=issue["body"])
         except ApplyError as exc:
             result.update(status="rejected", errors=[exc.error.to_dict()])
         else:

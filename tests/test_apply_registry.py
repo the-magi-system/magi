@@ -1,3 +1,5 @@
+import hashlib
+
 import pytest
 
 from engine.actions_registry import (
@@ -38,6 +40,14 @@ def test_retire_agent_closes_open_picks(state):
     assert len(closing) == 1 and closing[0]["reason"] == "agent_retired" and closing[0]["pick_id"] == "pk-000001"
     assert closing[0]["realized_return"] == round(200.0 / 180.2 - 1, 6)
     assert changes.log[0]["picks_closed"] == ["pk-000001"]
+
+
+def test_retirement_records_the_proposal_hash(state):
+    text = "retire arthur.val\r\n"
+    proposal = Proposal("retire_agent", "arthur", {"agent": "arthur.val", "reason": "replaced"})
+    changes = retire_agent(Context(state, proposal, 50, "arthur", NOW, FakePrices(), body=text))
+    closing = [data for path, data in changes.writes.items() if path.endswith("pick_closed.yaml")]
+    assert len(closing) == 1 and closing[0]["proposal_sha256"] == hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
 def test_publish_profile_new_and_new_version(state):

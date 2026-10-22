@@ -85,18 +85,19 @@ def realized_return(direction: str, entry: float, exit_: float) -> float:
 
 
 def opened_event(*, pick_id: str, actor: str, idea: str, direction: str, now: datetime, quote: Quote,
-                 view_version: int, original: dict, issue: int) -> dict:
+                 view_version: int, original: dict, issue: int, proposal_sha256: str) -> dict:
     return {"schema": EVENT_SCHEMA, "event": "pick_opened", "pick_id": pick_id, "actor": actor, "idea": idea,
             "direction": direction, "at": iso(now), "price": quote.to_dict(), "view_version": view_version,
-            "original": original, "issue": issue}
+            "original": original, "issue": issue, "proposal_sha256": proposal_sha256}
 
 
-def closed_event(*, pick: OpenPick, now: datetime, quote: Quote, reason: str, issue: int,
+def closed_event(*, pick: OpenPick, now: datetime, quote: Quote, reason: str, issue: int, proposal_sha256: str,
                  view_version: int | None = None) -> dict:
     event = {"schema": EVENT_SCHEMA, "event": "pick_closed", "pick_id": pick.pick_id, "actor": pick.actor,
              "idea": pick.idea, "direction": pick.direction, "at": iso(now), "price": quote.to_dict(),
              "entry_price": pick.entry_price, "realized_return": realized_return(pick.direction, pick.entry_price, quote.value),
-             "duration_days": (now - parse_iso(pick.opened_at)).days, "reason": reason, "issue": issue}
+             "duration_days": (now - parse_iso(pick.opened_at)).days, "reason": reason, "issue": issue,
+             "proposal_sha256": proposal_sha256}
     if view_version is not None:
         event["view_version"] = view_version
     return event

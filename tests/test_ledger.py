@@ -37,7 +37,8 @@ def test_realized_return():
 def test_closed_event_fields(repo):
     pick = load_book(repo).open[("arthur.val", "nvda-ai-capex-2026")]
     event = closed_event(pick=pick, now=NOW, quote=Quote(200.0, "USD", iso(NOW), "fake"),
-                         reason="position_change", issue=7, view_version=2)
+                         reason="position_change", issue=7, view_version=2, proposal_sha256="a" * 64)
+    assert event["proposal_sha256"] == "a" * 64
     assert event["event"] == "pick_closed" and event["realized_return"] == round(200.0 / 180.2 - 1, 6)
     assert event["entry_price"] == 180.2 and event["duration_days"] == 1 and event["view_version"] == 2
 
@@ -45,5 +46,7 @@ def test_closed_event_fields(repo):
 def test_opened_event_fields():
     event = opened_event(pick_id="pk-000009", actor="john.research", idea="nvda-ai-capex-2026", direction="short",
                          now=NOW, quote=Quote(150.0, "USD", iso(NOW), "fake"), view_version=1,
-                         original={"p50": 140, "expected_price": 141.0, "horizon_months": 12}, issue=8)
+                         original={"p50": 140, "expected_price": 141.0, "horizon_months": 12}, issue=8,
+                         proposal_sha256="b" * 64)
+    assert event["proposal_sha256"] == "b" * 64
     assert event["event"] == "pick_opened" and event["price"]["value"] == 150.0 and event["at"] == iso(NOW)

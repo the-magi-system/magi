@@ -77,7 +77,8 @@ def update_view(ctx: Context) -> ChangeSet:
     record.update({key: value for key, value in payload.items() if key != "idea"})
     published_at = iso(ctx.now)
     record.update(version=version, published_at=published_at,
-                  target_date=target_date(published_at, payload["horizon_months"]), price_at_publish=quote.to_dict(),
+                  target_date=target_date(published_at, payload["horizon_months"]),
+                  proposal_sha256=ctx.proposal_sha256, price_at_publish=quote.to_dict(),
                   methodology_version=methodology["version"],
                   out_of_scope=scope_gaps(methodology, asset, payload["horizon_months"]),
                   non_public_pillars=non_public_pillars(payload["pillars"], state.evidence),
@@ -92,7 +93,7 @@ def update_view(ctx: Context) -> ChangeSet:
         event_file = event_path(ctx.now, open_pick.pick_id, "pick_closed", taken)
         taken.add(event_file)
         writes[event_file] = closed_event(pick=open_pick, now=ctx.now, quote=quote, reason="position_change",
-                                          issue=ctx.issue, view_version=version)
+                                          issue=ctx.issue, proposal_sha256=ctx.proposal_sha256, view_version=version)
         picks.append({"pick_id": open_pick.pick_id, "event": "pick_closed"})
     if direction is not None and (open_pick is None or open_pick.direction != direction):
         new_id = pick_id(book.next_number)
@@ -102,12 +103,12 @@ def update_view(ctx: Context) -> ChangeSet:
                     "horizon_months": payload["horizon_months"], "target_date": record["target_date"]}
         writes[event_file] = opened_event(pick_id=new_id, actor=ctx.actor, idea=idea_id, direction=direction,
                                           now=ctx.now, quote=quote, view_version=version, original=original,
-                                          issue=ctx.issue)
+                                          issue=ctx.issue, proposal_sha256=ctx.proposal_sha256)
         picks.append({"pick_id": new_id, "event": "pick_opened"})
     changes = ChangeSet(f"update_view: {ctx.actor} / {idea_id} v{version}", writes=writes, notes=list(notes),
                         created={"view_version": str(version)})
     changes.log.append(log_entry(ctx, path, version=version, target_date=record["target_date"],
-                                 diff=view_diff(previous, record),
+                                 proposal_sha256=ctx.proposal_sha256, diff=view_diff(previous, record),
                                  rationale=payload["rationale"], discussion_refs=payload.get("discussion_refs") or None,
                                  picks=picks or None))
     return changes

@@ -6,7 +6,7 @@ from datetime import datetime
 
 from .errors import E_INTERNAL, E_SEMANTIC, MagiError
 from .prices import PriceProvider, Quote, fetch
-from .proposal import Proposal
+from .proposal import Proposal, proposal_sha256
 from .repo import RepoState
 from .timeutil import iso
 
@@ -19,6 +19,7 @@ class Context:
     owner: str
     now: datetime
     prices: PriceProvider
+    body: str = ""
 
     @property
     def actor(self) -> str:
@@ -27,6 +28,10 @@ class Context:
     @property
     def payload(self) -> dict:
         return self.proposal.payload
+
+    @property
+    def proposal_sha256(self) -> str:
+        return proposal_sha256(self.body)
 
 
 @dataclass

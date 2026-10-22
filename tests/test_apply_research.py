@@ -1,3 +1,4 @@
+import hashlib
 import json
 from datetime import datetime, timedelta, timezone
 
@@ -7,12 +8,13 @@ from engine.apply import HANDLERS, apply_proposal, write_changes
 from engine.changes import ApplyError
 from engine.errors import E_INTERNAL, E_PRICE
 from engine.proposal import Proposal
+from engine.queue import body_sha
 from engine.repo import RepoState
 from engine.schemas import known_actions
 from engine.timeutil import iso
 from engine.yamlio import load_yaml
 from tests.fakes import NOW, FakePrices
-from tests.util import REPO_ROOT, evidence_payload, non_public_evidence_payload, view_payload
+from tests.util import REPO_ROOT, body, evidence_payload, non_public_evidence_payload, view_payload
 
 IDEA = {"id": "msft-copilot-2027", "asset": "msft", "title": "Copilot", "summary": "Copilot monetisation"}
 OPENED = "ledger/events/2026/10/20261001T023000Z-pk-000001-pick_opened.yaml"
@@ -64,6 +66,30 @@ def test_new_view_opens_a_pick(state):
     assert opened[0]["original"] == {"p50": 230, "expected_price": 255.5, "horizon_months": 18, "target_date": "2028-04-02"}
     assert changes.log[0]["picks"] == [{"pick_id": "pk-000002", "event": "pick_opened"}]
     assert changes.log[0]["diff"]["position"] == [None, "long"]
+
+
+def _sha256(text):
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def test_the_proposal_hash_is_recorded(state):
+    text = body("update_view", "john.research", view_payload())
+    changes = apply_proposal(state, Proposal("update_view", "john.research", view_payload()), issue=50, owner="john",
+                             now=NOW, prices=FakePrices(), body=text)
+    view = changes.writes["ideas/nvda-ai-capex-2026/views/john.research.yaml"]
+    opened = ledger_events(changes, "pick_opened.yaml")
+    assert view["proposal_sha256"] == changes.log[0]["proposal_sha256"] == opened[0]["proposal_sha256"] == _sha256(text)
+
+
+def test_the_proposal_hash_keeps_line_endings(state):
+    payload = view_payload(position="short")
+    crlf, lf = body("update_view", "arthur.val", payload, newline="\r\n"), body("update_view", "arthur.val", payload)
+    changes = apply_proposal(state, Proposal("update_view", "arthur.val", payload), issue=50, owner="arthur",
+                             now=NOW, prices=FakePrices(), body=crlf)
+    events = ledger_events(changes, "pick_closed.yaml") + ledger_events(changes, "pick_opened.yaml")
+    assert len(events) == 2
+    assert all(event["proposal_sha256"] == _sha256(crlf) != _sha256(lf) for event in events)
+    assert body_sha(crlf) == body_sha(lf)
 
 
 def test_same_direction_keeps_existing_pick(state):

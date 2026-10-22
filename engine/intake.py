@@ -78,7 +78,8 @@ def _process(root: Path, issue: dict, decision: Decision, today: list[dict], pri
     state = RepoState.load(root)
     if decision.kind == "reject":
         return _rejected(issue, _parsed(issue), [MagiError(E_FORBIDDEN, "", f"rejected by maintainer: {decision.note}")])
-    checked = validate(state, issue.get("body") or "", issue["user"]["id"], _proposals_today(issue, today))
+    text = issue.get("body") or ""
+    checked = validate(state, text, issue["user"]["id"], _proposals_today(issue, today))
     if checked.status == "rejected":
         return _rejected(issue, checked.proposal, checked.errors, checked.notes)
     cc = [m["github_login"] for m in _maintainers(state)]
@@ -88,7 +89,8 @@ def _process(root: Path, issue: dict, decision: Decision, today: list[dict], pri
         return Outcome(issue["number"], result, "magi:needs-approval", cc=cc)
     owner = state.researcher_by_github_id(issue["user"]["id"])["handle"]
     try:
-        changes = apply_proposal(state, checked.proposal, issue=issue["number"], owner=owner, now=now, prices=prices)
+        changes = apply_proposal(state, checked.proposal, issue=issue["number"], owner=owner, now=now, prices=prices,
+                                 body=text)
     except ApplyError as exc:
         return _rejected(issue, checked.proposal, [exc.error], checked.notes)
     seqs = write_changes(root, changes)

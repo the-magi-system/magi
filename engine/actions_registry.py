@@ -43,7 +43,8 @@ def retire_agent(ctx: Context) -> ChangeSet:
         quote = quote_for(ctx, ctx.state.assets[ctx.state.ideas[idea_id]["asset"]])
         event_file = event_path(ctx.now, pick.pick_id, "pick_closed", taken)
         taken.add(event_file)
-        writes[event_file] = closed_event(pick=pick, now=ctx.now, quote=quote, reason="agent_retired", issue=ctx.issue)
+        writes[event_file] = closed_event(pick=pick, now=ctx.now, quote=quote, reason="agent_retired", issue=ctx.issue,
+                                          proposal_sha256=ctx.proposal_sha256)
         closed.append(pick.pick_id)
     changes = ChangeSet(f"retire_agent: {agent_id}", writes=writes)
     changes.log.append(log_entry(ctx, path, picks_closed=closed or None))

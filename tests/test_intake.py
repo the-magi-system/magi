@@ -1,3 +1,4 @@
+import hashlib
 import subprocess
 
 import pytest
@@ -45,6 +46,15 @@ def test_accepted_proposal_is_committed_pushed_and_closed(world):
     log = remote_log(world["bare"])
     assert "create_idea: msft-copilot-2027 (#1)" in log and "Magi-Issue: 1" in log
     assert f"Magi-Body: {body_sha(gh.issues[n]['body'])}" in log
+
+
+def test_the_proposal_hash_is_taken_from_the_issue_body_as_read(world):
+    gh = world["gh"]
+    n = gh.open_issue(*JOHN, body("update_view", "john.research", view_payload(), newline="\r\n"))
+    assert [o.result["status"] for o in run(world)] == ["accepted"]
+    view = load_yaml(world["root"] / "ideas" / "nvda-ai-capex-2026" / "views" / "john.research.yaml")
+    assert "\r\n" in gh.issues[n]["body"]
+    assert view["proposal_sha256"] == hashlib.sha256(gh.issues[n]["body"].encode("utf-8")).hexdigest()
 
 
 def test_rejected_retryable_stays_open(world):
