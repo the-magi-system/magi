@@ -3,10 +3,10 @@
   "title": "ledger/events/YYYY/MM/<file>.yaml (files are only ever added)",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "event", "at", "issue"],
+  "required": ["schema", "event", "at"],
   "properties": {
     "schema": {"const": "magi/ledger-event@1"},
-    "event": {"enum": ["pick_opened", "pick_closed", "ledger_correction"]},
+    "event": {"enum": ["pick_opened", "pick_closed", "pick_entered", "pick_exited", "ledger_correction"]},
     "pick_id": {"type": ["string", "null"], "pattern": "^pk-\\d{6}$"},
     "actor": {"type": "string"},
     "idea": {"type": "string"},
@@ -17,11 +17,27 @@
       "properties": {"value": {"type": "number", "exclusiveMinimum": 0}, "currency": {"type": "string"},
                      "as_of": {"$ref": "#/$defs/timestamp"}, "source": {"type": "string"}}
     },
-    "signal_close": {
-      "type": "object", "additionalProperties": false, "required": ["date", "value", "currency", "as_of", "source"],
-      "properties": {"date": {"$ref": "#/$defs/date"}, "value": {"type": "number", "exclusiveMinimum": 0},
-                     "currency": {"type": "string"}, "as_of": {"$ref": "#/$defs/timestamp"}, "source": {"type": "string"}}
+    "signal_close": {"$ref": "#/$defs/close"},
+    "signal_at": {"$ref": "#/$defs/timestamp"},
+    "fill": {"$ref": "#/$defs/close"},
+    "delay_hours": {"type": "number", "minimum": 0},
+    "delay_sessions": {"type": "integer", "minimum": 0},
+    "entry_policy": {"type": "integer", "enum": [0, 1]},
+    "benchmark": {
+      "oneOf": [
+        {"type": "null"},
+        {"type": "object", "additionalProperties": false, "required": ["asset", "policy", "fill"],
+         "properties": {
+           "asset": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,31}$"},
+           "policy": {"type": "integer", "minimum": 1},
+           "fill": {"type": "object", "additionalProperties": false, "required": ["date", "value", "currency", "source"],
+                    "properties": {"date": {"$ref": "#/$defs/date"}, "value": {"type": "number", "exclusiveMinimum": 0},
+                                   "currency": {"type": "string"}, "source": {"type": "string"}}}
+         }}
+      ]
     },
+    "supersedes": {"type": ["string", "null"], "pattern": "^ledger/events/.+\\.yaml$"},
+    "run": {"type": "integer", "minimum": 1},
     "view_version": {"type": "integer", "minimum": 1},
     "original": {"type": "object"},
     "issue": {"type": "integer", "minimum": 0},
@@ -29,16 +45,36 @@
     "reason": {"type": "string", "minLength": 1},
     "corrects": {"type": "string"},
     "fields": {"type": "object"},
-    "by": {"type": "string"}
+    "by": {"type": "string"},
+    "void": {"type": "boolean"},
+    "withdrawn": {"type": "boolean"}
   },
   "allOf": [
     {"if": {"properties": {"event": {"const": "pick_opened"}}},
-     "then": {"required": ["pick_id", "actor", "idea", "direction", "price", "signal_close", "view_version", "original", "proposal_sha256"]}},
+     "then": {"required": ["pick_id", "actor", "idea", "direction", "price", "signal_close", "view_version", "original", "issue", "proposal_sha256"],
+              "not": {"required": ["run"]}}},
     {"if": {"properties": {"event": {"const": "pick_closed"}}},
-     "then": {"required": ["pick_id", "actor", "idea", "direction", "price", "signal_close", "reason", "proposal_sha256"]}},
+     "then": {"required": ["pick_id", "actor", "idea", "direction", "price", "signal_close", "reason", "issue", "proposal_sha256"],
+              "not": {"required": ["run"]}}},
+    {"if": {"properties": {"event": {"const": "pick_entered"}}},
+     "then": {"required": ["pick_id", "actor", "idea", "direction", "signal_at", "fill", "delay_hours", "delay_sessions", "entry_policy", "benchmark", "supersedes", "run"],
+              "not": {"anyOf": [{"required": ["issue"]}, {"required": ["proposal_sha256"]}]}}},
+    {"if": {"properties": {"event": {"const": "pick_exited"}}},
+     "then": {"required": ["pick_id", "actor", "idea", "direction", "signal_at", "fill", "delay_hours", "delay_sessions", "entry_policy", "supersedes", "run"],
+              "not": {"anyOf": [{"required": ["benchmark"]}, {"required": ["issue"]}, {"required": ["proposal_sha256"]}]}}},
     {"if": {"properties": {"event": {"const": "ledger_correction"}}},
-     "then": {"required": ["corrects", "fields", "reason", "by"]}}
+     "then": {"required": ["corrects", "fields", "reason", "by", "issue"],
+              "not": {"required": ["run"]}}},
+    {"if": {"required": ["void"]}, "then": {"properties": {"event": {"const": "pick_opened"}}}},
+    {"if": {"required": ["withdrawn"]}, "then": {"properties": {"event": {"const": "ledger_correction"}}}}
   ],
-  "$defs": {"timestamp": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"},
-            "date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"}}
+  "$defs": {
+    "timestamp": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"},
+    "date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+    "close": {
+      "type": "object", "additionalProperties": false, "required": ["date", "value", "currency", "as_of", "source"],
+      "properties": {"date": {"$ref": "#/$defs/date"}, "value": {"type": "number", "exclusiveMinimum": 0},
+                     "currency": {"type": "string"}, "as_of": {"$ref": "#/$defs/timestamp"}, "source": {"type": "string"}}
+    }
+  }
 }

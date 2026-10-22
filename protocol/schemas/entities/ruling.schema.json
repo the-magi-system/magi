@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ledger/rulings/YYYY/MM/<time>-rl-<6 digits>.yaml (files are only ever added; written by Melchior.Magi)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "kind", "effect", "status", "rule", "asset", "subjects", "decision", "sources", "reasoning",
+               "supersedes", "issue", "input_commit", "prompt_sha256", "model", "at", "run"],
+  "properties": {
+    "schema": {"const": "magi/ruling@1"},
+    "id": {"$ref": "#/$defs/ruling_id"},
+    "kind": {"enum": ["cash-takeover", "zero-equity", "symbol-change", "delisted-no-quote", "split-data", "stock-takeover",
+                      "halt-after-window", "spin-off", "currency-change", "price-data", "other"]},
+    "effect": {"enum": ["immediate", "provisional"]},
+    "status": {"enum": ["final", "provisional", "overturned"]},
+    "rule": {"type": "string", "pattern": "^settlement\\.[a-z0-9-]+$"},
+    "asset": {"$ref": "#/$defs/asset_id"},
+    "subjects": {
+      "type": "object", "additionalProperties": false, "required": ["picks", "views"],
+      "properties": {
+        "picks": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^pk-\\d{6}$"}},
+        "views": {"type": "array", "items": {
+          "type": "object", "additionalProperties": false, "required": ["idea", "actor", "version"],
+          "properties": {"idea": {"type": "string", "minLength": 1}, "actor": {"type": "string", "minLength": 1},
+                         "version": {"type": "integer", "minimum": 1}}}}
+      }
+    },
+    "decision": {
+      "oneOf": [
+        {"const": "unresolved"},
+        {"type": "object", "additionalProperties": false, "minProperties": 1,
+         "properties": {
+           "terminal_price": {"type": "object", "additionalProperties": false, "required": ["value", "currency"],
+                              "properties": {"value": {"type": "number", "minimum": 0},
+                                             "currency": {"type": "string", "pattern": "^[A-Z]{3}$"}}},
+           "effective_date": {"$ref": "#/$defs/date"},
+           "price_source": {"type": "object", "additionalProperties": false, "required": ["provider", "symbol"],
+                            "properties": {"provider": {"enum": ["yahoo", "naver"]},
+                                           "symbol": {"type": "string", "pattern": "^[A-Za-z0-9.=^-]{1,32}$"}}},
+           "unsettled_reason": {"enum": ["no_quote", "halted", "delisted", "acquired", "other"]},
+           "split": {"type": "object", "additionalProperties": false, "required": ["date", "numerator", "denominator"],
+                     "properties": {"date": {"$ref": "#/$defs/date"}, "numerator": {"type": "integer", "minimum": 1},
+                                    "denominator": {"type": "integer", "minimum": 1}}},
+           "note": {"type": "string", "minLength": 1}
+         }}
+      ]
+    },
+    "sources": {"type": "array", "items": {
+      "type": "object", "additionalProperties": false, "required": ["url", "date", "quote", "fetched_sha256"],
+      "properties": {"url": {"type": "string", "pattern": "^https://"}, "date": {"$ref": "#/$defs/date"},
+                     "quote": {"type": "string", "minLength": 1},
+                     "fetched_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}}},
+    "reasoning": {"type": "string", "minLength": 1},
+    "supersedes": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/ruling_id"}]},
+    "issue": {"type": "integer", "minimum": 1},
+    "input_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "prompt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "model": {"type": "string", "minLength": 1},
+    "at": {"$ref": "#/$defs/timestamp"},
+    "run": {"type": "integer", "minimum": 1}
+  },
+  "allOf": [
+    {"if": {"properties": {"decision": {"const": "unresolved"}}, "required": ["decision"]},
+     "then": {"properties": {"effect": {"const": "provisional"}}}}
+  ],
+  "$defs": {
+    "timestamp": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"},
+    "date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+    "ruling_id": {"type": "string", "pattern": "^rl-\\d{6}$"},
+    "asset_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,31}$"}
+  }
+}

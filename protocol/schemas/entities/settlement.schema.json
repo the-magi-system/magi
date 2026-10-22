@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ledger/settlements/YYYY/MM/<time>-st-<6 digits>.yaml (files are only ever added; written by Melchior.Magi)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "idea", "actor", "view_version", "target_date", "window_end", "status", "reason", "price",
+               "ruling", "counted", "score", "supersedes", "input_commit", "at", "run"],
+  "properties": {
+    "schema": {"const": "magi/settlement@1"},
+    "id": {"$ref": "#/$defs/settlement_id"},
+    "idea": {"type": "string", "minLength": 1},
+    "actor": {"type": "string", "minLength": 1},
+    "view_version": {"type": "integer", "minimum": 1},
+    "target_date": {"$ref": "#/$defs/date"},
+    "window_end": {"$ref": "#/$defs/date"},
+    "status": {"enum": ["settled", "provisional", "unsettled"]},
+    "reason": {"enum": [null, "no_quote", "halted", "delisted", "acquired", "other"]},
+    "price": {
+      "oneOf": [
+        {"type": "null"},
+        {"type": "object", "additionalProperties": false,
+         "required": ["value", "close", "close_date", "split_factor", "currency", "source"],
+         "properties": {
+           "value": {"type": "number", "minimum": 0},
+           "close": {"type": ["number", "null"], "minimum": 0},
+           "close_date": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/date"}]},
+           "split_factor": {"type": "number", "exclusiveMinimum": 0},
+           "currency": {"type": "string", "pattern": "^[A-Z]{3}$"},
+           "source": {"type": "string", "minLength": 1}
+         }}
+      ]
+    },
+    "ruling": {"type": ["string", "null"], "pattern": "^rl-\\d{6}$"},
+    "counted": {"type": "boolean"},
+    "score": {
+      "oneOf": [
+        {"type": "null"},
+        {"type": "object", "additionalProperties": false,
+         "required": ["rule", "crps", "crps_rel", "ref_price", "pit", "within_p10_p90"],
+         "properties": {
+           "rule": {"enum": ["crps-rel@1"]},
+           "crps": {"type": "number", "minimum": 0},
+           "crps_rel": {"type": "number", "minimum": 0},
+           "ref_price": {"type": "number", "exclusiveMinimum": 0},
+           "pit": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "number", "minimum": 0, "maximum": 1}},
+           "within_p10_p90": {"type": "boolean"}
+         }}
+      ]
+    },
+    "supersedes": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/settlement_id"}]},
+    "input_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "at": {"$ref": "#/$defs/timestamp"},
+    "run": {"type": "integer", "minimum": 1},
+    "void": {"type": "boolean"}
+  },
+  "allOf": [
+    {"if": {"properties": {"status": {"const": "settled"}}},
+     "then": {"properties": {"reason": {"const": null}, "price": {"type": "object"}, "score": {"type": "object"}}}},
+    {"if": {"properties": {"status": {"const": "provisional"}}},
+     "then": {"properties": {"reason": {"const": null}, "price": {"type": "object"}, "ruling": {"type": "string"},
+                             "score": {"const": null}}}},
+    {"if": {"properties": {"status": {"const": "unsettled"}}},
+     "then": {"properties": {"reason": {"type": "string"}, "price": {"const": null}, "score": {"const": null}}}}
+  ],
+  "$defs": {
+    "timestamp": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"},
+    "date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+    "settlement_id": {"type": "string", "pattern": "^st-\\d{6}$"}
+  }
+}
