@@ -246,3 +246,29 @@ def test_cli_consistency_exit_codes(repo, capsys):
     path = repo / "ideas" / "nvda-ai-capex-2026" / "idea.yaml"
     write_yaml(path, {**load_yaml(path), "colour": "red"})
     assert cli.main(["consistency", "--repo", str(repo)]) == 1
+
+
+def _fill_record(repo, pick="pk-000001"):
+    close = {"date": "2026-10-01", "asset": "nvda", "close": 181.0, "currency": "USD", "source": "yahoo",
+             "as_of": "2026-10-01T13:30:00Z", "recorded_at": "2026-10-01T23:00:00Z"}
+    path = repo / "market" / "prices" / "2026" / "10.jsonl"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(close) + "\n", encoding="utf-8")
+    write_yaml(repo / f"ledger/events/2026/10/20261001T234730Z-{pick}-pick_entered.yaml", {
+        "schema": "magi/ledger-event@1", "event": "pick_entered", "pick_id": pick, "actor": "arthur.val",
+        "idea": "nvda-ai-capex-2026", "direction": "long", "signal_at": "2026-10-01T02:30:00Z",
+        "fill": {"date": close["date"], "value": close["close"], "currency": close["currency"],
+                 "as_of": close["as_of"], "source": close["source"]},
+        "delay_hours": 17.5, "delay_sessions": 0, "entry_policy": 1, "benchmark": None, "supersedes": None,
+        "at": "2026-10-01T23:47:30Z", "run": 1,
+    })
+
+
+def test_fill_records_are_read_by_the_ledger_check(repo):
+    _fill_record(repo)
+    assert check_repository(repo) == []
+
+
+def test_a_fill_for_a_pick_never_opened_is_reported(repo):
+    _fill_record(repo, "pk-000077")
+    assert any("enters pick pk-000077, which was never opened" in p for p in problems(repo))

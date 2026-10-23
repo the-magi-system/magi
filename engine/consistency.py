@@ -244,6 +244,10 @@ def _ledger(root: Path) -> list[Finding]:
                 found.append(Finding(rel, f"closes pick {event['pick_id']}, which was never opened"))
             elif open_by_key.get(key) == event["pick_id"]:
                 del open_by_key[key]
+        elif event["event"] in ("pick_entered", "pick_exited"):
+            if event["pick_id"] not in opened:
+                verb = "enters" if event["event"] == "pick_entered" else "exits"
+                found.append(Finding(rel, f"{verb} pick {event['pick_id']}, which was never opened"))
         elif not (root / event["corrects"]).exists():
             found.append(Finding(rel, f"corrects {event['corrects']}, which does not exist"))
     return found
