@@ -12,7 +12,7 @@
 
 **上游：** 计划 7 已完成：实现由 PR #46 以 squash 合并为 main `0201239`，完成记录由 PR #47 合并。本计划写成时 main 为 `63b5426`，`442 passed`，一致性 `[]`。正式仓库有一个 idea（`tem-data-engine`）、五条证据与 `tem` 的三行收盘（2026-10-20、10-21、10-22，来源都是 `yahoo-5m`，`as_of` 都是 20:00Z），没有观点，也没有 `ledger/` 目录。`CASPAR_MODE` 在正式仓库为 `off`；`MELCHIOR_MODE` 在两个仓库都还没有设置。
 
-**取价接口的核对：** 本计划的作者会话所在环境的网络策略拒绝连接 `query1.finance.yahoo.com`，所以作者没能自己请求 Yahoo 的图表接口。下文关于交易时段与补录换算的做法，依据维护者 2026-10-23 的核对（见「请维护者确认的几处」第 3、4 处）；Task 6 由实现会话录下真实响应作为夹具（fixture，测试用的固定输入），并用夹具核实这两点。
+**取价接口的核对：** 本计划的作者会话所在环境的网络策略拒绝连接 `query1.finance.yahoo.com`，所以作者没能自己请求 Yahoo 的图表接口。维护者于 2026-10-23T08:38:36Z 用引擎的 `USER_AGENT` 与 Task 6 的四条命令录下了真实响应，作为夹具（fixture，测试用的固定输入）提交在本计划的分支上（提交 `c7d3ad5`，`tests/fixtures/prices/` 下的四个响应与 `README.md`）。下文关于交易时段与补录换算的做法依据这些夹具（「维护者确认的几处」第 3、4 处）。
 
 ## 执行路线
 
@@ -30,12 +30,12 @@
 - PR 8b 是 Melchior 的程序与读取层，不改协议文字与 schema。PR 8b 的实现若发现 PR 8a 的某个 schema 必须改，停下报告，由维护者决定。
 - 两个 PR 各自可以合并：PR 8a 合并之后，正式仓库的行为只多出上面三项；PR 8b 合并之后，`melchior.yml` 在 `melchior.magi` 登记之前什么也不做（第 22.13 节）。
 
-Task 1 合并之前，Task 2 不开始；Task 12 合并 PR 8a 之前，Task 13 不开始（决策 D27：设计与计划的改动走仓库 PR，审阅合并之后再写代码）。本计划末尾「请维护者确认的几处」列出第 22 节照原文无法实现、或原文没有写到而实现必须决定的地方；维护者确认之前，Task 2 不开始。
+Task 1 合并之前，Task 2 不开始；Task 12 合并 PR 8a 之前，Task 13 不开始（决策 D27：设计与计划的改动走仓库 PR，审阅合并之后再写代码）。本计划末尾「维护者确认的几处」记录维护者 2026-10-23 的决定；本计划各处已按这些决定写。
 
 ## Global Constraints
 
 - 计划 1–7 的全部约束继续有效：研究数据只由引擎或系统 agent 的 workflow 写入；不直接推送正式仓库的 main；端到端脚本只对 `the-magi-system/magi-sandbox` 运行；本计划与仓库里的任何文件都不写本机路径、机器名或个人邮箱。
-- 实现者不读取、不设置任何 secret 或仓库变量；单元测试不访问网络。Task 6 录夹具时只请求 Yahoo 的公开图表接口与 Naver 的日线接口，User-Agent 用引擎现有的 `USER_AGENT`（`Mozilla/5.0 (compatible; magi-engine)`，不含任何联系方式）。会话的网络策略不允许访问这两个主机时，停下报告，请维护者按 Task 6 Step 1 的命令录下夹具，放进会话的分支。
+- 实现者不读取、不设置任何 secret 或仓库变量；单元测试不访问网络。Task 6 的夹具已由维护者录下（提交 `c7d3ad5`），实现会话只读取它们，不改动 `tests/fixtures/prices/` 下的任何文件，也不请求取价来源。
 - **不调用模型。** `melchior.yml` 只有 `prepare` 与 `write` 两个 job，任何 job 都读不到 `ANTHROPIC_API_KEY`；`agents/melchior/` 下只有 `profile.yaml`，没有提示词与输出 schema；没有 `think` job，也不改 `engine/caspar/think.py`。手动触发的范围（scope）只接受 `all` 与 `program`，两者在计划 9 之前做同样的事。证据核查、过时检查、协助请求、Caspar 转交的处理、标的状态检查与裁决起草、对 meta insight 草稿的检查、`probe`、向 `sec.gov` 的请求与 `MAGI_HTTP_CONTACT`、`usage/` 与每月花费上限、`evidence_checks.json`，都属于计划 9。第 22.7 节开启标的状态检查的异常清单（连续 5 个工作日没有新收盘、取价连续 3 次失败、等待成交超过 10 个工作日等）是模型任务的输入，同样属于计划 9；其中公司行动数据的冲突、与拆股比例相符却没有拆股记录的跳变、缺少结算三项，在本计划是一致性 finding（Task 7、19）。
 - **裁决只读。** 本计划没有任何代码写裁决记录。归约函数、结算任务、业绩与锁定的豁免按协议 1.8 固定的 `magi/ruling@1` 读取裁决；测试用写在夹具仓库里的裁决记录。计划 9 只需加上写入的一侧。
 - **两组生效时间**（第 5 处，维护者的建议）：
@@ -48,7 +48,7 @@ Task 1 合并之前，Task 2 不开始；Task 12 合并 PR 8a 之前，Task 13 �
 - **取价请求都截止到当前。** 每个区间请求的终点都是请求的时刻（Yahoo 用 `range=1mo`，或 `period1` 加上 `period2` 为当前时刻）。换回实际成交口径时，乘的是同一份响应里、日线日期之后的全部拆股；终点若早于当前，之后的拆股就不在响应里，换算会错。
 - **数值的写法。** 换算过的收盘与分红保留 6 位小数（`round(x, 6)`）；没有换算的收盘照取价来源的返回值写入，与现有的行相同。收益、CRPS、相对 CRPS、PIT 的两端保留 6 位小数；`delay_hours` 保留 2 位小数。
 - **finding。** 新的检查都用现有的 `Finding(path, problem, owner)`。由 Melchior 处理的（成交时刻、缺少结算、拆股跳变、公司行动的冲突、补录行的差异）`owner` 为 `melchior.magi`；其余为 `maintainer`。
-- **测试。** 新测试在函数体里引入实现之前还不存在的模块与名字，所以实现之前是失败而不是收集错误（计划 7 的做法）。本计划只重写一个已有测试：`tests/test_holding.py::test_a_correction_does_not_lift_the_lock_before_plan_8`（Task 3，按设计改为「作废解除锁定」）。另有一个已有测试的期望值随 CHANGELOG 改变：`tests/test_snapshot.py::test_compile_on_fixture` 的 `protocol_version` 由 `"1.8"` 改为 `"1.9"`（Task 11，见「请维护者确认的几处」第 13 处）。测试的辅助文件 `tests/util.py` 与 `tests/fakes.py` 可以增加帮助函数与带默认值的参数，现有的行为不变。夹具放在 `tests/fixtures/`。
+- **测试。** 新测试在函数体里引入实现之前还不存在的模块与名字，所以实现之前是失败而不是收集错误（计划 7 的做法）。本计划只重写一个已有测试：`tests/test_holding.py::test_a_correction_does_not_lift_the_lock_before_plan_8`（Task 3，按设计改为「作废解除锁定」）。另有一个已有测试的期望值随 CHANGELOG 改变：`tests/test_snapshot.py::test_compile_on_fixture` 的 `protocol_version` 由 `"1.8"` 改为 `"1.9"`（Task 11，见「维护者确认的几处」第 13 处）。测试的辅助文件 `tests/util.py` 与 `tests/fakes.py` 可以增加帮助函数与带默认值的参数，现有的行为不变。夹具放在 `tests/fixtures/`。
 - **测试数的来历。** 下文每个任务的 Expected 是按本计划列出的测试算出的，没有像计划 7 那样用试做代码逐一核对。「确认失败」一步的数与 Expected 不符时，先查是哪一个列出的测试在实现之前就通过了、或哪一个没列出的测试失败了，然后停下报告；不改测试迁就实现。
 - **允许改动的文件**只有各任务列出的那些。`.github/` 下只有 Task 7 改 `workflows/prices.yml`、Task 13 新建 `workflows/melchior.yml`；`agents/` 下只有 Task 13 新建 `agents/melchior/profile.yaml`、Task 20 改 Caspar 的周报提示词与输出 schema；`docs/` 下只有 Task 11 改两份指南。代码 PR 不新建 `registry/agents/melchior.magi.yaml`：维护者在代码合并之后经单独的 PR 登记，做法同 `caspar.magi`（#11）（第 2 处）。不改 `README.md`、`AGENTS.md`、`CLAUDE.md`、`CONTRIBUTING.md` 与研究数据目录。
 - 协议文档、schema、代码注释、workflow 与提交信息用英文，与现有文件一致。
@@ -164,11 +164,11 @@ Expected: `442 passed`；一致性 `[]`（本任务不改代码）。
 
 - [x] **Step 4: 提交并开 PR**
 
-提交信息 `docs: plan 8, the program part of Melchior.Magi and protocol 1.9`，推送会话分支，开一个指向 `main` 的 PR。PR 只新增本计划；PR 的说明逐行重复「请维护者确认的几处」。
+提交信息 `docs: plan 8, the program part of Melchior.Magi and protocol 1.9`，推送会话分支，开一个指向 `main` 的 PR。PR 只新增本计划；PR 的说明逐行重复「维护者确认的几处」。
 
-- [ ] **Step 5: 记录维护者的确认**
+- [x] **Step 5: 记录维护者的确认**
 
-维护者确认之后，在同一个 PR 里把本计划末尾一节改写为决定的记录；确认改变了第 22 节原文的，在设计第 22 节的相应位置加日期为确认当天的修订注记，并在第 22.17 节记一行，原文的句子不改（做法同计划 7 Task 1 Step 4）。测试与一致性的结果同 Step 3。
+维护者 2026-10-23 确认之后，在同一个 PR 里把本计划末尾一节改写为决定的记录；确认改变了第 22 节原文的，在设计第 22 节的相应位置加日期为确认当天的修订注记，并在第 22.17 节记一行，原文的句子不改（做法同计划 7 Task 1 Step 4）。测试与一致性的结果同 Step 3。
 
 ---
 
@@ -301,7 +301,8 @@ git commit -m "feat(engine): one reducer derives the effective ledger; open pick
 - `engine.semantic._ledger_correction`：
   1. `corrects` 不在 `ledger_files` 里：`E_SEMANTIC`，路径 `/payload/corrects`（与现在相同）。
   2. 读出对象记录，用 `record_kind` 定种类；`fields` 的每个键不在 `CORRECTABLE[kind]` 里的，各报一条 `E_SEMANTIC`，路径 `/payload/fields/<键>`，信息写明这种记录可更正的字段（按字母排序），并引用 protocol section 10。
-  3. 键都合格时，取对象的有效记录（`effective_ledger(state.root).records[corrects].record`，去掉 `corrected_by`），整体替换这些字段，按对象的 entity schema（`ledger-event`、`settlement`、`ruling`）校验；有错误时报一条 `E_SEMANTIC`，路径 `/payload/fields`，信息为第一条 schema 错误。
+  3. 对象是裁决、`fields` 含 `status` 时，值只能是 `final` 或 `overturned`（第 22.8 节）；其他值（例如 `provisional`）以 `E_SEMANTIC` 驳回，路径 `/payload/fields/status`。
+  4. 键都合格时，取对象的有效记录（`effective_ledger(state.root).records[corrects].record`，去掉 `corrected_by`），整体替换这些字段，按对象的 entity schema（`ledger-event`、`settlement`、`ruling`）校验；有错误时报一条 `E_SEMANTIC`，路径 `/payload/fields`，信息为第一条 schema 错误。
 - `engine.actions_research.ledger_correction`：事件的 `pick_id` 仍为对象的 `pick_id`（结算记录与裁决为 null）；文件名里的编号取对象的 `pick_id`，没有时取对象的 `id`（`st-…`、`rl-…`），再没有时取 `pk-000000`。
 - `engine/consistency.py`：对每条有效台账记录的 `ignored`，报告 `Finding(<更正的路径>, "field '<字段>' cannot be corrected on a <种类>; the effective ledger ignores it")`。
 
@@ -310,7 +311,7 @@ git commit -m "feat(engine): one reducer derives the effective ledger; open pick
 新建 `tests/test_corrections.py`。帮助函数 `check(repo, payload)` 以 `arthur`（维护者）的身份调用 `validate(RepoState.load(repo), body("ledger_correction", "arthur", payload), ARTHUR_ID)`。夹具里另写一条结算记录 `ledger/settlements/2027/11/20271123T234730Z-st-000001.yaml`（照抄 `tests/test_record_formats.py` 的 `SETTLED`）与一份 `kind: split-data`、`effect: provisional`、`status: provisional`、`decision: {split: {date: 2026-10-05, numerator: 2, denominator: 1}}` 的裁决。
 
 1. `test_a_correction_may_name_a_settlement_record`：`{corrects: <结算记录>, reason, fields: {void: true}}` 的结果为 `ok`。
-2. `test_a_correction_may_confirm_a_ruling`：`fields: {status: final}` 为 `ok`。
+2. `test_a_correction_may_confirm_a_ruling`：`fields: {status: final}` 为 `ok`；`fields: {status: provisional}` 的错误为 `[(E_SEMANTIC, "/payload/fields/status")]`。
 3. `test_fields_outside_the_whitelist_are_rejected`：对 `pk-000001` 的 `pick_opened` 提交 `fields: {direction: short}`，错误为 `[(E_SEMANTIC, "/payload/fields/direction")]`，信息含 `signal_close` 与 `void`。
 4. `test_a_correction_must_leave_a_valid_record`：`fields: {void: "yes"}` 的错误为 `[(E_SEMANTIC, "/payload/fields")]`。
 5. `test_withdrawn_belongs_to_corrections_only`：对 `pick_opened` 提交 `fields: {withdrawn: true}`，错误路径为 `/payload/fields/withdrawn`。
@@ -393,54 +394,46 @@ git commit -m "feat(engine): read a file as it was at a commit, and every commit
 
 **Files:**
 - Modify: `engine/prices.py`
-- Create: `tests/test_price_history.py`、`tests/fixtures/prices/yahoo-nvda-2024-split.json`、`tests/fixtures/prices/yahoo-tem-1mo.json`、`tests/fixtures/prices/yahoo-btc-usd-1mo.json`、`tests/fixtures/prices/naver-005930.xml`、`tests/fixtures/prices/README.md`
+- Create: `tests/test_price_history.py`
+- 已有，不改动（维护者录下，提交 `c7d3ad5`）：`tests/fixtures/prices/yahoo-nvda-2024-split.json`、`tests/fixtures/prices/yahoo-tem-1mo.json`、`tests/fixtures/prices/yahoo-btc-usd-1mo.json`、`tests/fixtures/prices/naver-005930.xml`、`tests/fixtures/prices/README.md`
 
 **维护者 2026-10-23 的核对**（第 3、4 处）：Yahoo 的 1d 图表响应把 TEM 的日线标在 13:30Z；`meta` 只带当前交易时段的 `currentTradingPeriod`，没有 `tradingPeriods`，所以响应里没有过去各交易时段的收盘时刻。正式仓库记下的 TEM 两行收盘（2026-10-20 为 66.75，2026-10-21 为 67.76，来源 `yahoo-5m`，`as_of` 20:00Z）与之后 1d 日线的收盘完全相同。Yahoo 的收盘与分红金额都已按之后的拆股调整：NVDA 在 2024-06-10 按 10 拆 1，2024-06-07 的收盘返回为 120.888，2024 年 3 月的分红返回为 0.004，实际支付的是 0.04。
+
+**夹具显示的事实**（`tests/fixtures/prices/README.md`）：四个响应录于 2026-10-23T08:38:36Z。Yahoo 的拆股以浮点数给出（`numerator: 10.0`、`denominator: 1.0`，`splitRatio: "10:1"`）；分红与拆股的时间戳都在交易时段开始（UTC 的 2024-03-05T14:30:00Z、2024-06-10T13:30:00Z），所以与日线一样按 `gmtoffset` 定为交易所的日期；没有公司行动的区间没有 `events` 键；`meta.instrumentType` 为 `EQUITY` 或 `CRYPTOCURRENCY`，`exchangeTimezoneName` 为 `America/New_York` 或 `UTC`。正式仓库 `tem` 的三行收盘（2026-10-20 为 66.75、2026-10-21 为 67.76000213623047、2026-10-22 为 63.810001373291016）与夹具的日线收盘完全相同。
 
 **Interfaces:**
 - `engine.prices.Session`（frozen dataclass）：`kind`（`exchange`、`utc-day` 或 `fixed`）、`timezone`（IANA 时区名或 None）、`close_local`（`HH:MM` 或 None）、`fixed_utc`（`HH:MM` 或 None）；方法 `close_at(date: str) -> datetime`：
   - `exchange`：该日期在 `timezone` 里的 `close_local`，换成 UTC。用标准库 `zoneinfo`，夏令时由时区数据决定。GitHub 的 ubuntu 运行环境自带时区数据库，不加依赖。
   - `utc-day`：该日期之后一天的 00:00Z，即该 UTC 日的 24:00。
   - `fixed`：该日期的 `fixed_utc`（Naver 为 06:30）。
-- `engine.prices.History`（frozen dataclass）：`bars: list[Quote]`（从早到晚，只含已结算的日线，实际成交口径，每个都带 `market_date`）、`actions: list[dict]`（`market/actions/` 的行，不含 `recorded_at`，实际成交口径）、`session: Session | None`、`currency: str`。
+- `engine.prices.History`（frozen dataclass）：`bars: list[Quote]`（从早到晚，只含已结算的日线，实际成交口径，每个都带 `market_date`）、`actions: list[dict]`（`market/actions/` 的行，不含 `recorded_at`，实际成交口径）、`session: Session | None`、`currency: str`、`rejected: list[dict]`（没有记入的公司行动及原因，默认为空列表）。
 - `YahooProvider.history(asset, start: date | None = None) -> History`：
   - 请求：`start` 为 None 时 `range=1mo&interval=1d&events=div%2Csplits`；否则 `period1=<start 当天 00:00Z 的秒数>&period2=<clock() 的秒数>&interval=1d&events=div%2Csplits`。终点总是当前时刻（全局约束）。
   - 日线：沿用 `close()` 的规则，规则只写一份（私有函数 `_settled_bars`）：最后一根日线属于仍在交易的时段时去掉；最后一根已结束的日线没有收盘时改取该日最后一根 5 分钟线（来源 `yahoo-5m`）；其余没有收盘的日线去掉。日线的日期按 `gmtoffset` 定为交易所自己的日期（`_market_date`）。
-  - 公司行动：`events.dividends` 的每项为 `{"date", "asset", "kind": "dividend", "amount", "currency", "source": "yahoo"}`；`events.splits` 的每项为 `{"date", "asset", "kind": "split", "numerator", "denominator", "source": "yahoo"}`，`numerator`、`denominator` 取响应里的整数。日期同样按 `gmtoffset` 定为交易所的日期。
-  - 换回实际成交口径：对日期为 `d` 的收盘与除息日为 `d` 的分红，乘以同一份响应里日期严格晚于 `d` 的全部拆股的 `numerator ÷ denominator` 之积；积不为 1 时结果保留 6 位小数，积为 1 时照返回值。实现时用录下的 NVDA 夹具核实这条规则；夹具显示 Yahoo 的口径与此不同时，只改这一步，并在会话里报告。
-  - 交易时段：`meta.instrumentType` 为 `CRYPTOCURRENCY` 时为 `Session("utc-day")`；否则为 `Session("exchange", meta.exchangeTimezoneName, <meta.currentTradingPeriod.regular.end 换到该时区之后的 HH:MM>)`。取不到这两个字段时 `session` 为 None。实现时用录下的 BTC-USD 夹具核实 `instrumentType` 的写法。
+  - 公司行动：`events.dividends` 的每项为 `{"date", "asset", "kind": "dividend", "amount", "currency", "source": "yahoo"}`；`events.splits` 的每项为 `{"date", "asset", "kind": "split", "numerator", "denominator", "source": "yahoo"}`，响应里的 `numerator`、`denominator` 是浮点数，写进 `market/actions/` 时换成整数；不是整数的（例如 1.5），这次拆股不记入 `actions`，而记入 `History.rejected`（每项为该拆股与原因），由每日取价任务报告为 owner 是 `melchior.magi` 的 finding（Task 7）。日期同样按 `gmtoffset` 定为交易所的日期。响应没有 `events` 键时，`actions` 为空列表。
+  - 换回实际成交口径：对日期为 `d` 的收盘与除息日为 `d` 的分红，乘以同一份响应里日期严格晚于 `d` 的全部拆股的 `numerator ÷ denominator` 之积；积不为 1 时结果保留 6 位小数，积为 1 时照返回值。NVDA 夹具证实了这条规则（2024-06-07 的 120.888 换回约 1,208.88，2024-03-05 的 0.004 换回 0.04）。
+  - 交易时段：`meta.instrumentType` 为 `CRYPTOCURRENCY` 时为 `Session("utc-day")`；否则为 `Session("exchange", meta.exchangeTimezoneName, <meta.currentTradingPeriod.regular.end 换到该时区之后的 HH:MM>)`。取不到这两个字段时 `session` 为 None。夹具里 TEM 与 NVDA 为 `EQUITY`、`America/New_York`，常规交易时段结束于当地 16:00；BTC-USD 为 `CRYPTOCURRENCY`、`UTC`。
 - `YahooProvider.close(asset)` 改为取 `range=5d` 的区间，返回其中最后一根日线；请求地址仍含 `range=5d&interval=1d`。信号前收盘与每日取价任务因此用同一个结算规则（计划 7 的入场规则 1）。
 - `NaverProvider.history(asset, start=None)`：`start` 为 None 时 `count=30`；否则 `count` 取从 `start` 到今天的工作日数加 10，不少于 30。`actions` 为空列表，`session` 为 `Session("fixed", fixed_utc="06:30")`。`NaverProvider.close()` 仍用 `count=5`；`NAVER_URL` 的 `count` 改为参数。
 - `PriceRouter.history` 按 `provider` 分流；`FixedPrices.history` 返回只有 `quote()` 一根日线的 `History`。
 - `PriceProvider` 协议增加 `history`。
 
-- [ ] **Step 1: 录夹具并写测试**
+- [ ] **Step 1: 写测试**
 
-录夹具（实现会话执行；会话不能访问这两个主机时，停下报告，请维护者执行同样的命令并把文件推到会话的分支）：
+夹具已在分支上，Step 1 只读取它们。NVDA 夹具是一个跨拆股且有分红的标的，TEM 是没有公司行动的标的，BTC-USD 是加密资产，005930 是 Naver 的响应。
 
-```
-UA="Mozilla/5.0 (compatible; magi-engine)"
-DIR=tests/fixtures/prices
-curl -sS -A "$UA" "https://query1.finance.yahoo.com/v8/finance/chart/NVDA?period1=1709251200&period2=$(date +%s)&interval=1d&events=div%2Csplits" -o $DIR/yahoo-nvda-2024-split.json
-curl -sS -A "$UA" "https://query1.finance.yahoo.com/v8/finance/chart/TEM?range=1mo&interval=1d&events=div%2Csplits" -o $DIR/yahoo-tem-1mo.json
-curl -sS -A "$UA" "https://query1.finance.yahoo.com/v8/finance/chart/BTC-USD?range=1mo&interval=1d&events=div%2Csplits" -o $DIR/yahoo-btc-usd-1mo.json
-curl -sS -A "$UA" "https://fchart.stock.naver.com/sise.nhn?symbol=005930&timeframe=day&count=30&requestType=0" -o $DIR/naver-005930.xml
-```
-
-`tests/fixtures/prices/README.md` 写明四个文件的来源地址、录下的日期，以及它们是第三方价格、不受仓库许可证覆盖（协议第 14 节）。NVDA 夹具是一个跨拆股且有分红的标的，TEM 是没有公司行动的标的，BTC-USD 是加密资产，005930 是 Naver 的响应。
-
-新建 `tests/test_price_history.py`（在函数体里引入 `History`、`Session`）。测试用 `tests/test_prices.py` 的 `SequenceOpener` 写法读入夹具，时钟固定在夹具录下的时刻之后、常规交易时段结束之后：
+新建 `tests/test_price_history.py`（在函数体里引入 `History`、`Session`）。测试用 `tests/test_prices.py` 的 `SequenceOpener` 写法读入夹具，时钟固定为 `2026-10-23T09:00:00Z`：它在录下的时刻之后，在 NVDA 与 TEM 的 2026-10-22 交易时段、005930 的 2026-10-23 交易时段结束之后，又在 2026-10-23 这个 UTC 日之内，所以 BTC-USD 的最后一根日线（2026-10-23）作为仍在交易的时段去掉。
 
 1. `test_history_asks_for_a_month_with_dividends_and_splits`：TEM 夹具；请求地址含 `range=1mo&interval=1d&events=div%2Csplits`；`start=date(2024, 3, 1)` 时含 `period1=1709251200&period2=<时钟的秒数>`。
 2. `test_closes_before_a_split_are_converted_back_to_as_traded`：NVDA 夹具；2024-06-07 的日线与 1208.88 相差不到 0.01；2024-06-10 及之后的日线等于返回值。
 3. `test_dividends_are_converted_back_to_as_traded`：NVDA 夹具；2024 年 3 月的分红与 0.04 相差不到 1e-6。
-4. `test_splits_are_recorded_with_numerator_and_denominator`：NVDA 夹具的公司行动里有 `{"date": "2024-06-10", "asset": "nvda", "kind": "split", "numerator": 10, "denominator": 1, "source": "yahoo"}`。
-5. `test_a_month_without_actions_returns_the_closes_as_given`：TEM 夹具；`actions == []`，每根日线等于返回值。
+4. `test_splits_are_recorded_with_numerator_and_denominator`：NVDA 夹具的公司行动里有 `{"date": "2024-06-10", "asset": "nvda", "kind": "split", "numerator": 10, "denominator": 1, "source": "yahoo"}`，两个数都是 `int`；2024-03-05 的分红日期为 `2024-03-05`；把夹具里这次拆股的 `numerator` 改为 1.5 之后，它不在 `actions` 里，而在 `rejected` 里。
+5. `test_a_month_without_actions_returns_the_closes_as_given`：TEM 夹具；`actions == []`，每根日线等于返回值；2026-10-20、10-21、10-22 三根日线为 66.75、67.76000213623047、63.810001373291016，与正式仓库已有的三行相同。
 6. `test_the_last_bar_follows_the_close_rules`：用 `tests/test_prices.py` 的 `bars()` 写法造两份响应：时段仍在交易时，最后一根日线不在 `bars` 里；最后一根已结束的日线没有收盘时，它取自 5 分钟线，来源 `yahoo-5m`。
 7. `test_close_is_the_last_bar_of_the_history`：同一份 TEM 夹具与同一个时钟，`close()` 等于 `history().bars[-1]`。
 8. `test_session_close_comes_from_the_exchange_time_zone`：TEM 夹具的 `session` 为 `exchange`、`America/New_York`、`16:00`；`close_at("2026-10-20")` 为 2026-10-20T20:00:00Z；`close_at("2026-11-06")` 为 2026-11-06T21:00:00Z。
-9. `test_crypto_closes_at_midnight_utc`：BTC-USD 夹具的 `session.kind` 为 `utc-day`；`close_at("2026-10-20")` 为 2026-10-21T00:00:00Z。
-10. `test_naver_history_has_no_actions_and_closes_at_0630z`：Naver 夹具；`actions == []`；`close_at` 为当天 06:30Z；请求地址含 `count=30`。
+9. `test_crypto_closes_at_midnight_utc`：BTC-USD 夹具的 `session.kind` 为 `utc-day`；`close_at("2026-10-20")` 为 2026-10-21T00:00:00Z；最后一根日线的日期为 2026-10-22（2026-10-23 的仍在交易）。
+10. `test_naver_history_has_no_actions_and_closes_at_0630z`：Naver 夹具；`actions == []`；`close_at` 为当天 06:30Z；请求地址含 `count=30`；最后一根日线为 2026-10-23。
 
 - [ ] **Step 2: 运行，确认失败**
 
@@ -459,7 +452,7 @@ Expected: `476 passed`。
 - [ ] **Step 5: 提交**
 
 ```
-git add engine/prices.py tests/test_price_history.py tests/fixtures/prices
+git add engine/prices.py tests/test_price_history.py
 git commit -m "feat(engine): a price history request returns settled daily closes and corporate actions, converted back to as-traded values, with the session's closing time"
 ```
 
@@ -478,7 +471,8 @@ git commit -m "feat(engine): a price history request returns settled daily close
   1. `assets` 为 None 时取全部已登记的标的；每个标的调用一次 `prices.history(asset, start.get(id))`。取价失败照旧记进 `failures`，不中断。
   2. 每根日线：（标的，日期）没有记录的，追加一行，格式与现在相同；已有记录的，保留已有的行，新值与已有值相差超过 0.5%（`abs(new / old - 1) > 0.005`）时，记一条 `Finding("market/prices/<年>/<月>.jsonl", "<标的> <日期>: the price source now gives <new> where <old> is recorded; the recorded close is kept", "melchior.magi")`（第 4 处）。成交与结算用已记录的行。
   3. 每个公司行动：（标的，日期，种类）没有记录的，追加；已有记录而数不同的（拆股比较 `numerator` 与 `denominator`，分红比较保留 6 位小数之后的 `amount`），不追加，记一条 owner 为 `melchior.magi` 的 finding，路径为该月的 actions 文件（第 22.3 节「数据冲突」）。
-  4. 同一次运行里新追加的行也参与后面的比较。
+  4. `History.rejected` 的每项记一条 owner 为 `melchior.magi` 的 finding，路径为该月的 actions 文件（例如不是整数的拆股比例）。
+  5. 同一次运行里新追加的行也参与后面的比较。
 - `record_closes(root, prices, now)` 保留，返回 `(update.closes, update.failures)`，现有测试与调用方不变。
 - `engine.cli._prices`：调用 `record_market`；有新行时提交，提交信息为 `chore: record daily closes for <n> asset(s)`（`n` 是有新收盘的标的数），有新公司行动时在后面加 ` and <k> corporate action(s)`；有 finding 时调用 `report(GitHubClient.from_env(), "Price data found problems", findings)`；打印 `{"added", "actions", "failures", "findings"}`。
 - `.github/workflows/prices.yml`：`Record daily closes` 一步增加 `env: GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}`，与同一 workflow 的审计一步相同。其余不变。
@@ -491,7 +485,7 @@ git commit -m "feat(engine): a price history request returns settled daily close
 1. `test_every_missing_close_of_the_month_is_recorded`：已有 nvda 2026-09-29 一行；`history` 给出 09-28、09-29、09-30、10-01；新增三行，分别写进 `2026/09.jsonl` 与 `2026/10.jsonl`。
 2. `test_corporate_actions_are_recorded_once`：`history` 带一次分红与一次拆股；`market/actions/2026/09.jsonl` 有两行，带 `recorded_at`；第二次运行不增加。
 3. `test_an_overlapping_close_is_kept_and_only_a_difference_over_half_a_percent_is_reported`：已有 100.0；取价来源给 100.4 时没有 finding；给 100.6 时有一条，owner 为 `melchior.magi`；文件内容两次都不变。
-4. `test_conflicting_action_data_is_reported_and_not_appended`：已有 2026-09-15 的拆股 2:1；取价来源给 3:1；没有新行，有一条 owner 为 `melchior.magi` 的 finding。
+4. `test_conflicting_action_data_is_reported_and_not_appended`：已有 2026-09-15 的拆股 2:1；取价来源给 3:1；没有新行，有一条 owner 为 `melchior.magi` 的 finding。另一个标的的 `History.rejected` 有一项时，也多一条这样的 finding。
 5. `test_missed_days_are_filled_by_the_next_run`：第一次运行的日线到 10-01；第二次的日线为 09-28 至 10-06；第二次只新增 10-02 至 10-06。
 6. `test_cli_prices_reports_findings_in_an_audit_issue`：用 `monkeypatch` 替换 `cli.report`、`cli.GitHubClient`、`cli.Git`、`cli.PriceRouter`；取价来源给出与已有行相差 1% 的收盘；`report` 被调用一次，标题为 `Price data found problems`。
 
@@ -527,7 +521,7 @@ git commit -m "feat(engine): the daily price job fills every missing settled clo
 
 **Interfaces:**
 - `ASSET_CLASSES = {"equity": "equity", "fund": "fund-index", "index": "fund-index", "crypto": "crypto", "commodity": "other", "fx": "other", "other": "other"}`：第 22.5 节的四类，快照与排名都用这四个键。
-- `growth(prev_close, close, gap_actions) -> float`：相邻两个有记录的收盘之间的增长倍数。`gap_actions` 是日期在（前一个收盘日，本收盘日］之内的公司行动，按日期排序。持有 1 股、在前一个收盘日价值 `prev_close`；每次拆股使股数乘以 `numerator ÷ denominator`；每次分红按当天的股数得到现金，现金在本收盘日按 `close` 再投资。所以倍数为（本收盘日的股数 × `close` + Σ 每次分红的金额 × 当时的股数）÷ `prev_close`。没有缺日时，这就是第 22.3 节的 `s_d × (C_d + D_d) ÷ C_{d−1}`（同日拆股与除息时，分红按拆股之后的股数计）。中间缺日时，相邻两个有记录的收盘照样相连，分红在下一个有记录的收盘再投资（「请维护者确认的几处」第 10 处）。
+- `growth(prev_close, close, gap_actions) -> float`：相邻两个有记录的收盘之间的增长倍数。`gap_actions` 是日期在（前一个收盘日，本收盘日］之内的公司行动，按日期排序。持有 1 股、在前一个收盘日价值 `prev_close`；每次拆股使股数乘以 `numerator ÷ denominator`；每次分红按当天的股数得到现金，现金在本收盘日按 `close` 再投资。所以倍数为（本收盘日的股数 × `close` + Σ 每次分红的金额 × 当时的股数）÷ `prev_close`。没有缺日时，这就是第 22.3 节的 `s_d × (C_d + D_d) ÷ C_{d−1}`（同日拆股与除息时，分红按拆股之后的股数计）。中间缺日时，相邻两个有记录的收盘照样相连，分红在下一个有记录的收盘再投资（「维护者确认的几处」第 10 处）。
 - `total_return(closes, actions, start, end, terminal=None) -> float | None`：`closes` 是一个标的的 `market/prices/` 行（按日期排序），`actions` 是它的 `market/actions/` 行。从 `start` 当天的收盘连乘到 `end` 当天或之前最近的收盘，减 1。`start` 当天没有收盘时返回 None。`terminal=(date, value)` 时，把它当作该日期的收盘（取代同日的记录），用于裁决给出的终值。
 - `own_return(direction, tr)`：做多为 `tr`，做空为 `-tr`。`excess_return(direction, tr, tr_b)`：做多为 `tr - tr_b`，做空为 `tr_b - tr`；任一为 None 时为 None。
 - `load_policies(root) -> list[dict]`：`protocol/benchmarks/v*.yaml`，按 `version` 排序。`policy_for(policies, entry_date) -> dict | None`：`effective_from` 不晚于入场交易日的版本中版本号最大的。
@@ -590,13 +584,13 @@ git commit -m "feat(engine): total return with dividends and splits, short and e
 - `pit(points, y) -> list[float]`：`[F(y−), F(y)]`，`F(y−)` 为价格严格小于 `y` 的概率之和，`F(y)` 为价格不大于 `y` 的概率之和。`within_p10_p90(p10, p90, y)`：`p10 <= y <= p90`，`p10`、`p90` 取该版本的 `derived`。
 - `HORIZONS = (("1-3", 1, 3), ("4-12", 4, 12), ("13-36", 13, 36), ("37-120", 37, 120))`；`horizon_band(months)`；`group_key(months, asset_type)` 为 `"<期限档>/<资产类别>"`，资产类别取 `engine.returns.ASSET_CLASSES`。
 - `counted_versions(versions) -> set[tuple[str, str, int]]`：`versions` 的每项含 `idea`、`actor`、`asset`、`version`、`published_at`。同一 actor 在同一标的上的全部版本（不论 idea）按 `published_at` 排列（相同时按 idea 与版本号），第一个计入，之后的版本在上一个计入版本的 `published_at` 之后至少 30 个自然日（`timedelta(days=30)`）才计入。
-- `clustered_interval(values_by_asset: dict[str, list[float]]) -> dict | None`：聚类不少于 5 个时，均值 `m` 为全部样本的等权平均，`n` 为样本数、`G` 为聚类数，标准误 `se = sqrt(G ÷ (G − 1) × Σ_c (Σ_{i∈c} (x_i − m))²) ÷ n`，90% 区间为 `m ± 1.645 × se`；不足 5 个时返回 None（快照写「too few to estimate uncertainty」）。用正态分位数 1.645，不引入新的依赖（「请维护者确认的几处」第 12 处）。
+- `clustered_interval(values_by_asset: dict[str, list[float]]) -> dict | None`：聚类不少于 5 个时，均值 `m` 为全部样本的等权平均，`n` 为样本数、`G` 为聚类数，标准误 `se = sqrt(G ÷ (G − 1) × Σ_c (Σ_{i∈c} (x_i − m))²) ÷ n`，90% 区间为 `m ± q × se`，`q` 是自由度为 `G − 1` 的 Student t 分布的单侧 0.95 分位数；不足 5 个时返回 None（快照写「too few to estimate uncertainty」）。`engine/scores.py` 存一张分位数表 `T_095`（维护者改定，「维护者确认的几处」第 12 处）：自由度 4: 2.132，5: 2.015，6: 1.943，7: 1.895，8: 1.860，9: 1.833，10: 1.812，11: 1.796，12: 1.782，13: 1.771，14: 1.761，15: 1.753，16: 1.746，17: 1.740，18: 1.734，19: 1.729，20: 1.725，21: 1.721，22: 1.717，23: 1.714，24: 1.711，25: 1.708，26: 1.706，27: 1.703，28: 1.701，29: 1.699，30: 1.697，40: 1.684，60: 1.671，120: 1.658。表里没有的自由度取表中小于它的最大自由度，所以区间不会比精确值窄。不引入新的依赖。
 - `owner_mean(values_by_owner: dict[str, list[float]]) -> float | None`：先求每位主人的平均，再对主人等权平均（第 22.5 节「主人与重复」）。
 - `rank(stats: dict[str, dict]) -> dict`：按 `mean_crps_rel` 从小到大；至少 10 个计入的已结算版本、涉及至少 3 个标的才排名，其余列入 `too_few`。
 - `settlement_window(target_date) -> tuple[str, str]`：起点为目标日期，目标日期是周六或周日时为下一个周一；终点 `window_end` 是从起点数起的第 10 个工作日。
-- `settlement_close(closes, target_date, window_end) -> dict | None`：日期不早于目标日期、不晚于 `window_end` 的第一行收盘。目标日期是周末的加密资产，周末当天的收盘就是结算收盘（「请维护者确认的几处」第 6 处）。
+- `settlement_close(closes, target_date, window_end) -> dict | None`：日期不早于目标日期、不晚于 `window_end` 的第一行收盘。目标日期是周末的加密资产，周末当天的收盘就是结算收盘（「维护者确认的几处」第 6 处）。
 - `split_factor(actions, after, through) -> float`：日期在（`after`，`through`］之内的拆股比例之积。结算价 = 收盘 × `split_factor(actions, 发布日, 收盘日)`。
-- `SPLIT_TOLERANCE = 0.05`；`split_like(prev_close, close) -> float | None`：`prev_close ÷ close` 与某个整数 `k`（2 到 50）或 `1/k` 相差不超过 5% 时返回该比例，否则 None。`unrecorded_splits(closes, actions, start, end) -> list[tuple[str, float]]`：区间（`start`，`end`］内与拆股比例相符、当天（或与前一个收盘之间）没有拆股记录的跳变（「请维护者确认的几处」第 7 处）。
+- `SPLIT_TOLERANCE = 0.05`；`split_like(prev_close, close) -> float | None`：`prev_close ÷ close` 与某个整数 `k`（2 到 50）或 `1/k` 相差不超过 5% 时返回该比例，否则 None。`unrecorded_splits(closes, actions, start, end) -> list[tuple[str, float]]`：区间（`start`，`end`］内与拆股比例相符、当天（或与前一个收盘之间）没有拆股记录的跳变（「维护者确认的几处」第 7 处）。
 
 - [ ] **Step 1: 写测试**
 
@@ -607,7 +601,7 @@ git commit -m "feat(engine): total return with dividends and splits, short and e
 3. `test_pit_is_an_interval_and_p10_p90_is_inclusive`：上面的分布，结算价 0 时 PIT 为 [0, 0.3]，结算价 25 时为 [0.3, 0.3]；`within_p10_p90(0, 50, 50)` 为 true。
 4. `test_the_counting_interval`：第一个版本计入；恰好 30 天后的计入；29 天后的不计入；起点是上一个计入版本而不是上一个版本（第 0、20、35 天的三个版本中第 35 天的计入）；同一标的上第二个 idea 的版本与第一个 idea 合在一起计算；之后再加版本不改变已有版本是否计入。
 5. `test_groups_by_horizon_and_asset_class`：3 个月为 `1-3`，4 个月为 `4-12`，36 个月为 `13-36`，37 个月为 `37-120`；`fund` 与 `index` 同为 `fund-index`；`commodity`、`fx`、`other` 同为 `other`。
-6. `test_clustered_interval_needs_five_assets`：4 个标的返回 None；5 个标的时按公式算出的 `se` 与手算值相同。
+6. `test_clustered_interval_needs_five_assets`：4 个标的返回 None；5 个标的时按公式算出的 `se` 与手算值相同，`low` 与 `high` 为 `m ∓ 2.132 × se`（自由度 4）。
 7. `test_owner_mean_weighs_each_owner_once`：一位主人两个 agent 共 4 个值、另一位主人 1 个值，结果是两位主人平均数的平均。
 8. `test_ranking_threshold`：9 个计入的已结算版本、或 10 个版本只有 2 个标的的 actor 列入 `too_few`；10 个版本、3 个标的的排名，按平均相对 CRPS 从小到大。
 9. `test_the_settlement_window_counts_weekdays`：目标日期 2027-11-20（周六）的窗口为 2027-11-22 至 2027-12-03（第 22.6 节的例子）；目标日期 2027-01-27（周三）的窗口终点为 2027-02-09（跨月）。
@@ -705,7 +699,7 @@ git commit -m "feat(protocol): snapshot formats for track records, forecast scor
 - `protocol/PROTOCOL.md`：
   - **第 3 节**：标识表之后补一句：Melchior.Magi 登记的标的记 `registered_by: melchior.magi` 与 `registered_via_run`。
   - **第 8 节「Settlement records」**：补写结算收盘的确定（`settlement_close`：日期不早于目标日期、不晚于 `window_end` 的第一个已记录收盘；周末目标日期的加密资产取周末当天的收盘）；拆股比例来自 `market/actions/` 与有效裁决的 `split`；收盘的跳变与 2 到 50 的整数比例或其倒数相差不超过 5%、却没有拆股记录时不结算，报告给 Melchior.Magi；结算任务读取的裁决：在效裁决的 `terminal_price`（结算价，`close` 与 `close_date` 为 null，`source: ruling`）、`unsettled_reason`（未结算的原因）、`split`（拆股数据）；改代码由维护者更正标的的 `price_source`，之后按一般规则结算；暂定裁决给出终值时写 `provisional` 记录。
-  - **第 8 节「Forecast score」**：补写聚类标准误的公式与正态分位数 1.645；组的键 `<horizon>/<class>`。
+  - **第 8 节「Forecast score」**：补写聚类标准误的公式；90% 区间用自由度为聚类数减 1 的 Student t 分布的单侧 0.95 分位数，取自固定的分位数表，表里没有的自由度取表中较小的最近一项，所以区间不会比精确值窄；组的键 `<horizon>/<class>`。
   - **第 10 节「Entry rule 1」**：删去「Entry rule 0: …」一条，改为：Every pick opened since protocol 1.8 records `signal_close`, and none was opened before it, so no other entry rule exists; a `pick_opened` without `signal_close` breaks the event format and the consistency check reports it（第 1 处）。
   - **第 10 节「Minimum holding period」**：把「Once Melchior.Magi runs, a terminal value given by a ruling, and a pick voided by a maintainer's correction, are exempt too」与「Until Melchior.Magi applies corrections, the lock reads the raw pick events; after that it reads the effective ledger」两句改为 In force since protocol 1.9：锁定读有效台账；作废的 pick 解除锁定、不作为起点，撤回作废之后锁定恢复；未平仓 pick 有在效裁决给出的终值时，改变不受锁定，暂定裁决不算。
   - **第 10 节「Fills and pick states」**：补写 `delay_hours` 的收盘时刻（第 3 处）：Yahoo 的标的取响应里的交易所时区 `exchangeTimezoneName` 与常规交易时段的收盘时刻，用在成交交易日上；提前收盘的日子（例如感恩节的次日）会把延迟多算几个小时；加密资产为该 UTC 日的 24:00；Naver 为 06:30Z。`delay_sessions` 按定义在每条有效的成交记录里都是 0，长时间的等待由 `delay_hours` 体现（第 9 处）。待入场与待出场的 pick 在快照里显示 `waiting.sessions`（信号前收盘之后已记录的收盘数）与 `waiting.weekdays`（第 5 处）。维护者更正过 `fill` 的成交记录，Melchior.Magi 不再取代（第 8 处）。
@@ -802,7 +796,7 @@ Expected: `513 passed`；一致性 `[]`；合并推送的 `ci`、`audit` 为 suc
 
 - [ ] **Step 2: 核对第一次每日取价**
 
-合并之后第一次 `prices.yml` 运行（或手动触发一次）的输出里：`added` 补上 `tem` 最近一个月里尚未记录的收盘，来源为 `yahoo`；`findings` 为空（维护者已核对，已有的三行与 1d 日线的收盘相同）；`market/actions/` 没有 `tem` 的行；`audit` 没有 finding；一致性 `[]`。有 finding 时，先看 `magi:audit` issue 里的差异，再决定是否继续 Task 13。
+合并之后第一次 `prices.yml` 运行（或手动触发一次）的输出里：`added` 补上 `tem` 最近一个月里尚未记录的收盘，来源为 `yahoo`；`findings` 为空（夹具证实，已有的三行 2026-10-20、10-21、10-22 与 1d 日线的收盘完全相同）；`market/actions/` 没有 `tem` 的行；`audit` 没有 finding；一致性 `[]`。有 finding 时，先看 `magi:audit` issue 里的差异，再决定是否继续 Task 13。
 
 - [ ] **Step 3: 记录**
 
@@ -826,7 +820,7 @@ Expected: `513 passed`；一致性 `[]`；合并推送的 `ci`、`audit` 为 suc
   1. `mode` 为 `off` 或 `plan.json` 有 `notice` 时，什么也不做，返回摘要。
   2. 依次执行各步，每一步得到若干个 `ChangeSet`，立即用 `engine.apply.write_changes` 写进工作树，后一步读到前一步的结果。本任务只有第一步：用 `engine.sysagent.publish_system_profile` 发布 `agents/melchior/profile.yaml`。Task 14–16 依次加入登记序列、区间补录与成交记录、结算记录。每一步单独捕获异常，记进摘要的 `dropped`，后面的步骤照常执行。
   3. `live`：有改动时以一个提交推送，提交信息 `melchior: <各 ChangeSet 的 summary，以 "; " 连接>`（截到 200 个字符），trailer 为 `Magi-Actor: melchior.magi` 与 `Magi-Run: <run>`。
-  4. `preview`：写进工作树的文件不提交、不推送；摘要的 `preview` 列出每个改动的文件（`git status --porcelain` 中数据目录下的路径）与它的内容（每个文件最多 20,000 个字符），然后用 `Git.discard()` 恢复工作树（第 17 处）。
+  4. `preview`：写进工作树的文件不提交、不推送；摘要的 `preview` 列出每个改动的文件（`git status --porcelain` 中数据目录下的路径）：`market/` 下的文件只列新增的行数与第一行、最后一行的日期，不列内容（八个序列三年的补录约涉及 37 个月文件，列出内容会使运行摘要接近 GitHub 的 1 MiB 上限）；其他文件列出内容，每个文件最多 20,000 个字符。然后用 `Git.discard()` 恢复工作树（第 17 处）。
   5. 摘要为 `{"mode", "notice", "profile", "series", "closes", "actions", "fills", "settlements", "findings", "dropped", "commit", "preview"}`。
 - `engine/cli.py`：`python -m engine melchior prepare --repo . --out work --scope all --mode "$MELCHIOR_MODE"`；`python -m engine melchior write --repo . --work work --mode "$MELCHIOR_MODE" --run-id "$GITHUB_RUN_ID"`，打印摘要的 JSON，`preview` 时把预览写进 `work/preview.md`，摘要有 finding 时调用 `report(GitHubClient.from_env(), "Melchior.Magi found problems", findings)`。`lookup` 子命令在 Task 18 加入。
 - `.github/workflows/melchior.yml`：
@@ -983,7 +977,7 @@ git commit -m "feat(melchior): the melchior workflow with prepare and write only
 新建 `tests/test_melchior_series.py`（`add_melchior`、`init_git_repo`、`FakePrices`）：
 
 1. `test_missing_series_are_registered_as_system_writes`：`live` 运行之后，v1 的八个序列都在 `registry/assets/`，`registered_by` 为 `melchior.magi`，有 `registered_via_run`、没有 `registered_via_issue`；事件日志有八行 `register_asset`，带 `run`、不带 `issue`；`check_repository(repo) == []`。
-2. `test_registration_backfills_three_years`：`FakePrices.history_calls` 里 `SPY` 的起点为运行日期三年前的同一天。
+2. `test_registration_backfills_three_years`：`FakePrices.history_calls` 里 `SPY` 的起点为运行日期三年前的同一天；同样的仓库以 `preview` 运行时，摘要里每个 `market/` 文件只有新增的行数与首末日期，不含行的内容。
 3. `test_an_id_registered_for_the_same_symbol_is_used_as_it_is`：夹具里已有 actor 登记的 `spy`（代码 `SPY`）；运行之后文件不变，没有 finding。
 4. `test_an_id_registered_for_something_else_is_reported`：已有的 `spy` 代码为 `SPYG`；不重新登记，有一条路径为 `registry/assets/spy.yaml` 的 finding。
 5. `test_a_series_quoted_in_another_currency_is_not_registered`：`FakePrices(currency={"DBC": "EUR"})`；`dbc` 没有登记，摘要的 `dropped` 与 `findings` 各有一条写明货币。
@@ -1422,7 +1416,7 @@ Expected: 全部步骤 `PASS`，最后一行 `all steps passed`，包括 Task 21
 
 ## 计划 8 完成标准
 
-- [ ] Task 1 的文档 PR 已合并，「请维护者确认的几处」已确认并记录。
+- [ ] Task 1 的文档 PR 已合并（维护者 2026-10-23 确认了「维护者确认的几处」，记在本计划末尾）。
 - [ ] PR 8a 已合并；main 上 `513 passed`，一致性 `[]`；合并之后第一次每日取价没有 finding。
 - [ ] PR 8b 已合并；main 上 `580 passed`，一致性 `[]`，ci 与 audit 为 success。
 - [ ] `melchior.magi` 已经单独的 PR 登记。
@@ -1461,27 +1455,32 @@ Execute Task 13 through Task 21 of docs/plans/2026-10-23-impl-8-melchior-program
 
 ---
 
-## 请维护者确认的几处
+## 维护者确认的几处
 
-以下各处是第 22 节照原文无法实现、原文没有写到而实现必须决定、或本计划偏离第 22 节的地方。每处写明本计划的做法；维护者确认之前，Task 2 不开始。
+以下各处是第 22 节照原文无法实现、原文没有写到而实现必须决定、或本计划偏离第 22 节的地方。维护者于 2026-10-23 审阅 PR #48：第 1–11 处与第 13–20 处按本计划的建议确认，第 12 处由维护者改定。下面按确认后的内容记录，本计划的 Interfaces 已按此写。改变了第 22 节原文的各处，设计文档在相应位置加了日期为 2026-10-23 的修订注记，并在第 22.17 节记一行，原文的句子不改。同一天，维护者用 Task 6 的命令录下了取价夹具（提交 `c7d3ad5`），第 3、4 处所依据的事实由夹具证实。
 
-1. **入场规则 0 不实现**（偏离第 22.1、22.15 节）。维护者 2026-10-23 核对过，计划 7 合并时正式仓库没有观点与台账事件，所以不会有缺少信号前收盘的 pick。建议：不实现入场规则 0；没有 `signal_close` 的 `pick_opened` 本来就不合乎协议 1.8 的事件格式，一致性校验已经报告；协议 1.9 删去 Entry rule 0 一条（Task 11）。
-2. **档案只列本计划履行的三项职责**（偏离第 22.14 节）。第 22.14 节列了六项职责。建议：`agents/melchior/profile.yaml` 只列第 1–3 项；计划 9 加上第 4–6 项，下一次运行发布新版本。`identity_en` 先用第 18.10 节的译文，维护者尚未核对，在 Task 22 Step 2 登记之前核对或改定。
-3. **`delay_hours` 的收盘时刻**（第 22.2 节的修订注记交给计划 8 决定）。维护者核对过，Yahoo 的 1d 响应只带当前交易时段的 `currentTradingPeriod`，没有过去各交易时段的收盘时刻。建议：取响应里的交易所时区 `exchangeTimezoneName` 与常规交易时段的当地收盘时刻，用在成交交易日上；提前收盘的日子（例如感恩节的次日）会把延迟多算几个小时，协议写明；加密资产的日线是 UTC 日，收盘为该日的 24:00Z；Naver 仍为 06:30Z。一致性校验复算成交的交易日与数值，不复算 `delay_hours`。本计划的作者会话不能访问 Yahoo，没能用录下的响应找更好的来源；Task 6 用夹具核实 `instrumentType` 与时区字段。
-4. **补录的换算与已有的行**。维护者核对过，Yahoo 的收盘与分红都已按之后的拆股调整，而正式仓库已有的 TEM 两行与之后的 1d 收盘相同。建议：换算时乘以同一份响应里之后的累计拆股比例，所以每个请求都截止到当前；同一标的同一天已有的行保留（`market/` 只增不改），换算之后相差超过 0.5% 才记 finding；成交与结算用已记录的行。
-5. **生效时间与等待天数**（第 22.13 节）。建议：价格任务的改动、有效台账、更正的新校验、读取层与一致性校验合并即生效；登记、补录、成交记录与结算记录是 Melchior 的写入，等 `MELCHIOR_MODE=live`。正式仓库保持 `preview`。待入场与待出场的 pick 在快照与周报里显示 `waiting.sessions`（信号前收盘之后已记录的收盘数）与 `waiting.weekdays`（之后的工作日数）：第 22.2 节说「列出等待的交易日数」，而按「有日线的那一天就是交易日」的定义，停牌的标的等待再久也是 0 个交易日，所以另列工作日数，它也是计划 9 的「等待成交超过 10 个工作日」所需的数。
-6. **周末目标日期的加密资产在周末当天结算**。第 22.6 节的窗口在目标日期为周末时从下一个周一起算，而协议的 `settlement.1` 取目标日期当天或之后的第一个收盘。建议：结算收盘是日期不早于目标日期、不晚于 `window_end` 的第一个已记录收盘；目标日期是周六的加密资产，周六的收盘就是结算收盘。
-7. **拆股跳变的判定与报告范围**。第 22.6、22.7 节没有定义「与某个整数比例的拆股相符」。建议：相邻两个收盘的比值与 2 到 50 的整数或其倒数相差不超过 5%。单日跌去一半的真实暴跌也会被标出；在计划 9 的裁决能消除它之前，这条 finding 会一直留在 `magi:audit` issue 里，所以一致性校验只检查进入计算的区间（已入场 pick 的持有期、到期版本的发布日到结算日）。
-8. **维护者更正过的记录，Melchior 不再取代**。第 22.2 节说输入被更正时 Melchior 写取代记录，也说维护者可以直接更正成交记录；两者同时成立时，Melchior 按输入重算的结果会与维护者的更正不同，并反复取代它。建议：成交记录的 `fill` 或 `benchmark`、结算记录的 `status`、`reason` 或 `price` 被维护者更正过的，Melchior 不取代，一致性校验也不复算这几个字段；更正为 `void` 的结算记录不再有效，Melchior 照常写新的记录。
-9. **`delay_sessions` 在有效记录里总是 0**。成交收盘是信号前收盘之后的第一个已记录收盘，所以两者之间没有已记录的收盘，`delay_sessions` 按定义总是 0。建议：照协议 1.8 的格式写这个字段，协议 1.9 写明它总是 0、长时间的等待由 `delay_hours` 体现；以后要去掉它，走新的 schema 版本。
-10. **缺日之间的公司行动与等权模拟的日历**。第 22.3 节说缺日时「只要其间的公司行动都已记录，结果不变」，这只在分红按下一个有记录的收盘再投资时成立。建议：缺日之间的拆股按日期累乘股数，分红按当时的股数计现金、在下一个有记录的收盘再投资（Task 8 的 `growth`）；等权模拟的「每个交易日」取区间内 `market/prices/` 出现过的全部日期，标的当天没有收盘的，那一天不计它的收益，缺日的收益记在下一个有记录的收盘日。
-11. **一致性校验暂不检查结算记录与裁决的引用**。已有测试 `tests/test_record_formats.py::test_the_consistency_check_reads_settlement_and_ruling_files` 在夹具里写了一条结算记录与一份裁决，它们所指的版本、pick 与标的都不在夹具里，并要求一致性校验没有任何报告；按维护者的要求，本计划只重写一个已有测试。建议：本计划只检查事件日志里有对应版本的结算记录，不报告引用了不存在的版本、pick 或标的的结算记录与裁决；计划 9 加上裁决的写入时，同时加上这项引用检查并改那个测试。
-12. **聚类标准误用正态分位数**。第 22.5 节要求按标的聚类的标准误与 90% 区间，没有写分布。建议：用正态分位数 1.645，不引入 scipy 一类的新依赖；聚类不少于 5 个才估计，与第 22.5 节相同。
-13. **第二个已有测试的期望值改变**。`tests/test_snapshot.py::test_compile_on_fixture` 断言 `protocol_version` 为 `"1.8"`；这个值来自 CHANGELOG 的第一个版本标题，协议 1.9 写进 CHANGELOG 之后必然变为 `"1.9"`。计划 7 用同样的方式改过它。建议：Task 11 把期望值改为 `"1.9"`，测试的其余部分不改。快照新文件由另一个函数 `compile_records` 生成，所以这个测试的文件集合不变。
-14. **分成两个 PR，PR 8a 带协议 1.9 的全部文字与全部 schema**。建议：分界在 Task 11 之后（理由见「执行路线」）；PR 8b 不改 `protocol/` 下的任何文件，协议 1.9 用「Applies once Melchior.Magi runs」标明要等 PR 8b 与 Melchior 运行才有效果的段落；PR 8a 里的 `engine/returns.py` 与 `engine/scores.py` 在 PR 8b 之前没有调用方。
-15. **周报三段与「安静的一周」**（第 19.7、22.11 节）。按第 19.7 节，没有新观点、新证据、请求与讨论的一周只写一行；而第 22.11 节的近期表现要覆盖每个有持有 pick 的 actor。建议：`melchior.magi` 登记之后，该周有持有、待入场、待出场或刚出场的 pick，或写下了结算记录，这一周不算安静。三段的文字由 Caspar 的模型写，输出 schema 增加三个可选字段，提示词增加相应的规则；正式仓库的 `CASPAR_MODE` 保持 `off`。
-16. **`lookup` 运行该提交自己的引擎**。第 22.12 节要求「在该提交的工作树里重新编译快照，取回同一个数」，没有说用哪一版引擎。建议：在临时工作树里用该提交自己的 `engine/` 编译，这样以后改了计算的代码，旧的引用仍取回当时的数；只接受 `HEAD` 历史里的提交，不运行别处的代码。PR 8b 合并之前的提交没有这些文件，`lookup` 报错。
-17. **Melchior 自己的区间补录受 `MELCHIOR_MODE` 控制，`preview` 在工作树里试写**。建议：每日取价任务的一个月补录不受控制；Melchior 为成交与结算另取的长区间、三年补录与登记一起受控制。`preview` 把各步的结果照常写进工作树，让后一步读到前一步的结果，最后列出改动的文件并恢复工作树，不提交。
-18. **系统写入的事件日志行**。第 22.9.6 节说系统 agent 的每次写入都在事件日志记一行，第 22.2、22.6 节没有给出成交与结算的动作名。建议：登记为 `register_asset`，成交为 `record_fill`（带 `pick_id`、`event`），结算为 `record_settlement`（带 `id`、`status`），都以 `run` 代替 `issue`。
-19. **裁决终值的豁免覆盖整个改变**。第 22.2 节 D44 第 4 条把「裁决给出的终值」列为豁免，没有说反向时怎样处理。建议：actor 在该 idea 上的未平仓 pick 有在效裁决给出的终值时，这次改变（平仓或反向）不受锁定；暂定裁决不在效，不豁免。
-20. **价格数据的 finding 与每日取价任务的权限**。第 22.3 节说补录行的差异与公司行动的冲突「记一条一致性 finding」，而这些差异来自取价来源的响应，一致性校验看不到。建议：每日取价任务把它们报告进标题为「Price data found problems」的 `magi:audit` issue（owner `melchior.magi`），`prices.yml` 的取价一步因此加上 `GITHUB_TOKEN`；同一个 workflow 的审计与一致性两步已经有它。
+1. **入场规则 0 不实现**（维护者 2026-10-23 确认；偏离第 22.1、22.15 节）。计划 7 合并时正式仓库没有观点与台账事件，所以不会有缺少信号前收盘的 pick。没有 `signal_close` 的 `pick_opened` 不合乎协议 1.8 的事件格式，一致性校验已经报告；协议 1.9 删去 Entry rule 0 一条（Task 11）。
+2. **档案只列本计划履行的三项职责**（维护者 2026-10-23 确认；偏离第 22.14 节）。`agents/melchior/profile.yaml` 只列第 22.14 节第 1–3 项；计划 9 加上第 4–6 项，下一次运行发布新版本。`identity_en` 先用第 18.10 节的译文，维护者在 Task 22 Step 2 登记之前核对或改定。
+3. **`delay_hours` 的收盘时刻**（维护者 2026-10-23 确认）。取响应里的交易所时区 `exchangeTimezoneName` 与常规交易时段的当地收盘时刻（`currentTradingPeriod.regular.end` 换到该时区），用在成交交易日上；提前收盘的日子（例如感恩节的次日）会把延迟多算几个小时，协议写明。`meta.instrumentType` 为 `CRYPTOCURRENCY` 的标的，日线是 UTC 日，收盘为该日的 24:00Z；Naver 仍为 06:30Z。一致性校验复算成交的交易日与数值，不复算 `delay_hours`。夹具证实：响应只带当前交易时段，TEM 与 NVDA 的时区为 `America/New_York`、收盘于当地 16:00，BTC-USD 为 `CRYPTOCURRENCY`、`UTC`。
+4. **补录的换算与已有的行**（维护者 2026-10-23 确认）。换算时乘以同一份响应里之后的累计拆股比例，所以每个请求都截止到当前；同一标的同一天已有的行保留（`market/` 只增不改），换算之后相差超过 0.5% 才记 finding；成交与结算用已记录的行。夹具证实：NVDA 2024-06-07 的收盘 120.888 与 2024-03-05 的分红 0.004 都按之后的 10 拆 1 调整过；拆股以浮点数给出，写入时换成整数，不是整数的不记入并报告；分红与拆股的时间戳在交易时段开始，按 `gmtoffset` 定日期；正式仓库 `tem` 的三行收盘与夹具的日线收盘完全相同，所以 Task 12 Step 2 预期没有 finding。
+5. **生效时间与等待天数**（维护者 2026-10-23 确认）。价格任务的改动、有效台账、更正的新校验、读取层与一致性校验合并即生效；登记、补录、成交记录与结算记录是 Melchior 的写入，等 `MELCHIOR_MODE=live`。正式仓库保持 `preview`。待入场与待出场的 pick 在快照与周报里显示 `waiting.sessions`（信号前收盘之后已记录的收盘数）与 `waiting.weekdays`（之后的工作日数）。
+6. **周末目标日期的加密资产在周末当天结算**（维护者 2026-10-23 确认）。结算收盘是日期不早于目标日期、不晚于 `window_end` 的第一个已记录收盘。
+7. **拆股跳变的判定与报告范围**（维护者 2026-10-23 确认）。相邻两个收盘的比值与 2 到 50 的整数或其倒数相差不超过 5%；一致性校验只检查进入计算的区间（已入场 pick 的持有期、到期版本的发布日到结算日）。
+8. **维护者更正过的记录，Melchior 不再取代**（维护者 2026-10-23 确认）。成交记录的 `fill` 或 `benchmark`、结算记录的 `status`、`reason` 或 `price` 被维护者更正过的，Melchior 不取代，一致性校验也不复算这几个字段；更正为 `void` 的结算记录不再有效，Melchior 照常写新的记录。
+9. **`delay_sessions` 在有效记录里总是 0**（维护者 2026-10-23 确认）。照协议 1.8 的格式写这个字段；协议 1.9 写明它总是 0，长时间的等待由 `delay_hours` 体现；以后要去掉它，走新的 schema 版本。
+10. **缺日之间的公司行动与等权模拟的日历**（维护者 2026-10-23 确认）。缺日之间的拆股按日期累乘股数，分红按当时的股数计现金、在下一个有记录的收盘再投资（Task 8 的 `growth`）；等权模拟的「每个交易日」取区间内 `market/prices/` 出现过的全部日期，缺日的收益记在下一个有记录的收盘日。
+11. **一致性校验暂不检查结算记录与裁决的引用**（维护者 2026-10-23 确认）。本计划只检查事件日志里有对应版本的结算记录，不报告引用了不存在的版本、pick 或标的的结算记录与裁决，所以 `tests/test_record_formats.py::test_the_consistency_check_reads_settlement_and_ruling_files` 不改；计划 9 加上裁决的写入时，同时加上这项引用检查并改那个测试。
+12. **90% 区间用 Student t 分布**（维护者 2026-10-23 改定）。本计划原来建议用正态分位数 1.645。维护者改定：`clustered_interval` 用自由度为 `G − 1` 的 Student t 分布的单侧 0.95 分位数，取自 `engine/scores.py` 里的固定表（自由度 4–30 逐一列出，另有 40、60、120）；表里没有的自由度取表中小于它的最大自由度，所以区间不会比精确值窄。不引入新的依赖，聚类仍须不少于 5 个。Task 9 第 6 个测试另断言 5 个标的时 `low`、`high` 为 `m ∓ 2.132 × se`（多一条断言，不是新测试）；Task 11 的协议文字相应改写。
+13. **第二个已有测试的期望值改变**（维护者 2026-10-23 确认）。Task 11 把 `tests/test_snapshot.py::test_compile_on_fixture` 的 `protocol_version` 期望值由 `"1.8"` 改为 `"1.9"`，测试的其余部分不改。快照新文件由另一个函数 `compile_records` 生成，所以这个测试的文件集合不变。
+14. **分成两个 PR，PR 8a 带协议 1.9 的全部文字与全部 schema**（维护者 2026-10-23 确认）。分界在 Task 11 之后；PR 8b 不改 `protocol/` 下的任何文件；PR 8a 里的 `engine/returns.py` 与 `engine/scores.py` 在 PR 8b 之前没有调用方。
+15. **周报三段与「安静的一周」**（维护者 2026-10-23 确认；修改第 19.7 节的规则）。`melchior.magi` 登记之后，该周有持有、待入场、待出场或刚出场的 pick，或写下了结算记录，这一周不算安静。三段的文字由 Caspar 的模型写，输出 schema 增加三个可选字段，提示词增加相应的规则；正式仓库的 `CASPAR_MODE` 保持 `off`。
+16. **`lookup` 运行该提交自己的引擎**（维护者 2026-10-23 确认）。在临时工作树里用该提交自己的 `engine/` 编译；只接受 `HEAD` 历史里的提交。PR 8b 合并之前的提交没有这些文件，`lookup` 报错。
+17. **Melchior 自己的区间补录受 `MELCHIOR_MODE` 控制，`preview` 在工作树里试写**（维护者 2026-10-23 确认）。每日取价任务的一个月补录不受控制；Melchior 为成交与结算另取的长区间、三年补录与登记一起受控制。`preview` 把各步的结果照常写进工作树，最后列出改动的文件并恢复工作树，不提交。维护者另行要求：`market/` 下的文件在预览里只列新增的行数与首末日期，不列内容，以免运行摘要接近 GitHub 的 1 MiB 上限（Task 13；断言并入 Task 14 的第 2 个测试，测试数不变）。
+18. **系统写入的事件日志行**（维护者 2026-10-23 确认）。登记为 `register_asset`，成交为 `record_fill`（带 `pick_id`、`event`），结算为 `record_settlement`（带 `id`、`status`），都以 `run` 代替 `issue`。
+19. **裁决终值的豁免覆盖整个改变**（维护者 2026-10-23 确认）。actor 在该 idea 上的未平仓 pick 有在效裁决给出的终值时，这次改变（平仓或反向）不受锁定；暂定裁决不在效，不豁免。
+20. **价格数据的 finding 与每日取价任务的权限**（维护者 2026-10-23 确认）。每日取价任务把补录行的差异、公司行动的冲突与不是整数的拆股比例报告进标题为「Price data found problems」的 `magi:audit` issue（owner `melchior.magi`），`prices.yml` 的取价一步因此加上 `GITHUB_TOKEN`。
+
+维护者在确认时另加两处修改，不另编号，已写进相应的任务：
+
+- **Task 4**：按第 22.8 节，更正只能把裁决的 `status` 改为 `final` 或 `overturned`；其他值（例如 `provisional`）以 `E_SEMANTIC` 驳回，路径 `/payload/fields/status`。这一条作为 `test_a_correction_may_confirm_a_ruling` 的第二条断言，测试数不变。
+- **Task 6 与全局约束**：夹具已经录下，Step 1 只读取它们，不再有「停下请维护者录夹具」的路径；测试时钟为 `2026-10-23T09:00:00Z`。
