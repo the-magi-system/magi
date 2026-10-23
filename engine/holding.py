@@ -1,7 +1,9 @@
 """Minimum holding period and re-entry interval (protocol section 10, design decision D44).
 
 A view that would open, close or reverse a pick waits 30 calendar days after the actor's last pick event
-on the same asset, across all its ideas on that asset. Retiring an agent is not held.
+on the same asset, across all its ideas on that asset. Retiring an agent is not held. The lock reads the
+effective ledger: a voided pick holds nothing, and an open pick with a terminal value from a ruling in force
+may change at once.
 """
 from __future__ import annotations
 
@@ -20,8 +22,11 @@ def holding_error(state: RepoState, actor: str, payload: dict, now: datetime) ->
     if idea is None or idea.get("status") != "active":
         return None  # the proposal is already rejected for its idea
     book = load_book(state.root)
-    closing, opening = pick_changes(book.open.get((actor, payload["idea"])), payload["position"])
+    open_pick = book.open.get((actor, payload["idea"]))
+    closing, opening = pick_changes(open_pick, payload["position"])
     if not closing and opening is None:
+        return None
+    if open_pick is not None and open_pick.pick_id in book.terminal:
         return None
     events = [event for (who, idea_id), event in book.last_event.items()
               if who == actor and state.ideas.get(idea_id, {}).get("asset") == idea["asset"]]

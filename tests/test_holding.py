@@ -3,6 +3,7 @@ from datetime import timedelta
 
 from engine.apply import apply_proposal, write_changes
 from engine.errors import E_SEMANTIC
+from engine.ledger import load_book
 from engine.proposal import Proposal
 from engine.repo import RepoState
 from engine.semantic import check_semantics
@@ -10,7 +11,7 @@ from engine.timeutil import iso, parse_iso
 from engine.validate import validate
 from engine.yamlio import write_yaml
 from tests.fakes import FakePrices
-from tests.util import ARTHUR_ID, JOHN_ID, T0, body, view_payload
+from tests.util import ARTHUR_ID, JOHN_ID, T0, body, ruling_record, view_payload
 
 OPENED = "ledger/events/2026/10/20261001T023000Z-pk-000001-pick_opened.yaml"
 OPENED_AT = parse_iso("2026-10-01T02:30:00Z")
@@ -80,7 +81,27 @@ def test_retirement_is_not_held_by_the_lock(repo):
     assert check_semantics(RepoState.load(repo), proposal, OPENED_AT + DAY) == ([], [])
 
 
-def test_a_correction_does_not_lift_the_lock_before_plan_8(repo):
+def test_a_void_lifts_the_lock(repo):
     write(repo, {"corrects": OPENED, "reason": "Opened by mistake", "fields": {"void": True}}, OPENED_AT + 2 * DAY,
           actor="arthur", action="ledger_correction")
+    assert check(repo, view_payload(position="short"), OPENED_AT + 5 * DAY).status == "ok"
+    assert load_book(repo).open == {}
+
+
+def test_withdrawing_the_void_holds_the_pick_again(repo):
+    void_at = OPENED_AT + 2 * DAY
+    write(repo, {"corrects": OPENED, "reason": "Opened by mistake", "fields": {"void": True}}, void_at,
+          actor="arthur", action="ledger_correction")
+    assert check(repo, view_payload(position="short"), OPENED_AT + 5 * DAY).status == "ok"
+    void = next(path for path in load_book(repo).paths if path.endswith("ledger_correction.yaml"))
+    write(repo, {"corrects": void, "reason": "The pick was not a mistake", "fields": {"withdrawn": True}},
+          OPENED_AT + 6 * DAY, actor="arthur", action="ledger_correction")
+    assert locked(check(repo, view_payload(position="neutral"), OPENED_AT + 7 * DAY), UNTIL)
+
+
+def test_a_terminal_value_from_a_ruling_is_not_held(repo):
+    path = repo / "ledger/rulings/2026/10/20261003T234730Z-rl-000001.yaml"
+    write_yaml(path, ruling_record())
+    assert check(repo, view_payload(position="neutral"), OPENED_AT + 5 * DAY).status == "ok"
+    write_yaml(path, ruling_record(status="provisional", effect="provisional"))
     assert locked(check(repo, view_payload(position="neutral"), OPENED_AT + 5 * DAY), UNTIL)
