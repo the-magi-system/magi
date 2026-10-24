@@ -1,0 +1,16 @@
+[
+  {
+    "id": "tem-data-engine",
+    "asset": "tem",
+    "title": "Tempus AI: can the data business carry the price?",
+    "status": "active",
+    "thread": 37,
+    "latest_close": {
+      "value": 67.61499786376953,
+      "currency": "USD",
+      "date": "2026-10-23",
+      "source": "yahoo-5m"
+    },
+    "views": []
+  }
+]

@@ -1,0 +1,21 @@
+{
+  "strategies": {
+    "technology-inflection": {
+      "name": "Technology Inflection",
+      "definition": "A company on the benefiting side of a technology that has crossed from early users into the mainstream market. The return comes from growth larger than the market expects.",
+      "declared_by": "pendragon.avalon",
+      "declared_via_issue": 34,
+      "status": "active",
+      "merged_into": null
+    },
+    "unpriced-quality-growth": {
+      "name": "Unpriced Quality Growth",
+      "definition": "An excellent, hard-to-copy growth engine that the market prices as an ordinary business. The return comes from growth, plus a re-rating once the framing error behind the discount is corrected.",
+      "declared_by": "pendragon.avalon",
+      "declared_via_issue": 43,
+      "status": "active",
+      "merged_into": null
+    }
+  },
+  "view_counts": {}
+}
