@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Callable
 
@@ -19,6 +19,7 @@ from ..changes import ChangeSet
 from ..consistency import Finding
 from ..gitops import DATA_DIRS, Git
 from ..history import file_at
+from ..ledger import effective_ledger
 from ..market import MarketUpdate, record_market
 from ..prices import PriceProvider
 from ..repo import RepoState
@@ -26,6 +27,7 @@ from ..returns import load_policies
 from ..sysagent import publish_system_profile
 from ..yamlio import load_yaml
 from .common import MELCHIOR, SOURCE_DIR, resolve_mode
+from .fills import fill_changes, pending_fills
 from .series import SeriesError, backfill_start, missing_series, register_series
 
 PREVIEW_LIMIT = 20_000  # characters of one file's content in the preview
@@ -53,6 +55,7 @@ def prepare(root, out, scope: str, mode: str, now: datetime) -> dict:
         plan["notice"] = f"{MELCHIOR} is not registered as an active system agent"
     else:
         plan["work"]["series"] = [series_id for series_id, _ in missing_series(state, load_policies(root))[0]]
+        plan["work"]["fills"] = pending_fills(root, effective_ledger(root))
     _save(out / "plan.json", plan)
     return plan
 
@@ -114,7 +117,31 @@ def _series(job: Job) -> None:
         job.record_market({series_id: asset}, {series_id: backfill_start(job.now.date())})
 
 
-STEPS: tuple[tuple[str, Callable[[Job], None]], ...] = (("profile", _profile), ("series", _series))
+def _earliest(items: list[dict], key: str) -> dict[str, date]:
+    start: dict[str, date] = {}
+    for item in items:
+        day = date.fromisoformat(item[key])
+        start[item["asset"]] = min(start.get(item["asset"], day), day)
+    return start
+
+
+def _fills(job: Job) -> None:
+    """Backfill each asset with a fill to write from its signal close, then write the fill records."""
+    pending = pending_fills(job.root, effective_ledger(job.root))
+    if not pending:
+        return
+    start = _earliest(pending, "since")
+    assets = RepoState.load(job.root).assets
+    update = job.record_market({asset_id: assets[asset_id] for asset_id in start}, start)
+    changes, findings, dropped = fill_changes(job.root, effective_ledger(job.root), update.histories, job.now, job.run)
+    for change in changes:
+        job.apply(change)
+        job.summary["fills"] += list(change.writes)
+    job.report(findings)
+    job.summary["dropped"] += dropped
+
+
+STEPS: tuple[tuple[str, Callable[[Job], None]], ...] = (("profile", _profile), ("series", _series), ("fills", _fills))
 
 
 def changed_paths(git: Git) -> list[str]:

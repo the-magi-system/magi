@@ -91,5 +91,5 @@ def test_a_series_quoted_in_another_currency_is_not_registered(root, tmp_path):
     summary = _run(root, tmp_path, "live", FakePrices(currency={"DBC": "EUR"}))
     assert not (root / "registry" / "assets" / "dbc.yaml").exists()
     assert "dbc" not in summary["series"]
-    assert len(summary["dropped"]) == 1 and "EUR" in summary["dropped"][0]
-    assert len(summary["findings"]) == 1 and "EUR" in summary["findings"][0]["problem"]
+    assert len([line for line in summary["dropped"] if "EUR" in line]) == 1
+    assert len([finding for finding in summary["findings"] if "EUR" in finding["problem"]]) == 1
