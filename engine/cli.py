@@ -15,11 +15,15 @@ from .caspar.run import write as caspar_write
 from .caspar.think import KINDS as CASPAR_KINDS
 from .caspar.think import think as caspar_think
 from .changes import ApplyError
-from .consistency import check_repository
+from .consistency import Finding, check_repository
 from .errors import E_INTERNAL, MagiError
 from .github import GitHubClient
 from .gitops import Git, GitError
 from .intake import run_intake
+from .melchior.common import SCOPES as MELCHIOR_SCOPES
+from .melchior.run import prepare as melchior_prepare
+from .melchior.run import preview_markdown
+from .melchior.run import write as melchior_write
 from .market import record_market
 from .prices import FixedPrices, PriceRouter
 from .repo import RepoState
@@ -146,6 +150,24 @@ def _caspar_write(args) -> int:
     return 1 if (summary["probe"] or "").startswith("failed") else 0
 
 
+def _melchior_prepare(args) -> int:
+    plan = melchior_prepare(args.repo, args.out, args.scope, args.mode, utc_now())
+    print(json.dumps(plan, indent=2, ensure_ascii=False))
+    return 0
+
+
+def _melchior_write(args) -> int:
+    summary = melchior_write(args.repo, None, Git(args.repo), args.work, args.mode, args.run_id, utc_now(),
+                             PriceRouter())
+    if summary["preview"] is not None:
+        (Path(args.work) / "preview.md").write_text(preview_markdown(summary), encoding="utf-8")
+    if summary["findings"]:
+        report(GitHubClient.from_env(), "Melchior.Magi found problems", [Finding(**f) for f in summary["findings"]])
+    print(json.dumps({**summary, "preview": len(summary["preview"]) if summary["preview"] is not None else None},
+                     indent=2, ensure_ascii=False))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m engine", description="The Magi System intake engine")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -220,6 +242,24 @@ def build_parser() -> argparse.ArgumentParser:
     write.add_argument("--mode", default="", help="CASPAR_MODE: preview (the default when empty), live or off")
     write.add_argument("--run-id", type=int, required=True, help="the workflow run id, recorded instead of an issue")
     write.set_defaults(handler=_caspar_write, json_errors=False)
+
+    melchior = commands.add_parser("melchior", help="Melchior.Magi, the recorder system agent (run by the melchior "
+                                                    "workflow); it runs programs only")
+    steps = melchior.add_subparsers(dest="step", required=True)
+    plan = steps.add_parser("prepare", help="find the work and write plan.json; never writes to the repository")
+    plan.add_argument("--repo", type=Path, default=Path("."), help="repository root")
+    plan.add_argument("--out", type=Path, required=True, help="directory for plan.json")
+    plan.add_argument("--scope", choices=sorted(MELCHIOR_SCOPES), default="all",
+                      help="which work to do; all and program are the same in this version")
+    plan.add_argument("--mode", default="", help="MELCHIOR_MODE: preview (the default when empty), live or off")
+    plan.set_defaults(handler=_melchior_prepare, json_errors=False)
+    write = steps.add_parser("write", help="register series, record fills and settlements; commit them in live mode, "
+                                           "describe them in work/preview.md in preview mode")
+    write.add_argument("--repo", type=Path, default=Path("."), help="repository root")
+    write.add_argument("--work", type=Path, required=True, help="the prepare directory, with plan.json")
+    write.add_argument("--mode", default="", help="MELCHIOR_MODE: preview (the default when empty), live or off")
+    write.add_argument("--run-id", type=int, required=True, help="the workflow run id, recorded instead of an issue")
+    write.set_defaults(handler=_melchior_write, json_errors=False)
     return parser
 
 

@@ -270,3 +270,19 @@ def correction(corrects: str, fields: dict, at: str, n: int) -> tuple[str, dict]
     record = {"schema": "magi/ledger-event@1", "event": "ledger_correction", "pick_id": "pk-000001",
               "corrects": corrects, "fields": fields, "reason": f"Correction {n}", "by": "arthur", "at": at, "issue": n}
     return path, record
+
+
+MELCHIOR = {
+    "schema": "magi/agent@1", "id": "melchior.magi", "owner": "magi", "display_name": "Melchior.Magi", "role": "system",
+    "runtime": {"vendor": "anthropic", "model": "claude-opus-5-5", "harness": "claude-agent-sdk"},
+    "status": "active", "registered_at": T0,
+}
+
+
+def add_melchior(root: Path) -> Path:
+    """Register melchior.magi and copy its profile source; build_repo leaves both out."""
+    root = Path(root)
+    write_yaml(root / "registry" / "agents" / "melchior.magi.yaml", MELCHIOR)
+    if not (root / "agents" / "melchior").exists():
+        shutil.copytree(REPO_ROOT / "agents" / "melchior", root / "agents" / "melchior")
+    return root
