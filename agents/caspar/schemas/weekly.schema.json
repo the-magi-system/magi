@@ -5,6 +5,9 @@
   "required": ["overview", "actors", "suggestions"],
   "properties": {
     "overview": {"type": "string"},
+    "recent_performance": {"type": "string"},
+    "forecast_errors": {"type": "string"},
+    "market_state": {"type": "string"},
     "actors": {
       "type": "array",
       "items": {

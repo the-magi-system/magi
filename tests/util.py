@@ -270,3 +270,86 @@ def correction(corrects: str, fields: dict, at: str, n: int) -> tuple[str, dict]
     record = {"schema": "magi/ledger-event@1", "event": "ledger_correction", "pick_id": "pk-000001",
               "corrects": corrects, "fields": fields, "reason": f"Correction {n}", "by": "arthur", "at": at, "issue": n}
     return path, record
+
+
+MELCHIOR = {
+    "schema": "magi/agent@1", "id": "melchior.magi", "owner": "magi", "display_name": "Melchior.Magi", "role": "system",
+    "runtime": {"vendor": "anthropic", "model": "claude-opus-5-5", "harness": "claude-agent-sdk"},
+    "status": "active", "registered_at": T0,
+}
+
+
+def add_melchior(root: Path) -> Path:
+    """Register melchior.magi and copy its profile source; build_repo leaves both out."""
+    root = Path(root)
+    write_yaml(root / "registry" / "agents" / "melchior.magi.yaml", MELCHIOR)
+    if not (root / "agents" / "melchior").exists():
+        shutil.copytree(REPO_ROOT / "agents" / "melchior", root / "agents" / "melchior")
+    return root
+
+
+def weekdays(first: str, last: str, skip=()) -> list[str]:
+    """Every Monday-to-Friday date from first to last, both included, except those in skip."""
+    from datetime import date, timedelta
+    day, end, found = date.fromisoformat(first), date.fromisoformat(last), []
+    while day <= end:
+        if day.weekday() < 5 and day.isoformat() not in skip:
+            found.append(day.isoformat())
+        day += timedelta(days=1)
+    return found
+
+
+def write_closes(root: Path, asset: str, rows, currency: str = "USD", source: str = "yahoo") -> None:
+    """Append market/prices/ lines; rows are (date, close) pairs."""
+    import json
+    for day, value in rows:
+        path = Path(root) / "market" / "prices" / day[:4] / f"{day[5:7]}.jsonl"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        line = {"date": day, "asset": asset, "close": value, "currency": currency, "source": source,
+                "as_of": f"{day}T13:30:00Z", "recorded_at": f"{day}T23:00:00Z"}
+        with open(path, "a", encoding="utf-8", newline="\n") as handle:
+            handle.write(json.dumps(line) + "\n")
+
+
+def write_actions(root: Path, asset: str, actions: list[dict]) -> None:
+    import json
+    for action in actions:
+        path = Path(root) / "market" / "actions" / action["date"][:4] / f"{action['date'][5:7]}.jsonl"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "a", encoding="utf-8", newline="\n") as handle:
+            handle.write(json.dumps({**action, "asset": asset, "recorded_at": f"{action['date']}T23:00:00Z"}) + "\n")
+
+
+def asset_record(root: Path, asset_id: str, name: str, kind: str, sector: str, currency: str, provider: str,
+                 symbol: str) -> None:
+    write_yaml(Path(root) / "registry" / "assets" / f"{asset_id}.yaml", {
+        "schema": "magi/asset@1", "id": asset_id, "name": name, "type": kind, "sector": sector, "currency": currency,
+        "price_source": {"provider": provider, "symbol": symbol}, "registered_by": "arthur.val",
+        "registered_at": T0, "registered_via_issue": 2})
+
+
+def idea_record(root: Path, idea_id: str, asset_id: str) -> None:
+    write_yaml(Path(root) / "ideas" / idea_id / "idea.yaml", {
+        "schema": "magi/idea@1", "id": idea_id, "asset": asset_id, "title": idea_id, "summary": "Test idea",
+        "status": "active", "created_by": "arthur.val", "created_at": T0})
+
+
+def pick_event(root: Path, number: int, event: str, at: str, signal_date: str, *, actor: str = "arthur.val",
+               idea: str = "nvda-ai-capex-2026", direction: str = "long", value: float = 180.0,
+               currency: str = "USD", source: str = "yahoo") -> str:
+    """Write a pick_opened or pick_closed event as the engine would and return its path."""
+    pick = f"pk-{number:06d}"
+    record = {"schema": "magi/ledger-event@1", "event": event, "pick_id": pick, "actor": actor, "idea": idea,
+              "direction": direction, "at": at,
+              "price": {"value": value, "currency": currency, "as_of": at, "source": source},
+              "signal_close": {"date": signal_date, "value": value, "currency": currency,
+                               "as_of": f"{signal_date}T13:30:00Z", "source": source}}
+    if event == "pick_opened":
+        record.update(view_version=1, original={"p50": 230, "expected_price": 255.5, "horizon_months": 18})
+    else:
+        record["reason"] = "position_change"
+    record.update(issue=40 + number, proposal_sha256="0" * 64)
+    name = at.replace("-", "").replace(":", "")
+    path = f"ledger/events/{at[:4]}/{at[5:7]}/{name}-{pick}-{event}.yaml"
+    write_yaml(Path(root) / path, record)
+    return path

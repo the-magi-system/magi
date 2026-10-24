@@ -4,6 +4,7 @@ Run from the repository root after the sandbox has been reset and seeded:
     python tools/e2e_sandbox.py --repo the-magi-system/magi-sandbox
 The token comes from GH_TOKEN, or from `gh auth token` when GH_TOKEN is unset.
 Each step prints PASS or FAIL; the script stops at the first FAIL and exits with status 1.
+The sandbox seed must register melchior.magi, and the sandbox's MELCHIOR_MODE must be live (plan 8, Task 21).
 """
 from __future__ import annotations
 
@@ -19,11 +20,17 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from jsonschema import Draft202012Validator  # noqa: E402
+
 from engine.github import GitHubClient  # noqa: E402
 from engine.queue import body_sha, engine_replies  # noqa: E402
 from engine.timeutil import iso, parse_iso, target_date  # noqa: E402
-from engine.yamlio import dump_yaml, parse_yaml  # noqa: E402
+from engine.yamlio import dump_yaml, load_yaml, parse_yaml  # noqa: E402
 
+ROOT = Path(__file__).resolve().parents[1]
+SNAPSHOT_SCHEMAS = ROOT / "protocol" / "schemas" / "snapshot"
+SERIES = list(load_yaml(ROOT / "protocol" / "benchmarks" / "v1.yaml")["series"])
+WAITING_OR_HELD = ("pending_entry", "held")
 POLL_SECONDS = 15
 TIMEOUT_SECONDS = 1800  # GitHub's runner queue has delayed a job by more than 10 minutes
 AGENT = "e2e.sandbox"
@@ -93,10 +100,27 @@ class Runner:
         """The SHA-256 of the issue body as the REST API returns it, as the engine computes proposal_sha256."""
         return hashlib.sha256((self.issue(number)["body"] or "").encode("utf-8")).hexdigest()
 
+    def ledger_path(self, month_dir: str, suffix: str) -> str | None:
+        """The path of the last file in the month directory whose name ends with suffix."""
+        names = sorted(name for name in self.gh.list_dir(month_dir) if name.endswith(suffix))
+        return f"{month_dir}/{names[-1]}" if names else None
+
     def ledger_event(self, month_dir: str, suffix: str) -> dict:
         """The last ledger event in the month directory whose file name ends with suffix."""
-        names = sorted(name for name in self.gh.list_dir(month_dir) if name.endswith(suffix))
-        return parse_yaml(self.gh.get_file(f"{month_dir}/{names[-1]}") or "{}") if names else {}
+        path = self.ledger_path(month_dir, suffix)
+        return parse_yaml(self.gh.get_file(path) or "{}") if path else {}
+
+    def snapshot_json(self, name: str):
+        """A JSON file of the snapshot branch; None when it is not there."""
+        text = self.gh.get_file(name, ref="snapshot")
+        return json.loads(text) if text else None
+
+    @staticmethod
+    def schema_errors(name: str, data) -> list[str]:
+        """Check a snapshot file against the local protocol/schemas/snapshot/."""
+        stem = "trail" if name.startswith("trails/") else name.removesuffix(".json")
+        schema = json.loads((SNAPSHOT_SCHEMAS / f"{stem}.schema.json").read_text(encoding="utf-8"))
+        return [error.message for error in Draft202012Validator(schema).iter_errors(data)]
 
     def submit(self, title: str, text: str) -> int:
         return self.gh.create_issue(title, text, [])["number"]
@@ -153,7 +177,19 @@ class Runner:
         raise Failure(f"{workflow} did not finish within {TIMEOUT_SECONDS} seconds")
 
 
+def _pick_state(r: Runner, pick_id: str) -> str | None:
+    track = r.snapshot_json("track.json") or {}
+    return (track.get("picks") or {}).get(pick_id, {}).get("state")
+
+
+def _ledger_entry(r: Runner, path: str) -> dict:
+    return ((r.snapshot_json("ledger.json") or {}).get("records") or {}).get(path) or {}
+
+
 def scenario(r: Runner) -> None:
+    if r.gh.get_file("registry/agents/melchior.magi.yaml") is None:
+        raise Failure("melchior.magi is not registered in the sandbox; add registry/agents/melchior.magi.yaml to the "
+                      "seed before the run")
     month_dir = f"ledger/events/{datetime.now(timezone.utc):%Y/%m}"
     registration = r.submit("register_agent", proposal("register_agent", "arthur", {"name": "e2e", "suffix": "sandbox", "display_name": "E2E.Sandbox", "role": "research-agent"}))
     r.expect("register an agent", r.wait(registration), "accepted")
@@ -191,6 +227,7 @@ def scenario(r: Runner) -> None:
     n = r.submit("update_view (long)", proposal("update_view", AGENT, view(evidence_id, pillars=pillars)))
     r.expect("open a long view", r.wait(n), "accepted")
     r.check("pick opened in the ledger", any(name.endswith("pick_opened.yaml") for name in r.gh.list_dir(month_dir)))
+    opened_path = r.ledger_path(month_dir, "pick_opened.yaml")
     opened = r.ledger_event(month_dir, "pick_opened.yaml")
     signal = opened.get("signal_close") or {}
     r.check("pick_opened records the signal close", bool(signal.get("date")) and (signal.get("value") or 0) > 0
@@ -294,6 +331,43 @@ def scenario(r: Runner) -> None:
     r.check("prices workflow succeeded", run["conclusion"] == "success", run["html_url"])
     prices = json.loads(r.gh.get_file("prices.json", ref="snapshot") or "{}")
     r.check("snapshot carries the daily close", "nvda" in prices, str(prices.get("nvda")))
+
+    melchior = r.run_workflow("melchior.yml", {"scope": "all"})
+    r.check("melchior workflow succeeded", melchior["conclusion"] == "success", melchior["html_url"])
+    missing = [series for series in SERIES if r.gh.get_file(f"registry/assets/{series}.yaml") is None]
+    r.check("benchmark and market-state series registered", missing == [], f"missing: {missing}")
+    r.eventually("snapshot carries the closes of the series",
+                 lambda: set(SERIES) <= set(r.snapshot_json("prices.json") or {}))
+    pick_id = opened.get("pick_id")
+    state = _pick_state(r, pick_id)
+    r.check("track.json shows the pick waiting for entry or held", state in WAITING_OR_HELD, f"{pick_id}: {state}")
+    problems = {}
+    for name in ("settlements.json", "rulings.json", "ledger.json"):
+        data = r.snapshot_json(name)
+        problems[name] = ["missing"] if data is None else r.schema_errors(name, data)
+    r.check("settlements.json, rulings.json and ledger.json are present and valid",
+            not any(problems.values()), json.dumps(problems)[:500])
+
+    void = {"corrects": opened_path, "fields": {"void": True}, "reason": "E2E: void the pick"}
+    n = r.submit("ledger_correction (void the pick)", proposal("ledger_correction", "arthur", void))
+    r.expect("void the pick", r.wait(n), "accepted")
+    correction_path = r.ledger_path(month_dir, "ledger_correction.yaml")
+
+    def void_shown() -> bool:
+        entry = _ledger_entry(r, opened_path)
+        return ("void" not in (entry.get("raw") or {}) and (entry.get("effective") or {}).get("void") is True
+                and correction_path in (entry.get("corrected_by") or []))
+
+    r.eventually("ledger.json keeps the raw record and shows the void", void_shown)
+    r.eventually("track.json no longer counts the voided pick", lambda: _pick_state(r, pick_id) == "void")
+    withdraw = {"corrects": correction_path, "fields": {"withdrawn": True}, "reason": "E2E: withdraw the void"}
+    n = r.submit("ledger_correction (withdraw the void)", proposal("ledger_correction", "arthur", withdraw))
+    r.expect("withdraw the void", r.wait(n), "accepted")
+    r.eventually("track.json counts the pick again", lambda: _pick_state(r, pick_id) in WAITING_OR_HELD)
+    restored = (_ledger_entry(r, opened_path).get("effective") or {}).get("void") is not True
+    state = _pick_state(r, pick_id)
+    r.check("the voided and restored pick is still pending entry or held", restored and state in WAITING_OR_HELD,
+            f"{pick_id}: {state}")
 
     n = r.submit("retire_agent", proposal("retire_agent", "arthur", {"agent": AGENT, "reason": "End of the end-to-end run"}))
     r.expect("retire the agent", r.wait(n), "accepted")

@@ -17,6 +17,7 @@ from ..behaviour import actor_behaviour
 from ..changes import ChangeSet
 from ..eventlog import read_log
 from ..ledger import load_book
+from ..melchior.weekly import busy, sections
 from ..queue import BOT_LOGIN, engine_replies
 from ..repo import RepoState
 from ..sysagent import system_log_entry
@@ -31,6 +32,8 @@ LOOK_BACK_WEEKS = 4
 WAITING_HOURS = 24
 QUIET = "No activity this week."
 _NUMBER = re.compile(r"\d+(?:[.,]\d+)*")
+MELCHIOR_SECTIONS = ("recent_performance", "forecast_errors", "market_state")
+TOO_FEW = "too few counted settled versions"
 STATUS = {"quote removed": "the quoted statement no longer appears in the current version",
           "still present": "still present in the current version", "no new version": "no new version yet"}
 
@@ -158,16 +161,20 @@ def weekly_material(root, state: RepoState, gh, week: str, start: datetime, end:
                 if _within(i["created_at"], start, end)]
     rejections = _rejections(gh, start, end)
     comments = _thread_comments(gh, start, end)
-    if not any(counts.values()) and not requests and not rejections and not comments:
+    melchior = sections(root, state, start, end)
+    if not any(counts.values()) and not requests and not rejections and not comments and not busy(melchior):
         return None
     actors = {e["actor"] for e in log if e["action"] == "update_view"} | {actor for actor, _ in load_book(root).open}
     suggestions = [{"number": i["number"], "title": i["title"], "url": _issue_url(gh, i["number"])}
                    for i in sorted(gh.labelled_issues(SUGGESTION_LABEL), key=lambda i: i["number"])
                    if i.get("state", "open") == "open"]
-    return {"week": week, "start": iso(start), "end": iso(end), "counts": counts,
-            "actors": [_actor_row(state, actor, log) for actor in sorted(actors)],
-            "requests": requests, "rejections": rejections, "thread_comments": comments, "open_suggestions": suggestions,
-            "waiting": waiting_reviews(state, now)}
+    material = {"week": week, "start": iso(start), "end": iso(end), "counts": counts,
+                "actors": [_actor_row(state, actor, log) for actor in sorted(actors)],
+                "requests": requests, "rejections": rejections, "thread_comments": comments,
+                "open_suggestions": suggestions, "waiting": waiting_reviews(state, now)}
+    if melchior is not None:
+        material["melchior"] = melchior
+    return material
 
 
 def _norm(token: str) -> str:
@@ -217,6 +224,8 @@ def check_weekly(material: dict, output: dict) -> tuple[dict, list[str]]:
     dropped: list[str] = []
     checked = {"overview": _paragraph(output.get("overview"), material, "overview", dropped), "actors": {},
                "suggestions": []}
+    for key in MELCHIOR_SECTIONS:  # written only when the material has Melchior.Magi's data
+        checked[key] = _paragraph(output.get(key), material, key, dropped) if "melchior" in material else ""
     known = {row["actor"] for row in material["actors"]}
     for item in output.get("actors") or []:
         actor = item.get("actor")
@@ -288,6 +297,81 @@ def _actor_section(row: dict, text: dict) -> list[str]:
     return lines
 
 
+def _value(value, percent: bool = True) -> str:
+    if value is None:
+        return "-"
+    if isinstance(value, bool):
+        return "yes" if value else "no"
+    return f"{value * 100:.2f}%" if percent else f"{value}"
+
+
+def _performance_section(data: dict, text: str) -> list[str]:
+    lines = ["", "## Recent performance", "",
+             "| Pick | Actor | Asset | Direction | State | Entry | Excess this week | Total return since entry | "
+             "Excess since entry | Benchmark | Trading days held | Stale mark |", "|" + "---|" * 12]
+    lines += [f"| {r['pick']} | {r['actor']} | {r['asset']} | {r['direction']} | {r['state']} | {r['entry_date']} | "
+              f"{_value(r['week_excess_return'])} | {_value(r['total_return'])} | {_value(r['excess_return'])} | "
+              f"{r['benchmark'] or '-'} | {_value(r['trading_days_held'], False)} | {_value(r['stale_mark'])} |"
+              for r in data["picks"]] or ["| - | - | - | - | - | - | - | - | - | - | - | - |"]
+    lines += ["", f"*{data['note']}*"]
+    if data["actors"]:
+        lines += ["", "| Actor | Owner | Entered picks | Mean excess, all | Mean excess, exited | Median excess, all | "
+                      "Share above 0 | Mean trading days held | Equal-weight simulation |", "|" + "---|" * 9]
+        for actor, entry in data["actors"].items():
+            summary = entry["summary"]
+            lines.append(f"| {actor} | {entry['owner']} | {summary['entered']} | {_value(summary['excess_mean_all'])} | "
+                         f"{_value(summary['excess_mean_exited'])} | {_value(summary['excess_median_all'])} | "
+                         f"{_value(summary['share_above_zero'])} | {_value(summary['mean_trading_days_held'], False)} | "
+                         f"{_value(summary['simulation']['excess'])} |")
+    if data["waiting"]:
+        lines += ["", "Picks waiting for their fill close:", "",
+                  "| Pick | Actor | Asset | State | Signal close | Closes since | Weekdays since |", "|" + "---|" * 7]
+        lines += [f"| {w['pick']} | {w['actor']} | {w['asset']} | {w['state']} | {w['since']} | {w['sessions']} | "
+                  f"{w['weekdays']} |" for w in data["waiting"]]
+    if data["without_benchmark"]:
+        lines += ["", f"Picks without a benchmark: {', '.join(data['without_benchmark'])}."]
+    if data["provisional_rulings"]:
+        lines += ["", f"Provisional rulings waiting for a maintainer: {', '.join(data['provisional_rulings'])}."]
+    return lines + (["", text] if text else [])
+
+
+def _errors_section(data: dict, text: str) -> list[str]:
+    lines = ["", "## Forecast errors", "", "Versions settled this week:", "",
+             "| Version | Relative CRPS | Counted | Settlement price | Against the distribution | PIT |", "|" + "---|" * 6]
+    lines += [f"| {v['version']} | {v['crps_rel']} | {_value(v['counted'])} | {v['price']} | {v['position'] or '-'} | "
+              f"{v['pit'][0]} to {v['pit'][1]} |" for v in data["settled"]] or ["| - | - | - | - | - | - |"]
+    if data["unsettled_or_provisional"]:
+        lines += ["", "| Version | Status | Reason | Rulings |", "|---|---|---|---|"]
+        lines += [f"| {v['version']} | {v['status']} | {v['reason'] or '-'} | {', '.join(v['rulings']) or '-'} |"
+                  for v in data["unsettled_or_provisional"]]
+    if data["calibration"]:
+        lines += ["", "Calibration of counted settled versions to the cut-off:", "",
+                  "| Actor | Counted settled | Not counted | Below P10 | Above P90 | Between P10 and P90 | Mean PIT | |",
+                  "|" + "---|" * 8]
+        lines += [f"| {actor} | {c['counted_settled']} | {c['not_counted']} | {_value(c['below_p10'])} | "
+                  f"{_value(c['above_p90'])} | {_value(c['within_p10_p90'])} | {_value(c['pit_mean'], False)} | "
+                  f"{TOO_FEW if c['too_few'] else ''} |" for actor, c in data["calibration"].items()]
+    return lines + (["", text] if text else [])
+
+
+def _market_section(data: dict, text: str) -> list[str]:
+    lines = ["", "## Market state", "", f"As of {data['as_of'] or '-'}.", "",
+             "| Series | Closes | 3 months | 12 months | Against the 200-day mean | 20-day volatility | "
+             "Volatility percentile, 3 years |", "|" + "---|" * 7]
+    for name, series in data["series"].items():
+        if not series["registered"]:
+            lines.append(f"| {name} | not registered | - | - | - | - | - |")
+            continue
+        lines.append(f"| {name} | {series['closes']} | {_value(series['total_return_3m'])} | "
+                     f"{_value(series['total_return_12m'])} | {_value(series['deviation_200d'])} | "
+                     f"{_value(series['volatility_20d'])} | {_value(series['volatility_percentile_3y'])} |")
+    labels = {"value_minus_growth": "Value minus growth", "small_minus_large": "Small minus large"}
+    lines += ["", "| Spread | 3 months | 12 months |", "|---|---|---|"]
+    lines += [f"| {labels[name]} | {_value(spread['3m'])} | {_value(spread['12m'])} |"
+              for name, spread in data["spreads"].items()]
+    return lines + (["", text] if text else [])
+
+
 def report_markdown(material: dict, checked: dict) -> str:
     counts = material["counts"]
     last_day = (parse_iso(material["end"]) - timedelta(days=1)).date().isoformat()
@@ -299,6 +383,11 @@ def report_markdown(material: dict, checked: dict) -> str:
              f"{counts['evidence']} |"]
     if checked["overview"]:
         lines += ["", checked["overview"]]
+    melchior = material.get("melchior")
+    if melchior is not None:
+        lines += _performance_section(melchior["recent_performance"], checked.get("recent_performance", ""))
+        lines += _errors_section(melchior["forecast_errors"], checked.get("forecast_errors", ""))
+        lines += _market_section(melchior["market_state"], checked.get("market_state", ""))
     for row in material["actors"]:
         lines += _actor_section(row, checked["actors"].get(row["actor"], {}))
     if checked["suggestions"]:
