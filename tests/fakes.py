@@ -62,6 +62,15 @@ def init_git_repo(root: Path) -> Path:
     return bare
 
 
+def commit_all(root: Path, message: str) -> str:
+    """Commit every change in a repository made by init_git_repo and return the commit."""
+    root = Path(root)
+    subprocess.run(["git", "add", "-A"], cwd=root, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-q", "-m", message], cwd=root, check=True, capture_output=True)
+    return subprocess.run(["git", "rev-parse", "HEAD"], cwd=root, check=True, capture_output=True,
+                          text=True).stdout.strip()
+
+
 class FakeGitHub:
     """In-memory GitHub with the subset of the REST client the engine uses."""
 
