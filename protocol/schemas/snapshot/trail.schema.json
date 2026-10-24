@@ -1,0 +1,343 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "snapshot trails/<idea>/<actor>.json: the research trail of one actor on one idea (protocol section 10)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "idea",
+    "actor",
+    "owner",
+    "versions"
+  ],
+  "properties": {
+    "idea": {
+      "type": "string"
+    },
+    "actor": {
+      "type": "string"
+    },
+    "owner": {
+      "type": "string"
+    },
+    "versions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/version"
+      }
+    }
+  },
+  "$defs": {
+    "close": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "date",
+        "value",
+        "currency",
+        "as_of",
+        "source"
+      ],
+      "properties": {
+        "date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "value": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "currency": {
+          "type": "string"
+        },
+        "as_of": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+        },
+        "source": {
+          "type": "string"
+        }
+      }
+    },
+    "version": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "published_at",
+        "target_date",
+        "proposal_sha256",
+        "position",
+        "horizon_months",
+        "p10",
+        "p50",
+        "p90",
+        "rationale",
+        "process_md",
+        "diff",
+        "evidence",
+        "evidence_checks",
+        "discussion_refs",
+        "non_public_pillars",
+        "review",
+        "picks",
+        "settlement",
+        "rulings"
+      ],
+      "properties": {
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "published_at": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+        },
+        "target_date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "proposal_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "position": {
+          "enum": [
+            "long",
+            "short",
+            "neutral"
+          ]
+        },
+        "horizon_months": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "p10": {
+          "type": "number"
+        },
+        "p50": {
+          "type": "number"
+        },
+        "p90": {
+          "type": "number"
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "process_md": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "diff": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "added",
+            "removed",
+            "current"
+          ],
+          "properties": {
+            "added": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "removed": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "current": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "evidence_checks": {
+          "type": "null"
+        },
+        "discussion_refs": {
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "non_public_pillars": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "review": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "scores",
+                "tail_risk",
+                "factual_errors",
+                "comment_url",
+                "view_version"
+              ],
+              "properties": {
+                "scores": {
+                  "type": "object"
+                },
+                "tail_risk": {
+                  "type": "string"
+                },
+                "factual_errors": {
+                  "type": "array"
+                },
+                "comment_url": {
+                  "type": "string"
+                },
+                "view_version": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
+          ]
+        },
+        "picks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "pick_id",
+              "event",
+              "fill",
+              "delay_hours"
+            ],
+            "properties": {
+              "pick_id": {
+                "type": "string",
+                "pattern": "^pk-\\d{6}$"
+              },
+              "event": {
+                "enum": [
+                  "pick_opened",
+                  "pick_entered",
+                  "pick_closed",
+                  "pick_exited"
+                ]
+              },
+              "fill": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$ref": "#/$defs/close"
+                  }
+                ]
+              },
+              "delay_hours": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "settlement": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "status",
+                "reason",
+                "price",
+                "crps_rel",
+                "pit",
+                "counted"
+              ],
+              "properties": {
+                "status": {
+                  "enum": [
+                    "settled",
+                    "provisional",
+                    "unsettled",
+                    "pending",
+                    "not_due"
+                  ]
+                },
+                "reason": {
+                  "enum": [
+                    null,
+                    "no_quote",
+                    "halted",
+                    "delisted",
+                    "acquired",
+                    "other"
+                  ]
+                },
+                "price": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "crps_rel": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "pit": {
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": {
+                        "type": "number"
+                      }
+                    }
+                  ]
+                },
+                "counted": {
+                  "type": "boolean"
+                }
+              }
+            }
+          ]
+        },
+        "rulings": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^rl-\\d{6}$"
+          }
+        }
+      }
+    }
+  }
+}

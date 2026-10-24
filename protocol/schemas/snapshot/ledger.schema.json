@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "snapshot ledger.json: every ledger record, raw and effective (protocol section 10)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "records"
+  ],
+  "properties": {
+    "records": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^ledger/(events|settlements|rulings)/"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "raw",
+          "effective",
+          "corrected_by",
+          "ignored",
+          "in_effect"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "pick_opened",
+              "pick_entered",
+              "pick_closed",
+              "pick_exited",
+              "settlement",
+              "ruling",
+              "ledger_correction"
+            ]
+          },
+          "raw": {
+            "type": "object"
+          },
+          "effective": {
+            "type": "object"
+          },
+          "corrected_by": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "ignored": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "correction",
+                "field"
+              ],
+              "properties": {
+                "correction": {
+                  "type": "string"
+                },
+                "field": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "in_effect": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

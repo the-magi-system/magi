@@ -1,0 +1,621 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "snapshot track.json: track records of picks (protocol section 10)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "valuation_date",
+    "note",
+    "picks",
+    "actors",
+    "rankings",
+    "without_benchmark"
+  ],
+  "properties": {
+    "valuation_date": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        }
+      ]
+    },
+    "note": {
+      "type": "string",
+      "minLength": 1
+    },
+    "picks": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^pk-\\d{6}$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/pick"
+      }
+    },
+    "actors": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/actor"
+      }
+    },
+    "rankings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "equity",
+        "fund-index",
+        "crypto",
+        "other"
+      ],
+      "properties": {
+        "equity": {
+          "$ref": "#/$defs/ranking"
+        },
+        "fund-index": {
+          "$ref": "#/$defs/ranking"
+        },
+        "crypto": {
+          "$ref": "#/$defs/ranking"
+        },
+        "other": {
+          "$ref": "#/$defs/ranking"
+        }
+      }
+    },
+    "without_benchmark": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^pk-\\d{6}$"
+      }
+    }
+  },
+  "$defs": {
+    "close": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "date",
+        "value",
+        "currency",
+        "as_of",
+        "source"
+      ],
+      "properties": {
+        "date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "value": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "currency": {
+          "type": "string"
+        },
+        "as_of": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+        },
+        "source": {
+          "type": "string"
+        }
+      }
+    },
+    "fill": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "date",
+        "value",
+        "delay_hours",
+        "delay_sessions",
+        "record"
+      ],
+      "properties": {
+        "date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "value": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "delay_hours": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "delay_sessions": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "record": {
+          "type": "string"
+        }
+      }
+    },
+    "pick": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "actor",
+        "owner",
+        "idea",
+        "asset",
+        "asset_class",
+        "direction",
+        "state",
+        "opened_at",
+        "signal_close",
+        "entry",
+        "closed_at",
+        "exit",
+        "terminal",
+        "waiting",
+        "end_date",
+        "trading_days_held",
+        "total_return",
+        "own_return",
+        "benchmark",
+        "excess_return",
+        "excess_missing",
+        "open",
+        "stale_mark",
+        "actions_unverified",
+        "rulings",
+        "provisional_rulings"
+      ],
+      "properties": {
+        "actor": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "idea": {
+          "type": "string"
+        },
+        "asset": {
+          "type": "string"
+        },
+        "asset_class": {
+          "enum": [
+            "equity",
+            "fund-index",
+            "crypto",
+            "other"
+          ]
+        },
+        "direction": {
+          "enum": [
+            "long",
+            "short"
+          ]
+        },
+        "state": {
+          "enum": [
+            "pending_entry",
+            "held",
+            "pending_exit",
+            "exited",
+            "void"
+          ]
+        },
+        "opened_at": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+        },
+        "signal_close": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/close"
+            }
+          ]
+        },
+        "entry": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/fill"
+            }
+          ]
+        },
+        "closed_at": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+            }
+          ]
+        },
+        "exit": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/fill"
+            }
+          ]
+        },
+        "terminal": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "ruling",
+                "date",
+                "value"
+              ],
+              "properties": {
+                "ruling": {
+                  "type": "string",
+                  "pattern": "^rl-\\d{6}$"
+                },
+                "date": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "value": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              }
+            }
+          ]
+        },
+        "waiting": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "since",
+                "sessions",
+                "weekdays"
+              ],
+              "properties": {
+                "since": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "sessions": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "weekdays": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          ]
+        },
+        "end_date": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            }
+          ]
+        },
+        "trading_days_held": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "total_return": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "own_return": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "benchmark": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "asset",
+                "policy",
+                "from",
+                "total_return"
+              ],
+              "properties": {
+                "asset": {
+                  "type": "string"
+                },
+                "policy": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "from": {
+                  "enum": [
+                    "record",
+                    "policy"
+                  ]
+                },
+                "total_return": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "excess_return": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "excess_missing": {
+          "enum": [
+            null,
+            "no_benchmark",
+            "currency_mismatch"
+          ]
+        },
+        "open": {
+          "type": "boolean"
+        },
+        "stale_mark": {
+          "type": "boolean"
+        },
+        "actions_unverified": {
+          "type": "boolean"
+        },
+        "rulings": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^rl-\\d{6}$"
+          }
+        },
+        "provisional_rulings": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^rl-\\d{6}$"
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "picks",
+        "entered",
+        "assets",
+        "excess_mean_all",
+        "excess_mean_exited",
+        "excess_median_all",
+        "excess_median_exited",
+        "share_above_zero",
+        "mean_trading_days_held",
+        "simulation",
+        "without_benchmark"
+      ],
+      "properties": {
+        "picks": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "pending_entry",
+            "held",
+            "pending_exit",
+            "exited",
+            "void"
+          ],
+          "properties": {
+            "pending_entry": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "held": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "pending_exit": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "exited": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "void": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "entered": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "assets": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "excess_mean_all": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "excess_mean_exited": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "excess_median_all": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "excess_median_exited": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "share_above_zero": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "mean_trading_days_held": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "simulation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "excess",
+            "days"
+          ],
+          "properties": {
+            "excess": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "days": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "without_benchmark": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "owner",
+        "summary",
+        "by_class"
+      ],
+      "properties": {
+        "owner": {
+          "type": "string"
+        },
+        "summary": {
+          "$ref": "#/$defs/summary"
+        },
+        "by_class": {
+          "type": "object",
+          "propertyNames": {
+            "enum": [
+              "equity",
+              "fund-index",
+              "crypto",
+              "other"
+            ]
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/summary"
+          }
+        }
+      }
+    },
+    "ranking": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ranked",
+        "too_few"
+      ],
+      "properties": {
+        "ranked": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "actor",
+              "excess_mean_all",
+              "entered",
+              "assets"
+            ],
+            "properties": {
+              "actor": {
+                "type": "string"
+              },
+              "excess_mean_all": {
+                "type": "number"
+              },
+              "entered": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "assets": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "too_few": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "snapshot rulings.json: every ruling with its effective state (protocol section 10)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "rulings",
+    "by_pick",
+    "by_version"
+  ],
+  "properties": {
+    "rulings": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^rl-\\d{6}$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/ruling"
+      }
+    },
+    "by_pick": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^pk-\\d{6}$"
+      },
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "pattern": "^rl-\\d{6}$"
+        }
+      }
+    },
+    "by_version": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[^/]+/[^/]+/v[1-9]\\d*$"
+      },
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "pattern": "^rl-\\d{6}$"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "ruling": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "state",
+        "kind",
+        "effect",
+        "rule",
+        "asset",
+        "decision",
+        "subjects",
+        "issue",
+        "at",
+        "corrected_by"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "final",
+            "provisional",
+            "overturned",
+            "superseded"
+          ]
+        },
+        "kind": {
+          "type": "string"
+        },
+        "effect": {
+          "enum": [
+            "immediate",
+            "provisional"
+          ]
+        },
+        "rule": {
+          "type": "string"
+        },
+        "asset": {
+          "type": "string"
+        },
+        "decision": {
+          "type": [
+            "object",
+            "string"
+          ]
+        },
+        "subjects": {
+          "type": "object"
+        },
+        "issue": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "at": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+        },
+        "corrected_by": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

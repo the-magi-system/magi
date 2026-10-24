@@ -10,9 +10,10 @@ from .behaviour import all_behaviour
 from .derive import derive
 from .distribution import check_distribution
 from .eventlog import LOG_DIR
-from .ledger import load_book, ordered_events
-from .market import latest_closes
+from .ledger import effective_ledger, load_book
+from .market import latest_closes, read_closes
 from .repo import RepoState
+from .returns import load_policies
 from .timeutil import iso
 
 _VERSION_RE = re.compile(r"^## v(\d+(?:\.\d+)*)", re.MULTILINE)
@@ -32,7 +33,16 @@ def _log(root: Path) -> list[dict]:
 
 
 def _events(root: Path) -> list[dict]:
-    return [event for _, event in ordered_events(root)]
+    """The effective pick openings and closings; a voided pick has none."""
+    ledger = effective_ledger(root)
+    void = ledger.void_picks()
+    return [entry.record for entry in ledger.records.values()
+            if entry.kind in ("pick_opened", "pick_closed") and entry.record["pick_id"] not in void]
+
+
+def valuation_date(root: Path) -> str | None:
+    """The latest market date recorded in market/prices/."""
+    return max((line["date"] for line in read_closes(root)), default=None)
 
 
 def _close(line: dict | None) -> dict | None:
@@ -134,6 +144,8 @@ def compile_snapshot(root: Path, now: datetime, commit: str) -> dict[str, object
     files["reports.json"] = _reports(root)
     files["manifest.json"] = {
         "generated_at": iso(now), "main_commit": commit, "protocol_version": protocol_version(root),
+        "valuation_date": valuation_date(root),
+        "benchmark_policy": max(policy["version"] for policy in load_policies(root)),
         "counts": {"ideas": len(state.ideas), "views": len(state.views), "evidence": len(state.evidence),
                    "agents": len(state.agents), "profiles": len(state.profiles), "methodologies": len(state.methodologies),
                    "open_picks": len(load_book(root).open), "reviews": len(state.judgements),
