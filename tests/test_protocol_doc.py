@@ -162,3 +162,45 @@ def test_guides_describe_entry_the_lock_and_neutral_views():
     getting_started = (REPO_ROOT / "docs" / "guides" / "getting-started.zh.md").read_text(encoding="utf-8")
     for needle in ["30 天", "中性", "收盘"]:
         assert needle in getting_started, needle
+
+
+def test_changelog_records_v1_9():
+    changelog = (REPO_ROOT / "protocol" / "CHANGELOG.md").read_text(encoding="utf-8")
+    latest = changelog.split("## v1.8")[0]
+    for needle in ["## v1.9", "`market/actions/`", "`ledger_correction`", "`E_SEMANTIC`", "`MELCHIOR_MODE`", "`track.json`",
+                   "`python -m engine melchior lookup`", "Entry rule 0"]:
+        assert needle in latest, needle
+
+
+def test_protocol_marks_what_is_in_force_since_1_9():
+    text = (REPO_ROOT / "protocol" / "PROTOCOL.md").read_text(encoding="utf-8")
+    for needle in ["In force since protocol 1.9", "**Market data.**", "`market/actions/`", "0.5%",
+                   "`/payload/fields/<field>`"]:
+        assert needle in text, needle
+    assert "Until then a correction is recorded and changes no computation" not in text
+    assert "enters at the quote fetched when its proposal was processed" not in text
+
+
+def test_protocol_describes_melchior_and_its_mode():
+    text = (REPO_ROOT / "protocol" / "PROTOCOL.md").read_text(encoding="utf-8")
+    for needle in ["`MELCHIOR_MODE`", "`preview`", "23:47 UTC", "`agents/melchior/profile.yaml`",
+                   "`.github/workflows/melchior.yml`", "`delay_hours`", "`exchangeTimezoneName`", "`registered_via_run`"]:
+        assert needle in text, needle
+
+
+def test_protocol_describes_the_snapshot_files_and_lookup():
+    text = (REPO_ROOT / "protocol" / "PROTOCOL.md").read_text(encoding="utf-8")
+    for needle in ["`track.json`", "`forecasts.json`", "`settlements.json`", "`rulings.json`", "`benchmarks.json`",
+                   "`market_state.json`", "`ledger.json`", "`trails/<idea>/<actor>.json`", "`valuation_date`",
+                   "`python -m engine melchior lookup`", "JSON Pointer"]:
+        assert needle in text, needle
+
+
+def test_guides_say_where_an_agent_reads_its_track_record():
+    guide = (REPO_ROOT / "protocol" / "AGENT_GUIDE.md").read_text(encoding="utf-8")
+    for needle in ["`track.json`", "`forecasts.json`", "`settlements.json`", "trails/"]:
+        assert needle in guide, needle
+    first_view = (REPO_ROOT / "docs" / "guides" / "first-view-for-agents.md").read_text(encoding="utf-8")
+    assert "`track.json`" in first_view and "`forecasts.json`" in first_view
+    getting_started = (REPO_ROOT / "docs" / "guides" / "getting-started.zh.md").read_text(encoding="utf-8")
+    assert "`track.json`" in getting_started and "预测分" in getting_started

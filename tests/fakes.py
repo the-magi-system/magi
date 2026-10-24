@@ -6,7 +6,7 @@ import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
-from engine.prices import PriceError, Quote
+from engine.prices import History, PriceError, Quote
 from engine.timeutil import iso
 
 NOW = datetime(2026, 10, 2, 3, 0, 0, tzinfo=timezone.utc)
@@ -15,15 +15,18 @@ NOW = datetime(2026, 10, 2, 3, 0, 0, tzinfo=timezone.utc)
 class FakePrices:
     def __init__(self, values: dict[str, float] | None = None, fail: set[str] | None = None,
                  as_of: str | None = None, currency: dict[str, str] | None = None,
-                 closes: dict[str, Quote] | None = None, fail_close: set[str] | None = None):
+                 closes: dict[str, Quote] | None = None, fail_close: set[str] | None = None,
+                 histories: dict[str, History] | None = None):
         self.values = values or {}
         self.fail = fail or set()
         self.as_of = as_of or iso(NOW)
         self.currency = currency or {}
         self.closes = closes or {}
         self.fail_close = fail_close or set()
+        self.histories = histories or {}
         self.calls: list[str] = []
         self.close_calls: list[str] = []
+        self.history_calls: list[tuple] = []
 
     def quote(self, asset: dict) -> Quote:
         symbol = asset["price_source"]["symbol"]
@@ -40,6 +43,13 @@ class FakePrices:
         if symbol in self.closes:
             return self.closes[symbol]
         return self.quote(asset)
+
+    def history(self, asset: dict, start=None) -> History:
+        symbol = asset["price_source"]["symbol"]
+        self.history_calls.append((symbol, start))
+        if symbol in self.histories:
+            return self.histories[symbol]
+        return History([self.close(asset)], [], None, asset["currency"])
 
 
 def init_git_repo(root: Path) -> Path:
@@ -60,6 +70,15 @@ def init_git_repo(root: Path) -> Path:
     git("remote", "add", "origin", str(bare))
     git("push", "-q", "origin", "main")
     return bare
+
+
+def commit_all(root: Path, message: str) -> str:
+    """Commit every change in a repository made by init_git_repo and return the commit."""
+    root = Path(root)
+    subprocess.run(["git", "add", "-A"], cwd=root, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-q", "-m", message], cwd=root, check=True, capture_output=True)
+    return subprocess.run(["git", "rev-parse", "HEAD"], cwd=root, check=True, capture_output=True,
+                          text=True).stdout.strip()
 
 
 class FakeGitHub:

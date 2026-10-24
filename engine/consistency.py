@@ -17,7 +17,7 @@ from .derive import derive
 from .distribution import check_distribution
 from .eventlog import LOG_DIR, read_log
 from .ids import agent_suffix, is_system_agent
-from .ledger import ordered_events
+from .ledger import effective_ledger, ordered_events
 from .repo import RepoState
 from .schemas import system_errors, validate_payload
 from .timeutil import target_date
@@ -244,9 +244,18 @@ def _ledger(root: Path) -> list[Finding]:
                 found.append(Finding(rel, f"closes pick {event['pick_id']}, which was never opened"))
             elif open_by_key.get(key) == event["pick_id"]:
                 del open_by_key[key]
+        elif event["event"] in ("pick_entered", "pick_exited"):
+            if event["pick_id"] not in opened:
+                verb = "enters" if event["event"] == "pick_entered" else "exits"
+                found.append(Finding(rel, f"{verb} pick {event['pick_id']}, which was never opened"))
         elif not (root / event["corrects"]).exists():
             found.append(Finding(rel, f"corrects {event['corrects']}, which does not exist"))
     return found
+
+
+def _corrections(root: Path) -> list[Finding]:
+    return [Finding(path, f"field '{key}' cannot be corrected on a {entry.kind}; the effective ledger ignores it")
+            for entry in effective_ledger(root).records.values() for path, key in entry.ignored]
 
 
 def _log(root: Path) -> list[Finding]:
@@ -293,4 +302,4 @@ def check_repository(root: Path) -> list[Finding]:
         state = RepoState.load(root)
     except Exception as exc:
         return [Finding("", f"repository could not be loaded: {type(exc).__name__}: {exc}")]
-    return _references(state) + _reviews_logged(root, state) + _reports_logged(root) + _ledger(root) + _log(root)
+    return _references(state) + _reviews_logged(root, state) + _reports_logged(root) + _ledger(root) + _corrections(root) + _log(root)

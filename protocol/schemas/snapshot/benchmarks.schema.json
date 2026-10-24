@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "snapshot benchmarks.json: benchmark policies, series and the benchmark of each pick (protocol section 10)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "policies",
+    "series",
+    "picks",
+    "without_benchmark"
+  ],
+  "properties": {
+    "policies": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[1-9]\\d*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "effective_from",
+          "sha256"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "effective_from": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      }
+    },
+    "series": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "role",
+          "registered",
+          "registered_by",
+          "latest_close"
+        ],
+        "properties": {
+          "role": {
+            "enum": [
+              "benchmark",
+              "market-state"
+            ]
+          },
+          "registered": {
+            "type": "boolean"
+          },
+          "registered_by": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "latest_close": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "value",
+                  "currency",
+                  "date",
+                  "source"
+                ],
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  },
+                  "currency": {
+                    "type": "string"
+                  },
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "source": {
+                    "type": "string"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "picks": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^pk-\\d{6}$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "benchmark",
+          "policy",
+          "from",
+          "excess_missing"
+        ],
+        "properties": {
+          "benchmark": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "policy": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "from": {
+            "enum": [
+              "record",
+              "policy",
+              "none"
+            ]
+          },
+          "excess_missing": {
+            "enum": [
+              null,
+              "no_benchmark",
+              "currency_mismatch"
+            ]
+          }
+        }
+      }
+    },
+    "without_benchmark": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^pk-\\d{6}$"
+      }
+    }
+  }
+}

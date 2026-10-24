@@ -152,7 +152,9 @@ def test_update_view_passes_renormalization_note(state):
 
 def test_ledger_correction_target_must_exist(state):
     existing = "ledger/events/2026/10/20261001T023000Z-pk-000001-pick_opened.yaml"
-    ok = {"corrects": existing, "reason": "r", "fields": {"direction": "long"}}
+    ok = {"corrects": existing, "reason": "r",
+          "fields": {"signal_close": {"date": "2026-09-30", "value": 179.8, "currency": "USD",
+                                      "as_of": "2026-09-30T20:00:00Z", "source": "yahoo"}}}
     missing = {**ok, "corrects": "ledger/events/2026/10/nope.yaml"}
     assert check_semantics(state, Proposal("ledger_correction", "arthur", ok)) == ([], [])
     assert paths(check_semantics(state, Proposal("ledger_correction", "arthur", missing))[0]) == {"/payload/corrects"}

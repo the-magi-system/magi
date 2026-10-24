@@ -248,3 +248,25 @@ def build_repo(root: Path) -> Path:
                          "source": "yahoo"},
     })
     return root
+
+
+def ruling_record(**overrides) -> dict:
+    record = {
+        "schema": "magi/ruling@1", "id": "rl-000001", "kind": "cash-takeover", "effect": "immediate", "status": "final",
+        "rule": "settlement.cash-takeover", "asset": "nvda", "subjects": {"picks": ["pk-000001"], "views": []},
+        "decision": {"terminal_price": {"value": 50.0, "currency": "USD"}, "effective_date": "2026-10-03"},
+        "sources": [], "reasoning": "The merger closed at $50.00 in cash per share.", "supersedes": None, "issue": 90,
+        "input_commit": "0" * 40, "prompt_sha256": "0" * 64, "model": "fixture", "at": "2026-10-03T23:47:30Z",
+        "run": 1,
+    }
+    record.update(overrides)
+    return record
+
+
+def correction(corrects: str, fields: dict, at: str, n: int) -> tuple[str, dict]:
+    """A ledger_correction by the maintainer, as the engine would write it, with its path."""
+    name = at.replace("-", "").replace(":", "")
+    path = f"ledger/events/2026/10/{name}-pk-000001-ledger_correction.yaml"
+    record = {"schema": "magi/ledger-event@1", "event": "ledger_correction", "pick_id": "pk-000001",
+              "corrects": corrects, "fields": fields, "reason": f"Correction {n}", "by": "arthur", "at": at, "issue": n}
+    return path, record

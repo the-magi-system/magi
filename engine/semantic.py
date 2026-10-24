@@ -1,13 +1,17 @@
 """Pipeline step 5: engine-only fields and rules that depend on repository state (spec 5, 6)."""
 from __future__ import annotations
 
+import json
 from datetime import datetime
 from typing import Callable
+
+from jsonschema import Draft202012Validator
 
 from .distribution import check_distribution
 from .errors import E_SEMANTIC, MagiError
 from .holding import holding_error
 from .ids import RESERVED_SUFFIX, agent_suffix, compose_agent_id
+from .ledger import CORRECTABLE, effective_ledger, record_kind
 from .methodology import check_publish, check_view_methodology
 from .profiles import check_publish_profile, check_view_profile
 from .proposal import Proposal
@@ -144,9 +148,36 @@ def _update_view(state: RepoState, actor: str, payload: dict) -> Result:
     return errors, notes
 
 
+RECORD_SCHEMAS = {"settlement": "settlement", "ruling": "ruling"}  # every other kind is a ledger event
+RULING_STATUS_BY_CORRECTION = ("final", "overturned")
+
+
 def _ledger_correction(state: RepoState, actor: str, payload: dict) -> Result:
-    if payload["corrects"] not in state.ledger_files:
-        return [_error("/payload/corrects", f"ledger event '{payload['corrects']}' does not exist")], []
+    corrects = payload["corrects"]
+    if corrects not in state.ledger_files:
+        return [_error("/payload/corrects", f"ledger file '{corrects}' does not exist")], []
+    entry = effective_ledger(state.root).records[corrects]
+    kind = record_kind(entry.raw)
+    allowed = CORRECTABLE.get(kind, set())
+    errors = [_error(f"/payload/fields/{key}", f"'{key}' cannot be corrected on a {kind}; a {kind} may correct only "
+                                               f"{', '.join(sorted(allowed))} (protocol section 10)")
+              for key in payload["fields"] if key not in allowed]
+    if kind == "ruling" and "status" in payload["fields"] \
+            and payload["fields"]["status"] not in RULING_STATUS_BY_CORRECTION:
+        errors.append(_error("/payload/fields/status", "a correction may set a ruling's status only to final or "
+                                                       "overturned (protocol section 10)"))
+    if errors:
+        return errors, []
+    corrected = {key: value for key, value in entry.record.items() if key != "corrected_by"}
+    corrected.update(payload["fields"])
+    name = RECORD_SCHEMAS.get(kind, "ledger-event")
+    schema_path = state.root / "protocol" / "schemas" / "entities" / f"{name}.schema.json"
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    found = sorted(Draft202012Validator(schema).iter_errors(corrected), key=lambda e: [str(p) for p in e.absolute_path])
+    if found:
+        where = "".join(f"/{part}" for part in found[0].absolute_path) or "/"
+        return [_error("/payload/fields", f"the corrected {kind} would not match its schema: {where}: "
+                                          f"{found[0].message}")], []
     return [], []
 
 

@@ -20,7 +20,7 @@ from .errors import E_INTERNAL, MagiError
 from .github import GitHubClient
 from .gitops import Git, GitError
 from .intake import run_intake
-from .market import record_closes
+from .market import record_market
 from .prices import FixedPrices, PriceRouter
 from .repo import RepoState
 from .snapshot import compile_snapshot, write_snapshot
@@ -73,12 +73,18 @@ def _triage(args) -> int:
 
 
 def _prices(args) -> int:
-    added, failures = record_closes(args.repo, PriceRouter(), utc_now())
-    if added:
+    update = record_market(args.repo, PriceRouter(), utc_now())
+    if update.closes or update.actions:
+        subject = f"chore: record daily closes for {len({line['asset'] for line in update.closes})} asset(s)"
+        if update.actions:
+            subject += f" and {len(update.actions)} corporate action(s)"
         git = Git(args.repo)
-        git.commit(f"chore: record daily closes for {len(added)} asset(s)", {})
+        git.commit(subject, {})
         git.push()
-    print(json.dumps({"added": added, "failures": failures}, indent=2))
+    if update.findings:
+        report(GitHubClient.from_env(), "Price data found problems", update.findings)
+    print(json.dumps({"added": update.closes, "actions": update.actions, "failures": update.failures,
+                      "findings": [finding.to_dict() for finding in update.findings]}, indent=2))
     return 0
 
 

@@ -119,8 +119,8 @@ def update_view(ctx: Context) -> ChangeSet:
 def ledger_correction(ctx: Context) -> ChangeSet:
     payload = ctx.payload
     target = load_yaml(ctx.state.root / payload["corrects"])
-    corrected_pick = target.get("pick_id") or "pk-000000"
-    path = event_path(ctx.now, corrected_pick, "ledger_correction", set(load_book(ctx.state.root).paths))
+    named = target.get("pick_id") or target.get("id") or "pk-000000"  # a settlement record or ruling has an id
+    path = event_path(ctx.now, named, "ledger_correction", set(load_book(ctx.state.root).paths))
     event = {"schema": EVENT_SCHEMA, "event": "ledger_correction", "pick_id": target.get("pick_id"),
              "corrects": payload["corrects"], "fields": payload["fields"], "reason": payload["reason"],
              "by": ctx.owner, "at": iso(ctx.now), "issue": ctx.issue}

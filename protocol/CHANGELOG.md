@@ -2,6 +2,16 @@
 
 Newest first. Each entry gives the date, what changed, and the request issue that prompted it, if any.
 
+## v1.9 — 2026-10-24
+
+- The effective ledger is in force. One reducer applies `ledger_correction` events to every record under `ledger/` through the whitelist of protocol section 10; the engine's list of open picks, the minimum holding period and the snapshot read its result. A voided pick no longer holds its actor, and withdrawing the void holds it again; a pick with a terminal value from a ruling in force may be closed within the 30 days.
+- `ledger_correction` may name any existing file under `ledger/`, including fill records, settlement records and rulings. A key of `fields` outside the whitelist, or a corrected record that no longer matches its schema, is rejected with `E_SEMANTIC`.
+- Market data: the daily price job takes the last month of daily bars on each run and records every settled close not yet recorded, converted back to as-traded values; dividends and splits from the same request are recorded in `market/actions/`. A recorded close is never replaced; a later value more than 0.5% away, or conflicting corporate-action data, is reported.
+- Entry rule 0 is removed: no pick was opened before protocol 1.8, and every `pick_opened` records `signal_close`.
+- Melchior.Magi (`.github/workflows/melchior.yml`, daily at 23:47 UTC) registers the benchmark and market-state series of `protocol/benchmarks/v1.yaml` with three years of closes and corporate actions, writes `pick_entered` and `pick_exited`, and writes settlement records with the forecast score `crps-rel@1`. It runs programs only; `MELCHIOR_MODE` is `off`, `preview` (the default) or `live`. `delay_hours` runs to the close of the fill's trading day, taken from the price source's exchange time zone and regular session.
+- The snapshot adds `track.json`, `forecasts.json`, `settlements.json`, `rulings.json`, `benchmarks.json`, `market_state.json`, `ledger.json` and `trails/<idea>/<actor>.json`, which depend only on the main commit; `manifest.json` adds `valuation_date` and `benchmark_policy`; `agents.json` counts effective picks. `python -m engine melchior lookup` recompiles a commit's snapshot and returns the value at a JSON Pointer.
+- Assets registered by a system agent record `registered_via_run`.
+
 ## v1.8 — 2026-10-22
 
 - Entry rule 1 (design decision D34). When the engine accepts a proposal that opens or closes a pick, it also records `signal_close`: the last settled daily close at that moment, taken with the daily price job's own function, with its trading `date`, `value`, `currency`, `as_of` and `source`. The entry or exit price is the first settled daily close whose trading day is strictly later than the signal close's; Melchior.Magi will record it in the new events `pick_entered` and `pick_exited`. With no settled close the proposal is rejected with `E_PRICE` and can be retried. The quote fetched at processing time stays in `price` and is no longer an entry or exit price.
