@@ -29,6 +29,8 @@ jobs:
         run: echo "MAGI_BEFORE=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
       - name: Record daily closes
         run: python -m engine prices --repo .
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish the snapshot
         run: python -m engine snapshot --repo . --publish
       - name: Audit this job's own push
