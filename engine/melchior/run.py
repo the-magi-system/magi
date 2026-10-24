@@ -16,13 +16,17 @@ from typing import Callable
 
 from ..apply import write_changes
 from ..changes import ChangeSet
+from ..consistency import Finding
 from ..gitops import DATA_DIRS, Git
 from ..history import file_at
+from ..market import MarketUpdate, record_market
 from ..prices import PriceProvider
 from ..repo import RepoState
+from ..returns import load_policies
 from ..sysagent import publish_system_profile
 from ..yamlio import load_yaml
 from .common import MELCHIOR, SOURCE_DIR, resolve_mode
+from .series import SeriesError, backfill_start, missing_series, register_series
 
 PREVIEW_LIMIT = 20_000  # characters of one file's content in the preview
 SUBJECT_LIMIT = 200
@@ -47,6 +51,8 @@ def prepare(root, out, scope: str, mode: str, now: datetime) -> dict:
         plan["notice"] = "MELCHIOR_MODE is off"
     elif not _registered(state):
         plan["notice"] = f"{MELCHIOR} is not registered as an active system agent"
+    else:
+        plan["work"]["series"] = [series_id for series_id, _ in missing_series(state, load_policies(root))[0]]
     _save(out / "plan.json", plan)
     return plan
 
@@ -65,6 +71,23 @@ class Job:
         write_changes(self.root, changes)
         self.subjects.append(changes.summary)
 
+    def report(self, findings: list[Finding]) -> None:
+        self.summary["findings"] += [finding.to_dict() for finding in findings]
+
+    def record_market(self, assets: dict[str, dict], start: dict) -> MarketUpdate:
+        """Melchior's own range backfill: written like the daily price job's, and only in this run's commit."""
+        update = record_market(self.root, self.prices, self.now, assets=assets, start=start)
+        self.summary["closes"] += len(update.closes)
+        self.summary["actions"] += len(update.actions)
+        self.report(update.findings)
+        self.summary["dropped"] += [f"prices of {item['asset']}: {item['message']}" for item in update.failures]
+        if update.closes or update.actions:
+            subject = f"record {len(update.closes)} close(s)"
+            if update.actions:
+                subject += f" and {len(update.actions)} corporate action(s)"
+            self.subjects.append(f"{subject} for {', '.join(sorted({line['asset'] for line in update.closes + update.actions}))}")
+        return update
+
 
 def _profile(job: Job) -> None:
     source = load_yaml(job.root / SOURCE_DIR / "profile.yaml")
@@ -74,7 +97,24 @@ def _profile(job: Job) -> None:
         job.summary["profile"] = int(changes.created["profile_version"])
 
 
-STEPS: tuple[tuple[str, Callable[[Job], None]], ...] = (("profile", _profile),)
+def _series(job: Job) -> None:
+    """Register the series of the benchmark policies that are missing, each with three years of market data."""
+    missing, findings = missing_series(RepoState.load(job.root), load_policies(job.root))
+    job.report(findings)
+    for series_id, spec in missing:
+        try:
+            changes = register_series(RepoState.load(job.root), series_id, spec, job.prices, job.now, job.run)
+        except SeriesError as exc:
+            job.summary["dropped"].append(f"series {series_id}: {exc}")
+            job.report([Finding(f"registry/assets/{series_id}.yaml", str(exc))])
+            continue
+        job.apply(changes)
+        job.summary["series"].append(series_id)
+        asset = changes.writes[f"registry/assets/{series_id}.yaml"]
+        job.record_market({series_id: asset}, {series_id: backfill_start(job.now.date())})
+
+
+STEPS: tuple[tuple[str, Callable[[Job], None]], ...] = (("profile", _profile), ("series", _series))
 
 
 def changed_paths(git: Git) -> list[str]:
