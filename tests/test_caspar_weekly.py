@@ -178,3 +178,156 @@ def test_an_unlogged_report_is_reported(repo):
     path.parent.mkdir(parents=True)
     path.write_text("# report\n", encoding="utf-8")
     assert [f.problem for f in check_repository(repo)] == ["this report has no line in the event log"]
+
+
+WEEK41 = datetime(2026, 10, 12, 1, 30, tzinfo=timezone.utc)
+
+
+def _market(repo):
+    from tests.util import asset_record, weekdays, write_closes
+    asset_record(repo, "spy", "SPDR S&P 500 ETF Trust", "fund", "multi-asset", "USD", "yahoo", "SPY")
+    days = weekdays("2026-09-21", "2026-10-09")
+    write_closes(repo, "nvda", [(day, 180.0 + n) for n, day in enumerate(days)])
+    write_closes(repo, "spy", [(day, 600.0 + 0.5 * n) for n, day in enumerate(days)])
+
+
+def _held(repo):
+    """pk-000001 of the fixture (signal close 2026-09-30) fills at the close of 2026-10-01."""
+    from engine.ledger import effective_ledger
+    from engine.melchior.fills import fill_changes
+    from engine.prices import History, Session
+    histories = {"nvda": History([], [], Session("exchange", "America/New_York", "16:00"), "USD")}
+    for change in fill_changes(repo, effective_ledger(repo), histories,
+                               datetime(2026, 10, 1, 23, 47, 30, tzinfo=timezone.utc), 3)[0]:
+        write_changes(repo, change)
+
+
+def _material(repo, now=MONDAY):
+    week, start, end = week_window(now)
+    return weekly_material(repo, RepoState.load(repo), FakeGitHub(), week, start, end, now)
+
+
+def test_the_three_sections_appear_only_once_melchior_is_active(repo):
+    from tests.util import add_melchior
+    _reviewed_week(repo)
+    material = _material(repo)
+    assert "melchior" not in material
+    checked, _ = check_weekly(material, {"overview": "", "actors": [], "suggestions": []})
+    text = report_markdown(material, checked)
+    assert "## Recent performance" not in text and "## Forecast errors" not in text and "## Market state" not in text
+    add_melchior(repo)
+    material = _material(repo)
+    assert set(material["melchior"]) == {"cutoff", "recent_performance", "forecast_errors", "market_state"}
+    text = report_markdown(material, check_weekly(material, {"overview": "", "actors": [], "suggestions": []})[0])
+    positions = [text.index(heading) for heading in ("## Overview", "## Recent performance", "## Forecast errors",
+                                                    "## Market state")]
+    assert positions == sorted(positions)
+
+
+def test_recent_performance_lists_picks_and_waiting_entries(repo):
+    from engine.melchior.records import compile_records
+    from tests.util import add_melchior, pick_event
+    add_melchior(repo)
+    _market(repo)
+    _held(repo)
+    pick_event(repo, 2, "pick_opened", "2026-10-02T15:00:00Z", "2026-10-02", actor="john.research", idea="xom-lng-2027")
+    recent = _material(repo)["melchior"]["recent_performance"]
+    assert [row["pick"] for row in recent["picks"]] == ["pk-000001"]
+    row = recent["picks"][0]
+    assert (row["state"], row["entry_date"], row["benchmark"], row["trading_days_held"]) == \
+        ("held", "2026-10-01", "spy", 1)
+    assert row["week_excess_return"] == row["excess_return"]  # entered during the week
+    assert recent["waiting"] == [{"pick": "pk-000002", "actor": "john.research", "asset": "xom",
+                                  "state": "pending_entry", "since": "2026-10-02", "sessions": 0, "weekdays": 0}]
+    assert sorted(recent["actors"]) == ["arthur.val", "john.research"]
+    assert recent["note"].startswith("A pick is not a position")
+    later = _material(repo, WEEK41)["melchior"]["recent_performance"]["picks"][0]
+    now = compile_records(repo, "2026-10-09")["track.json"]["picks"]["pk-000001"]
+    before = compile_records(repo, "2026-10-02")["track.json"]["picks"]["pk-000001"]
+    own = (1 + now["total_return"]) / (1 + before["total_return"])
+    bench = (1 + now["benchmark"]["total_return"]) / (1 + before["benchmark"]["total_return"])
+    assert later["week_excess_return"] == round(own - bench, 6)
+
+
+def _settled_week(repo):
+    """A one-month view published 2026-08-25, settled at the close of its target date 2026-09-25 on 2026-09-29."""
+    from engine.ledger import effective_ledger
+    from engine.melchior.settle import settlement_changes
+    from engine.prices import Quote
+    prices = FakePrices({"NVDA": 180.2}, closes={"NVDA": Quote(179.0, "USD", "2026-08-24T13:30:00Z", "yahoo",
+                                                               market_date="2026-08-24")})
+    write_changes(repo, apply_proposal(RepoState.load(repo), Proposal("update_view", "john.research", view_payload(
+        horizon_months=1)), issue=73, owner="john", now=datetime(2026, 8, 25, 15, 0, tzinfo=timezone.utc),
+        prices=prices))
+    (change,) = settlement_changes(repo, effective_ledger(repo), datetime(2026, 9, 29, 23, 47, 30, tzinfo=timezone.utc),
+                                   3, "0" * 40)[0]
+    write_changes(repo, change)
+
+
+def test_forecast_errors_mark_too_few_samples(repo):
+    from tests.util import add_melchior
+    add_melchior(repo)
+    _market(repo)
+    _settled_week(repo)
+    material = _material(repo)
+    errors = material["melchior"]["forecast_errors"]
+    (settled,) = errors["settled"]
+    assert settled["version"] == f"{IDEA}/john.research/v1" and settled["counted"] is True
+    assert settled["price"] == 184.0 and settled["position"] == "P10 to P50"
+    assert errors["calibration"]["john.research"]["too_few"] is True
+    assert errors["calibration"]["john.research"]["counted_settled"] == 1
+    assert errors["calibration"]["john.research"]["within_p10_p90"] == 1.0
+    text = report_markdown(material, check_weekly(material, {"overview": "", "actors": [], "suggestions": []})[0])
+    assert "too few counted settled versions" in text and f"| {IDEA}/john.research/v1 |" in text
+
+
+def test_market_state_rows_come_from_the_series(repo):
+    from engine.melchior.records import compile_records
+    from tests.util import add_melchior
+    add_melchior(repo)
+    _market(repo)
+    _held(repo)
+    material = _material(repo)
+    assert material["melchior"]["cutoff"] == "2026-10-02"
+    assert material["melchior"]["market_state"] == compile_records(repo, "2026-10-02")["market_state.json"]
+    text = report_markdown(material, check_weekly(material, {"overview": "", "actors": [], "suggestions": []})[0])
+    assert "| spy | 10 |" in text and "| 1306-t | not registered |" in text and "As of 2026-10-02." in text
+
+
+def test_the_report_renders_the_three_tables_and_checks_the_numbers_in_the_text(repo):
+    from tests.util import add_melchior
+    add_melchior(repo)
+    _market(repo)
+    _held(repo)
+    material = _material(repo)
+    checked, dropped = check_weekly(material, {
+        "overview": "", "actors": [], "suggestions": [],
+        "recent_performance": "The pick gained 987654 percent.", "forecast_errors": "Too few versions to read.",
+        "market_state": "Markets were calm."})
+    assert checked["recent_performance"] == "" and "recent_performance: a number does not appear in the data" in dropped
+    text = report_markdown(material, checked)
+    assert "| pk-000001 | arthur.val | nvda | long | held | 2026-10-01 |" in text
+    assert "987654" not in text and "Too few versions to read." in text and "Markets were calm." in text
+    assert "*A pick is not a position" in text
+
+
+def test_a_week_with_a_held_pick_is_not_quiet_once_melchior_is_active(repo):
+    from tests.util import add_melchior
+    _market(repo)
+    _held(repo)
+    assert _material(repo, WEEK41) is None
+    add_melchior(repo)
+    material = _material(repo, WEEK41)
+    assert material is not None and material["counts"]["view_versions"] == 0
+    assert [row["pick"] for row in material["melchior"]["recent_performance"]["picks"]] == ["pk-000001"]
+
+
+def test_the_weekly_prompt_and_schema_carry_the_three_sections():
+    import json
+    from tests.util import REPO_ROOT
+    prompt = (REPO_ROOT / "agents" / "caspar" / "prompts" / "weekly.md").read_text(encoding="utf-8")
+    for phrase in ("melchior", "too_few", "not a position"):
+        assert phrase in prompt
+    schema = json.loads((REPO_ROOT / "agents" / "caspar" / "schemas" / "weekly.schema.json").read_text(encoding="utf-8"))
+    for name in ("recent_performance", "forecast_errors", "market_state"):
+        assert schema["properties"][name] == {"type": "string"} and name not in schema["required"]
