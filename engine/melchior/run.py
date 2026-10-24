@@ -28,6 +28,7 @@ from ..sysagent import publish_system_profile
 from ..yamlio import load_yaml
 from .common import MELCHIOR, SOURCE_DIR, resolve_mode
 from .fills import fill_changes, pending_fills
+from .settle import due_versions, settlement_changes
 from .series import SeriesError, backfill_start, missing_series, register_series
 
 PREVIEW_LIMIT = 20_000  # characters of one file's content in the preview
@@ -55,7 +56,12 @@ def prepare(root, out, scope: str, mode: str, now: datetime) -> dict:
         plan["notice"] = f"{MELCHIOR} is not registered as an active system agent"
     else:
         plan["work"]["series"] = [series_id for series_id, _ in missing_series(state, load_policies(root))[0]]
-        plan["work"]["fills"] = pending_fills(root, effective_ledger(root))
+        ledger = effective_ledger(root)
+        plan["work"]["fills"] = pending_fills(root, ledger)
+        plan["work"]["settlements"] = [
+            {key: version[key] for key in ("idea", "actor", "version", "target_date", "asset")}
+            for version in due_versions(root, ledger, now.date().isoformat())
+            if ledger.settlement(version["idea"], version["actor"], version["version"]) is None]
     _save(out / "plan.json", plan)
     return plan
 
@@ -68,6 +74,7 @@ class Job:
     now: datetime
     run: int
     summary: dict
+    input_commit: str = ""
     subjects: list[str] = field(default_factory=list)
 
     def apply(self, changes: ChangeSet) -> None:
@@ -141,7 +148,22 @@ def _fills(job: Job) -> None:
     job.summary["dropped"] += dropped
 
 
-STEPS: tuple[tuple[str, Callable[[Job], None]], ...] = (("profile", _profile), ("series", _series), ("fills", _fills))
+def _settlements(job: Job) -> None:
+    """Backfill each asset with a version due from a week before its target date, then settle every due version."""
+    due = due_versions(job.root, effective_ledger(job.root), job.now.date().isoformat())
+    if due:
+        start = _earliest(due, "since")
+        assets = RepoState.load(job.root).assets
+        job.record_market({asset_id: assets[asset_id] for asset_id in start}, start)
+    changes, findings = settlement_changes(job.root, effective_ledger(job.root), job.now, job.run, job.input_commit)
+    for change in changes:
+        job.apply(change)
+        job.summary["settlements"] += list(change.writes)
+    job.report(findings)
+
+
+STEPS: tuple[tuple[str, Callable[[Job], None]], ...] = (
+    ("profile", _profile), ("series", _series), ("fills", _fills), ("settlements", _settlements))
 
 
 def changed_paths(git: Git) -> list[str]:
@@ -209,7 +231,7 @@ def write(root, gh, git: Git, work, mode: str, run: int, now: datetime, prices: 
                "fills": [], "settlements": [], "findings": [], "dropped": [], "commit": None, "preview": None}
     if mode == "off" or plan.get("notice"):
         return summary
-    job = Job(root, prices, now, run, summary)
+    job = Job(root, prices, now, run, summary, input_commit=git.run("rev-parse", "HEAD"))
     for name, step in STEPS:
         try:
             step(job)
