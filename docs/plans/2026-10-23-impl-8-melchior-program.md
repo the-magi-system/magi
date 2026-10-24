@@ -14,6 +14,8 @@
 
 **取价接口的核对：** 本计划的作者会话所在环境的网络策略拒绝连接 `query1.finance.yahoo.com`，所以作者没能自己请求 Yahoo 的图表接口。维护者于 2026-10-23T08:38:36Z 用引擎的 `USER_AGENT` 与 Task 6 的四条命令录下了真实响应，作为夹具（fixture，测试用的固定输入）提交在本计划的分支上（提交 `c7d3ad5`，`tests/fixtures/prices/` 下的四个响应与 `README.md`）。下文关于交易时段与补录换算的做法依据这些夹具（「维护者确认的几处」第 3、4 处）。
 
+**进度（2026-10-24）：** PR 8a 完成。Task 1：PR #48（squash，main `c3de486`）。Task 2–11：PR #49，10 个提交，每一步的失败数与通过数都与本计划一致；以 squash 合并为 main `3f58102`，`513 passed`，一致性 `[]`，合并推送的 ci 与 audit 为 success。执行与审阅中有三处偏离，维护者认可，记在末尾「维护者确认的几处」。Task 12：维护者手动触发一次 `prices.yml`（run `40069161949`），`added` 补上 `tem` 2026-09-24 至 10-19 的 18 个收盘，来源都是 `yahoo`；`actions`、`failures` 与 `findings` 都为空，没有写 `market/actions/`；审计没有 finding，一致性 `[]`（main `3981226`）。下一步：会话 B 执行 Task 13–21，开 PR 8b。
+
 ## 执行路线
 
 | 任务 | 执行者 | 说明 |
@@ -1484,3 +1486,9 @@ Execute Task 13 through Task 21 of docs/plans/2026-10-23-impl-8-melchior-program
 
 - **Task 4**：按第 22.8 节，更正只能把裁决的 `status` 改为 `final` 或 `overturned`；其他值（例如 `provisional`）以 `E_SEMANTIC` 驳回，路径 `/payload/fields/status`。这一条作为 `test_a_correction_may_confirm_a_ruling` 的第二条断言，测试数不变。
 - **Task 6 与全局约束**：夹具已经录下，Step 1 只读取它们，不再有「停下请维护者录夹具」的路径；测试时钟为 `2026-10-23T09:00:00Z`。
+
+PR 8a（PR #49）的执行与审阅中另有三处，维护者 2026-10-24 认可，不另编号：
+
+- **Task 4 另重写两个已有测试。** 白名单使 `tests/test_semantic.py::test_ledger_correction_target_must_exist`（更正 `direction`）与 `tests/test_consistency.py::test_records_written_by_the_engine_are_consistent`（更正 `price`）失败，而全局约束只允许重写一个已有测试，会话 A 因此停下询问。维护者决定：两个测试改为更正夹具原有的 `signal_close`，只把 `as_of` 改为日线时间戳 `2026-09-30T20:00:00Z`，第二个测试的 `reason` 改为 `Wrong as_of`；测试名与其他断言不变，测试数不变。`tests/test_apply_research.py` 与 `tests/test_schemas.py` 里的 `price` 更正不经过语义校验与一致性校验，不改。
+- **Task 3 同一秒内的排序。** 本计划的排序键（时间；`pick_id`，没有时取 `id`，再没有时取空字符串；`KIND_ORDER`；路径）满足不了本计划自己的 `test_records_are_ordered_across_the_ledger`：`rl-…` 排在 `st-…` 之前，没有 pick 编号的更正排在最前。实现改为：同一秒内不属于任何 pick 的记录（结算记录、裁决与对它们的更正）排在 pick 的记录之后，彼此按 `KIND_ORDER` 排。已有三种事件的相对顺序不变；协议第 10 节按实现的顺序写。
+- **Task 10 快照 schema 的必填字段。** 本计划列出了字段，没有写哪些必填。实现把列出的字段全部设为必填，Melchior.Magi 运行之前没有值的字段接受 `null`。PR 8b 生成这些文件时，每个字段都要写出。
