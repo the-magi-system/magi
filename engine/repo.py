@@ -42,7 +42,7 @@ class RepoState:
     evidence: dict[str, dict]
     views: dict[tuple[str, str], dict]
     judgements: dict[tuple[str, str, str], dict]  # (idea, judge, actor of the reviewed view)
-    ledger_files: set[str]
+    ledger_files: set[str]  # every YAML file under ledger/
 
     @classmethod
     def load(cls, root: Path) -> "RepoState":
@@ -51,7 +51,7 @@ class RepoState:
         strategies = load_yaml(catalogue_path) if catalogue_path.exists() else copy.deepcopy(EMPTY_STRATEGIES)
         strategies.setdefault("strategies", {})
         strategies.setdefault("declarations", {})
-        ledger_dir = root / "ledger" / "events"
+        ledger_dir = root / "ledger"
         ledger_files = (
             {path.relative_to(root).as_posix() for path in ledger_dir.rglob("*.yaml")} if ledger_dir.is_dir() else set()
         )

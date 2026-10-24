@@ -51,8 +51,10 @@ def test_records_written_by_the_engine_are_consistent(repo):
     _apply(repo, "update_view", "john.research", view_payload(), prices=FakePrices({"NVDA": 180.2}))
     _apply(repo, "update_view", "john.research", view_payload(position="neutral", rationale="Flat"))
     _apply(repo, "retire_agent", "arthur", {"agent": "arthur.val", "reason": "replaced"})
-    _apply(repo, "ledger_correction", "arthur", {"corrects": OPENED, "reason": "Wrong currency",
-                                                 "fields": {"price": {"currency": "USD"}}})
+    _apply(repo, "ledger_correction", "arthur", {"corrects": OPENED, "reason": "Wrong as_of",
+                                                 "fields": {"signal_close": {
+                                                     "date": "2026-09-30", "value": 179.8, "currency": "USD",
+                                                     "as_of": "2026-09-30T20:00:00Z", "source": "yahoo"}}})
     assert check_repository(repo) == []
 
 
