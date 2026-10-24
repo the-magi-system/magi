@@ -21,6 +21,7 @@ from .github import GitHubClient
 from .gitops import Git, GitError
 from .intake import run_intake
 from .melchior.common import SCOPES as MELCHIOR_SCOPES
+from .melchior.records import compile_records
 from .melchior.run import prepare as melchior_prepare
 from .melchior.run import preview_markdown
 from .melchior.run import write as melchior_write
@@ -106,7 +107,7 @@ def _snapshot(args) -> int:
         commit = Git(root).run("rev-parse", "HEAD")
     except GitError:
         commit = "unknown"
-    files = compile_snapshot(root, utc_now(), commit)
+    files = {**compile_snapshot(root, utc_now(), commit), **compile_records(root)}
     out = Path(args.out) if args.out else Path(tempfile.mkdtemp(prefix="magi-snapshot-"))
     write_snapshot(out, files)
     published = Git(root).publish_tree(out, "snapshot", f"snapshot of {commit[:12]}") if args.publish else None
