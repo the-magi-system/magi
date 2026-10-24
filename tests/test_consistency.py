@@ -274,3 +274,161 @@ def test_fill_records_are_read_by_the_ledger_check(repo):
 def test_a_fill_for_a_pick_never_opened_is_reported(repo):
     _fill_record(repo, "pk-000077")
     assert any("enters pick pk-000077, which was never opened" in p for p in problems(repo))
+
+
+def _closes(repo, asset, rows):
+    from tests.util import write_closes
+    write_closes(repo, asset, rows)
+
+
+def _entered(repo, day, value, *, pick="pk-000001", signal_at="2026-10-01T02:30:00Z", benchmark=None,
+             supersedes=None, name="20261005T234730Z"):
+    path = f"ledger/events/2026/10/{name}-{pick}-pick_entered.yaml"
+    write_yaml(repo / path, {
+        "schema": "magi/ledger-event@1", "event": "pick_entered", "pick_id": pick, "actor": "arthur.val",
+        "idea": "nvda-ai-capex-2026", "direction": "long", "signal_at": signal_at,
+        "fill": {"date": day, "value": value, "currency": "USD", "as_of": f"{day}T13:30:00Z", "source": "yahoo"},
+        "delay_hours": 17.5, "delay_sessions": 0, "entry_policy": 1, "benchmark": benchmark, "supersedes": supersedes,
+        "at": "2026-10-05T23:47:30Z", "run": 1,
+    })
+    return path
+
+
+def _found(repo, now=None):
+    return [(f.path, f.problem, f.owner) for f in check_repository(repo, now)]
+
+
+def test_a_fill_that_differs_from_the_recomputed_one_is_reported(repo):
+    _closes(repo, "nvda", [("2026-10-01", 181.0), ("2026-10-02", 182.0)])
+    _entered(repo, "2026-10-01", 181.0)
+    assert check_repository(repo) == []
+    _entered(repo, "2026-10-02", 182.0, pick="pk-000001", name="20261006T234730Z",
+             supersedes="ledger/events/2026/10/20261005T234730Z-pk-000001-pick_entered.yaml")
+    found = _found(repo)
+    assert len(found) == 1 and "differs from the one recomputed" in found[0][1]
+    assert found[0][2] == "melchior.magi" and "next run supersedes it" in found[0][1]
+
+
+def test_a_fill_on_or_before_the_signal_close_day_is_reported(repo):
+    # the price source stamped Wednesday's bar with Tuesday's date, so a fill was recorded on the signal close's day
+    _closes(repo, "nvda", [("2026-09-30", 181.0)])
+    _entered(repo, "2026-09-30", 181.0)
+    found = _found(repo)
+    assert any("not after the trading day of its signal close 2026-09-30" in p and owner == "melchior.magi"
+               for _, p, owner in found)
+
+
+def test_a_signal_close_stamped_after_the_signal_time_is_reported(repo):
+    from tests.util import pick_event
+    shutil.rmtree(repo / "ledger")
+    pick_event(repo, 1, "pick_opened", "2026-10-05T12:00:00Z", "2026-10-05")  # the bar is stamped 13:30Z
+    _closes(repo, "nvda", [("2026-10-05", 181.0), ("2026-10-06", 182.0)])
+    _entered(repo, "2026-10-06", 182.0, signal_at="2026-10-05T12:00:00Z")
+    found = _found(repo)
+    assert len(found) == 1 and "stamped 2026-10-05T13:30:00Z, after the signal time" in found[0][1]
+    assert found[0][2] == "melchior.magi"
+
+
+def test_a_benchmark_that_does_not_follow_the_policy_is_reported(repo):
+    from tests.util import pick_event
+    shutil.rmtree(repo / "ledger")
+    pick_event(repo, 1, "pick_opened", "2026-10-23T15:00:00Z", "2026-10-22")
+    _closes(repo, "nvda", [("2026-10-22", 181.0), ("2026-10-23", 182.0)])
+    _closes(repo, "spy", [("2026-10-23", 600.0)])
+    spy = {"asset": "spy", "policy": 1, "fill": {"date": "2026-10-23", "value": 600.0, "currency": "USD",
+                                                 "source": "yahoo"}}
+    path = _entered(repo, "2026-10-23", 182.0, signal_at="2026-10-23T15:00:00Z", benchmark=spy,
+                    name="20261023T234730Z")
+    assert check_repository(repo) == []
+    write_yaml(repo / path, {**load_yaml(repo / path), "benchmark": None})
+    found = _found(repo)
+    assert len(found) == 1 and "does not follow the benchmark policy" in found[0][1]
+
+
+def _settled_view(repo):
+    """A one-month view by john.research published 2026-10-02 (target 2026-11-02, window to 2026-11-13)."""
+    _apply(repo, "update_view", "john.research", view_payload(horizon_months=1), prices=FakePrices({"NVDA": 180.2}))
+    _closes(repo, "nvda", [("2026-11-02", 200.0)])
+
+
+def _settlement(repo, now, **changes):
+    from datetime import datetime, timezone
+    from engine.ledger import effective_ledger
+    from engine.melchior.settle import settlement_changes
+    moment = datetime(*now, 23, 47, 30, tzinfo=timezone.utc)
+    (change,) = settlement_changes(repo, effective_ledger(repo), moment, 2, "0" * 40)[0]
+    (path, record), = change.writes.items()
+    write_yaml(repo / path, {**record, **changes})
+    return path, record
+
+
+def _when(*parts):
+    from datetime import datetime, timezone
+    return datetime(*parts, 12, 0, tzinfo=timezone.utc)
+
+
+def test_a_settlement_that_differs_from_the_recomputed_one_is_reported(repo):
+    _settled_view(repo)
+    _, record = _settlement(repo, (2026, 11, 3))
+    assert check_repository(repo, _when(2026, 11, 20)) == []
+    write_yaml(repo / "ledger/settlements/2026/11/20261104T234730Z-st-000002.yaml",
+               {**record, "id": "st-000002", "supersedes": record["id"], "at": "2026-11-04T23:47:30Z",
+                "price": {**record["price"], "value": 300.0, "close": 300.0}})
+    found = _found(repo, _when(2026, 11, 20))
+    assert len(found) == 1 and "differs from the one recomputed" in found[0][1] and found[0][2] == "melchior.magi"
+
+
+def test_a_missing_settlement_is_reported_three_days_after_the_window(repo):
+    _settled_view(repo)
+    assert check_repository(repo, _when(2026, 11, 16)) == []  # window_end 2026-11-13 plus 3 days
+    found = _found(repo, _when(2026, 11, 17))
+    assert found == [("ideas/nvda-ai-capex-2026/views/john.research.yaml",
+                      "missing settlement: version 1 has no settlement record although its window ended on 2026-11-13",
+                      "melchior.magi")]
+
+
+def test_supersedes_must_name_a_record_of_the_same_version_or_pick(repo):
+    _closes(repo, "nvda", [("2026-10-01", 181.0)])
+    _entered(repo, "2026-10-01", 181.0, supersedes=OPENED)
+    _settled_view(repo)
+    _settlement(repo, (2026, 11, 3), supersedes="st-000042")
+    problems_found = [p for _, p, _ in _found(repo, _when(2026, 11, 20))]
+    assert f"supersedes {OPENED}, which is not a pick_entered record of pk-000001" in problems_found
+    assert "supersedes st-000042, which is not a settlement record of nvda-ai-capex-2026/john.research/v1" \
+        in problems_found
+
+
+def test_a_settlement_before_the_target_date_is_reported(repo):
+    _settled_view(repo)
+    _settlement(repo, (2026, 11, 3), at="2026-11-01T23:47:30Z")
+    found = [p for _, p, _ in _found(repo, _when(2026, 11, 20))]
+    assert "settles nvda-ai-capex-2026/john.research/v1 at 2026-11-01T23:47:30Z, before its target date" in found
+
+
+def test_counted_is_recomputed(repo):
+    _settled_view(repo)
+    _settlement(repo, (2026, 11, 3), counted=False)
+    found = _found(repo, _when(2026, 11, 20))
+    assert any("counted is False but the counting interval gives True" in p for _, p, _ in found)
+
+
+def test_a_jump_that_matches_a_split_ratio_is_reported(repo):
+    _closes(repo, "nvda", [("2026-10-01", 181.0), ("2026-10-02", 182.0), ("2026-10-05", 45.6)])
+    _entered(repo, "2026-10-01", 181.0)
+    found = _found(repo, _when(2026, 10, 6))
+    assert found == [("market/prices/2026/10.jsonl",
+                      "nvda 2026-10-05: the close jumps by a split ratio (4) and no split is recorded", "melchior.magi")]
+    from tests.util import write_actions
+    write_actions(repo, "nvda", [{"date": "2026-10-05", "kind": "split", "numerator": 4, "denominator": 1,
+                                  "source": "yahoo"}])
+    assert check_repository(repo, _when(2026, 10, 6)) == []
+
+
+def test_conflicting_corporate_action_rows_are_reported(repo):
+    from tests.util import write_actions
+    write_actions(repo, "nvda", [{"date": "2026-09-05", "kind": "dividend", "amount": 0.01, "currency": "USD",
+                                  "source": "yahoo"},
+                                 {"date": "2026-09-05", "kind": "dividend", "amount": 0.04, "currency": "USD",
+                                  "source": "yahoo"}])
+    found = _found(repo)
+    assert found == [("market/actions/2026/09.jsonl", "nvda 2026-09-05: two dividend lines disagree", "melchior.magi")]

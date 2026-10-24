@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from jsonschema import Draft202012Validator
@@ -20,7 +21,7 @@ from .ids import agent_suffix, is_system_agent
 from .ledger import effective_ledger, ordered_events
 from .repo import RepoState
 from .schemas import system_errors, validate_payload
-from .timeutil import target_date
+from .timeutil import target_date, utc_now
 from .yamlio import load_yaml
 
 YAML_DIRS = ["registry", "evidence", "methodologies", "ideas", "ledger"]
@@ -32,6 +33,8 @@ SPLIT = {"magi/agent@1": "agent", "magi/asset@1": "asset", "magi/methodology@1":
 ACTIONS = {"asset": "register_asset", "methodology": "publish_methodology", "idea": "create_idea",
            "view": "update_view", "profile": "publish_profile"}
 LOG_KEYS = ("seq", "at", "action", "actor", "owner", "entity")  # and "issue" or, for system agents, "run"
+MELCHIOR = "melchior.magi"
+MISSING_SETTLEMENT_GRACE = timedelta(days=3)  # a version is reported once its window ended more than this long ago
 
 
 @dataclass(frozen=True)
@@ -284,7 +287,181 @@ def _log(root: Path) -> list[Finding]:
     return found
 
 
-def check_repository(root: Path) -> list[Finding]:
+def _month_file(directory: str, day: str) -> str:
+    return f"{directory}/{day[:4]}/{day[5:7]}.jsonl"
+
+
+def _fills(root: Path, state: RepoState, ledger) -> list[Finding]:
+    """Recompute every fill record in effect from its signal close and market/prices/ (protocol section 10)."""
+    from .melchior.fills import FILLS, benchmark_at_entry, closes_by_asset, corrected, fill_close
+    from .returns import load_policies
+    found: list[Finding] = []
+    closes, policies, void = closes_by_asset(root), load_policies(root), ledger.void_picks()
+    signals = {(entry.record["pick_id"], FILLS[entry.kind]): entry for entry in ledger.records.values()
+               if entry.kind in FILLS}
+    for entry in ledger.records.values():
+        record = entry.record
+        if entry.kind not in ("pick_entered", "pick_exited"):
+            continue
+        target = record.get("supersedes")
+        if target is not None:
+            other = ledger.records.get(target)
+            if other is None or other.kind != entry.kind or other.record.get("pick_id") != record.get("pick_id"):
+                found.append(Finding(entry.path, f"supersedes {target}, which is not a {entry.kind} record of "
+                                                 f"{record.get('pick_id')}"))
+        pick = record.get("pick_id")
+        current = ledger.fill(pick, entry.kind)
+        signal = signals.get((pick, entry.kind))
+        if pick in void or current is None or current.path != entry.path or signal is None:
+            continue
+        event = signal.record
+        asset = state.assets.get(state.ideas.get(event.get("idea"), {}).get("asset"))
+        signal_close = event.get("signal_close") or {}
+        if not asset or "date" not in signal_close:
+            continue
+        if record["fill"]["date"] <= signal_close["date"]:
+            found.append(Finding(entry.path, f"{pick} fills on {record['fill']['date']}, not after the trading day of "
+                                             f"its signal close {signal_close['date']}", MELCHIOR))
+        if signal_close.get("as_of", "") > event["at"]:
+            found.append(Finding(entry.path, f"the signal close of {pick} is stamped {signal_close['as_of']}, after "
+                                             f"the signal time {event['at']}", MELCHIOR))
+        if not corrected(ledger, entry, ("fill",)):
+            line = fill_close(closes.get(asset["id"], []), signal_close["date"])
+            expected = None if line is None else {"date": line["date"], "value": line["close"],
+                                                  "currency": line["currency"], "as_of": line["as_of"],
+                                                  "source": line["source"]}
+            if expected != record["fill"]:
+                found.append(Finding(entry.path, f"the fill of {pick} differs from the one recomputed from its signal "
+                                                 f"close and market/prices/ ({expected}); Melchior.Magi's next run "
+                                                 "supersedes it", MELCHIOR))
+        if entry.kind == "pick_entered" and not corrected(ledger, entry, ("benchmark",)):
+            expected, _ = benchmark_at_entry(policies, asset, closes, record["fill"]["date"])
+            if expected != record.get("benchmark"):
+                found.append(Finding(entry.path, f"the benchmark of {pick} does not follow the benchmark policy "
+                                                 f"({expected}); Melchior.Magi's next run supersedes it", MELCHIOR))
+    return found
+
+
+def _settlements(root: Path, state: RepoState, ledger, today: str) -> list[Finding]:
+    """Recompute the settlement records of the versions in the event log (protocol section 8)."""
+    from .market import read_actions, read_closes
+    from .melchior.fills import corrected
+    from .melchior.settle import COMPARED, MAINTAINED, HeldSettlement, compute, version_record, view_versions
+    from .scores import counted_versions, settlement_window
+    found: list[Finding] = []
+    versions = {(v["idea"], v["actor"], v["version"]): v for v in view_versions(root, state) if v["asset"]}
+    counted = counted_versions(list(versions.values()))
+    closes, actions = {}, {}
+    for line in read_closes(root):
+        closes.setdefault(line["asset"], []).append(line)
+    for line in read_actions(root):
+        actions.setdefault(line["asset"], []).append(line)
+    for entry in ledger.records.values():
+        record = entry.record
+        if entry.kind != "settlement":
+            continue
+        key = (record["idea"], record["actor"], record["view_version"])
+        version = versions.get(key)
+        if version is None:
+            continue
+        name = f"{key[0]}/{key[1]}/v{key[2]}"
+        expected_end = settlement_window(record["target_date"])[1]
+        if record["target_date"] != version["target_date"]:
+            found.append(Finding(entry.path, f"target_date {record['target_date']} differs from the version's "
+                                             f"{version['target_date']}"))
+        if record["window_end"] != expected_end:
+            found.append(Finding(entry.path, f"window_end {record['window_end']} differs from {expected_end}"))
+        close_date = (record.get("price") or {}).get("close_date")
+        if close_date is not None and close_date < record["target_date"]:
+            found.append(Finding(entry.path, f"settles {name} at the close of {close_date}, before its target date"))
+        if record["at"][:10] < record["target_date"]:
+            found.append(Finding(entry.path, f"settles {name} at {record['at']}, before its target date"))
+        if record["counted"] != (key in counted):
+            found.append(Finding(entry.path, f"counted is {record['counted']} but the counting interval gives "
+                                             f"{key in counted}", MELCHIOR))
+        target = record.get("supersedes")
+        if target is not None:
+            others = [other.record for other in ledger.records.values()
+                      if other.kind == "settlement" and other.record.get("id") == target]
+            if not others or any((o["idea"], o["actor"], o["view_version"]) != key for o in others):
+                found.append(Finding(entry.path, f"supersedes {target}, which is not a settlement record of {name}"))
+        current = ledger.settlement(*key)
+        if current is None or current.path != entry.path or corrected(ledger, entry, MAINTAINED):
+            continue
+        view = version_record(root, *key)
+        if view is None:
+            continue
+        try:
+            result = compute(version, view, closes.get(version["asset"], []), actions.get(version["asset"], []),
+                             ledger, counted, today)
+        except HeldSettlement:
+            continue  # the market check reports the jump
+        if result is None or any(result[field] != record.get(field) for field in COMPARED if field != "counted"):
+            found.append(Finding(entry.path, f"the settlement of {name} differs from the one recomputed from "
+                                             "market/prices/, corporate actions and rulings; Melchior.Magi's next run "
+                                             "supersedes it", MELCHIOR))
+    for key, version in sorted(versions.items()):
+        end = date.fromisoformat(settlement_window(version["target_date"])[1])
+        if end + MISSING_SETTLEMENT_GRACE < date.fromisoformat(today) and ledger.settlement(*key) is None:
+            found.append(Finding(f"ideas/{key[0]}/views/{key[1]}.yaml",
+                                 f"missing settlement: version {key[2]} has no settlement record although its window "
+                                 f"ended on {end.isoformat()}", MELCHIOR))
+    return found
+
+
+def _market(root: Path, state: RepoState, ledger, today: str) -> list[Finding]:
+    """Split-like jumps in the closes that enter a computation, and conflicting corporate-action lines."""
+    from .market import ACTIONS_DIR, MARKET_DIR, read_actions, read_closes
+    from .melchior.settle import view_versions
+    from .scores import unrecorded_splits
+    found: list[Finding] = []
+    closes, actions, seen = {}, {}, {}
+    for line in read_closes(root):
+        closes.setdefault(line["asset"], []).append(line)
+    for line in read_actions(root):
+        actions.setdefault(line["asset"], []).append(line)
+        key = (line["asset"], line["date"], line["kind"])
+        numbers = (line.get("numerator"), line.get("denominator"), line.get("amount"))
+        if key in seen and seen[key] != numbers:
+            found.append(Finding(_month_file(ACTIONS_DIR, line["date"]),
+                                 f"{key[0]} {key[1]}: two {key[2]} lines disagree", MELCHIOR))
+        seen.setdefault(key, numbers)
+    for entry in ledger.rulings_in_force():
+        split = entry.record["decision"].get("split") if isinstance(entry.record["decision"], dict) else None
+        if split:
+            actions.setdefault(entry.record["asset"], []).append({"date": split["date"], "kind": "split",
+                                                                 "numerator": split["numerator"],
+                                                                 "denominator": split["denominator"]})
+    spans: list[tuple[str, str, str]] = []
+    void = ledger.void_picks()
+    for entry in ledger.records.values():
+        if entry.kind != "pick_entered" or entry.record["pick_id"] in void:
+            continue
+        current = ledger.fill(entry.record["pick_id"], "pick_entered")
+        idea = state.ideas.get(entry.record.get("idea"))
+        if current is None or current.path != entry.path or idea is None:
+            continue
+        exited = ledger.fill(entry.record["pick_id"], "pick_exited")
+        spans.append((idea["asset"], entry.record["fill"]["date"], exited.record["fill"]["date"] if exited else today))
+    for version in view_versions(root, state):
+        if version["asset"] is None or version["target_date"] > today:
+            continue
+        settled = ledger.settlement(version["idea"], version["actor"], version["version"])
+        close_date = ((settled.record.get("price") or {}).get("close_date") if settled else None) or today
+        spans.append((version["asset"], version["published_at"][:10], close_date))
+    reported: set[tuple[str, str]] = set()
+    for asset, start, end in spans:
+        for day, ratio in unrecorded_splits(closes.get(asset, []), actions.get(asset, []), start, end):
+            if (asset, day) not in reported:
+                reported.add((asset, day))
+                found.append(Finding(_month_file(MARKET_DIR, day),
+                                     f"{asset} {day}: the close jumps by a split ratio ({ratio:g}) and no split is "
+                                     "recorded", MELCHIOR))
+    return found
+
+
+def check_repository(root: Path, now: datetime | None = None) -> list[Finding]:
+    """`now` decides only when a missing settlement is reported; without it the current time is used."""
     root = Path(root)
     found: list[Finding] = []
     for top in YAML_DIRS:
@@ -302,4 +479,8 @@ def check_repository(root: Path) -> list[Finding]:
         state = RepoState.load(root)
     except Exception as exc:
         return [Finding("", f"repository could not be loaded: {type(exc).__name__}: {exc}")]
-    return _references(state) + _reviews_logged(root, state) + _reports_logged(root) + _ledger(root) + _corrections(root) + _log(root)
+    ledger = effective_ledger(root)
+    today = (now or utc_now()).date().isoformat()
+    return _references(state) + _reviews_logged(root, state) + _reports_logged(root) + _ledger(root) + \
+        _corrections(root) + _log(root) + _fills(root, state, ledger) + _settlements(root, state, ledger, today) + \
+        _market(root, state, ledger, today)
