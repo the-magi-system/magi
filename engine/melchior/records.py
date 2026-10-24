@@ -1,5 +1,5 @@
-"""Snapshot files for track records, forecast scores, settlements, rulings, benchmarks, market state and the ledger
-(protocol section 10 Snapshot of track records and forecast scores; design 22.11, 22.12).
+"""Snapshot files for track records, forecast scores, settlements, rulings, benchmarks, market state, the ledger and
+research trails (protocol section 10 Snapshot of track records and forecast scores; design 22.11, 22.12).
 
 compile_records() is the one exit for these numbers: the weekly report and Balthasar's interfaces take them from
 here (design 16.5). It reads the files of the repository and its git history, never the clock, so the result
@@ -28,6 +28,7 @@ from ..scores import (
 from ..scores import rank as rank_forecasts
 from ..timeutil import add_months, target_date
 from .settle import version_record, view_versions
+from .trails import trails
 
 NOTE = ("A pick is not a position: a pick has no size, and an average over picks is not a portfolio return. "
         "The simulation assumes daily rebalancing and no costs; it is illustrative and never ranked.")
@@ -505,12 +506,14 @@ def compile_records(root: Path, as_of: str | None = None) -> dict[str, object]:
     rulings = rulings_file(inputs)
     valued = picks(inputs, rulings)
     listed = versions(inputs, rulings)
+    settlements = settlements_file(inputs, listed)
     return {
         "track.json": track_file(inputs, valued),
         "forecasts.json": forecasts_file(inputs, listed),
-        "settlements.json": settlements_file(inputs, listed),
+        "settlements.json": settlements,
         "rulings.json": rulings,
         "benchmarks.json": benchmarks_file(inputs, valued),
         "market_state.json": market_state_file(inputs),
         "ledger.json": ledger_file(inputs),
+        **trails(inputs.root, inputs.state, inputs.ledger, settlements, rulings),
     }

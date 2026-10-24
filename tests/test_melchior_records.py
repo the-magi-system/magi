@@ -122,10 +122,12 @@ def _closes(root, asset):
 def test_record_files_match_their_schemas(world, picks_world):
     for root in (world, picks_world):
         files = _records(root)
-        assert sorted(files) == sorted(f"{name}.json" for name in FILES)
-        for name in FILES:
-            schema = json.loads((SCHEMA_DIR / f"{name}.schema.json").read_text(encoding="utf-8"))
-            assert list(Draft202012Validator(schema).iter_errors(files[f"{name}.json"])) == [], name
+        assert sorted(name for name in files if not name.startswith("trails/")) == \
+            sorted(f"{name}.json" for name in FILES)
+        for name, data in files.items():
+            schema_name = "trail" if name.startswith("trails/") else name.removesuffix(".json")
+            schema = json.loads((SCHEMA_DIR / f"{schema_name}.schema.json").read_text(encoding="utf-8"))
+            assert list(Draft202012Validator(schema).iter_errors(data)) == [], name
     files = _records(world)
     assert files["settlements.json"]["versions"][f"{IDEA}/john.research/v1"]["status"] == "settled"
     assert files["rulings.json"]["rulings"]["rl-000001"]["state"] == "provisional"

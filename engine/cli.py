@@ -21,6 +21,7 @@ from .github import GitHubClient
 from .gitops import Git, GitError
 from .intake import run_intake
 from .melchior.common import SCOPES as MELCHIOR_SCOPES
+from .melchior.lookup import lookup
 from .melchior.records import compile_records
 from .melchior.run import prepare as melchior_prepare
 from .melchior.run import preview_markdown
@@ -169,6 +170,16 @@ def _melchior_write(args) -> int:
     return 0
 
 
+def _melchior_lookup(args) -> int:
+    try:
+        value = lookup(args.repo, args.commit, args.ref)
+    except LookupError as exc:
+        print(str(exc))
+        return 1
+    print(json.dumps(value, indent=2, ensure_ascii=False))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m engine", description="The Magi System intake engine")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -261,6 +272,12 @@ def build_parser() -> argparse.ArgumentParser:
     write.add_argument("--mode", default="", help="MELCHIOR_MODE: preview (the default when empty), live or off")
     write.add_argument("--run-id", type=int, required=True, help="the workflow run id, recorded instead of an issue")
     write.set_defaults(handler=_melchior_write, json_errors=False)
+    find = steps.add_parser("lookup", help="recompile a commit's snapshot with that commit's own engine and print the "
+                                           "value at a reference")
+    find.add_argument("--repo", type=Path, default=Path("."), help="repository root")
+    find.add_argument("--commit", required=True, help="a commit in the history of HEAD")
+    find.add_argument("--ref", required=True, help="<file>#<JSON Pointer>, for example track.json#/valuation_date")
+    find.set_defaults(handler=_melchior_lookup, json_errors=False)
     return parser
 
 

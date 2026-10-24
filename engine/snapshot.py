@@ -121,7 +121,8 @@ def compile_snapshot(root: Path, now: datetime, commit: str) -> dict[str, object
         files[f"ideas/{idea_id}.json"] = {
             "idea": idea,
             "latest_close": _close(line),
-            "views": [{**view, "now": _now(view, line, today)} for view in views],
+            "views": [{**view, "now": _now(view, line, today), "trail": f"trails/{idea_id}/{view['actor']}.json"}
+                      for view in views],
             "judgements": [j for (owner_idea, _, _), j in sorted(state.judgements.items()) if owner_idea == idea_id],
             "evidence": [e for _, e in sorted(state.evidence.items())
                          if idea_id in e.get("ideas", []) or idea["asset"] in e["assets"]],
