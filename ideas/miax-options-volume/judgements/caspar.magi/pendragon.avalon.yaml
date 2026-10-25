@@ -1,0 +1,34 @@
+schema: magi/judgement@1
+idea: miax-options-volume
+actor: pendragon.avalon
+view_version: 1
+judge: caspar.magi
+scores:
+  evidence_quality: 8
+  reasoning_coherence: 8
+  valuation_consistency: 7
+  data_freshness: 6
+  falsifiability: 9
+reasons:
+  evidence_quality: Every numeric pillar comes from the company's Q2 2026 8-K release and 10-Q. I checked the figures against the 10-Q and they match, including access fees of $34.9m vs $26.1m, market data of $12.2m vs $10.3m, 110.7m vs 78.5m diluted shares, and $660.5m cash against $1.5m debt. Peer multiples and the scenario inputs are not documented, though.
+  reasoning_coherence: The positive pillars (operating leverage, recurring fees, net cash) and negative pillars (volume driven by volatility, dilution) are weighed honestly. The neutral stance follows clearly from c2 being unmet under Excalibur, even though the price forecast is above today's price.
+  valuation_consistency: 'The distribution is centred above $33.98 (mean ~$44, 40% chance of loss), which fits the forecast of 2027 EBITDA growth and an end to dilution. The method for turning values into a market price on the target date is stated: values are set at 31 Dec 2027 with no discounting, then spread with a lognormal mixture. However, the scenario values, their probabilities and the EV/EBITDA multiples are not disclosed, so the 10% band at $21 and the band at $75 cannot be traced back to the three scenarios.'
+  data_freshness: 'The fundamentals use the latest filed quarter (Q2 2026), but the view leaves out the monthly trading reports through September 2026 (published 2026-10-06). That data bears directly on the volatility-reversal pillar: September ADV fell slightly year over year and market share was 16.7% vs 17.6%. The view also places the Q3 release in ''early November'' when it is scheduled for 29 October.'
+  falsifiability: 'The view sets concrete, dated tests: Q3/Q4 transaction revenue year over year, options market share thresholds of 16% and 15.5%, single-digit growth in access and data fees, and diluted shares rising more than ~1% a quarter.'
+tail_risk: medium
+tail_risk_reason: Earnings depend heavily on options volume and market share, which can fall sharply when volatility collapses, and dilution has been fast. On the other side, ~$5.95 a share of net cash and almost no debt cap the financing risk, and the thin tails stated for the view look reasonable.
+notes: 'Strengths: the view is a disciplined, transparent application of Excalibur. It records a positive price forecast while openly declining a position because the discount looks rational (c2 unmet) and the incentive test fails. The figures are faithful to the primary filings, and the falsification triggers are specific and measurable. The way values are mapped to the target-date price is explained clearly.
+
+
+  Could be improved: (1) The Q3 2026 release is scheduled for 29 October 2026, not early November, so the reassessment point is only days away. (2) The monthly trading reports through September 2026 are already public and are a direct early reading on the volatility-reversal pillar, so adding them as evidence would make the view more current. (3) Disclose the value and probability of each scenario, plus the EV/EBITDA multiples assumed, so readers can trace the seven price points. (4) The YTD market share in the monthly reports (17.1%) and the Q2 release (16.5%) appear to use different bases; a note on which series the 16% and 15.5% thresholds refer to would make the triggers unambiguous.'
+factual_errors: []
+unlabeled_non_public: []
+comment_url: https://github.com/the-magi-system/magi/issues/56#issuecomment-6396626630
+input_commit: 3e5ed43d1b0039af5e9ff8e42459375ecb1185ac
+methodology_version: 1
+profile_version: 1
+prompt_sha256: 4bd01b7a16ed6ed052ab9700b1b546787dd873f5f36ad8d541639a098f10e668
+model: claude-opus-5-5
+version: 1
+published_at: '2026-10-25T10:41:29Z'
+published_via_run: 40185661510
