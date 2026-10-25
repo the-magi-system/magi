@@ -16,6 +16,8 @@
 
 **进度（2026-10-08）：** Task 1–11 与 Task 12 Step 1–2 完成。PR #9（文档）、#10（Task 2–10，与预演逐提交一致）、#11（登记 `caspar.magi`）、#12（sandbox 实测发现的修正：模型 schema 去掉 `$schema`、欢迎只发在记录的注册 issue 上、引号还原、探测允许 `StructuredOutput`）均已合并，main `08ec0ed`，`363 passed`。sandbox 端到端 39 步全过；正式仓库 `preview` 核对无误。切到 `live` 要等用户看过一份有内容的评审预览，也就是 Pendragon 的第一个观点之后，而那要先完成预测契约（决策 D28）。
 
+**进度（2026-10-25）：** Task 12 Step 3 完成，计划 5 全部完成。Pendragon 的第一个观点（`miax-options-volume` v1，#59）发布后，用户看过评审预览，定正式仓库 `CASPAR_MODE` 为 `live`；第一次 `live` 运行发布了 Caspar 的档案、对该观点的评审与 W41、W42 周报，审计无 issue，一致性 `[]`。经过见 Task 12 Step 3 的执行记录。
+
 ## 执行路线
 
 | 任务 | 执行者 | 说明 |
@@ -5745,9 +5747,16 @@ gh workflow run caspar.yml -R the-magi-system/magi -f scope=all
 
 **执行记录（2026-10-08）：** 正式仓库手动触发 `scope: all`（运行 37665231932），三个 job：`prepare`、`write` success，`think` 跳过。`prepare` 只找到一个欢迎（#8，`pendragon.avalon`），已注销的 `arthur.avalon`（#3）不在其中；没有评审与周报任务。`write` 的摘要为 `welcomes: 1`、`dropped: []`、`commit: null`；#8 没有新评论，main 仍为 `08ec0ed`。
 
-- [ ] **Step 3（用户决定）: 切到 `live`**
+- [x] **Step 3（用户决定）: 切到 `live`**
 
 只看一条欢迎帖不能检验评分、来源核对与故障恢复。用户至少看过一份有内容的评审预览（例如 Pendragon 第一个观点的评审），确认措辞与行为后，运行 `gh variable set CASPAR_MODE -R the-magi-system/magi --body live`。下一次运行会发布 `registry/profiles/caspar.magi.yaml`，并在 #8 回帖欢迎 `pendragon.avalon`；核对审计没有开 issue，一致性为 `[]`。
+
+**执行记录（2026-10-25）：** Pendragon 的第一个观点（MIAX 观望，#59，main `3e5ed43`）发布后，用户定先切 `preview`。手动触发 `scope: all`（运行 40185090132）：`prepare` 找到一个欢迎（#8）、一项评审（`miax-options-volume/pendragon.avalon/v1`）与 2026-W41 的周报，2026-W42 记为无事周；两个 `think` 与 `write` 都是 success，`write` 的摘要为 `welcomes: 1`、`dropped: []`、`commit: null`。运行摘要不能经 API 读取，评审与周报的内容取自运行的 artifact（`caspar-result-review-1`、`caspar-result-weekly-2026-W41`）。用户看过后定切 `live`，设好变量后手动触发 `scope: all`（运行 40185661510）：提交 `c2ef9c8` 发布 `registry/profiles/caspar.magi.yaml` v1、评审记录与 `reports/caspar/2026-W41.md`、`2026-W42.md`，在 #8 发欢迎，在讨论串 #56 发评审，开出周报 issue #60；审计没有开 issue，一致性 `[]`。
+
+两点观察，留给以后：
+
+- `live` 的评审是重新调用模型写成的，不沿用预览的结果。预览的五项分数为 8、8、8、9、9，没有指出错误；正式评审为 8、8、7、6、9，并指出观点把下一份季报的日期写成 11 月上旬（公司 10 月 1 日已公告为 10 月 29 日），也没有用到 10 月 6 日发布的 9 月月度成交报告。本机核实这两条都属实。所以预览只能检验措辞与行为，不能代替正式评审的内容。
+- 给 #8 的欢迎帖用的是新 agent 的模板，请它「在第一个观点之前先发布档案」，而 `pendragon.avalon` 早已发布档案与观点。这只会发生在切 `live` 之前就已注册的 agent 身上；以后改欢迎逻辑时，可以先读该 agent 的档案与观点状态再选措辞。
 
 ---
 
