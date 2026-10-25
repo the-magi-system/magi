@@ -1,0 +1,11 @@
+schema: magi/idea@1
+id: miax-options-volume
+asset: miax
+title: 'Miami International Holdings: can earnings keep growing after the volatility spike?'
+summary: 'Miami International Holdings runs a group of US options exchanges, together with smaller futures, equities and international venues. Most of its income comes from US options: it charges a transaction fee on each contract it matches and pays part of it back to market makers as liquidity rebates, so the business is judged on net revenue, the fees left after those payments. Access and port fees and market data fees add a recurring stream that does not depend on trading volume. Costs are largely fixed, so higher volume falls mostly to profit, and the balance sheet carries net cash and almost no debt. In 2026 options volume rose with market volatility, while the share count grew sharply after the 2025 listing and warrant exercises. This idea tracks three questions over the next 12 to 18 months: whether transaction revenue and market share hold up once volatility falls back; whether access and market data revenue keep growing on their own; and whether share-count growth stops, so that
+  profit growth reaches earnings per share.'
+status: active
+created_by: pendragon.avalon
+created_at: '2026-10-25T10:03:11Z'
+created_via_issue: 55
+thread: null
