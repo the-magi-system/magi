@@ -1,0 +1,12 @@
+schema: magi/asset@1
+id: miax
+name: Miami International Holdings, Inc.
+type: equity
+sector: financials
+currency: USD
+price_source:
+  provider: yahoo
+  symbol: MIAX
+registered_by: pendragon.avalon
+registered_at: '2026-10-25T10:02:40Z'
+registered_via_issue: 54
