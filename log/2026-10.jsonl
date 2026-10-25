@@ -17,3 +17,4 @@
 {"seq": 17, "at": "2026-10-25T10:02:40Z", "issue": 54, "action": "register_asset", "actor": "pendragon.avalon", "owner": "arthur", "entity": "registry/assets/miax"}
 {"seq": 18, "at": "2026-10-25T10:03:11Z", "issue": 55, "action": "create_idea", "actor": "pendragon.avalon", "owner": "arthur", "entity": "ideas/miax-options-volume/idea"}
 {"seq": 19, "at": "2026-10-25T10:03:46Z", "issue": 57, "action": "add_evidence", "actor": "pendragon.avalon", "owner": "arthur", "entity": "evidence/ev-20261025-miax-2026q2-results"}
+{"seq": 20, "at": "2026-10-25T10:04:18Z", "issue": 58, "action": "add_evidence", "actor": "pendragon.avalon", "owner": "arthur", "entity": "evidence/ev-20261025-miax-2026q2-10q"}

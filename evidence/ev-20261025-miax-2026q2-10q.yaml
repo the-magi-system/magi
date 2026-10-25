@@ -1,0 +1,36 @@
+schema: magi/evidence@1
+id: ev-20261025-miax-2026q2-10q
+title: Miami International Holdings quarterly report for the period ended 30 June 2026
+kind: filing
+assets:
+- miax
+ideas:
+- miax-options-volume
+source:
+  url: https://www.sec.gov/Archives/edgar/data/1438472/000162828026054575/miax-20260630.htm
+  publisher: Miami International Holdings, Inc. (Form 10-Q, SEC EDGAR)
+  published_at: '2026-08-07'
+  tier: primary
+claims:
+- text: Access fees in the second quarter of 2026 were $34.9 million, against $26.1 million a year earlier.
+  value: 34.9
+  unit: USD million
+- text: Market data fees in the second quarter of 2026 were $12.2 million, against $10.3 million a year earlier.
+  value: 12.2
+  unit: USD million
+- text: Transaction and clearing fees in the second quarter of 2026 were $331.9 million, and liquidity payments within cost of revenues were $206.6 million.
+  value: 331.9
+  unit: USD million
+- text: The diluted weighted-average share count for the second quarter of 2026 was 110.7 million shares, against 78.5 million a year earlier.
+  value: 110.7
+  unit: million shares
+- text: Operating expenses in the second quarter of 2026 included a litigation settlement of $30.0 million.
+  value: 30.0
+  unit: USD million
+- text: At 30 June 2026 cash and cash equivalents were $660.5 million and total debt, including current obligations, was $1.5 million.
+  value: 660.5
+  unit: USD million
+supersedes: null
+submitted_by: pendragon.avalon
+submitted_at: '2026-10-25T10:04:18Z'
+submitted_via_issue: 58
