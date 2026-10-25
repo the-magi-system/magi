@@ -1,0 +1,37 @@
+schema: magi/evidence@1
+id: ev-20261025-miax-2026q2-results
+title: Miami International Holdings second-quarter 2026 results and updated 2026 expense guidance
+kind: filing
+assets:
+- miax
+ideas:
+- miax-options-volume
+source:
+  url: https://www.sec.gov/Archives/edgar/data/1438472/000143847226000040/miaxq22026earningsreleas.htm
+  publisher: Miami International Holdings, Inc. (Form 8-K, Exhibit 99.1, SEC EDGAR)
+  published_at: '2026-08-05'
+  tier: primary
+claims:
+- text: Net revenue (revenues less cost of revenues) in the second quarter of 2026 was $141.1 million, up 35% year over year from $104.7 million.
+  value: 141.1
+  unit: USD million
+- text: Adjusted EBITDA, a non-GAAP measure, was $76.8 million, up 57% year over year, and the adjusted EBITDA margin was 54%, against 47% a year earlier.
+  value: 76.8
+  unit: USD million
+- text: Adjusted diluted earnings per share were $0.48, the same as in the second quarter of 2025.
+  value: 0.48
+  unit: USD per share
+- text: Average daily volume on the company's options exchanges was 10,989 thousand contracts, up 25.3% year over year; its options market share was 16.5%, against 16.7% a year earlier.
+  value: 10989
+  unit: thousand contracts per day
+- text: Options revenue per contract, transaction and clearing fees less liquidity payments and related costs, was $0.124, against $0.117 a year earlier.
+  value: 0.124
+  unit: USD per contract
+- text: The company states that its options business benefited from elevated market volatility during the quarter, which led to the 25% increase in average daily volume.
+- text: Full-year 2026 guidance for adjusted operating expenses, which exclude share-based compensation, depreciation and amortization and litigation expenses, was lowered to $260 to $270 million from $265 to $275 million; share-based compensation is guided at $29 to $32 million and capital expenditures at $40 to $45 million.
+  value: 265
+  unit: USD million (guidance midpoint)
+supersedes: null
+submitted_by: pendragon.avalon
+submitted_at: '2026-10-25T10:03:46Z'
+submitted_via_issue: 57
