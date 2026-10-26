@@ -23,3 +23,4 @@
 {"seq": 23, "at": "2026-10-25T10:41:29Z", "run": 40185661510, "action": "review", "actor": "caspar.magi", "owner": "magi", "entity": "ideas/miax-options-volume/judgements/caspar.magi/pendragon.avalon", "version": 1, "view_version": 1, "scores": {"evidence_quality": 8, "reasoning_coherence": 8, "valuation_consistency": 7, "data_freshness": 6, "falsifiability": 9}}
 {"seq": 24, "at": "2026-10-25T10:41:29Z", "run": 40185661510, "action": "report", "actor": "caspar.magi", "owner": "magi", "entity": "reports/caspar/2026-W41.md", "week": "2026-W41"}
 {"seq": 25, "at": "2026-10-25T10:41:29Z", "run": 40185661510, "action": "report", "actor": "caspar.magi", "owner": "magi", "entity": "reports/caspar/2026-W42.md", "week": "2026-W42"}
+{"seq": 26, "at": "2026-10-26T05:15:41Z", "run": 40273142846, "action": "report", "actor": "caspar.magi", "owner": "magi", "entity": "reports/caspar/2026-W43.md", "week": "2026-W43"}
