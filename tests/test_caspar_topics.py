@@ -9,7 +9,8 @@ from engine.caspar.common import marker
 from engine.caspar.run import SCOPES, prepare, write
 from engine.caspar.think import options
 from engine.caspar.topics import (
-    MAX_TOPICS_PER_WEEK, candidate_groups, check_topic, declined_groups, read_topics, topic_rows,
+    BROAD_MARKETS, MAX_TOPICS_PER_WEEK, candidate_groups, check_topic, declined_groups, ideas_of, read_topics,
+    topic_rows,
 )
 from engine.consistency import check_repository
 from engine.eventlog import read_log
@@ -34,9 +35,9 @@ def _asset(root, asset_id, symbol, provider="yahoo", sector="industrials", curre
         "registered_by": "arthur.val", "registered_at": T0})
 
 
-def _idea(root, gh, idea_id, asset_id, summary="A test idea.", thread=True, status="active"):
+def _idea(root, gh, idea_id, asset_id, summary="A test idea.", thread=True, status="active", created_by="arthur.val"):
     record = {"schema": "magi/idea@1", "id": idea_id, "asset": asset_id, "title": f"Idea {idea_id}",
-              "summary": summary, "status": status, "created_by": "arthur.val", "created_at": T0}
+              "summary": summary, "status": status, "created_by": created_by, "created_at": T0}
     if thread:
         record["thread"] = gh.create_issue(f"[thread] idea: {idea_id}", "Discussion", ["magi:thread"])["number"]
     write_yaml(root / "ideas" / idea_id / "idea.yaml", record)
@@ -64,12 +65,19 @@ def _agent(root, agent_id, status="active"):
         "registered_via_issue": 1})
 
 
+def _archive(root, idea_id):
+    path = root / "ideas" / idea_id / "idea.yaml"
+    write_yaml(path, {**load_yaml(path), "status": "archived"})
+
+
 @pytest.fixture
 def korea(tmp_path):
     """Two Korean ideas from two actors of two owners: one candidate group, market:KR."""
     root = build_repo(tmp_path / "work")
     shutil.copytree(REPO_ROOT / "agents", root / "agents")
     gh = FakeGitHub()
+    for idea_id in ("nvda-ai-capex-2026", "xom-lng-2027"):  # the fixture's own ideas have no view; keep them out
+        _archive(root, idea_id)
     _asset(root, "jvm", "054950", provider="naver", sector="health-care")
     _asset(root, "posco", "005490.KS", sector="materials")
     _idea(root, gh, "jvm-owner-cash", "jvm")
@@ -113,14 +121,9 @@ def test_a_group_needs_two_ideas_from_two_actors(korea):
     (root / "ideas" / "posco-holdco" / "views" / "john.research.yaml").unlink()
     _view(root, "posco-holdco", "arthur.val")
     assert candidate_groups(RepoState.load(root)) == {}
-    # One idea with views from two actors is not a group either.
+    # One idea with views from two actors is not a group either; an archived idea never counts.
     _view(root, "jvm-owner-cash", "john.research")
-    (root / "ideas" / "posco-holdco" / "views" / "arthur.val.yaml").unlink()
-    assert candidate_groups(RepoState.load(root)) == {}
-    # An archived idea never counts.
-    _view(root, "posco-holdco", "john.research")
-    idea = load_yaml(root / "ideas" / "posco-holdco" / "idea.yaml")
-    write_yaml(root / "ideas" / "posco-holdco" / "idea.yaml", {**idea, "status": "archived"})
+    _archive(root, "posco-holdco")
     assert candidate_groups(RepoState.load(root)) == {}
 
 
@@ -133,8 +136,7 @@ def test_each_kind_of_group(korea):
     _view(root, "abbv-pipeline", "arthur.macro", strategy="special-sit", methodology="event-catalyst")
     _view(root, "lly-glp1", "john.research", strategy="special-sit", methodology="event-catalyst")
     groups = candidate_groups(RepoState.load(root))
-    assert set(groups) == {"market:KR", "market:US", "sector:health-care", "strategy:special-sit",
-                           "methodology:event-catalyst"}
+    assert set(groups) == {"market:KR", "sector:health-care", "strategy:special-sit", "methodology:event-catalyst"}
     assert sorted(r["idea"] for r in groups["sector:health-care"]) == ["abbv-pipeline", "jvm-owner-cash"]
 
 
@@ -150,6 +152,107 @@ def test_a_market_the_policy_does_not_cover_is_left_out(korea):
     assert not any(key.startswith("market:") for key in rows["tencent-games"])
     assert "market:KR" in rows["jvm-owner-cash"] and "market:KR" in rows["posco-holdco"]
     assert not any(key.startswith("market:H") for key in candidate_groups(RepoState.load(root)))
+
+
+def test_a_broad_market_never_makes_a_candidate(korea):
+    root, gh = korea["root"], korea["gh"]
+    assert BROAD_MARKETS == ("US",)
+    _asset(root, "ccc", "CCC", sector="information-technology", currency="USD")
+    _asset(root, "miax", "MIAX", sector="financials", currency="USD")
+    _idea(root, gh, "ccc-take-private", "ccc")
+    _idea(root, gh, "miax-volume", "miax")
+    _view(root, "ccc-take-private", "arthur.macro")
+    _view(root, "miax-volume", "john.research")
+    state = RepoState.load(root)
+    rows = {row["idea"]: row["keys"] for row in topic_rows(state)}
+    assert "market:US" in rows["ccc-take-private"] and "market:US" in rows["miax-volume"]
+    assert set(candidate_groups(state)) == {"market:KR"}  # other markets work as before
+
+
+def test_an_idea_without_a_view_counts_through_its_creator(korea):
+    root, gh = korea["root"], korea["gh"]
+    _asset(root, "lgchem", "051910.KS", sector="materials")
+    _idea(root, gh, "lgchem-battery", "lgchem", created_by="arthur.macro")
+    state = RepoState.load(root)
+    row = next(r for r in topic_rows(state) if r["idea"] == "lgchem-battery")
+    assert (row["actor"], row["position"], row["has_view"]) == ("arthur.macro", None, False)
+    assert row["keys"] == ["market:KR", "sector:materials"]  # no strategy or methodology key
+    groups = candidate_groups(state)
+    assert sorted(r["idea"] for r in groups["market:KR"]) == ["jvm-owner-cash", "lgchem-battery", "posco-holdco"]
+    assert sorted(r["idea"] for r in groups["sector:materials"]) == ["lgchem-battery", "posco-holdco"]
+    # An idea that has views keeps one row per view.
+    _view(root, "jvm-owner-cash", "john.research")
+    assert [r["actor"] for r in topic_rows(RepoState.load(root)) if r["idea"] == "jvm-owner-cash"] == \
+        ["arthur.val", "john.research"]
+
+
+def test_the_post_and_the_model_input_for_an_idea_without_a_view(korea):
+    root, gh = korea["root"], korea["gh"]
+    _archive(root, "posco-holdco")
+    _researcher(root, "cheng", "chengxu999")
+    _agent(root, "arc.cheng")
+    write_yaml(root / "registry" / "agents" / "arc.cheng.yaml",
+               {**load_yaml(root / "registry" / "agents" / "arc.cheng.yaml"), "owner": "cheng"})
+    _asset(root, "hlb", "028300.KQ", sector="health-care")
+    _idea(root, gh, "hlb-approval", "hlb", created_by="arc.cheng")
+    Git(root).commit("an idea without a view", {})
+    plan, _ = caspar(korea, {"market:KR": OPEN, "sector:health-care": OPEN})
+    task = next(t for t in plan["tasks"] if t["kind"] == "topic")
+    material = json.loads((korea["work"] / "1" / task["id"] / "input.json").read_text(encoding="utf-8"))
+    entry = next(i for i in material["ideas"] if i["idea"] == "hlb-approval")
+    assert entry["views"] == [] and entry["summary"] == "A test idea."
+    text = gh.discussions[0]["body"]
+    hlb = thread_of(korea, "hlb-approval")
+    assert f"| [hlb-approval](https://github.com/{gh.repo}/issues/{hlb}) | `hlb` | `arc.cheng` | none |" in text
+    assert "`arc.cheng` (@chengxu999)" in text and "`arthur.val` (@ThinkwChivalri)" in text
+
+
+def test_an_idea_without_a_view_by_a_retired_or_suspended_creator_is_listed_not_mentioned(korea):
+    root, gh = korea["root"], korea["gh"]
+    _asset(root, "lg", "003550.KS", sector="utilities")
+    _asset(root, "sk", "034730.KS", sector="energy")
+    _idea(root, gh, "lg-holdco", "lg", created_by="arthur.old")  # retired
+    _researcher(root, "kim", "kim-suspended", status="suspended")
+    _agent(root, "kim.k")
+    _idea(root, gh, "sk-holdco", "sk", created_by="kim.k")
+    Git(root).commit("ideas without views", {})
+    caspar(korea, {"market:KR": OPEN})
+    text = gh.discussions[0]["body"]
+    assert "| `lg` | `arthur.old` | none |" in text and "| `sk` | `kim.k` | none |" in text
+    assert "@kim-suspended" not in text and "`arthur.old` (@" not in text
+
+
+def test_the_production_shape_has_one_candidate(tmp_path):
+    """Production on 2026-11-01: two US ideas with views from two actors, a Korean health-care idea with a view and a
+    US health-care idea without one. market:US is broad, so the only candidate is sector:health-care; without the
+    idea that has no view there would be none."""
+    root = build_repo(tmp_path / "work")
+    gh = FakeGitHub()
+    for idea_id in ("nvda-ai-capex-2026", "xom-lng-2027"):
+        _archive(root, idea_id)
+    _researcher(root, "mf", "mf-login")
+    _researcher(root, "cheng", "chengxu999")
+    for agent_id, owner in (("prod.mf", "mf"), ("arc.cheng", "cheng"), ("pendragon.avalon", "arthur")):
+        _agent(root, agent_id)
+        path = root / "registry" / "agents" / f"{agent_id}.yaml"
+        write_yaml(path, {**load_yaml(path), "owner": owner})
+    _asset(root, "ccc", "CCC", sector="information-technology", currency="USD")
+    _asset(root, "miax", "MIAX", sector="financials", currency="USD")
+    _asset(root, "jvm", "054950", provider="naver", sector="health-care")
+    _asset(root, "tem", "TEM", sector="health-care", currency="USD")
+    _idea(root, gh, "ccc-gtcr-take-private-2026", "ccc", created_by="prod.mf")
+    _idea(root, gh, "miax-options-volume", "miax", created_by="pendragon.avalon")
+    _idea(root, gh, "jvm-owner-cash-realization", "jvm", created_by="arc.cheng")
+    _idea(root, gh, "tem-data-engine", "tem", created_by="pendragon.avalon")
+    _view(root, "ccc-gtcr-take-private-2026", "prod.mf", position="neutral")
+    _view(root, "miax-options-volume", "pendragon.avalon", position="neutral")
+    _view(root, "jvm-owner-cash-realization", "arc.cheng", position="neutral")
+    groups = candidate_groups(RepoState.load(root))
+    assert list(groups) == ["sector:health-care"]
+    assert ideas_of(groups["sector:health-care"]) == ["jvm-owner-cash-realization", "tem-data-engine"]
+    assert {r["actor"] for r in groups["sector:health-care"]} == {"arc.cheng", "pendragon.avalon"}
+    _archive(root, "tem-data-engine")
+    assert candidate_groups(RepoState.load(root)) == {}
 
 
 # Opening a topic -------------------------------------------------------------------------------------------------

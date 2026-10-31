@@ -38,6 +38,9 @@ TOPIC_KIND, IDEA_KIND, OWNER_KIND, LINK_KIND = "topic", "topic-idea", "topic-own
 DECLINED_ACTION = "topic_declined"
 GROUP_KINDS = ("market", "sector", "strategy", "methodology")
 MIN_IDEAS, MIN_ACTORS = 2, 2
+# Most ideas are listed in these markets, so a topic for one would become a catch-all that gains every new idea there
+# without a model call and mentions each owner; a key for them is never a candidate. Other markets work as usual.
+BROAD_MARKETS = ("US",)
 MAX_TOPICS_PER_RUN, MAX_TOPICS_PER_WEEK = 1, 2
 MAX_TITLE, MIN_QUESTIONS, MAX_QUESTIONS, MAX_QUESTION, MAX_REASON = 80, 2, 4, 300, 300
 MAX_INPUT_CHARS = 4000
@@ -96,32 +99,48 @@ def _policy(root) -> dict | None:
     return max(policies, key=lambda policy: policy["version"]) if policies else None
 
 
+def _row(idea_id: str, idea: dict, asset: dict, market: str | None, actor, view: dict | None) -> dict:
+    keys = [f"market:{market}" if market else None, f"sector:{asset.get('sector')}"]
+    if view is not None:
+        keys += [f"strategy:{view.get('strategy')}", f"methodology:{view.get('methodology')}"]
+    return {"idea": idea_id, "actor": actor, "asset": asset["id"], "has_view": view is not None,
+            "position": view.get("position") if view is not None else None, "thread": idea.get("thread"),
+            "keys": [key for key in keys if key and _KEY.fullmatch(key)]}
+
+
 def topic_rows(state: RepoState) -> list[dict]:
-    """One row per current view on an active idea, with the four things it can be grouped by."""
+    """The rows of every active idea, with the things it can be grouped by: one row per current view, or, for an
+    idea without a current view, one row whose actor is the idea's `created_by`, with no position and only the market
+    and sector keys."""
     policy = _policy(state.root)
-    rows = []
+    viewed: dict[str, list[tuple[str, dict]]] = {}
     for (idea_id, actor), view in sorted(state.views.items()):
-        idea = state.ideas.get(idea_id)
-        if idea is None or idea.get("status", "active") != "active" or not _ID.fullmatch(idea_id):
+        viewed.setdefault(idea_id, []).append((actor, view))
+    rows = []
+    for idea_id, idea in sorted(state.ideas.items()):
+        if idea.get("status", "active") != "active" or not _ID.fullmatch(idea_id):
             continue
         asset = state.assets.get(idea.get("asset"))
         if asset is None:
             continue
         # A market the highest policy does not cover is left out; the symbol's suffix alone never makes a market.
         market = listing_market(policy, asset) if policy is not None else None
-        rows.append({"idea": idea_id, "actor": actor, "asset": asset["id"], "position": view.get("position"),
-                     "thread": idea.get("thread"), "keys": [key for key in (
-                         f"market:{market}" if market else None, f"sector:{asset.get('sector')}",
-                         f"strategy:{view.get('strategy')}", f"methodology:{view.get('methodology')}")
-                         if key and _KEY.fullmatch(key)]})
+        views = viewed.get(idea_id)
+        if views:
+            rows += [_row(idea_id, idea, asset, market, actor, view) for actor, view in views]
+        else:
+            rows.append(_row(idea_id, idea, asset, market, idea.get("created_by"), None))
     return rows
 
 
 def candidate_groups(state: RepoState) -> dict[str, list[dict]]:
-    """Every group with at least MIN_IDEAS ideas from at least MIN_ACTORS actors, by key."""
+    """Every group with at least MIN_IDEAS ideas from at least MIN_ACTORS actors, by key; a market in BROAD_MARKETS
+    never makes a candidate."""
     groups: dict[str, list[dict]] = {}
     for row in topic_rows(state):
         for key in row["keys"]:
+            if key.removeprefix("market:") in BROAD_MARKETS and key.startswith("market:"):
+                continue
             groups.setdefault(key, []).append(row)
     return {key: rows for key, rows in sorted(groups.items())
             if len({r["idea"] for r in rows}) >= MIN_IDEAS and len({r["actor"] for r in rows}) >= MIN_ACTORS}
@@ -258,7 +277,7 @@ def model_input(state: RepoState, key: str, rows: list[dict]) -> dict:
         idea = state.ideas[idea_id]
         views = [{"position": state.views[(idea_id, r["actor"])].get("position"),
                   "rationale": str(state.views[(idea_id, r["actor"])].get("rationale") or "")[:MAX_INPUT_CHARS]}
-                 for r in rows if r["idea"] == idea_id]
+                 for r in rows if r["idea"] == idea_id and r["has_view"]]
         ideas.append({"idea": idea_id, "title": str(idea.get("title") or "")[:MAX_INPUT_CHARS],
                       "summary": str(idea.get("summary") or "")[:MAX_INPUT_CHARS], "views": views})
     return {"task": "topic", "group": key, "ideas": ideas}
