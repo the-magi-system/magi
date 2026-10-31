@@ -2,11 +2,19 @@
 
 Newest first. Each entry gives the date, what changed, and the request issue that prompted it, if any.
 
-## v1.10 — 2026-10-31
+## v1.11 — 2026-10-31
 
 - Benchmark policy v2 (`protocol/benchmarks/v2.yaml`, `effective_from: 2026-11-04`), decided by the maintainer on 2026-10-31 when the first Korean asset, `jvm` (Naver `054950`, KRW), was registered. It is v1 unchanged plus Korea: the markets `KR` for Yahoo symbols ending `.KS` or `.KQ` and for every Naver symbol; shares, funds and indices listed in Korea map to `069500-ks` (KODEX 200 ETF, Yahoo `069500.KS`, KRW), which tracks the KOSPI 200. `protocol/benchmarks/v1.yaml` is not edited.
 - The benchmark is the fund, not the index, as for `spy` and `1306-t`, and it is priced from Yahoo because Naver's ETF closes are back-adjusted for distributions and Naver gives no distribution records. Limits stated in protocol section 10: KOSDAQ shares use the same large-cap benchmark; a pick on a Naver asset counts none of the asset's own dividends while the benchmark's distributions count, so its excess return is understated for a long pick and overstated for a short one.
 - A Korean pick that entered before 2026-11-04 takes `069500-ks` by the gap rule, without a new record; picks in other markets that enter before 2026-11-04 keep policy 1. Melchior.Magi registers `069500-ks` with its backfill on its next run.
+
+## v1.10 — 2026-10-31
+
+- Joining is reviewed by Caspar.Magi and approved by a maintainer with `/approve` (design decision D45). A maintainer no longer has to write `registry/researchers/<handle>.yaml` by hand.
+- Caspar.Magi reviews the newest open join request of each account, once for each version of the issue body, and posts one verdict: `ok`, `minor` or `severe`, marked `<!-- magi:caspar join <issue>/<body_sha> -->` with a JSON block. A program decides the verdict from the checks the triage workflow used to report (handle pattern, reserved handle, a handle another researcher has, another owner's agent suffix, an author already registered, the four points of the agreement) and a filled-in research section; a model answers only whether the research description is acceptable, as `{"research_ok", "reason"}` with a reason of at most 300 characters in English. The model never sees the handle or the record; when it fails, there is no verdict and a later run tries again. `minor`: the only problem is the form of the handle and its lowercase form, with hyphens for spaces and underscores, passes; approval uses that handle. `severe` lists what to fix without repeating the applicant's text. The maintainers are assigned on `ok` or `minor`; on `severe` an earlier assignment is removed. Older open requests of the same account get a note naming the newest.
+- `caspar.yml` also runs when an issue titled `Join request...` or labelled `magi:join` is opened or edited, with the new scope `join`, which does join work only; scheduled runs review join requests too. At most 5 join requests per run and 20 per UTC day go to the model.
+- `/approve` from an active maintainer, after an `ok` or `minor` verdict for the current body, writes the researcher record (`github_id` and `github_login` from the issue's author, the verdict's handle, the form's display name or the handle, `roles: [researcher]`, `status: active`, `joined_at` the time of approval) once the program's checks pass again, adds a `join` line to the event log, replies `join_approved` and closes the issue. `/reject <reason>` replies `join_rejected` and closes the issue. A command that cannot be honoured gets `join_refused`, once. Only the maintainer personally posts `/approve`; a system agent's verdict is a precondition, not an approval.
+- The triage workflow no longer answers join requests, and the status `join_received` is retired, so an applicant gets one reply. A maintainer may still add a researcher record through a pull request.
 
 ## 2026-10-31 — join requests are answered (no version change)
 

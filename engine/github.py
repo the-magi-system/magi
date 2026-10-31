@@ -91,6 +91,9 @@ class GitHubClient:
     def assign(self, number: int, logins: list[str]) -> None:
         self.request("POST", f"{self._issue_path(number)}/assignees", {"assignees": logins})
 
+    def unassign(self, number: int, logins: list[str]) -> None:
+        self.request("DELETE", f"{self._issue_path(number)}/assignees", {"assignees": logins})
+
     def create_issue(self, title: str, body: str, labels: list[str]) -> dict:
         return self.request("POST", f"/repos/{self.repo}/issues", {"title": title, "body": body, "labels": labels})
 

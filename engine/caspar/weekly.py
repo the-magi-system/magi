@@ -22,8 +22,8 @@ from ..queue import BOT_LOGIN, engine_replies
 from ..repo import RepoState
 from ..sysagent import system_log_entry
 from ..timeutil import iso, parse_iso
-from ..triage import is_join_request
 from .common import CASPAR, CRITERIA, MAX_SUGGESTION_ISSUES, SUGGESTION_LABEL, cap, marker, sanitize
+from .join import is_join_request
 from .review import LABELS, view_text
 from .work import pending_reviews
 

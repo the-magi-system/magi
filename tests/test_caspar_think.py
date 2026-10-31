@@ -58,11 +58,27 @@ def test_options_give_the_model_only_its_five_read_only_tools():
     assert "env" not in opts and "cli_path" not in opts and "permission_mode" not in opts
 
 
+def test_a_join_task_gets_read_only_and_every_other_kind_keeps_its_five_tools():
+    # A join request's text comes from anyone with a GitHub account; the task needs only its prompt and input file.
+    opts = options(REPO_ROOT, "join")
+    assert opts["tools"] == ["Read"] and opts["allowed_tools"] == ["Read"]
+    assert opts["disallowed_tools"] == ["Bash", "Edit", "Write", "MultiEdit", "NotebookEdit", "mcp__*",
+                                        "Grep", "Glob", "WebSearch", "WebFetch"]
+    assert opts["extra_args"] == {"restricted": None} and opts["strict_mcp_config"] is True
+    schema = json.loads((REPO_ROOT / "agents" / "caspar" / "schemas" / "join.schema.json").read_text(encoding="utf-8"))
+    assert opts["output_format"] == {"type": "json_schema", "schema": schema}
+    for kind in ("review", "weekly", "probe"):
+        other = options(REPO_ROOT, kind)
+        assert other["tools"] == list(TOOLS) == other["allowed_tools"]
+        assert other["disallowed_tools"] == ["Bash", "Edit", "Write", "MultiEdit", "NotebookEdit", "mcp__*"]
+
+
 def test_options_are_accepted_by_the_pinned_sdk():
     sdk = pytest.importorskip("claude_agent_sdk")
     for kind in think_module.KINDS:
         built = sdk.ClaudeAgentOptions(**options(REPO_ROOT, kind))
-        assert built.tools == list(TOOLS) and built.extra_args == {"restricted": None}
+        expected = ["Read"] if kind == "join" else list(TOOLS)
+        assert built.tools == expected and built.extra_args == {"restricted": None}
 
 
 def test_ci_installs_the_pinned_sdk_so_the_test_above_runs():

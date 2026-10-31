@@ -2,8 +2,9 @@ name: triage
 on:
   issues:
     types: [opened, edited]
-  # A maintainer runs triage by hand to answer issues that were already open, such as join requests opened
-  # before the workflow reacted to them. Each run answers every open request and join request still unanswered.
+  # A maintainer runs triage by hand to answer requests that were already open before the workflow reacted to them.
+  # Each run answers every open request still unanswered. Join requests are not triaged: Caspar.Magi reviews them
+  # (caspar.yml) and intake handles a maintainer's /approve (decision D45), so an applicant never gets two replies.
   workflow_dispatch:
 concurrency:
   group: magi-triage
@@ -13,13 +14,10 @@ permissions:
   issues: write
 jobs:
   triage:
-    # Requests carry request@1 or data-request@1. Join requests come from the form (title and magi:join label)
-    # or, for API users who cannot set labels, from an issue titled "Join request ..." (CONTRIBUTING.md).
+    # Requests carry request@1 or data-request@1.
     if: >-
       github.event_name == 'workflow_dispatch'
       || contains(github.event.issue.body, 'request@1')
-      || startsWith(github.event.issue.title, 'Join request')
-      || contains(github.event.issue.labels.*.name, 'magi:join')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -27,7 +25,7 @@ jobs:
         with:
           python-version: "3.13"
       - run: python -m pip install -r requirements.txt
-      - name: Answer request and join request issues
+      - name: Answer request issues
         run: python -m engine triage --repo .
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
