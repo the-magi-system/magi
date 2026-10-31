@@ -317,6 +317,22 @@ def scenario(r: Runner) -> None:
 
     r.eventually("data request labelled and assigned to the provider", data_request_routed, timeout=120)
 
+    # A join request opened through the API: no form, no label (an outside account cannot set one).
+    join = r.submit("Join request: e2e-applicant", "Opened by the end-to-end check without the join form.")
+    reply = r.expect("join request answered", r.wait(join), "join_received")
+    r.check("join request reply reads the handle from the title and checks the author",
+            reply.get("handle") == "e2e-applicant" and any(c["check"] == "author_not_registered" for c in reply["checks"]),
+            str(reply.get("checks")))
+
+    def join_routed() -> bool:
+        issue = r.issue(join)
+        return ("magi:join" in {label["name"] for label in issue["labels"]}
+                and "ThinkwChivalri" in {person["login"] for person in issue["assignees"]})
+
+    r.eventually("join request labelled and assigned to the maintainers", join_routed, timeout=120)
+    r.check("join request stays open", r.issue(join)["state"] == "open")
+    r.gh.close(join, "completed")  # clean up as the maintainer would
+
     def snapshot_lists_idea() -> bool:
         ideas = json.loads(r.gh.get_file("ideas.json", ref="snapshot") or "[]")
         return any(item["id"] == IDEA["id"] and item["views"] for item in ideas)

@@ -25,3 +25,17 @@ def test_writer_jobs_check_out_the_head_of_main():
                 failing.append(f"{path.name}:{name}")
     assert writers, "no job is in the magi-writer concurrency group"
     assert not failing, f"writer jobs that do not check out ref: main: {', '.join(failing)}"
+
+
+def test_triage_runs_for_requests_and_join_requests():
+    # API users open "Join request: <handle>" without the form and cannot set the magi:join label (CONTRIBUTING.md).
+    flow = yaml.safe_load((REPO_ROOT / ".github" / "workflows" / "triage.yml").read_text(encoding="utf-8"))
+    on = flow.get("on", flow.get(True))
+    assert set(on["issues"]["types"]) >= {"opened", "edited"}
+    condition = " ".join(flow["jobs"]["triage"]["if"].split())
+    for needle in ["contains(github.event.issue.body, 'request@1')",
+                   "startsWith(github.event.issue.title, 'Join request')",
+                   "contains(github.event.issue.labels.*.name, 'magi:join')"]:
+        assert needle in condition, needle
+    assert condition.count("||") == 2 and "&&" not in condition
+    assert flow["permissions"] == {"contents": "read", "issues": "write"}

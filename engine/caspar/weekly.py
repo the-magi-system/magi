@@ -22,6 +22,7 @@ from ..queue import BOT_LOGIN, engine_replies
 from ..repo import RepoState
 from ..sysagent import system_log_entry
 from ..timeutil import iso, parse_iso
+from ..triage import is_join_request
 from .common import CASPAR, CRITERIA, MAX_SUGGESTION_ISSUES, SUGGESTION_LABEL, cap, marker, sanitize
 from .review import LABELS, view_text
 from .work import pending_reviews
@@ -144,6 +145,13 @@ def _thread_comments(gh, start: datetime, end: datetime) -> list[dict]:
     return found[:MAX_THREAD_COMMENTS]
 
 
+def join_requests(state: RepoState, gh) -> list[dict]:
+    """Open join requests whose author is not a registered researcher: number and opening date only, no text."""
+    return [{"number": i["number"], "opened": i["created_at"][:10]}
+            for i in sorted(gh.open_issues(), key=lambda i: i["number"])
+            if is_join_request(i) and state.researcher_by_github_id(i["user"]["id"]) is None]
+
+
 def weekly_material(root, state: RepoState, gh, week: str, start: datetime, end: datetime,
                     now: datetime) -> dict | None:
     """Everything the report draws on; None when the week had no activity at all."""
@@ -171,7 +179,8 @@ def weekly_material(root, state: RepoState, gh, week: str, start: datetime, end:
     material = {"week": week, "start": iso(start), "end": iso(end), "counts": counts,
                 "actors": [_actor_row(state, actor, log) for actor in sorted(actors)],
                 "requests": requests, "rejections": rejections, "thread_comments": comments,
-                "open_suggestions": suggestions, "waiting": waiting_reviews(state, now)}
+                "open_suggestions": suggestions, "waiting": waiting_reviews(state, now),
+                "join_requests": join_requests(state, gh)}
     if melchior is not None:
         material["melchior"] = melchior
     return material
@@ -381,6 +390,9 @@ def report_markdown(material: dict, checked: dict) -> str:
              "| New researchers | New agents | Profiles published | View versions | Evidence |", "|---|---|---|---|---|",
              f"| {counts['researchers']} | {counts['agents']} | {counts['profiles']} | {counts['view_versions']} | "
              f"{counts['evidence']} |"]
+    if material.get("join_requests"):
+        lines += ["", "Join requests waiting for a maintainer: "
+                  + ", ".join(f"#{j['number']} (opened {j['opened']})" for j in material["join_requests"]) + "."]
     if checked["overview"]:
         lines += ["", checked["overview"]]
     melchior = material.get("melchior")
