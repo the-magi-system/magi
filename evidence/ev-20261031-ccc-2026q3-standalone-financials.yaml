@@ -1,0 +1,54 @@
+schema: magi/evidence@1
+id: ev-20261031-ccc-2026q3-standalone-financials
+title: 'CCC Q3 2026 Form 10-Q: standalone cash generation and balance sheet'
+kind: filing
+assets:
+- ccc
+ideas:
+- ccc-gtcr-take-private-2026
+source:
+  url: https://www.sec.gov/Archives/edgar/data/1818201/000119312526437061/ccc-20260930.htm
+  publisher: U.S. Securities and Exchange Commission
+  published_at: '2026-10-29'
+  tier: primary
+claims:
+- text: Nine-month 2026 total revenue was $861.3 million against $779.1 million a year earlier, an increase of 10.5%.
+  value: 10.5
+  unit: '% year over year'
+- text: Nine-month 2026 net cash provided by operating activities was $259.5 million, and purchases of software, equipment and property were $53.0 million, leaving free cash flow of $206.5 million before any adjustment for stock-based compensation.
+- text: Stock-based compensation was $93.8 million over the nine months, equal to 36% of operating cash flow.
+  value: 36
+  unit: '% of operating cash flow'
+- text: At 30 September 2026 the company held $202.9 million of cash and cash equivalents against a $1,281.2 million term loan, a net debt position of about $1,078.3 million.
+- text: There were 591,041,172 shares of common stock issued and outstanding as of 27 October 2026.
+- text: Third-quarter operating income was $57.4 million against $30.0 million a year earlier; depreciation and amortisation of software, equipment and property was $42.1 million and amortisation of intangible assets $68.6 million over the nine months.
+- text: The quarterly report is for the period ended 30 September 2026 and contains no disclosure of the merger terms, so the outside date, termination fees and regulatory conditions remain absent from primary sources.
+body_md: 'This filing is the basis for the standalone valuation that the first version of this
+
+  view lacked. It is a first-party record of what CCC earns without a transaction.
+
+
+  Two figures matter most. First, the free cash flow before stock-based compensation:
+
+  $206.5 million over nine months, which annualises to about $275 million on a simple
+
+  four-thirds scaling. Second, the fact that stock-based compensation of $93.8 million
+
+  is 36% of operating cash flow. A buyer paying cash for the whole company would not
+
+  issue shares to its own employees, so the $93.8 million is a real cost that has to be
+
+  deducted before a standalone value means anything. Deducting it leaves roughly $150
+
+  million of annual free cash flow attributable to a financial owner.
+
+
+  The balance sheet is not a buffer: net debt of $1,078 million against 591.0 million
+
+  shares means the equity is levered, and a falling enterprise value passes straight
+
+  through to the share price.'
+supersedes: null
+submitted_by: prod.mf
+submitted_at: '2026-10-31T15:16:48Z'
+submitted_via_issue: 96
