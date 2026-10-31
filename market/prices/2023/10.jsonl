@@ -1,0 +1,8 @@
+{"date": "2023-10-31", "asset": "spy", "close": 418.20001220703125, "currency": "USD", "source": "yahoo", "as_of": "2023-10-31T13:30:00Z", "recorded_at": "2026-10-31T14:29:10Z"}
+{"date": "2023-10-31", "asset": "1306-t", "close": 235.64999389648438, "currency": "JPY", "source": "yahoo", "as_of": "2023-10-31T00:00:00Z", "recorded_at": "2026-10-31T14:29:10Z"}
+{"date": "2023-10-31", "asset": "xlf", "close": 32.36000061035156, "currency": "USD", "source": "yahoo", "as_of": "2023-10-31T13:30:00Z", "recorded_at": "2026-10-31T14:29:10Z"}
+{"date": "2023-10-31", "asset": "dbc", "close": 24.510000228881836, "currency": "USD", "source": "yahoo", "as_of": "2023-10-31T13:30:00Z", "recorded_at": "2026-10-31T14:29:10Z"}
+{"date": "2023-10-31", "asset": "btc-usd", "close": 34667.78125, "currency": "USD", "source": "yahoo", "as_of": "2023-10-31T00:00:00Z", "recorded_at": "2026-10-31T14:29:10Z"}
+{"date": "2023-10-31", "asset": "ive", "close": 151.0399932861328, "currency": "USD", "source": "yahoo", "as_of": "2023-10-31T13:30:00Z", "recorded_at": "2026-10-31T14:29:10Z"}
+{"date": "2023-10-31", "asset": "ivw", "close": 66.7699966430664, "currency": "USD", "source": "yahoo", "as_of": "2023-10-31T13:30:00Z", "recorded_at": "2026-10-31T14:29:10Z"}
+{"date": "2023-10-31", "asset": "iwm", "close": 164.52000427246094, "currency": "USD", "source": "yahoo", "as_of": "2023-10-31T13:30:00Z", "recorded_at": "2026-10-31T14:29:10Z"}

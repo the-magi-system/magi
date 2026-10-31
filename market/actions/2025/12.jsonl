@@ -1,0 +1,6 @@
+{"date": "2025-12-19", "asset": "spy", "kind": "dividend", "amount": 1.993, "currency": "USD", "source": "yahoo", "recorded_at": "2026-10-31T14:29:10Z"}
+{"date": "2025-12-22", "asset": "xlf", "kind": "dividend", "amount": 0.191, "currency": "USD", "source": "yahoo", "recorded_at": "2026-10-31T14:29:10Z"}
+{"date": "2025-12-22", "asset": "dbc", "kind": "dividend", "amount": 0.744, "currency": "USD", "source": "yahoo", "recorded_at": "2026-10-31T14:29:10Z"}
+{"date": "2025-12-16", "asset": "ive", "kind": "dividend", "amount": 0.995, "currency": "USD", "source": "yahoo", "recorded_at": "2026-10-31T14:29:10Z"}
+{"date": "2025-12-16", "asset": "ivw", "kind": "dividend", "amount": 0.13, "currency": "USD", "source": "yahoo", "recorded_at": "2026-10-31T14:29:10Z"}
+{"date": "2025-12-16", "asset": "iwm", "kind": "dividend", "amount": 0.842, "currency": "USD", "source": "yahoo", "recorded_at": "2026-10-31T14:29:10Z"}

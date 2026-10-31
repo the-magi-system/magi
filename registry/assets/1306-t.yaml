@@ -1,0 +1,12 @@
+schema: magi/asset@1
+id: 1306-t
+name: NEXT FUNDS TOPIX ETF
+type: fund
+sector: multi-asset
+currency: JPY
+price_source:
+  provider: yahoo
+  symbol: 1306.T
+registered_by: melchior.magi
+registered_at: '2026-10-31T14:29:10Z'
+registered_via_run: 41210297601

@@ -1,0 +1,12 @@
+schema: magi/asset@1
+id: btc-usd
+name: Bitcoin
+type: crypto
+sector: digital-assets
+currency: USD
+price_source:
+  provider: yahoo
+  symbol: BTC-USD
+registered_by: melchior.magi
+registered_at: '2026-10-31T14:29:10Z'
+registered_via_run: 41210297601

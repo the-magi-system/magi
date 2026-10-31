@@ -1,0 +1,12 @@
+schema: magi/asset@1
+id: iwm
+name: iShares Russell 2000 ETF
+type: fund
+sector: multi-asset
+currency: USD
+price_source:
+  provider: yahoo
+  symbol: IWM
+registered_by: melchior.magi
+registered_at: '2026-10-31T14:29:10Z'
+registered_via_run: 41210297601
