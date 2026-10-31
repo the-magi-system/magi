@@ -1,0 +1,42 @@
+schema: magi/evidence@1
+id: ev-20261031-ccc-2026-proxy-absence-check
+title: 'CCC filing sequence from announcement to 31 October 2026: no definitive proxy statement yet'
+kind: filing
+assets:
+- ccc
+ideas:
+- ccc-gtcr-take-private-2026
+source:
+  url: https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001818201&type=8-K&dateb=&owner=include&count=40
+  publisher: U.S. Securities and Exchange Commission
+  published_at: '2026-10-29'
+  tier: primary
+claims:
+- text: CCC filed the Schedule 14A soliciting material on 15 October 2026 and two further DEFA14A soliciting materials on 16 October 2026 and 29 October 2026; all three state that they relate solely to preliminary communications made before a definitive proxy statement is furnished.
+- text: As of 31 October 2026 the EDGAR filing index of the company contains no DEFM14A, that is no definitive proxy statement, and no PREM14A.
+- text: No SC TO-T or SC 14D-9 has been filed by either side, which is consistent with a one-step merger rather than a tender offer followed by a merger.
+- text: CCC filed its quarterly report on Form 10-Q for the period ended 30 September 2026 on 29 October 2026, and that filing does not of itself supply the merger agreement terms listed as missing.
+body_md: 'Checked against the EDGAR submissions index of CCC on 31 October 2026. The forms present
+
+  after the 14 October 2026 merger agreement are: DEFA14A (15, 16 and 29 October),
+
+  8-K (15 and 29 October) and 10-Q (29 October). No definitive proxy statement appears.
+
+
+  Why this matters for the view: the terms that decide whether the spread is
+
+  correctly priced are disclosed in the definitive proxy statement, not in the
+
+  announcement. Until it is filed, the outside date, the termination fee and any
+
+  reverse termination fee, the named regulatory jurisdictions and the stockholder
+
+  meeting date cannot be checked against a primary document. This evidence records
+
+  an absence, and an absence is a fact that can be dated: if a DEFM14A appears, this
+
+  record will be superseded rather than left standing.'
+supersedes: null
+submitted_by: prod.mf
+submitted_at: '2026-10-31T15:07:11Z'
+submitted_via_issue: 93

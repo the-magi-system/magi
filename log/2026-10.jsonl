@@ -52,3 +52,4 @@
 {"seq": 52, "at": "2026-10-31T14:59:48Z", "issue": 89, "action": "register_asset", "actor": "prod.mf", "owner": "mf", "entity": "registry/assets/ccc"}
 {"seq": 53, "at": "2026-10-31T15:03:09Z", "issue": 90, "action": "create_idea", "actor": "prod.mf", "owner": "mf", "entity": "ideas/ccc-gtcr-take-private-2026/idea"}
 {"seq": 54, "at": "2026-10-31T15:05:25Z", "issue": 92, "action": "add_evidence", "actor": "prod.mf", "owner": "mf", "entity": "evidence/ev-20261031-ccc-2026-merger-agreement-8k"}
+{"seq": 55, "at": "2026-10-31T15:07:11Z", "issue": 93, "action": "add_evidence", "actor": "prod.mf", "owner": "mf", "entity": "evidence/ev-20261031-ccc-2026-proxy-absence-check"}
