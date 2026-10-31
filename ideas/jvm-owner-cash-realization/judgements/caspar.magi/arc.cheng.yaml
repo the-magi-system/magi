@@ -1,0 +1,45 @@
+schema: magi/judgement@1
+idea: jvm-owner-cash-realization
+actor: arc.cheng
+view_version: 1
+judge: caspar.magi
+scores:
+  evidence_quality: 8
+  reasoning_coherence: 8
+  valuation_consistency: 8
+  data_freshness: 7
+  falsifiability: 8
+reasons:
+  evidence_quality: 'Every pillar cites dated primary filings (H1 DART report, Q3 company results, the KIND value-up disclosure, the AUG2026 IR deck). I checked the value-up disclosure and it matches the view: minimum total shareholder return of 20% or more for 2025–2030, DPS of 650 KRW, total dividend of 7,486,679,200 KRW, payout ratio of 26.4%. The claims are carefully scoped: cumulative installs are not active installs, and the return ratio is not a yield.'
+  reasoning_coherence: The positive pillars (ecosystem, cash generation, conditional valuation) and the negative ones (unproven returns on retained capital, Europe) roughly balance, and the neutral stance follows from the gaps the view itself identifies rather than being tuned to the distribution. I found no internal contradictions.
+  valuation_consistency: The distribution explicitly describes the KRW market price on the 2029-12-31 target date, not a value discounted to today. I re-derived all four points from the stated bridge (for example, 18bn×5 + 50%×114.575bn over 12.09m shares gives about 12,183), and they reproduce. The 27,515 mean (+19.6% ex-dividend over 38 months, 40% chance of a loss) sits below the methodology's 15–20% IRR hurdle, which fits a neutral position.
+  data_freshness: Q3 results published 2026-10-30 and the 10/30 disclosures are used, but the net-cash bridge still relies on H1 (2026-06-30) balances. The view openly flags this and names the Q3 periodic report as the refresh trigger.
+  falsifiability: 'It lists concrete refutation thresholds: normalized OPM persistently below 18–19%, working capital absorbing 7–10bn a year without growth, Europe declining with worse receivables or inventory, related-party collection problems. It also names evidence windows (the Q3 periodic report, the 11/6 cancellation, FY2026), though some triggers, such as ''persistent'' decline, are not time-bounded.'
+tail_risk: medium
+tail_risk_reason: Per the cited H1 filing, about 89.65% of revenue passes through related parties in the Hanmi group, so a governance or transfer-pricing problem could hurt minority holders fast. That is a real tail in a small-cap KOSDAQ name. On the other side, a large net-cash cushion (about 114.6bn KRW, roughly 41% of market cap) limits the downside, and the 10% severe-stress point at 12,200 already reflects this.
+notes: 'What''s strong: this is unusually disciplined work. It matches claims to the right valuation basis (it refuses to pair CFO−CapEx that includes interest with EV, and calls FSE/EV a screening yield rather than an IRR). It keeps cumulative installs, revenue and actual consumable volume clearly apart, and avoids double-counting the treasury-share cancellation. The scenario arithmetic is fully reproducible from the text. It is also candid about the sector being out of the methodology''s scope and about the H1 cash bridge.
+
+
+  What could be improved:
+
+  (1) The bridge assumes zero interest income on roughly 136bn KRW of short-term financial products while still deducting financing costs. That conservative asymmetry could understate accumulated cash by several billion KRW a year, so stating the size of this effect would help.
+
+  (2) Using the gross share count including treasury shares (12.09m, against the roughly 11.52m implied by the dividend total) for both the per-share value and the model dividend is labelled as conservative. Showing a net-share sensitivity, especially after the 387,032-share cancellation, would sharpen the bridge.
+
+  (3) The 2027 platform starting point is described as an ''analyst estimate''. Saying whether this is the author''s own estimate or third-party research would remove doubt about where it comes from.
+
+  (4) Once the Q3 periodic report is out, refreshing net cash and the related-party receivables would directly test the main tail risk.
+
+
+  Note: when I opened the 10/30 cancellation disclosure on KIND, it showed a banner saying it is not the final document, so check for any correction notice.'
+factual_errors: []
+unlabeled_non_public: []
+comment_url: https://github.com/the-magi-system/magi/issues/75#issuecomment-6543702641
+input_commit: 1db9825626b18d9babacaece3a100632df89b0e0
+methodology_version: 1
+profile_version: 1
+prompt_sha256: 4bd01b7a16ed6ed052ab9700b1b546787dd873f5f36ad8d541639a098f10e668
+model: claude-opus-5-5
+version: 1
+published_at: '2026-10-31T13:02:07Z'
+published_via_run: 41203569309
