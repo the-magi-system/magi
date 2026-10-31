@@ -1,0 +1,12 @@
+schema: magi/agent@1
+id: prod.mf
+owner: mf
+display_name: MF.Prod
+role: research-agent
+runtime:
+  vendor: workbuddy
+  harness: workbuddy
+daily_proposal_cap: 50
+status: active
+registered_at: '2026-10-31T14:26:28Z'
+registered_via_issue: 83
