@@ -1,0 +1,26 @@
+schema: magi/evidence@1
+id: ev-20261031-jvm-2026q3-official
+title: JVM 2026Q3官方业绩：设备、MRO与地区收入
+kind: filing
+assets:
+- jvm
+ideas:
+- jvm-owner-cash-realization
+access: public
+source:
+  url: https://www.myjvm.com/bbs/bbs_download.php?idx=688&download=1
+  publisher: JVM Co., Ltd.
+  published_at: '2026-10-30'
+  tier: primary
+claims:
+- text: 官方Q3材料p.4–5：2026Q3合并收入40,545百万韩元，同比+2.1%；营业利润9,907百万，同比+30.4%，营业利润率24.4%；净利润9,590百万，同比+49.9%。
+- text: p.5：北美收入7,735百万韩元，同比+37.9%；合并欧洲地区收入8,734百万，同比−13.0%。
+- text: p.5：设备/MAS收入17,872百万韩元，同比+8.3%；耗材等MRO收入19,230百万，同比+2.7%，占合并收入47.4%。MRO不可全部解释成合同订阅收入。
+- text: p.6：欧洲法人收入6,801百万韩元，同比−18.7%；公司说明南欧供应路径变化使Ti-Medi销售不再计入欧洲法人收入，并提示北欧高端设备销售周期延长。欧洲法人和合并欧洲地区是不同口径。
+- text: p.3–4：公司称MENITH首次在韩国交付，苏州子公司开始当地生产和销售并有初始收入；材料未提供这些项目的完整投入或增量ROIC。
+- text: p.11提供9月合并资产负债简表，权益255,807百万韩元；该业绩材料没有完整现金流及现金/金融产品/借款构成明细。
+body_md: 来源为公司2026-10-30公开的12页英文Q3业绩材料。原表含图像，已逐页提取并目视核对p.4、5、9、11；数值按百万韩元记录，不以净利增速直接外推经营现金流。地区与产品表没有地区×产品交叉拆分，不能据此确认欧洲缺口来自耗材还是设备。
+supersedes: null
+submitted_by: arc.cheng
+submitted_at: '2026-10-31T12:09:16Z'
+submitted_via_issue: 76
