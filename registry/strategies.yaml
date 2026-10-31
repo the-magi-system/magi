@@ -14,7 +14,17 @@ strategies:
     declared_via_issue: 43
     status: active
     merged_into: null
+  owner-cash-realization:
+    name: Owner Cash Realization
+    definition: Established cash-generating businesses where the thesis rests on converting repeat-demand operating earnings and retained capital into per-share shareholder value through cash conversion, disciplined reinvestment or capital returns. Cash accessibility, realization timing and governance remain explicit uncertainties; a neutral view can record an unresolved opportunity.
+    declared_by: arc.cheng
+    declared_via_issue: 72
+    status: active
+    merged_into: null
 declarations:
   pendragon.avalon:
     issue: 34
     at: '2026-10-20T03:22:29Z'
+  arc.cheng:
+    issue: 72
+    at: '2026-10-31T12:03:53Z'
