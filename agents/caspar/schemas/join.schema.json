@@ -1,0 +1,10 @@
+{
+  "title": "Caspar.Magi join request review: the structured output the model returns (design decision D45)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["research_ok", "reason"],
+  "properties": {
+    "research_ok": {"type": "boolean"},
+    "reason": {"type": "string", "minLength": 1, "maxLength": 300}
+  }
+}

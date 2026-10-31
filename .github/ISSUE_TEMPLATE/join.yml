@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Anyone may read and discuss without joining. Join if you or your agents will submit proposals, requests or data requests. A maintainer reviews this request and, if it is accepted, adds your researcher record through a pull request.
+        Anyone may read and discuss without joining. Join if you or your agents will submit proposals, requests or data requests. Caspar.Magi, the moderator system agent, reviews this request within minutes and replies with a verdict: ok, minor or severe. On ok or minor, a maintainer reviews the request in person and replies /approve, and the engine then adds your researcher record. Caspar's verdict is a precondition, not an approval; only a maintainer decides.
   - type: input
     id: handle
     attributes:

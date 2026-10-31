@@ -2,19 +2,29 @@ name: caspar
 # Caspar.Magi, the moderator system agent (design 19). Three jobs keep the model apart from write access:
 # prepare reads, think runs the model with five read-only tools and no write permission, write checks and writes.
 # think calls the model through the Claude Agent SDK (decision D32).
+# A join request that is opened or edited starts a run that does join work only (scope join, decision D45), so the
+# applicant has Caspar's verdict within minutes; scheduled runs also review join requests with no verdict for their
+# current body. Every run's write job is in the magi-writer group, so its posts never overlap intake's.
 on:
   schedule:
     - cron: "41 */3 * * *"
+  issues:
+    types: [opened, edited]
   workflow_dispatch:
     inputs:
       scope:
         description: "Which work to do (probe checks the model's tool and file limits)"
         type: choice
-        options: [all, regular, reviews, welcome, weekly, probe]
+        options: [all, regular, reviews, welcome, weekly, probe, join]
         default: all
 permissions: {}
 jobs:
   prepare:
+    # An issues event is join work only, and only for an issue titled "Join request..." or labelled magi:join.
+    if: >-
+      github.event_name != 'issues'
+      || startsWith(github.event.issue.title, 'Join request')
+      || contains(github.event.issue.labels.*.name, 'magi:join')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -35,7 +45,7 @@ jobs:
         run: python -m engine caspar prepare --repo . --out work --scope "$SCOPE" --mode "$CASPAR_MODE" --run-number "$GITHUB_RUN_NUMBER"
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          SCOPE: ${{ github.event_name == 'workflow_dispatch' && inputs.scope || 'all' }}
+          SCOPE: ${{ github.event_name == 'issues' && 'join' || github.event_name == 'workflow_dispatch' && inputs.scope || 'all' }}
           CASPAR_MODE: ${{ vars.CASPAR_MODE }}
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
@@ -136,7 +146,8 @@ jobs:
         if: always()
         run: if [ -f work/preview.md ]; then cat work/preview.md >> "$GITHUB_STEP_SUMMARY"; fi
       - name: Publish the snapshot
-        if: vars.CASPAR_MODE == 'live'
+        # A join-only run writes nothing to main, so it has no snapshot to publish.
+        if: vars.CASPAR_MODE == 'live' && github.event_name != 'issues' && inputs.scope != 'join'
         run: python -m engine snapshot --repo . --publish
       - name: Audit this job's own push
         run: python -m engine audit --repo . --before "$MAGI_BEFORE" --after "$(git rev-parse HEAD)" --pusher "github-actions[bot]"

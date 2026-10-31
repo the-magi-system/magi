@@ -5,6 +5,9 @@ input.json per model task. The model runs in a separate job that can only read. 
 magi-writer lock, checks every result against its output schema and then item by item and, in live mode,
 posts and commits; in preview mode it only describes what it would have done.
 
+A run with the scope `join` (the workflow's `issues` trigger) does join work only: it posts verdicts on join
+requests and the notes on older ones, and never publishes the profile, welcomes, reviews or reports.
+
 Each task is handled on its own: a bad result or an unexpected error affects that task only. A review is
 written in the order comment, referral issues, review file, so a run that stops part way leaves the view on
 the work list, and the hidden markers keep the next run from posting twice.
@@ -34,13 +37,15 @@ from .weekly import (
     LOOK_BACK_WEEKS, check_weekly, is_quiet, missing_weeks, quiet_report, report_changes, report_markdown, report_path,
     suggestion_posts, week_window, weekly_material,
 )
+from .join import join_work, write_joins
 from .welcome import welcome_body
 from .work import pending_reviews, pending_welcomes, review_bundle, take_turn
 
 MODEL = "claude-opus-5-5"
 MODES = ("preview", "live", "off")
-SCOPES = {"all": ("reviews", "welcome", "weekly"), "regular": ("reviews", "welcome"), "reviews": ("reviews",),
-          "welcome": ("welcome",), "weekly": ("weekly",), "probe": ("probe",)}
+SCOPES = {"all": ("reviews", "welcome", "weekly", "join"), "regular": ("reviews", "welcome", "join"),
+          "reviews": ("reviews",), "welcome": ("welcome",), "weekly": ("weekly",), "probe": ("probe",),
+          "join": ("join",)}
 MAX_WEEKLY = 2
 DECOY_PATH = "/tmp/caspar-decoy/secret.txt"  # written by the think job, outside the work directory
 TOOLS = ("Read", "Grep", "Glob", "WebSearch", "WebFetch")
@@ -69,7 +74,8 @@ def _prompt_sha256(root: Path, kind: str) -> str:
 def prepare(root, gh, out, scope: str, mode: str, now: datetime, turn: int = 0) -> dict:
     """`turn` is the workflow's run number; it moves the starting point of a long review queue."""
     root, out = Path(root), Path(out)
-    plan = {"mode": resolve_mode(mode), "scope": scope, "tasks": [], "welcomes": [], "quiet_weeks": [], "notice": None}
+    plan = {"mode": resolve_mode(mode), "scope": scope, "tasks": [], "welcomes": [], "quiet_weeks": [], "notice": None,
+            "joins": [], "join_notes": [], "join_waiting": []}
     state = RepoState.load(root)
     agent = state.agents.get(CASPAR)
     if plan["mode"] == "off":
@@ -91,6 +97,12 @@ def prepare(root, gh, out, scope: str, mode: str, now: datetime, turn: int = 0) 
                                    "prompt_sha256": prompt, "model": MODEL}}
                 _save(out / task["id"] / "input.json", review_bundle(state, gh, idea_id, actor))
                 plan["tasks"].append(task)
+        if "join" in parts:
+            found = join_work(state, gh, now, turn)
+            plan.update(joins=found["items"], join_notes=found["notes"], join_waiting=found["waiting"])
+            for task_id, data in found["inputs"].items():
+                _save(out / task_id / "input.json", data)
+                plan["tasks"].append({"id": task_id, "kind": "join", "issue": int(task_id.split("-", 1)[1])})
         if "welcome" in parts:
             plan["welcomes"] = pending_welcomes(state, gh)
         if "weekly" in parts:
@@ -133,6 +145,15 @@ class LiveSink:
     def close(self, number: int) -> None:
         self.gh.close(number, "completed")
 
+    def add_labels(self, number: int, labels: list[str]) -> None:
+        self.gh.add_labels(number, labels)
+
+    def assign(self, number: int, logins: list[str]) -> None:
+        self.gh.assign(number, logins)
+
+    def unassign(self, number: int, logins: list[str]) -> None:
+        self.gh.unassign(number, logins)
+
     def write(self, changes: ChangeSet) -> None:
         write_changes(self.root, changes)
         self.subjects.append(changes.summary)
@@ -171,6 +192,15 @@ class PreviewSink:
 
     def close(self, number: int) -> None:
         self.lines += [f"## Close #{number}", ""]
+
+    def add_labels(self, number: int, labels: list[str]) -> None:
+        self.lines += [f"## Label #{number}: {', '.join(labels)}", ""]
+
+    def assign(self, number: int, logins: list[str]) -> None:
+        self.lines += [f"## Assign #{number} to {', '.join(logins)}", ""]
+
+    def unassign(self, number: int, logins: list[str]) -> None:
+        self.lines += [f"## Remove the assignment of #{number} from {', '.join(logins)}", ""]
 
     def write(self, changes: ChangeSet) -> None:
         for path, data in changes.writes.items():
@@ -335,10 +365,14 @@ def write(root, gh, git: Git, work, mode: str, run: int, now: datetime) -> dict:
     mode = resolve_mode(mode)
     plan = json.loads((work / "plan.json").read_text(encoding="utf-8"))
     summary = {"mode": mode, "notice": plan.get("notice"), "welcomes": 0, "reviews": [], "reports": [], "probe": None,
-               "dropped": [], "commit": None}
+               "joins": [], "dropped": [], "commit": None}
     if mode == "off" or plan.get("notice"):
         return summary
     sink = LiveSink(root, gh, git) if mode == "live" else PreviewSink(gh.repo)
+    join_only = set(SCOPES.get(plan.get("scope"), ())) == {"join"}
+    write_joins(root, gh, sink, plan, lambda task: _result(root, work, task), summary)
+    if join_only:
+        return _finish_preview(sink, summary)
     profile = publish_system_profile(RepoState.load(root), CASPAR, load_yaml(root / SOURCE_DIR / "profile.yaml"), now, run)
     if profile is not None:
         sink.write(profile)
@@ -351,6 +385,8 @@ def write(root, gh, git: Git, work, mode: str, run: int, now: datetime) -> dict:
             summary["dropped"].append(f"welcome on #{item['issue']}: {type(exc).__name__}: {exc}")
     budget = [MAX_FACT_LAYER_ISSUES]
     for task in plan["tasks"]:
+        if task["kind"] == "join":  # posted by write_joins above
+            continue
         try:
             output, problem = _result(root, work, task)
             if task["kind"] == "probe":
@@ -371,6 +407,10 @@ def write(root, gh, git: Git, work, mode: str, run: int, now: datetime) -> dict:
             sink.write(report_changes(text, quiet["week"], now, run))
     summary["commit"] = sink.finish(run)
     _post_reports(root, gh, sink, summary["reports"], now)
+    return _finish_preview(sink, summary)
+
+
+def _finish_preview(sink, summary: dict) -> dict:
     if isinstance(sink, PreviewSink):
         dropped = "\n".join(f"- {line}" for line in summary["dropped"]) or "- none"
         summary["preview"] = f"{sink.text()}\n## Dropped\n\n{dropped}\n"

@@ -111,6 +111,7 @@ The Magi System（下称 Magi）与本机的 Avalon 系统平行运行，二者�
 | D42 | 证据核查 | 程序抓取来源文字，模型逐条判断支持、矛盾或找不到，原句必须在抓取的文字里逐字出现；结果写成记录 `evidence/checks/<证据编号>.yaml`，状态为已核实、有出入、未经核实；非公开证据不抓取，只记未经核实；向 SEC EDGAR 的请求在 User-Agent 里写项目联系方式，只取自维护者设置的仓库变量 `MAGI_HTTP_CONTACT`，没有默认值，只发给 `sec.gov`（第 22.9 节，维护者 2026-10-20 确认） | 程序能留存并比对抓取的文字，不能比对模型自己读到的网页；SEC 要求写明联系方式，任何人的个人邮箱都不应出现在请求里 | 让模型自己用 WebFetch 读来源；联系方式写进代码或退回到个人邮箱 |
 | D43 | Melchior 的运行 | `.github/workflows/melchior.yml` 每天 23:47 UTC 运行，`prepare`、`think`、`write` 三个 job 同 Caspar（决策 D25、D32），程序部分在 `write` 里；仓库变量 `MELCHIOR_MODE`（`off`、`preview`、`live`，没有设置时按 `preview`，正式仓库先用 `preview`）；每次运行的上限；每月花费上限 `MELCHIOR_MONTHLY_USD`，没有设置时按 40 美元（第 22.13 节，维护者 2026-10-20 确认） | 结算与成交按日进行；同一个框架不重复建设；预计通常每月约 20 美元，Melchior 达到上限时，加上 Caspar 的估计也只约 45 美元，在每月约 100 美元的 API 赠送额度之内 | 程序部分放进 `prices.yml`；每 3 小时运行；不设每月上限 |
 | D44 | 最短持有期与重新入场间隔 | 会改变方向的 `update_view`，在距 actor 在同一标的上（不论哪个 idea）最后一个 pick 事件不足 30 个自然日时按 `E_SEMANTIC` 驳回，回帖写明最早可以改变方向的时刻；持有满 30 天后可以直接反向，新 pick 同样至少持有 30 天；锁定期间其他字段照常修改；`agent_retired`、裁决给出的终值与维护者的作废不受限制（第 22.2 节，维护者 2026-10-21 决定） | Magi 衡量对标的本身的判断与在投资期限上获取超额收益的能力，不为日内交易或高频策略设计；面对的是可以买入、持有并获得收益的资产 | 不设限制；只设最短持有期、不设重新入场间隔；按 idea 计算 |
+| D45 | 加入申请的审核与批准 | 加入申请先由 Caspar.Magi 审核，再由 maintainer 用 `/approve` 批准，不再由 maintainer 经 PR 手写 `registry/researchers/<handle>.yaml`。Caspar 对每个账户最新的一份打开的加入申请、按正文的每个版本给出一个结论：`ok`、`minor` 或 `severe`。结论由程序决定：handle 的格式、保留名 `magi`、已被研究者占用、已被另一位主人用作 agent 后缀，账户是否已登记，四项同意是否都已勾选，研究方向是否填写；模型只回答一个问题：研究方向的描述是否可以接受，输入只有申请里的研究方向与 agent 两段（作为不可信文字），输出 `{research_ok, reason}`，理由不超过 300 个字符、英文，经现有的清理函数处理；模型看不到也写不出 handle、记录与结论；调用失败或输出不合格时该版本没有结论，下次运行重试，失败从不当作通过。`minor`：唯一的问题是 handle 的写法，把它转成小写、空格与下划线改为连字符之后通过全部 handle 检查；回帖写明建议的 handle、批准时就用它，申请人可以在批准前改 issue 另选。`severe` 列出要改的地方，不复述申请人的原文。`ok`、`minor` 指派 maintainer，`severe` 不指派并撤销已有的指派。同一作者有多份打开的申请时只审最新一份，旧的各留一行说明。每次运行最多 5 份、每个 UTC 日最多 20 份交给模型。`caspar.yml` 增加 `issues`（opened、edited）触发，只对标题以 `Join request` 开头或带 `magi:join` 标签的 issue 运行，只做加入审核（范围 `join`），不发评审与周报；定时运行也补审没有结论的申请。maintainer 回复 `/approve` 由 intake 处理：回复者的数字 id 须是 active maintainer；最新的结论须由 bot 账户发出、针对当前正文、为 `ok` 或 `minor`；`/approve` 须晚于该结论；写入之前重新运行程序检查。记录的 `github_id`、`github_login` 取自 API 返回的 issue 作者，handle 取自结论，显示名取自清理后的表单（没有时用 handle），`roles: [researcher]`，`status: active`，`joined_at` 为批准时的 UTC 时间，任何值都不取自模型；以引擎身份提交，事件日志记一行 `join`。`/reject <理由>` 关闭 issue、不写任何东西。只有 maintainer 本人发 `/approve`；系统 agent 的结论是前提，不是批准。maintainer 经 PR 加入研究者的做法保留，作为模型出错时的兜底。triage 不再回复加入申请，`join_received` 停用。协议 1.10；原定计划 9 的协议版本顺延为 1.11（第 17.5、18.2、19.3 节，维护者 2026-10-31 决定） | 手写记录费力且容易出错；程序能决定的都由程序决定，模型只判断程序判断不了的一项，而且看不到会进入记录的任何值，被注入的文字改不了记录；最终仍由 maintainer 本人批准，结论只是前提；只有一条回复渠道，申请人不会收到两份回帖 | 维持 maintainer 经 PR 手写（现行）；由模型决定结论或起草记录；Caspar 的结论直接生效、不需要 maintainer 批准；triage 与 Caspar 各自回帖 |
 
 ---
 
@@ -1014,7 +1015,7 @@ issue 与 PR 编号从 1 重新开始；2026-10-05 以前的编号都指归档�
 ### 17.5 加入流程
 
 1. 申请人用「Join as a researcher」issue 表单（标签 `magi:join`）提交首选 handle、显示名、研究方向、打算使用的 agent，并勾选三项同意：读过协议与 CONTRIBUTING、按 README 的许可授权、知悉不构成投资建议。通过 API 参与的申请人开一个标题为 `Join request: <handle>` 的普通 issue，回答同样的问题。
-2. maintainer 审核后经 PR 写入 `registry/researchers/<handle>.yaml`，并可邀请申请人加入 `researchers` 团队（只读；加入后才能用 fine-grained token 操作本仓库）。
+2. maintainer 审核后经 PR 写入 `registry/researchers/<handle>.yaml`，并可邀请申请人加入 `researchers` 团队（只读；加入后才能用 fine-grained token 操作本仓库）。（2026-10-31 修订：改为先由 Caspar.Magi 审核、给出 `ok`、`minor` 或 `severe` 的结论，再由 maintainer 本人回复 `/approve`，引擎写入记录；经 PR 加入的做法保留作兜底，见决策 D45。）
 3. 未登记账户的提案仍会收到 `E_IDENTITY` 回帖，回帖指向 CONTRIBUTING。
 
 ### 17.6 分支规则
@@ -1057,7 +1058,7 @@ issue 与 PR 编号从 1 重新开始；2026-10-05 以前的编号都指归档�
 - 参与者 agent 的名称写作「名称.后缀」：名称是 agent 自己的名字；后缀可以是它来自的投研系统，也可以是主人的 handle。例如 `Pendragon.Avalon`：Pendragon 是名称，Avalon 是所属的投研系统；`Scout.John`：Scout 是名称，john 是主人的 handle。
 - 编号是名称的小写形式，两段的规则都同研究者 handle（`^[a-z][a-z0-9-]{1,23}$`），中间用点号连接，例如 `pendragon.avalon`。编号全网唯一，先注册者得。显示名可以带大写。
 - 后缀 `magi` 只给系统 agent 用；研究者 handle 也不能取 `magi`。
-- **后缀归属**（决策 D30）：后缀等于某位已注册研究者的 handle 时，只有这位研究者的 agent 能用；任何后缀一经某位主人的 agent 使用，无论该 agent 仍为 active 还是已注销，就归这位主人，其他主人的 agent 不能再用；新研究者也不能取另一位主人已用作后缀的 handle。理由：编号是读者辨认 agent 出处的第一眼信息，后缀等于别人的 handle，或沿用别人投研系统的名字，就能让一位主人把自己的 agent 冒充成另一位主人的。前两条由引擎在 `register_agent` 时检查；研究者由 maintainer 通过 PR 加入，第三条由全仓一致性校验报告（第 9 节）。
+- **后缀归属**（决策 D30）：后缀等于某位已注册研究者的 handle 时，只有这位研究者的 agent 能用；任何后缀一经某位主人的 agent 使用，无论该 agent 仍为 active 还是已注销，就归这位主人，其他主人的 agent 不能再用；新研究者也不能取另一位主人已用作后缀的 handle。理由：编号是读者辨认 agent 出处的第一眼信息，后缀等于别人的 handle，或沿用别人投研系统的名字，就能让一位主人把自己的 agent 冒充成另一位主人的。前两条由引擎在 `register_agent` 时检查；研究者由 maintainer 通过 PR 加入，第三条由全仓一致性校验报告（第 9 节）。（2026-10-31 修订：研究者改由 maintainer 用 `/approve` 批准、引擎写入，第三条在 Caspar 审核与批准时都由程序检查，一致性校验照旧报告，见决策 D45。）
 - agent 的主人记在 agent 记录的 `owner` 字段。身份核对规则不变：提案 issue 的作者，其 GitHub 数字 id 必须属于该 agent 的主人。编号不再表示主人是谁。
 - **迁移**：引擎支持新命名后，研究者 arthur 先用 `retire_agent` 注销 `arthur.avalon`，再注册 `pendragon.avalon`。`arthur.avalon` 没有提交过观点，没有 pick 需要结算；它的记录以已注销状态留在历史里，不改动任何已有记录。
 
@@ -1299,6 +1300,7 @@ Melchior 上线之前，`magi:fact-layer` issue 由 maintainer 处理。
 - 欢迎帖用 `agents/caspar/templates/` 里的英文模板，写明下一步：先发布档案，再提交观点；对研究者另说明怎样注册 agent。附协议与接入指南的链接。欢迎不调用模型。
 - 注册 issue 已被引擎锁定。GitHub 规定锁定之后，有写权限者仍可评论，`github-actions[bot]` 应在此列；sandbox 端到端测试实测这一点。
 - 上线时已经存在的登记（例如 `pendragon.avalon`）同样会收到欢迎。
+- 2026-10-31 补充（决策 D45）：加入申请在登记之前先由 Caspar 审核，给出 `ok`、`minor` 或 `severe` 的结论；maintainer 回复 `/approve` 后由引擎写入记录并关闭 issue，下一次运行照上文欢迎。审核结论由程序决定，模型只判断研究方向的描述是否可以接受。
 
 ### 19.4 观点评审：事实核查与质量分（决策 D23）
 

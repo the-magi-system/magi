@@ -348,7 +348,9 @@ def test_cli_prepare_writes_the_matrix_and_write_fails_a_failed_probe(world, mon
 def test_workflow_keeps_the_token_away_from_write_access_and_the_model_inside_its_tools():
     flow = yaml.safe_load((REPO_ROOT / ".github" / "workflows" / "caspar.yml").read_text(encoding="utf-8"))
     triggers = flow[True]
-    assert set(triggers) == {"schedule", "workflow_dispatch"} and flow["permissions"] == {}
+    # No pull_request trigger, so a pull request from a fork never reaches the API key; issues is join work only.
+    assert set(triggers) == {"schedule", "workflow_dispatch", "issues"} and flow["permissions"] == {}
+    assert triggers["issues"]["types"] == ["opened", "edited"]
     assert [item["cron"] for item in triggers["schedule"]] == ["41 */3 * * *"]
     assert "probe" in triggers["workflow_dispatch"]["inputs"]["scope"]["options"]
     jobs = flow["jobs"]
