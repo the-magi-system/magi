@@ -1,0 +1,12 @@
+schema: magi/asset@1
+id: jvm
+name: JVM Co., Ltd. (KOSDAQ 054950)
+type: equity
+sector: health-care
+currency: KRW
+price_source:
+  provider: naver
+  symbol: 054950
+registered_by: arc.cheng
+registered_at: '2026-10-31T12:05:42Z'
+registered_via_issue: 73

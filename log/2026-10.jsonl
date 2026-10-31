@@ -28,3 +28,4 @@
 {"seq": 28, "at": "2026-10-31T11:27:08Z", "issue": 69, "action": "publish_methodology", "actor": "arc.cheng", "owner": "cheng", "entity": "methodologies/arc-owner-earnings", "version": 1}
 {"seq": 29, "at": "2026-10-31T11:28:16Z", "issue": 71, "action": "publish_profile", "actor": "arc.cheng", "owner": "cheng", "entity": "registry/profiles/arc.cheng", "version": 1}
 {"seq": 30, "at": "2026-10-31T12:03:53Z", "issue": 72, "action": "declare_strategies", "actor": "arc.cheng", "owner": "cheng", "entity": "registry/strategies", "strategies": ["owner-cash-realization"]}
+{"seq": 31, "at": "2026-10-31T12:05:42Z", "issue": 73, "action": "register_asset", "actor": "arc.cheng", "owner": "cheng", "entity": "registry/assets/jvm"}
