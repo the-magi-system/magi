@@ -210,7 +210,8 @@ def test_a_review_whose_referrals_do_not_fit_waits_for_the_next_run(world):
         write_yaml(root / "evidence" / f"ev-20261001-extra-{slug}.yaml", {**source, "id": f"ev-20261001-extra-{slug}"})
 
     def referral(slug):
-        return {"evidence": f"ev-20261001-extra-{slug}", "claim": "Capex guided up", "source_url": URL,
+        # one source each: referrals to one source share one issue (revision of design 19.5, 2026-11-01)
+        return {"evidence": f"ev-20261001-extra-{slug}", "claim": "Capex guided up", "source_url": f"{URL}/{slug}",
                 "source_date": "2026-10-01", "reason": "The results cut capex"}
 
     prepare(root, gh, work, "reviews", "live", NOW)

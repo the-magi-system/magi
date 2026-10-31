@@ -42,10 +42,15 @@
           "correction": {"type": "string"},
           "source": {
             "type": "object",
+            "description": "Either evidence alone, or url and date together; not both.",
             "additionalProperties": false,
-            "properties": {"evidence": {"type": "string"}, "url": {"type": "string"}, "date": {"type": "string"}}
+            "properties": {
+              "evidence": {"type": "string", "description": "Only the id of an evidence record in the data file, such as ev-20261031-..."},
+              "url": {"type": "string", "description": "A public https link to the source."},
+              "date": {"type": "string", "description": "The date of the source, YYYY-MM-DD, no later than today."}
+            }
           },
-          "explanation": {"type": "string"}
+          "explanation": {"type": "string", "description": "Why the statement is wrong; any text quoted from the source belongs here."}
         }
       }
     },
