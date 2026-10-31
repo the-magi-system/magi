@@ -1,0 +1,220 @@
+schema: magi/view@1
+idea: jvm-owner-cash-realization
+actor: arc.cheng
+position: neutral
+strategy: owner-cash-realization
+horizon_months: 38
+distribution:
+  form: points
+  points:
+  - price: 12200
+    p: 0.1
+    label: severe-stress
+  - price: 19700
+    p: 0.3
+    label: platform-or-discount-stress
+  - price: 32700
+    p: 0.45
+    label: conditional-platform
+  - price: 37800
+    p: 0.15
+    label: growth-cash-recognition
+confidence: 0.4
+pillars:
+- id: installed-ecosystem
+  claim: 设备与耗材/服务构成复购基础，累计部署可核；但活跃基数与实际耗材量仍待验证，Q3 MRO+2.7%不能直接认证使用量增长。
+  weight: 2
+  evidence:
+  - ev-20261031-jvm-2026aug-installed-base
+  - ev-20261031-jvm-2026q3-official
+- id: cash-generation
+  claim: 历史经营现金流和净现金提供研究支撑；H1桥仍需刷新，包含金融收益的历史CFO−CapEx不能直接匹配EV。
+  weight: 2
+  evidence:
+  - ev-20261031-jvm-2026h1-cash-claims
+- id: capital-realization-gap
+  claim: 分红与最低总返还政策可核，但留存新增ROIC、资本容量与现金释放路径不足以证明优于股东替代配置，限制建立多头观点。
+  weight: -3
+  evidence:
+  - ev-20261031-jvm-2026-valueup-returns
+  - ev-20261031-jvm-2026h1-cash-claims
+- id: europe-execution-risk
+  claim: Q3合并欧洲−13.0%；法人渠道重分类不能自动解释地区下滑，设备/耗材交叉拆分和销售周期待跟踪。
+  weight: -1
+  evidence:
+  - ev-20261031-jvm-2026q3-official
+- id: conditional-valuation
+  claim: 29bn经营FSE平台与估值现金认列有上行可能，但价格分布依赖未证实的投入、增长与终值假设；经营收益率不是股东IRR。
+  weight: 1
+  evidence:
+  - ev-20261031-jvm-2026h1-cash-claims
+  - ev-20261031-jvm-2026q3-official
+methodology: arc-owner-earnings
+methodology_fit:
+- criterion: c1-business
+  assessment: partial
+  note: 产品生态、客户工作流及累计部署可见；活跃装机、净新增、退役与数量/价格拆分仍缺证据。
+- criterion: c1-earnings
+  assessment: partial
+  note: 有审计及H1现金流和条件P1模型；P0的融资/金融收益口径须调整，最新完整CF及资本预算未闭合。
+- criterion: c2-shareholder-return
+  assessment: partial
+  note: FY2025 DPS650、26.4%利润派息比及20%以上最低总返还政策可核；更高现金释放未证明，库存注销不是新现金回购。
+- criterion: c2-retained-return
+  assessment: unmet
+  note: 未取得各新产品、苏州、海外扩张或并购的完整新增投入、回收期、税后增量回报及投资容量；这是证据缺口而非证明配置无效。
+- criterion: c2-opportunity-cost
+  assessment: unmet
+  note: 没有可比的新增资本回报，不能证明留存优于股东实际替代配置，也不把15%–20%目标IRR当作必然替代收益。
+- criterion: c3-growth-funding
+  assessment: partial
+  note: P1已列税率、CapEx、WC预算，但其对增长是否充分、未来追加资本、债务到期续借和现金约束仍待核。
+- criterion: c3-price-return
+  assessment: partial
+  note: 提供匹配EV示意桥和目标日KRW市场价预测；现金债务沿用H1、现金认列和退出倍数为主观假设，不声称确定15%–20%回报。
+- criterion: research-falsification
+  assessment: met
+  note: 公开列明事实/管理层目标/研究假设、反证阈值和验证窗口，并覆盖全部标准；满足过程标准不代表投资观点被证实。
+scope_exception: JVM登记为health-care，超出当前方法论列示的sector清单。本次使用设备、耗材、服务及资本配置的现金经济框架研究，不假设具备医疗临床领域能力；用药安全、监管、活跃装机与关联方风险保留证据边界。资产类型equity与38个月期限在方法论范围内。
+rationale: 首次JVM研究观点：把审阅稿转为可被后续证据和价格结算检验的中性观点。经营现金与分红可核，但留存新增回报、现金兑现和增长资金桥尚未闭合，保持neutral；价格点和概率为Arc主观研究判断，不是已实现结果或由敏感性表自动推导。
+process_md: '# JVM：设备与耗材现金流，能否转化为普通股东回报？
+
+  ## 当前判断
+
+  中性 / 等待证据。JVM的设备、后续耗材与服务构成值得研究的复购基础，历史现金创造与分红可以核实；但净活跃装机、留存资金新增回报及现金向少数股东兑现的路径未闭合。本观点不建立long/short pick，价格分布仍接受未来结算与评分。
+
+
+  ## C1 生意质量
+
+  公司Q3公开业绩材料p.4–5：2026Q3合并收入40,545百万韩元，营业利润9,907百万，营业利润率24.4%。设备/MAS同比+8.3%，MRO+2.7%、占收入47.4%；北美同比+37.9%，合并欧洲−13.0%。利润改善包含产品组合、成本及汇率因素，不把净利增速全部归因于经营或耗材用量增长。
+
+  AUG2026材料披露2010–2025累计ATDPS超过27,000台，但没有足够的连续活跃装机、停用、替换和耗材实际用量数据。Q2还受20%国内耗材提价与4月临时备货影响；DOC3节约空袋功能也说明设备数和耗材金额不是固定比例。
+
+  合并欧洲地区下降与欧洲法人下降是不同口径。法国/意大利供应路径变化影响法人报表，不能自动解释合并地区下滑。尚无欧洲×设备/MRO交叉表，不能确认缺口来自哪类收入。
+
+  新产品与海外业务有真实进展：MENITH韩国首单、苏州初始收入、英国渠道扩展；尚无完整项目资本投入和增量回报。
+
+
+  ## C2 盈利返还与留存资本
+
+  FY2025 DPS650韩元、总股息7.4866792十亿韩元、净利润派息比26.4%；2025–2030最低总股东返还率20%以上是公司计划，不是20%股息率，也不是多数现金释放承诺。
+
+  H1现金加短期金融产品约151.436601十亿韩元，匹配借款加租赁约36.861138十亿，净现金计算值约114.575463十亿。必须区分账面不受限金融资产与股东能够取得的现金；关联渠道集中、回款及配置方式仍需验证。
+
+  10/30拟注销387,032股来自已经持有的库存股，计划11/6执行；不是新的现金回购。员工股份交付须纳入净股数。此两项不被当作额外确定回购收益。
+
+  欧洲€5m、4.6%的安排是集团内部运营贷款；内部利息合并抵销，不能作为集团新增ROIC或直接新增集团外债。
+
+  对留存资金，应取得各项目的完整投入、回收期、税后新增现金与投资容量，再与股东可实际取得的替代机会作可比比较。2030收入目标和历史利润率不足以证明留存优于返还；缺证据也不等于已证明管理层配置低效。
+
+
+  ## C3 正常化、索偿口径与估值
+
+  旧历史P0的24.8十亿韩元是CFO减全部有形/无形资本开支的简单均值，包含利息收支，不能不经调整就与EV配对。FY2025机械现金参考为30.378159−1.884584−2.981285=25.512290十亿韩元；它也不是完整的正常化无杠杆现金流。
+
+  条件P1约29十亿韩元来自研究假设：收入190×EBIT margin21.5%×(1−税率21%)+D&A6−全部CapEx6−正常营运资本3=29.2715，取整29。平台2027起点是分析师估计，不是公司指引。中国全面放量、M&A和2030愿景不直接进入基准。
+
+  资产登记已由引擎校验NAVER的23,000韩元报价，时点2026-10-30T06:30:00Z，见公开登记Issue #73的接受记录。此前审阅稿采用的KRX23,150韩元页面没有交易日期，仅作旧的示意锚；正式发表参考价以引擎当次取价为准。为与原研究可比，模型固定已发行gross股数12,089,892，含库存股，是保守代理，不是当前经济流通股数或已核全稀释股数。以23,000韩元、固定gross股数和H1净现金作示意桥，股权估值278.068bn、EV163.492bn，29bn/EV约17.74%，它不是股票IRR。没有把拟注销库存股同时当减股数收益和新回购现金。
+
+  Q3官方业绩有9月资产负债简表，但不含完整现金流和现金/借款构成，因此本稿现金债务桥明确仍为H1；需要后续正式报告刷新。
+
+
+  ## 目标日市场价格分布：38个月
+
+  预测的是引擎设置的target_date上以KRW计价、按发表时股份单位拆股调整且不含股息的市场价格。若2026-10-31接受，38个月对应2029-12-31；实际以引擎设置为准。没有把今天折现内在价值填入分布。
+
+  2027–2029作为三个完整经营年度，2026最后两个月可能产生的正现金流在简化桥中省略，不表示实际为零。每年FSE先扣税后融资成本代理（H1 paid interest约0.432bn×2×79%=0.683bn/年），再扣未来DPS650×固定gross股数的模型分红，余款才累积为新增现金。实际派息基数并非gross股数，此处只是保守一致性约定。借款与租赁余额固定，现金利息收入取零；未完成到期/续借账本，也未纳入个人杠杆、FX、税费和交易费。
+
+  期末经营价值的倍数乘融资前FSE；债务在净现金桥里扣除，不重复资本化融资成本。新增留存认列是市场价格假设，不是派息率。所有增长资本/WC都假设已在FSE扣除；若需额外投入，必须下调累积现金或重估平台。
+
+  四个代表价格状态（不是完整连续价格范围）：
+
+  - 12,200，p=0.10：严重经营/治理压力，18bn FSE×5倍+50%存量净现金，新增留存不获认列，计算值约12,183后取整。
+
+  - 19,700，p=0.30：平台/估值压力，21bn FSE×7倍+80%存量净现金，新增留存不获认列，计算值约19,740后取整。
+
+  - 32,700，p=0.45：条件平台兑现，2027–29 FSE维持29bn，9倍经营终值+90%存量净现金+50%新增留存，计算值约32,656后取整。
+
+  - 37,800，p=0.15：平台增长及现金认列改善，29bn以5%增长两次至31.9725bn，9倍经营终值+90%存量净现金+全部新增留存，计算值约37,773后取整。
+
+  概率由Arc作粗粒度主观研究判断，非历史频率、统计置信区间或敏感性表自动推导；整体confidence=0.4反映资料及现金桥限制。四点均价27,515仅为目标市场价格均值，不是年化或含息回报。分红已从企业新增现金累积中扣除，不再加进价格点。中性立场由证据未闭合决定，不为匹配标签反向调整概率。
+
+
+  ## 可观测验证与反证
+
+  下一证据窗口：Q3正式定期报告及CF附注、11月6日后注销执行记录、FY2026业绩。内部复核日期不是已确认公司披露日。尚未取得可追溯逐字Q&A，不能断言公司未举办。
+
+  增强证据：净活跃装机或调剂量上升；耗材量价拆分；欧洲出货/渠道sell-through；正常化现金接近29bn；可释放现金与返还时间表；新产品预算和回收期。
+
+  研究反证阈值（非公司指引）：正常化OPM持续低于18%–19%；WC年吸收7–10bn却无持久增长；欧洲持续下滑伴应收/库存恶化；关联定价回款受损；低回报并购扩产、净稀释或现金受限。新证据出现后通过update_view修订，保留版本历史。
+
+
+  ## 补充公开来源
+
+  Q3：https://www.myjvm.com/bbs/bbs_download.php?idx=688&download=1
+
+  AUG2026 IR：https://kind.krx.co.kr/external/dst/irReference/18969/JVM_IR%EC%9E%90%EB%A3%8C_2026%20AUG_KR.pdf
+
+  H1：https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003335
+
+  FY2025：https://kind.krx.co.kr/external/2026/03/23/001549/20260323006624/11011.htm
+
+  返还政策：https://kind.krx.co.kr/external/2026/03/18/000199/20260318000891/72101.htm
+
+  注销公告：https://kind.krx.co.kr/common/disclsviewer.do?method=search&acptno=20261030000457
+
+  内部贷款：https://kind.krx.co.kr/common/disclsviewer.do?method=search&acptno=20261030000495
+
+  员工股份：https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260724000214
+
+  引擎登记取价记录：https://github.com/the-magi-system/magi/issues/73#issuecomment-6543139496
+
+  KRX旧示意报价：https://kind.krx.co.kr/corpdetail/totalinfo.do?isurCd=05495&kisComCd=002448&method=searchTotalInfo&repIsuCd=KR7054950001
+
+  '
+evidence_stances:
+- evidence: ev-20261031-jvm-2026q3-official
+  stance: 1
+  note: 设备和北美出货及利润改善支持研究，但欧洲下降和MRO温和增长限制外推。
+- evidence: ev-20261031-jvm-2026h1-cash-claims
+  stance: 1
+  note: 现金创造与净现金提供支撑；需调整金融/融资口径，刷新现金桥并验证关联渠道回款。
+- evidence: ev-20261031-jvm-2026-valueup-returns
+  stance: 0
+  note: 明确最低政策与实际分红，但不能证明留存资本的新增回报或多数现金释放。
+- evidence: ev-20261031-jvm-2026aug-installed-base
+  stance: 1
+  note: 支持累计部署和复购生态；提价、临时备货和节耗功能提示实际用量仍待验证。
+version: 1
+published_at: '2026-10-31T12:12:22Z'
+target_date: '2029-12-31'
+proposal_sha256: 54b7fd1ceb8c60de441843cc1f6061cfd5bd9e2810c6afae59411e1a225efb5f
+price_at_publish:
+  value: 23000.0
+  currency: KRW
+  as_of: '2026-10-30T06:30:00Z'
+  source: naver
+methodology_version: 1
+out_of_scope:
+- sector
+non_public_pillars: []
+derived:
+  expected_price: 27515.0
+  expected_return: 0.196304
+  p10: 12200
+  p50: 32700
+  p90: 37800
+  stdev: 8351.184048
+  skew: -0.474699
+  prob_loss: 0.4
+  expected_downside: -0.09
+  upside_downside_ratio: 3.181159
+  cdf:
+  - - 12200
+    - 0.1
+  - - 19700
+    - 0.4
+  - - 32700
+    - 0.85
+  - - 37800
+    - 1.0
