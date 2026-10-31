@@ -1343,6 +1343,8 @@ Melchior 上线之前，`magi:fact-layer` issue 由 maintainer 处理。
 
 `fact_layer` 里通过校验的每一条，开一个带 `magi:fact-layer` 标签的 issue：标题写证据编号，正文写存疑的主张、相抵触的来源、Caspar 的理由，以及引出这个问题的观点。同一条证据已经有打开的 `magi:fact-layer` issue 时，改在那个 issue 里补充。每次运行最多新开 3 个；本次剩余的额度不够某份评审用时，这份评审整体延到下一次运行（第 19.2 节），转交不会丢失。Melchior 上线之前由 maintainer 处理。
 
+（2026-11-01 修订，维护者决定：同一份评审里，指向同一个相抵触来源（`source_url`）的几条转交只开一个 issue。程序先逐条校验，再按来源保留第一条合格的转交，其余合格条目的证据编号记在它的 `also_affected` 里，正文另写一行「Other evidence that may be affected」列出它们；这些条目不计入每份评审最多 3 条的上限，也不算丢弃，不合格的条目不列出。隐藏标记仍只写被保留的那条证据，所以同一条证据已有打开的 issue 时照旧在其中补充。理由：`ccc-gtcr-take-private-2026/prod.mf/v2` 的评审为同一份 8-K 开了三个 issue（#101–#103），一个原因占三个 issue，Melchior 上线后也要为同一个原因核实三次。提示词要求几条证据因同一来源、同一理由相抵触时，把最直接写出该主张的证据列在最前。）
+
 ### 19.6 改进建议（每周）
 
 - 程序收集报告所覆盖那一个 ISO 周的材料：带 `magi:request` 标签的需求 issue；引擎驳回的提案，按 action 与错误码计数；讨论串里的回帖。

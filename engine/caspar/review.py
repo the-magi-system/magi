@@ -54,17 +54,24 @@ def _dated(value, today: date) -> bool:
 
 
 def _source(state: RepoState, source, today: date) -> tuple[dict | None, str | None]:
-    if isinstance(source, dict) and source.get("evidence"):
-        evidence = state.evidence.get(source["evidence"])
-        if evidence is None:
-            return None, f"evidence {source['evidence']} does not exist"
+    """The source of a factual error: only a public evidence id, or only an https link with its date.
+
+    A known evidence id wins, and the id of non-public evidence is refused. Any other text in `evidence`, such as a
+    sentence the model quoted from the filing, does not hide a well-formed link and date; it is never kept."""
+    if not isinstance(source, dict):
+        return None, "the source must be a public evidence id, or an https link with a real date no later than today"
+    named = source.get("evidence")
+    evidence = state.evidence.get(named) if isinstance(named, str) else None
+    if evidence is not None:
         if evidence.get("access", "public") != "public":
-            return None, f"evidence {source['evidence']} is not public"
-        return {"evidence": source["evidence"]}, None
-    if isinstance(source, dict):
-        url, when = source.get("url"), source.get("date")
-        if isinstance(url, str) and url.startswith("https://") and _dated(when, today):
-            return {"url": url, "date": when}, None
+            return None, f"evidence {named} is not public"
+        return {"evidence": named}, None
+    url, when = source.get("url"), source.get("date")
+    if isinstance(url, str) and url.startswith("https://") and _dated(when, today):
+        return {"url": url, "date": when}, None
+    if named:
+        shown = named if len(named) <= 60 else named[:57] + "..."
+        return None, f"{shown!r} is not an evidence record, and there is no https link with a real date no later than today"
     return None, "the source must be a public evidence id, or an https link with a real date no later than today"
 
 
@@ -111,22 +118,38 @@ def _labels(view: dict, items: list, dropped: list[str]) -> list[dict]:
 
 
 def _referrals(state: RepoState, items: list, today: date, dropped: list[str]) -> list[dict]:
-    kept = []
+    """Valid referrals, one per conflicting source (revision of design 19.5, 2026-11-01).
+
+    Every item is checked first. Within one review the first valid referral for each `source_url` is kept; the
+    evidence ids of the other valid items for that source are listed on it as `also_affected`. They neither count
+    against the limit of three referrals nor appear as dropped, and an invalid item is never listed."""
+    valid = []
     for number, item in enumerate(items, start=1):
         url, when = item.get("source_url"), item.get("source_date")
-        if len(kept) >= MAX_FACT_LAYER_ISSUES:
-            problem = f"more than {MAX_FACT_LAYER_ISSUES} referrals in one review"
-        elif item.get("evidence") not in state.evidence:
+        if item.get("evidence") not in state.evidence:
             problem = f"evidence {item.get('evidence')} does not exist"
         elif not (isinstance(url, str) and url.startswith("https://") and _dated(when, today)):
             problem = "an https source and a real date no later than today are required"
         elif not _text(item.get("claim")) or not _text(item.get("reason")):
             problem = "the claim and the reason are required"
         else:
-            kept.append({"evidence": item["evidence"], "claim": _text(item["claim"]), "source_url": url,
-                         "source_date": when, "reason": _text(item["reason"])})
+            valid.append((number, {"evidence": item["evidence"], "claim": _text(item["claim"]), "source_url": url,
+                                   "source_date": when, "reason": _text(item["reason"]), "also_affected": []}))
             continue
         dropped.append(f"fact-layer referral {number}: {problem}")
+    kept: list[dict] = []
+    by_source: dict[str, dict] = {}
+    for number, referral in valid:
+        first = by_source.get(referral["source_url"])
+        if first is not None:
+            if referral["evidence"] != first["evidence"] and referral["evidence"] not in first["also_affected"]:
+                first["also_affected"].append(referral["evidence"])
+            continue
+        if len(kept) >= MAX_FACT_LAYER_ISSUES:
+            dropped.append(f"fact-layer referral {number}: more than {MAX_FACT_LAYER_ISSUES} referrals in one review")
+            continue
+        by_source[referral["source_url"]] = referral
+        kept.append(referral)
     return kept
 
 
@@ -214,7 +237,10 @@ def fact_layer_issue(referral: dict, idea_id: str, actor: str, view_version: int
              "may need checking.", "",
              f"- Claim in doubt: {referral['claim']}",
              f"- Conflicting public source: [{referral['source_date']}]({referral['source_url']})",
-             f"- Why: {referral['reason']}", "",
-             "Melchior.Magi, or a maintainer until Melchior is running, checks this and records any correction "
-             "with `supersede_evidence`."]
+             f"- Why: {referral['reason']}", ""]
+    if referral.get("also_affected"):
+        lines += ["Other evidence that may be affected: "
+                  + ", ".join(f"`{other}`" for other in referral["also_affected"]) + ".", ""]
+    lines.append("Melchior.Magi, or a maintainer until Melchior is running, checks this and records any correction "
+                 "with `supersede_evidence`.")
     return f"[fact-layer] {evidence}", cap("\n".join(lines))
