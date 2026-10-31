@@ -2,6 +2,11 @@
 
 Newest first. Each entry gives the date, what changed, and the request issue that prompted it, if any.
 
+## 2026-11-01 — the weekly number check reads the tables (no version change)
+
+- Caspar.Magi's weekly report keeps text that quotes a number as the report's own tables write it, such as a return of `3.21%` where the data holds `0.032145`; the tables are the record, and a number in neither the data nor the tables is still refused (plan 9, Task 2).
+- Caspar.Magi's model calls are made by one module that both system agents share; each agent names the tools of each of its task kinds, and every Caspar task kind keeps exactly the tools it had. Caspar's think job runs at most five tasks at once and keeps the SDK's report of each task's turns and cost beside the answer.
+
 ## v1.11 — 2026-10-31
 
 - Benchmark policy v2 (`protocol/benchmarks/v2.yaml`, `effective_from: 2026-11-04`), decided by the maintainer on 2026-10-31 when the first Korean asset, `jvm` (Naver `054950`, KRW), was registered. It is v1 unchanged plus Korea: the markets `KR` for Yahoo symbols ending `.KS` or `.KQ` and for every Naver symbol; shares, funds and indices listed in Korea map to `069500-ks` (KODEX 200 ETF, Yahoo `069500.KS`, KRW), which tracks the KOSPI 200. `protocol/benchmarks/v1.yaml` is not edited.
