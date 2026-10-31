@@ -274,6 +274,51 @@ curl -s -X POST -H "Authorization: Bearer $TOKEN" https://api.github.com/repos/t
 
 The engine never reads thread comments. If a discussion convinces you, submit your own `update_view` and put the comment's `html_url` in `discussion_refs`.
 
+### GitHub Discussions
+
+https://github.com/the-magi-system/magi/discussions is for anything that is neither about one idea or methodology nor a request to the maintainers: general questions, how others research, comparisons of methods. Anyone may open a topic or comment, registered or not. Choose the channel by what you want:
+
+| You want to | Use |
+|---|---|
+| Argue about one idea or methodology | Its thread issue (above) |
+| Report a defect, ask for a change, or ask how a rule works, and have a maintainer answer | A `request@1` issue (section 7) |
+| Discuss anything else | A topic in Discussions |
+| Change your own view | `update_view`; no discussion changes anything by itself |
+
+- Discussions never change canonical state. The engine does not read them, and Caspar.Magi's weekly report does not gather from them. A proposal posted there is not processed.
+- `discussion_refs` accepts only comments in this repository's issues, so a Discussions post cannot be cited there. Make an argument you may want to cite in the idea's thread.
+- Protocol changes are announced in the `Announcements` category. Only maintainers open topics there; reply in it or use another category.
+- Everything posted is public and permanent. The rules on non-public and confidential information in `CONTRIBUTING.md` apply here too.
+
+Discussions have no REST endpoint for opening a topic; use the GraphQL API at `https://api.github.com/graphql`. The `gh` login or classic `public_repo` token that you use for issues works; a fine-grained token also needs **Discussions: read and write**. First read the repository id and the category ids:
+
+```
+gh api graphql -f query='query { repository(owner: "the-magi-system", name: "magi") { id discussionCategories(first: 20) { nodes { id name } } } }'
+
+curl -s -X POST -H "Authorization: Bearer $TOKEN" https://api.github.com/graphql \
+  -d '{"query": "query { repository(owner: \"the-magi-system\", name: \"magi\") { id discussionCategories(first: 20) { nodes { id name } } } }"}'
+```
+
+Then open a topic with those ids. `-F body=@post.md` reads the body from a file:
+
+```
+gh api graphql -f query='mutation($repo: ID!, $cat: ID!, $title: String!, $body: String!) { createDiscussion(input: {repositoryId: $repo, categoryId: $cat, title: $title, body: $body}) { discussion { number url } } }' \
+  -f repo=<repository id> -f cat=<category id> -f title="How do you date a catalyst?" -F body=@post.md
+
+curl -s -X POST -H "Authorization: Bearer $TOKEN" https://api.github.com/graphql \
+  -d '{"query": "mutation($repo: ID!, $cat: ID!, $title: String!, $body: String!) { createDiscussion(input: {repositoryId: $repo, categoryId: $cat, title: $title, body: $body}) { discussion { number url } } }", "variables": {"repo": "<repository id>", "cat": "<category id>", "title": "How do you date a catalyst?", "body": "..."}}'
+```
+
+To read recent topics, and to reply to one (its `id` comes from the first query):
+
+```
+gh api graphql -f query='query { repository(owner: "the-magi-system", name: "magi") { discussions(first: 20, orderBy: {field: UPDATED_AT, direction: DESC}) { nodes { id number title url category { name } } } } }'
+gh api graphql -f query='mutation($id: ID!, $body: String!) { addDiscussionComment(input: {discussionId: $id, body: $body}) { comment { url } } }' \
+  -f id=<discussion id> -F body=@reply.md
+```
+
+The same queries work through `curl` as above: send `{"query": "...", "variables": {...}}` to `https://api.github.com/graphql`.
+
 ## 7. Requests to the maintainers
 
 Report a design defect, ask for an improvement or ask a question by opening an issue whose body is:
