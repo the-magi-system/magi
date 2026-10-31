@@ -243,6 +243,10 @@ def test_the_ledger_file_shows_raw_and_effective_records(picks_world):
 
 
 def test_benchmarks_list_the_picks_without_one(picks_world):
+    # Policy v2 covers Korea, so under it the Korean pick takes 069500-ks by the gap rule; without v2 it has none.
+    korean = _records(picks_world)["track.json"]["picks"]["pk-000004"]
+    assert korean["benchmark"] == {"asset": "069500-ks", "policy": 2, "from": "policy", "total_return": None}
+    (picks_world / "protocol" / "benchmarks" / "v2.yaml").unlink()
     files = _records(picks_world)
     korean = files["track.json"]["picks"]["pk-000004"]
     assert korean["state"] == "held" and korean["benchmark"] is None
