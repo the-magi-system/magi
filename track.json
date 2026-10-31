@@ -1,0 +1,25 @@
+{
+  "valuation_date": "2026-10-30",
+  "note": "A pick is not a position: a pick has no size, and an average over picks is not a portfolio return. The simulation assumes daily rebalancing and no costs; it is illustrative and never ranked.",
+  "picks": {},
+  "actors": {},
+  "rankings": {
+    "equity": {
+      "ranked": [],
+      "too_few": []
+    },
+    "fund-index": {
+      "ranked": [],
+      "too_few": []
+    },
+    "crypto": {
+      "ranked": [],
+      "too_few": []
+    },
+    "other": {
+      "ranked": [],
+      "too_few": []
+    }
+  },
+  "without_benchmark": []
+}

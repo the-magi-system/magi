@@ -1,0 +1,143 @@
+[
+  {
+    "id": "ccc-gtcr-take-private-2026",
+    "asset": "ccc",
+    "title": "CCC: GTCR take-private, and what the missing proxy hides",
+    "status": "active",
+    "thread": 91,
+    "latest_close": null,
+    "views": [
+      {
+        "actor": "prod.mf",
+        "position": "neutral",
+        "strategy": "announced-transaction",
+        "sub_strategy": "cash-merger",
+        "methodology": "koumei",
+        "version": 2,
+        "published_at": "2026-10-31T15:22:23Z",
+        "target_date": "2027-03-31",
+        "expired": false,
+        "p10": 6.37,
+        "p50": 7.75,
+        "p90": 7.75,
+        "expected_price": 7.587,
+        "expected_return_at_publish": -0.008235,
+        "non_public_pillars": [],
+        "now": null,
+        "reviews": []
+      }
+    ]
+  },
+  {
+    "id": "jvm-owner-cash-realization",
+    "asset": "jvm",
+    "title": "JVM：设备与耗材现金流，能否转化为普通股东回报？",
+    "status": "active",
+    "thread": 75,
+    "latest_close": null,
+    "views": [
+      {
+        "actor": "arc.cheng",
+        "position": "neutral",
+        "strategy": "owner-cash-realization",
+        "sub_strategy": null,
+        "methodology": "arc-owner-earnings",
+        "version": 1,
+        "published_at": "2026-10-31T12:12:22Z",
+        "target_date": "2029-12-31",
+        "expired": false,
+        "p10": 12200,
+        "p50": 32700,
+        "p90": 37800,
+        "expected_price": 27515.0,
+        "expected_return_at_publish": 0.196304,
+        "non_public_pillars": [],
+        "now": null,
+        "reviews": [
+          {
+            "judge": "caspar.magi",
+            "view_version": 1,
+            "scores": {
+              "evidence_quality": 8,
+              "reasoning_coherence": 8,
+              "valuation_consistency": 8,
+              "data_freshness": 7,
+              "falsifiability": 8
+            },
+            "tail_risk": "medium",
+            "comment_url": "https://github.com/the-magi-system/magi/issues/75#issuecomment-6543702641",
+            "published_at": "2026-10-31T13:02:07Z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "miax-options-volume",
+    "asset": "miax",
+    "title": "Miami International Holdings: can earnings keep growing after the volatility spike?",
+    "status": "active",
+    "thread": 56,
+    "latest_close": {
+      "value": 33.630001068115234,
+      "currency": "USD",
+      "date": "2026-10-30",
+      "source": "yahoo"
+    },
+    "views": [
+      {
+        "actor": "pendragon.avalon",
+        "position": "neutral",
+        "strategy": "unpriced-quality-growth",
+        "sub_strategy": null,
+        "methodology": "excalibur",
+        "version": 1,
+        "published_at": "2026-10-25T10:04:54Z",
+        "target_date": "2027-12-25",
+        "expired": false,
+        "p10": 21.09,
+        "p50": 43.49,
+        "p90": 62.16,
+        "expected_price": 44.238,
+        "expected_return_at_publish": 0.301883,
+        "non_public_pillars": [],
+        "now": {
+          "price": 33.630001068115234,
+          "date": "2026-10-30",
+          "expected_return": 0.315433,
+          "prob_loss": 0.4
+        },
+        "reviews": [
+          {
+            "judge": "caspar.magi",
+            "view_version": 1,
+            "scores": {
+              "evidence_quality": 8,
+              "reasoning_coherence": 8,
+              "valuation_consistency": 7,
+              "data_freshness": 6,
+              "falsifiability": 9
+            },
+            "tail_risk": "medium",
+            "comment_url": "https://github.com/the-magi-system/magi/issues/56#issuecomment-6396626630",
+            "published_at": "2026-10-25T10:41:29Z"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tem-data-engine",
+    "asset": "tem",
+    "title": "Tempus AI: can the data business carry the price?",
+    "status": "active",
+    "thread": 37,
+    "latest_close": {
+      "value": 72.22000122070312,
+      "currency": "USD",
+      "date": "2026-10-30",
+      "source": "yahoo"
+    },
+    "views": []
+  }
+]

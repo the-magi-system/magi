@@ -1,0 +1,164 @@
+[
+  {
+    "actor": "arc.cheng",
+    "views": 1,
+    "declared": {
+      "horizon_months": {
+        "min": 12,
+        "max": 120
+      },
+      "sectors": [
+        "energy",
+        "materials",
+        "industrials",
+        "financials",
+        "information-technology",
+        "communication-services",
+        "utilities",
+        "consumer-discretionary",
+        "consumer-staples"
+      ],
+      "asset_types": [
+        "equity"
+      ],
+      "return_sources": [
+        "value",
+        "quality",
+        "income"
+      ],
+      "risk_preference": "balanced",
+      "methodologies": [
+        "arc-owner-earnings"
+      ]
+    },
+    "horizon_months": {
+      "min": 38,
+      "median": 38,
+      "max": 38
+    },
+    "positions": {
+      "long": 0,
+      "short": 0,
+      "neutral": 1
+    },
+    "sectors": {
+      "health-care": 1
+    },
+    "views_outside_declared_sectors": 1,
+    "asset_types": {
+      "equity": 1
+    },
+    "views_outside_declared_asset_types": 0,
+    "methodologies": {
+      "arc-owner-earnings": 1
+    },
+    "non_public_pillar_share": 0.0
+  },
+  {
+    "actor": "pendragon.avalon",
+    "views": 1,
+    "declared": {
+      "horizon_months": {
+        "min": 12,
+        "max": 18
+      },
+      "sectors": [
+        "information-technology",
+        "communication-services",
+        "health-care",
+        "industrials",
+        "financials",
+        "consumer-discretionary",
+        "consumer-staples",
+        "materials",
+        "energy",
+        "utilities",
+        "real-estate"
+      ],
+      "asset_types": [
+        "equity"
+      ],
+      "return_sources": [
+        "growth",
+        "quality",
+        "value"
+      ],
+      "risk_preference": "right-tail",
+      "methodologies": [
+        "excalibur",
+        "masamune",
+        "durandal"
+      ]
+    },
+    "horizon_months": {
+      "min": 14,
+      "median": 14,
+      "max": 14
+    },
+    "positions": {
+      "long": 0,
+      "short": 0,
+      "neutral": 1
+    },
+    "sectors": {
+      "financials": 1
+    },
+    "views_outside_declared_sectors": 0,
+    "asset_types": {
+      "equity": 1
+    },
+    "views_outside_declared_asset_types": 0,
+    "methodologies": {
+      "excalibur": 1
+    },
+    "non_public_pillar_share": 0.0
+  },
+  {
+    "actor": "prod.mf",
+    "views": 1,
+    "declared": {
+      "horizon_months": {
+        "min": 1,
+        "max": 12
+      },
+      "sectors": [
+        "information-technology",
+        "communication-services"
+      ],
+      "asset_types": [
+        "equity"
+      ],
+      "return_sources": [
+        "event-driven",
+        "quality",
+        "value"
+      ],
+      "risk_preference": "balanced",
+      "methodologies": [
+        "koumei"
+      ]
+    },
+    "horizon_months": {
+      "min": 5,
+      "median": 5,
+      "max": 5
+    },
+    "positions": {
+      "long": 0,
+      "short": 0,
+      "neutral": 1
+    },
+    "sectors": {
+      "information-technology": 1
+    },
+    "views_outside_declared_sectors": 0,
+    "asset_types": {
+      "equity": 1
+    },
+    "views_outside_declared_asset_types": 0,
+    "methodologies": {
+      "koumei": 1
+    },
+    "non_public_pillar_share": 0.0
+  }
+]
