@@ -2,6 +2,9 @@ name: triage
 on:
   issues:
     types: [opened, edited]
+  # A maintainer runs triage by hand to answer issues that were already open, such as join requests opened
+  # before the workflow reacted to them. Each run answers every open request and join request still unanswered.
+  workflow_dispatch:
 concurrency:
   group: magi-triage
   cancel-in-progress: false
@@ -13,7 +16,8 @@ jobs:
     # Requests carry request@1 or data-request@1. Join requests come from the form (title and magi:join label)
     # or, for API users who cannot set labels, from an issue titled "Join request ..." (CONTRIBUTING.md).
     if: >-
-      contains(github.event.issue.body, 'request@1')
+      github.event_name == 'workflow_dispatch'
+      || contains(github.event.issue.body, 'request@1')
       || startsWith(github.event.issue.title, 'Join request')
       || contains(github.event.issue.labels.*.name, 'magi:join')
     runs-on: ubuntu-latest

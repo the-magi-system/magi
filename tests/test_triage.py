@@ -188,6 +188,9 @@ def test_join_request_with_a_malformed_handle_gets_no_draft_and_no_echo(repo):
     run_triage(repo, gh)
     reply = gh.replies(n)[-1]
     assert _checks(reply)["handle_pattern"] == "fail" and reply["handle"] is None and "record" not in reply
+    pattern = next(check for check in reply["checks"] if check["check"] == "handle_pattern")
+    assert "starts with a lowercase letter" in pattern["detail"] and "2 to 24 characters" in pattern["detail"]
+    assert "lowercase letters, digits or hyphens" in pattern["detail"]
     assert "Bad Handle" not in gh.comments_by_issue[n][-1]["body"] and "@someone" not in gh.comments_by_issue[n][-1]["body"]
 
 
@@ -289,3 +292,18 @@ def test_join_agreements_match_the_form():
     assert handle["attributes"]["label"] == "Preferred handle" and display["attributes"]["label"] == "Display name"
     assert terms["attributes"]["label"] == "Agreement" and form["title"].startswith("Join request")
     assert form["labels"] == ["magi:join"]
+
+
+def test_already_open_join_requests_are_answered_by_one_run(repo):
+    # What a manual (workflow_dispatch) run does: every open join request still unanswered gets its reply.
+    gh = FakeGitHub()
+    waiting = [_open_form(gh, _join_body(handle="Jerry007"), author_id=NEWCOMER_ID + k, login=f"user{k}")
+               for k in range(3)]
+    run_triage(repo, gh)
+    for n in waiting:
+        reply = gh.replies(n)[-1]
+        assert reply["status"] == "join_received" and _checks(reply)["handle_pattern"] == "fail"
+        assert "Jerry007" not in gh.comments_by_issue[n][-1]["body"]
+        assert gh.issues[n]["assignees"] == ["ThinkwChivalri"] and gh.issues[n]["state"] == "open"
+    run_triage(repo, gh)
+    assert all(len(gh.replies(n)) == 1 for n in waiting)

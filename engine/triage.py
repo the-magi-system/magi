@@ -195,7 +195,8 @@ def _handle_checks(state: RepoState, handle: str | None) -> list[dict]:
     return [
         {"check": "handle_pattern", "result": "pass" if is_handle(handle) else "fail",
          "detail": "matches the researcher handle pattern" if is_handle(handle)
-         else "does not match the researcher handle pattern"},
+         else "does not match the researcher handle pattern: a handle starts with a lowercase letter, followed by "
+              "lowercase letters, digits or hyphens, 2 to 24 characters in all"},
         {"check": "handle_not_reserved", "result": "fail" if handle == RESERVED_SUFFIX else "pass",
          "detail": f"`{RESERVED_SUFFIX}` is reserved for the Magi system agents" if handle == RESERVED_SUFFIX
          else f"is not `{RESERVED_SUFFIX}`"},
