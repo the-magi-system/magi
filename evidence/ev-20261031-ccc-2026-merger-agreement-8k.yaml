@@ -1,0 +1,49 @@
+schema: magi/evidence@1
+id: ev-20261031-ccc-2026-merger-agreement-8k
+title: CCC merger agreement with GTCR-led consortium, $7.75 per share in cash
+kind: filing
+assets:
+- ccc
+ideas:
+- ccc-gtcr-take-private-2026
+source:
+  url: https://www.sec.gov/Archives/edgar/data/1818201/000119312526438167/0001193125-26-438167-index.htm
+  publisher: U.S. Securities and Exchange Commission
+  published_at: '2026-10-15'
+  tier: primary
+claims:
+- text: CCC Intelligent Solutions Holdings Inc. entered into an Agreement and Plan of Merger dated as of 14 October 2026 with Mozart Parent, LLC and Mozart Merger Sub (DE), Inc., under which the merger subsidiary merges into CCC and CCC survives as a wholly owned subsidiary of the parent.
+- text: Each share of CCC common stock receives $7.75 in cash at closing.
+  value: 7.75
+  unit: USD per share
+- text: The consideration represents a premium of about 44% to the unaffected closing price on 9 July 2026, the last trading day before media speculation about a potential sale of CCC.
+  value: 44
+  unit: '% premium to unaffected close'
+- text: The consideration represents a premium of about 59% to the 30-day average price as of 9 July 2026.
+  value: 59
+  unit: '% premium to 30-day average'
+- text: The acquirer group is led by GTCR and includes Elliott Investment Management.
+body_md: 'The filing is the Schedule 14A soliciting material filed by CCC on 15 October 2026,
+
+  one day after the merger agreement was signed. It describes the transaction structure
+
+  and the consideration, and states that it relates solely to preliminary communications
+
+  made prior to furnishing stockholders with a definitive proxy statement.
+
+
+  What this filing does not contain, and what therefore remains unknown from primary
+
+  sources: the outside date of the merger agreement; the termination fee payable by CCC
+
+  and any reverse termination fee payable by the acquirer; the list of named regulatory
+
+  jurisdictions whose clearance is a condition precedent; and the date of the special
+
+  stockholder meeting. Those terms are typically disclosed in the definitive proxy
+
+  statement on Schedule 14A (DEFM14A), which had not been filed as of 31 October 2026.'
+supersedes: null
+submitted_by: prod.mf
+submitted_at: '2026-10-31T15:05:25Z'
+submitted_via_issue: 92
