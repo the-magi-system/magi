@@ -18,7 +18,7 @@ from pathlib import Path
 from .common import SOURCE_DIR
 from .run import MODEL, TOOLS
 
-KINDS = ("review", "weekly", "probe")
+KINDS = ("review", "weekly", "probe", "join")
 DISALLOWED = ("Bash", "Edit", "Write", "MultiEdit", "NotebookEdit", "mcp__*")
 _TASK_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9-]{0,79}")
 

@@ -317,20 +317,39 @@ def scenario(r: Runner) -> None:
 
     r.eventually("data request labelled and assigned to the provider", data_request_routed, timeout=120)
 
-    # A join request opened through the API: no form, no label (an outside account cannot set one).
+    # A join request opened through the API: no form, no label (an outside account cannot set one). The sandbox's only
+    # account is already registered, so Caspar.Magi's verdict is severe (decision D45); the issues trigger of
+    # caspar.yml runs a join-only review within minutes. The ok and minor verdicts, the model's part, a successful
+    # /approve and /reject are covered by unit tests only (tests/test_caspar_join.py): they need a second account.
     join = r.submit("Join request: e2e-applicant", "Opened by the end-to-end check without the join form.")
-    reply = r.expect("join request answered", r.wait(join), "join_received")
-    r.check("join request reply reads the handle from the title and checks the author",
-            reply.get("handle") == "e2e-applicant" and any(c["check"] == "author_not_registered" for c in reply["checks"]),
-            str(reply.get("checks")))
 
-    def join_routed() -> bool:
-        issue = r.issue(join)
-        return ("magi:join" in {label["name"] for label in issue["labels"]}
-                and "ThinkwChivalri" in {person["login"] for person in issue["assignees"]})
+    def join_verdicts() -> list[dict]:
+        found = []
+        for comment in r.gh.comments(join):
+            text = comment.get("body") or ""
+            if comment["user"]["login"] == "github-actions[bot]" and "<!-- magi:caspar join " in text:
+                found.append(json.loads(text.split("```json\n", 1)[1].split("\n```", 1)[0]))
+        return found
 
-    r.eventually("join request labelled and assigned to the maintainers", join_routed, timeout=120)
-    r.check("join request stays open", r.issue(join)["state"] == "open")
+    r.eventually("caspar posted a verdict on the join request", lambda: bool(join_verdicts()), timeout=TIMEOUT_SECONDS)
+    verdict = join_verdicts()[-1]
+    r.check("the verdict is severe for an account already registered, with no model call",
+            verdict["verdict"] == "severe" and not verdict["model_consulted"]
+            and any(c["check"] == "author_not_registered" and c["result"] == "fail" for c in verdict["checks"]),
+            str(verdict.get("checks")))
+    issue = r.issue(join)
+    r.check("severe join request labelled and not assigned",
+            "magi:join" in {label["name"] for label in issue["labels"]} and not issue["assignees"])
+    r.gh.comment(join, "/approve")
+
+    def join_answers() -> list[dict]:
+        return [reply for reply in engine_replies(r.gh.comments(join)) if reply["status"].startswith("join_")]
+
+    r.eventually("intake answered the /approve", lambda: bool(join_answers()), timeout=TIMEOUT_SECONDS)
+    r.check("/approve on a severe verdict is refused and writes nothing",
+            join_answers()[-1]["status"] == "join_refused" and "severe" in join_answers()[-1]["reason"]
+            and r.gh.get_file("registry/researchers/e2e-applicant.yaml") is None, str(join_answers()[-1]))
+    r.check("the refused join request stays open", r.issue(join)["state"] == "open")
     r.gh.close(join, "completed")  # clean up as the maintainer would
 
     def snapshot_lists_idea() -> bool:
