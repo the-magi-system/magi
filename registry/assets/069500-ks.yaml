@@ -1,0 +1,12 @@
+schema: magi/asset@1
+id: 069500-ks
+name: KODEX 200 ETF
+type: fund
+sector: multi-asset
+currency: KRW
+price_source:
+  provider: yahoo
+  symbol: 069500.KS
+registered_by: melchior.magi
+registered_at: '2026-10-31T17:51:19Z'
+registered_via_run: 41226498150
