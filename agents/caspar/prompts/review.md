@@ -40,4 +40,4 @@ If a pillar appears to rest on non-public information, such as paid research, in
 
 ## Evidence that may be wrong
 
-If a cited evidence record itself appears to conflict with a dated public primary source, add it to `fact_layer` with the evidence id, the claim in doubt, the conflicting source link and its date, and your reason. Refer at most three pieces of evidence in one review. You never change evidence yourself; Melchior.Magi and the maintainers check these referrals.
+If a cited evidence record itself appears to conflict with a dated public primary source, add it to `fact_layer` with the evidence id, the claim in doubt, the conflicting source link and its date, and your reason. When several records conflict with the same source for the same reason, list the record that states the claim most directly first: the program keeps one referral for each source and names the other records in it. Refer at most three pieces of evidence in one review. You never change evidence yourself; Melchior.Magi and the maintainers check these referrals.

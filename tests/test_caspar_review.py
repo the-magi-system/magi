@@ -141,13 +141,89 @@ def test_a_public_fact_in_a_non_public_pillar_can_still_be_pointed_out(repo):
     assert [e["quote"] for e in checked["factual_errors"]] == ["Revenue was 200 million last year"] and dropped == []
 
 
-def test_one_review_refers_at_most_three_pieces_of_evidence(viewed):
-    referral = {"evidence": "ev-20261001-msft-fy27-capex", "claim": "Capex guided up", "source_url": URL,
-                "source_date": "2026-10-01", "reason": "The results cut capex"}
-    checked, dropped = check_review(RepoState.load(viewed), IDEA, "john.research",
-                                    model_review(fact_layer=[referral] * 4), NOW)
-    assert len(checked["fact_layer"]) == 3
-    assert dropped == ["fact-layer referral 4: more than 3 referrals in one review"]
+def test_one_review_refers_at_most_three_sources(viewed):
+    referral = {"evidence": "ev-20261001-msft-fy27-capex", "claim": "Capex guided up", "source_date": "2026-10-01",
+                "reason": "The results cut capex"}
+    items = [{**referral, "source_url": f"{URL}/{n}"} for n in range(4)] + [{**referral, "source_url": f"{URL}/0"}]
+    checked, dropped = check_review(RepoState.load(viewed), IDEA, "john.research", model_review(fact_layer=items), NOW)
+    assert [r["source_url"] for r in checked["fact_layer"]] == [f"{URL}/0", f"{URL}/1", f"{URL}/2"]
+    assert dropped == ["fact-layer referral 4: more than 3 referrals in one review"], "a repeated source is not dropped"
+
+
+# One referral per conflicting source within a review (revision of design 19.5, 2026-11-01): the review of
+# ccc-gtcr-take-private-2026/prod.mf/v2 opened issues #101-#103 for one 8-K.
+EIGHT_K = "https://www.sec.gov/Archives/edgar/data/1818201/000119312526438167/0001193125-26-438167-index.htm"
+
+
+def _three_records(repo) -> list[str]:
+    from tests.util import evidence_payload
+    for slug in ("ccc-merger-terms", "ccc-fee-terms"):
+        _apply(repo, "add_evidence", evidence_payload(slug=slug))
+    state = RepoState.load(repo)
+    return ["ev-20261001-msft-fy27-capex"] + sorted(e for e in state.evidence if e.endswith(("merger-terms", "fee-terms")))
+
+
+def _referral(evidence, url=EIGHT_K, date="2026-10-01"):
+    return {"evidence": evidence, "claim": "The termination fee", "source_url": url, "source_date": date,
+            "reason": "The 8-K states another fee"}
+
+
+def _file(repo, gh, checked):
+    from engine.caspar.run import LiveSink, _refer
+    sink, budget = LiveSink(repo, gh, None), [3]
+    task = {"idea": IDEA, "actor": "john.research", "view_version": 1}
+    for referral in checked["fact_layer"]:
+        _refer(gh, sink, referral, task, budget)
+    return [issue for issue in gh.issues.values() if "magi:fact-layer" in issue["labels"]]
+
+
+def test_referrals_to_one_source_become_one_issue_naming_the_others(viewed):
+    from tests.fakes import FakeGitHub
+    first, *others = _three_records(viewed)
+    output = model_review(fact_layer=[_referral(first)] + [_referral(other) for other in others])
+    checked, dropped = check_review(RepoState.load(viewed), IDEA, "john.research", output, NOW)
+    assert dropped == [] and len(checked["fact_layer"]) == 1
+    assert checked["fact_layer"][0]["evidence"] == first and checked["fact_layer"][0]["also_affected"] == others
+    issues = _file(viewed, FakeGitHub(), checked)
+    assert len(issues) == 1
+    body = issues[0]["body"]
+    assert f"Other evidence that may be affected: `{others[0]}`, `{others[1]}`." in body
+    assert body.count("<!-- magi:caspar fact-layer ") == 2  # the evidence marker and the review's target marker
+    assert marker("fact-layer", first) in body and not any(marker("fact-layer", other) in body for other in others)
+
+
+def test_three_sources_give_three_issues(viewed):
+    from tests.fakes import FakeGitHub
+    records = _three_records(viewed)
+    output = model_review(fact_layer=[_referral(e, url=f"{EIGHT_K}?doc={n}") for n, e in enumerate(records)])
+    checked, dropped = check_review(RepoState.load(viewed), IDEA, "john.research", output, NOW)
+    assert dropped == [] and all(r["also_affected"] == [] for r in checked["fact_layer"])
+    issues = _file(viewed, FakeGitHub(), checked)
+    assert len(issues) == 3 and not any("Other evidence that may be affected" in i["body"] for i in issues)
+
+
+def test_an_invalid_item_is_not_listed(viewed):
+    first, second, _ = _three_records(viewed)
+    output = model_review(fact_layer=[_referral(first), _referral("ev-20990101-ghost"),
+                                      _referral(second, date="2026-12-01"), _referral(second)])
+    checked, dropped = check_review(RepoState.load(viewed), IDEA, "john.research", output, NOW)
+    assert checked["fact_layer"][0]["also_affected"] == [second]
+    assert dropped == ["fact-layer referral 2: evidence ev-20990101-ghost does not exist",
+                       "fact-layer referral 3: an https source and a real date no later than today are required"]
+
+
+def test_an_open_referral_for_the_kept_evidence_is_commented_on_as_before(viewed):
+    from tests.fakes import FakeGitHub
+    first, *others = _three_records(viewed)
+    gh = FakeGitHub()
+    existing = gh.create_issue(f"[fact-layer] {first}", f"Earlier referral\n{marker('fact-layer', first)}",
+                               ["magi:fact-layer"])["number"]
+    output = model_review(fact_layer=[_referral(first)] + [_referral(other) for other in others])
+    checked, _ = check_review(RepoState.load(viewed), IDEA, "john.research", output, NOW)
+    issues = _file(viewed, gh, checked)
+    assert [i["number"] for i in issues] == [existing]
+    comments = gh.comments(existing)
+    assert len(comments) == 1 and f"`{others[0]}`, `{others[1]}`" in comments[0]["body"]
 
 
 def test_labels_and_referrals_must_point_at_real_pillars_and_evidence(viewed):
