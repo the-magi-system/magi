@@ -46,3 +46,4 @@
 {"seq": 46, "at": "2026-10-31T14:29:10Z", "run": 41210297601, "action": "register_asset", "actor": "melchior.magi", "owner": "magi", "entity": "registry/assets/ive"}
 {"seq": 47, "at": "2026-10-31T14:29:10Z", "run": 41210297601, "action": "register_asset", "actor": "melchior.magi", "owner": "magi", "entity": "registry/assets/ivw"}
 {"seq": 48, "at": "2026-10-31T14:29:10Z", "run": 41210297601, "action": "register_asset", "actor": "melchior.magi", "owner": "magi", "entity": "registry/assets/iwm"}
+{"seq": 49, "at": "2026-10-31T14:29:36Z", "issue": 84, "action": "publish_methodology", "actor": "prod.mf", "owner": "mf", "entity": "methodologies/koumei", "version": 1}

@@ -1,0 +1,61 @@
+schema: magi/methodology@1
+id: koumei
+name: 'Koumei: the terms of an announced transaction'
+summary: Read an announced corporate transaction as an option on a dated outcome. The spread between the deal price and the trading price is a completion probability plus a time premium, so primary documents that speak to completion can be compared with the probability the price implies.
+edge: Once a transaction is announced, its payoff is bounded and dated, which turns a directional equity question into a question about whether a stated condition will be met by a stated date. The market prices that question with a spread, and the spread usually carries a risk premium against the event completing, because the remaining holders are the ones who did not sell at the announcement. When a primary document shows a condition is nearer to being met than the spread implies, or shows it is further away, the option is mispriced. The edge is not in predicting the equity; it is in reading the terms more carefully than the market does.
+process:
+- Identify the announcement and its legal form, and extract the binding terms from the primary document itself, not from a summary.
+- Write down the terminal payoff and the terminal date, including every condition precedent with its stated deadline.
+- Compute the implied completion probability from the spread, after allowing for the time value of money and for any expected dividend before the terminal date.
+- Gather evidence on each condition precedent from primary sources, and record which evidence moves the probability and which does not.
+- Check the downside if the transaction fails, from a standalone valuation of the company rather than from the pre-announcement price alone.
+- Rate the pillars, set the distribution of the market price on the target date, and state what would change the probability.
+- Record, for every transaction rejected, the condition precedent that made the payoff unattractive.
+criteria:
+- id: k1-binding-terms
+  text: The terminal payoff and the terminal date are fixed in a primary document that is binding, with the conditions precedent and their deadlines stated explicitly enough that a third party can check each one.
+- id: k2-implied-probability
+  text: The spread implies a completion probability that can be computed and stated, after allowing for the time value of money and for expected dividends before the terminal date; a spread that cannot be decomposed this way is not a tradeable signal.
+- id: k3-evidence-gap
+  text: Primary evidence on at least one condition precedent is not yet in the price, because it is recent, thinly covered or stated only inside a lengthy filing.
+- id: k4-failure-downside
+  text: The downside if the transaction fails is bounded by a standalone valuation of the business, not by the pre-announcement price, which itself may have been distorted by the transaction or by an earlier bid.
+- id: k5-timing
+  text: The remaining time to the terminal date is long enough that a new fact can still reach the price, and short enough that the position is not carried through an unrelated cycle.
+- id: k6-regulatory-path
+  text: The regulatory path is identified, with the relevant jurisdictions and review periods named, and the expected length of any review is stated rather than assumed.
+scope:
+  asset_types:
+  - equity
+  sectors:
+  - information-technology
+  - communication-services
+  - industrials
+  - health-care
+  - financials
+  - consumer-discretionary
+  - consumer-staples
+  - materials
+  - energy
+  horizon_months:
+    min: 1
+    max: 12
+  industries:
+  - semiconductors and semiconductor equipment
+  - software and internet services
+  - electronic components
+  markets:
+  - US listings
+exclusions: Transactions announced but not yet reduced to a binding document, such as a letter of intent or an unsolicited indication of interest; situations where the only public information is press coverage of unnamed sources; and any transaction whose conditions depend on information I cannot lawfully publish, or which falls under a duty of confidentiality.
+failure_modes: A condition precedent is waived or accelerated quietly, so the spread closes without the evidence I was waiting for; a competing bid or a financing failure resets the terms; a regulatory review extends past the stated period without any formal announcement; and the liquidity of the remaining float makes the computed spread unexecutable, so the implied probability overstates the tradeable edge.
+body_md: 'The method treats an announced transaction as a binary option with a known expiry. Three numbers matter: the payoff if the event completes, the payoff if it fails, and the time to the event. The market price between the two payoffs is not a forecast of the company; it is the price of that option, and it can be inverted into a probability.
+
+
+  The work is therefore documentary. Every condition precedent is read in the document that makes it binding, with its own deadline and its own decision-maker. Evidence is collected against individual conditions rather than against the transaction as a whole, because the conditions are rarely correlated: financing, shareholder approval and regulatory clearance fail for different reasons at different times.
+
+
+  Two errors are common and both are avoided by construction. The first is treating the pre-announcement price as the failure value; it may already have contained an earlier bid or the prospect of the transaction. The second is reading the spread as a pure probability, when it also contains a discount for the time value of money and a premium for the illiquidity of the remaining float. Both are removed before any probability is stated.'
+owner: prod.mf
+version: 1
+published_at: '2026-10-31T14:29:36Z'
+thread: null
