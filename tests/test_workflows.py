@@ -27,25 +27,50 @@ def test_writer_jobs_check_out_the_head_of_main():
     assert not failing, f"writer jobs that do not check out ref: main: {', '.join(failing)}"
 
 
-def test_triage_runs_for_requests_and_join_requests():
-    # API users open "Join request: <handle>" without the form and cannot set the magi:join label (CONTRIBUTING.md).
-    flow = yaml.safe_load((REPO_ROOT / ".github" / "workflows" / "triage.yml").read_text(encoding="utf-8"))
-    on = flow.get("on", flow.get(True))
+def _flow(name):
+    flow = yaml.safe_load((REPO_ROOT / ".github" / "workflows" / name).read_text(encoding="utf-8"))
+    return flow, flow.get("on", flow.get(True))
+
+
+def test_triage_runs_for_requests_only():
+    # Join requests are reviewed by Caspar.Magi (caspar.yml), so an applicant never gets a triage reply as well.
+    flow, on = _flow("triage.yml")
     assert set(on["issues"]["types"]) >= {"opened", "edited"}
     condition = " ".join(flow["jobs"]["triage"]["if"].split())
-    for needle in ["contains(github.event.issue.body, 'request@1')",
-                   "startsWith(github.event.issue.title, 'Join request')",
-                   "contains(github.event.issue.labels.*.name, 'magi:join')",
-                   "github.event_name == 'workflow_dispatch'"]:
-        assert needle in condition, needle
-    assert condition.count("||") == 3 and "&&" not in condition
+    assert condition == "github.event_name == 'workflow_dispatch' || contains(github.event.issue.body, 'request@1')"
+    assert "Join request" not in condition and "magi:join" not in condition
     assert flow["permissions"] == {"contents": "read", "issues": "write"}
+
+
+def test_caspar_reviews_join_requests_as_soon_as_they_are_opened_or_edited():
+    flow, on = _flow("caspar.yml")
+    assert set(on["issues"]["types"]) == {"opened", "edited"} and "schedule" in on
+    assert "join" in on["workflow_dispatch"]["inputs"]["scope"]["options"]
+    jobs = flow["jobs"]
+    condition = " ".join(jobs["prepare"]["if"].split())
+    assert condition == ("github.event_name != 'issues' || startsWith(github.event.issue.title, 'Join request') "
+                         "|| contains(github.event.issue.labels.*.name, 'magi:join')")
+    plan = next(step for step in jobs["prepare"]["steps"] if step.get("id") == "plan")
+    assert plan["env"]["SCOPE"].startswith("${{ github.event_name == 'issues' && 'join' ||")
+    # prepare and think hold no write permission; only write is in the writer group, after both.
+    assert jobs["prepare"]["permissions"] == {"contents": "read", "issues": "read"}
+    assert jobs["think"]["permissions"] == {"contents": "read"}
+    assert _group(jobs["write"]["concurrency"]) == WRITER and jobs["write"]["concurrency"]["cancel-in-progress"] is False
+    assert "concurrency" not in jobs["prepare"] and "concurrency" not in jobs["think"]
+    assert _group(flow.get("concurrency")) is None
+    snapshot = next(step for step in jobs["write"]["steps"] if step.get("name") == "Publish the snapshot")
+    assert "github.event_name != 'issues'" in snapshot["if"] and "inputs.scope != 'join'" in snapshot["if"]
+
+
+def test_intake_holds_the_writer_group_and_runs_on_slash_comments():
+    flow, on = _flow("intake.yml")
+    assert _group(flow["concurrency"]) == WRITER and "issue_comment" in on
+    assert "startsWith(github.event.comment.body, '/')" in flow["jobs"]["intake"]["if"]
 
 
 def test_triage_can_be_run_by_hand_for_issues_already_open():
     # Issues opened before the workflow reacted to them are answered by a manual run; run_triage scans all open issues.
-    flow = yaml.safe_load((REPO_ROOT / ".github" / "workflows" / "triage.yml").read_text(encoding="utf-8"))
-    on = flow.get("on", flow.get(True))
+    flow, on = _flow("triage.yml")
     assert "workflow_dispatch" in on and not (on["workflow_dispatch"] or {}).get("inputs")
     condition = " ".join(flow["jobs"]["triage"]["if"].split())
     assert condition.startswith("github.event_name == 'workflow_dispatch' ||")

@@ -18,8 +18,15 @@ from pathlib import Path
 from .common import SOURCE_DIR
 from .run import MODEL, TOOLS
 
-KINDS = ("review", "weekly", "probe")
+KINDS = ("review", "weekly", "probe", "join")
 DISALLOWED = ("Bash", "Edit", "Write", "MultiEdit", "NotebookEdit", "mcp__*")
+# A join task reads text that anyone with a GitHub account wrote, and needs only its prompt and its input file
+# (decision D45): it gets Read alone, and every other tool of the usual five is refused as well.
+JOIN_TOOLS = ("Read",)
+
+
+def tools_for(kind: str) -> tuple[str, ...]:
+    return JOIN_TOOLS if kind == "join" else TOOLS
 _TASK_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9-]{0,79}")
 
 
@@ -31,8 +38,10 @@ def prompt(kind: str, task_id: str) -> str:
 def options(root, kind: str) -> dict:
     """Keyword arguments for ClaudeAgentOptions. The preset keeps Claude Code's own system prompt, as the Action did."""
     schema = json.loads((Path(root) / SOURCE_DIR / "schemas" / f"{kind}.schema.json").read_text(encoding="utf-8"))
-    return {"model": MODEL, "system_prompt": {"type": "preset", "preset": "claude_code"}, "tools": list(TOOLS),
-            "allowed_tools": list(TOOLS), "disallowed_tools": list(DISALLOWED), "strict_mcp_config": True,
+    tools = tools_for(kind)
+    refused = [*DISALLOWED, *(tool for tool in TOOLS if tool not in tools)]
+    return {"model": MODEL, "system_prompt": {"type": "preset", "preset": "claude_code"}, "tools": list(tools),
+            "allowed_tools": list(tools), "disallowed_tools": refused, "strict_mcp_config": True,
             "extra_args": {"restricted": None}, "cwd": str(Path(root).resolve()),
             "output_format": {"type": "json_schema", "schema": schema}}
 

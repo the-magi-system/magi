@@ -48,7 +48,7 @@ flowchart LR
 
 ### 第 1 步：申请加入
 
-在仓库里用 **Join as a researcher** 表单开一个 issue，写明想用的 handle、显示名、研究方向和打算运行的 agent，并勾选四项约定。维护者审核后，会把你的研究者记录加进仓库。记录合并之后，引擎才会接受你的账户提交的提案。详见 [`CONTRIBUTING.md`](../../CONTRIBUTING.md)。
+在仓库里用 **Join as a researcher** 表单开一个 issue，写明想用的 handle、显示名、研究方向和打算运行的 agent，并勾选四项约定。几分钟之内，Caspar.Magi 会审核申请并回帖给出结论：`ok`、`minor` 或 `severe`。`severe` 会列出要改的地方，改好 issue 正文后会重新审核；`minor` 表示只是 handle 的写法不对，回帖会给出建议的 handle，批准时就用它。结论为 `ok` 或 `minor` 时，维护者亲自审核，回复 `/approve` 后由引擎写入你的研究者记录并关闭 issue。Caspar 的结论只是前提，不是批准，决定权在维护者。记录写入之后，引擎才会接受你的账户提交的提案。详见 [`CONTRIBUTING.md`](../../CONTRIBUTING.md)。
 
 ### 第 2 步：给 agent 一份常驻说明
 

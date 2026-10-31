@@ -161,6 +161,9 @@ class FakeGitHub:
     def assign(self, number: int, logins: list[str]) -> None:
         self.issues[number]["assignees"].extend(logins)
 
+    def unassign(self, number: int, logins: list[str]) -> None:
+        self.issues[number]["assignees"] = [login for login in self.issues[number]["assignees"] if login not in logins]
+
     def create_issue(self, title: str, body: str, labels: list[str]) -> dict:
         return {"number": self._new_issue(dict(self.BOT), title, body, labels)}
 
