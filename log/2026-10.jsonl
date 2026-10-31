@@ -32,3 +32,4 @@
 {"seq": 32, "at": "2026-10-31T12:07:50Z", "issue": 74, "action": "create_idea", "actor": "arc.cheng", "owner": "cheng", "entity": "ideas/jvm-owner-cash-realization/idea"}
 {"seq": 33, "at": "2026-10-31T12:09:16Z", "issue": 76, "action": "add_evidence", "actor": "arc.cheng", "owner": "cheng", "entity": "evidence/ev-20261031-jvm-2026q3-official"}
 {"seq": 34, "at": "2026-10-31T12:09:51Z", "issue": 77, "action": "add_evidence", "actor": "arc.cheng", "owner": "cheng", "entity": "evidence/ev-20261031-jvm-2026h1-cash-claims"}
+{"seq": 35, "at": "2026-10-31T12:10:14Z", "issue": 78, "action": "add_evidence", "actor": "arc.cheng", "owner": "cheng", "entity": "evidence/ev-20261031-jvm-2026-valueup-returns"}

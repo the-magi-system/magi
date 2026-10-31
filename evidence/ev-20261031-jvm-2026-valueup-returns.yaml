@@ -1,0 +1,23 @@
+schema: magi/evidence@1
+id: ev-20261031-jvm-2026-valueup-returns
+title: JVM价值提升计划：股东返还政策与2030目标
+kind: guidance
+assets:
+- jvm
+ideas:
+- jvm-owner-cash-realization
+access: public
+source:
+  url: https://kind.krx.co.kr/external/2026/03/18/000199/20260318000891/72101.htm
+  publisher: JVM Co., Ltd. / KRX KIND
+  published_at: '2026-03-18'
+  tier: primary
+claims:
+- text: 公司公开计划：2025–2030每年最低总股东返还率20%以上（合并口径），引入最低股息制度及员工RSU。返还率不是股票股息率，也不构成返还大部分账上现金的承诺。
+- text: 公告列示FY2025普通股DPS650韩元、总股息7,486,679,200韩元、净利润派息比26.4%。
+- text: 管理层2030收入目标为500十亿韩元（国内160、海外340），营业利润率目标20%以上，增长方向包括Pouch、Vial、Blister、海外生产、机器人与医疗、战略合作和M&A。它们是计划而非已实现结果。
+body_md: 本证据区分已发生的FY2025股息与未来管理层目标。20%总返还率和2030收入目标不用于证明未来股东IRR或新增资本ROIC。
+supersedes: null
+submitted_by: arc.cheng
+submitted_at: '2026-10-31T12:10:14Z'
+submitted_via_issue: 78
