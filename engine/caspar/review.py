@@ -54,17 +54,24 @@ def _dated(value, today: date) -> bool:
 
 
 def _source(state: RepoState, source, today: date) -> tuple[dict | None, str | None]:
-    if isinstance(source, dict) and source.get("evidence"):
-        evidence = state.evidence.get(source["evidence"])
-        if evidence is None:
-            return None, f"evidence {source['evidence']} does not exist"
+    """The source of a factual error: only a public evidence id, or only an https link with its date.
+
+    A known evidence id wins, and the id of non-public evidence is refused. Any other text in `evidence`, such as a
+    sentence the model quoted from the filing, does not hide a well-formed link and date; it is never kept."""
+    if not isinstance(source, dict):
+        return None, "the source must be a public evidence id, or an https link with a real date no later than today"
+    named = source.get("evidence")
+    evidence = state.evidence.get(named) if isinstance(named, str) else None
+    if evidence is not None:
         if evidence.get("access", "public") != "public":
-            return None, f"evidence {source['evidence']} is not public"
-        return {"evidence": source["evidence"]}, None
-    if isinstance(source, dict):
-        url, when = source.get("url"), source.get("date")
-        if isinstance(url, str) and url.startswith("https://") and _dated(when, today):
-            return {"url": url, "date": when}, None
+            return None, f"evidence {named} is not public"
+        return {"evidence": named}, None
+    url, when = source.get("url"), source.get("date")
+    if isinstance(url, str) and url.startswith("https://") and _dated(when, today):
+        return {"url": url, "date": when}, None
+    if named:
+        shown = named if len(named) <= 60 else named[:57] + "..."
+        return None, f"{shown!r} is not an evidence record, and there is no https link with a real date no later than today"
     return None, "the source must be a public evidence id, or an https link with a real date no later than today"
 
 

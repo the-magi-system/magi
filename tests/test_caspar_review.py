@@ -84,6 +84,53 @@ def test_factual_errors_need_a_verbatim_quote_and_a_public_source(viewed):
                        f"factual error 5: {bad_source}"]
 
 
+# Production run 41229030582: the model put a sentence quoted from the filing into `evidence` next to a valid link.
+STRAY = "The merger agreement provides for a termination fee of $45.0 million payable by the Company"
+SEC = "https://www.sec.gov/Archives/edgar/data/1818201/000119312526438167/0001193125-26-438167-index.htm"
+ERROR = {"quote": CLAIM, "correction": "The company reported spare capacity", "explanation": "Q3 results"}
+
+
+def test_stray_text_in_evidence_does_not_hide_a_valid_link(viewed):
+    output = model_review(factual_errors=[{**ERROR, "source": {"evidence": STRAY, "url": SEC, "date": "2026-10-01"}}])
+    checked, dropped = check_review(RepoState.load(viewed), IDEA, "john.research", output, NOW)
+    assert dropped == [] and [e["source"] for e in checked["factual_errors"]] == [{"url": SEC, "date": "2026-10-01"}]
+    assert STRAY not in repr(checked)
+    assert STRAY not in review_comment(IDEA, "john.research", 1, checked) and SEC in review_comment(
+        IDEA, "john.research", 1, checked)
+
+
+def test_a_known_public_id_wins_over_a_link(viewed):
+    source = {"evidence": "ev-20261001-msft-fy27-capex", "url": SEC, "date": "2026-10-01"}
+    checked, dropped = check_review(RepoState.load(viewed), IDEA, "john.research",
+                                    model_review(factual_errors=[{**ERROR, "source": source}]), NOW)
+    assert dropped == [] and checked["factual_errors"][0]["source"] == {"evidence": "ev-20261001-msft-fy27-capex"}
+
+
+def test_a_non_public_id_is_refused_even_with_a_link(viewed):
+    _apply(viewed, "add_evidence", non_public_evidence_payload())
+    state = RepoState.load(viewed)
+    secret = next(e for e in state.evidence if e.endswith("channel-check"))
+    source = {"evidence": secret, "url": SEC, "date": "2026-10-01"}
+    checked, dropped = check_review(state, IDEA, "john.research", model_review(factual_errors=[{**ERROR, "source": source}]),
+                                    NOW)
+    assert checked["factual_errors"] == [] and dropped == [f"factual error 1: evidence {secret} is not public"]
+
+
+def test_an_unknown_id_without_a_valid_link_is_dropped(viewed):
+    output = model_review(factual_errors=[
+        {**ERROR, "source": {"evidence": "ev-20990101-nothing"}},
+        {**ERROR, "source": {"evidence": STRAY, "url": SEC, "date": "2026-13-01"}},
+        {**ERROR, "source": {"evidence": STRAY, "url": SEC, "date": "2026-12-01"}},
+        {**ERROR, "source": {"evidence": STRAY, "url": "http://www.sec.gov/x", "date": "2026-10-01"}},
+    ])
+    checked, dropped = check_review(RepoState.load(viewed), IDEA, "john.research", output, NOW)
+    assert checked["factual_errors"] == [] and len(dropped) == 4
+    no_link = "is not an evidence record, and there is no https link with a real date no later than today"
+    assert dropped[0] == f"factual error 1: 'ev-20990101-nothing' {no_link}"
+    assert all(no_link in line for line in dropped)
+    assert all(len(line) < 200 for line in dropped), "a stray sentence is shortened in the run summary"
+
+
 def test_a_public_fact_in_a_non_public_pillar_can_still_be_pointed_out(repo):
     claim = "Revenue was 200 million last year, and contacts report larger orders"
     pillars = [{"id": "contacts", "claim": claim, "weight": 1, "basis": "non-public"}]
