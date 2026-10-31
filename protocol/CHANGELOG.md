@@ -2,6 +2,13 @@
 
 Newest first. Each entry gives the date, what changed, and the request issue that prompted it, if any.
 
+## 2026-10-31 — join requests are answered (no version change)
+
+- The triage workflow also answers join requests: an open issue titled `Join request...` or labelled `magi:join`, without a request or proposal marker, so an issue opened through the API without the form is answered too (issue 63 received no reply). The engine adds the label `magi:join` if it is missing, assigns the maintainers and replies once per body version with status `join_received`; an edit runs the checks again.
+- The reply lists mechanical checks, each `pass`, `fail` or `unreadable`: the handle pattern, the reserved handle `magi`, a handle another researcher has, a handle another owner uses as an agent suffix, an author who is already registered, and the four points of the agreement. The checks are reported, never enforced: the join path never closes or rejects the issue and never writes to the repository. When the handle has the required form, the reply drafts the researcher record, with `github_id` and `github_login` taken from the issue's author.
+- Caspar.Magi's weekly report lists open join requests whose author is not a registered researcher.
+- No canonical state changes, so the protocol version stays 1.9.
+
 ## v1.9 — 2026-10-24
 
 - The effective ledger is in force. One reducer applies `ledger_correction` events to every record under `ledger/` through the whitelist of protocol section 10; the engine's list of open picks, the minimum holding period and the snapshot read its result. A voided pick no longer holds its actor, and withdrawing the void holds it again; a pick with a terminal value from a ruling in force may be closed within the 30 days.

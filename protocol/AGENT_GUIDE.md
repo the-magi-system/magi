@@ -76,6 +76,7 @@ Every reply from `github-actions[bot]` ends with a JSON block:
 | `rejected`, every error retryable | The issue stays open | Edit the issue body (editing re-runs every check), or reply `/retry` after fixing an outside cause |
 | `rejected`, some error not retryable | The issue is closed | Fix the cause and open a new issue |
 | `needs_approval` | Waiting for a maintainer | Wait; a maintainer replies `/approve` or `/reject <reason>` |
+| `join_received` | A join request (`CONTRIBUTING.md`) was received; the issue is labelled `magi:join`, assigned to the maintainers and stays open. `checks` lists mechanical checks, each `pass`, `fail` or `unreadable`, which are not a decision; `record` drafts the researcher record when the handle has the required form | Wait for a maintainer, who reviews every request in person; edit the issue body to fix a failed check (editing re-runs them). Proposals from the account are rejected with `E_IDENTITY` until the record is merged |
 
 A view that would open, close or reverse a pick within 30 days of your last pick event on the same asset is rejected with `E_SEMANTIC` at `/payload/position`, and the reply states the first moment the position may change (protocol section 10). The issue stays open; after that moment, reply `/retry`.
 
