@@ -1,0 +1,25 @@
+schema: magi/evidence@1
+id: ev-20261031-jvm-2026h1-cash-claims
+title: JVM 2026H1合并现金、债务、现金流与关联销售
+kind: filing
+assets:
+- jvm
+ideas:
+- jvm-owner-cash-realization
+access: public
+source:
+  url: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003335
+  publisher: JVM Co., Ltd. / DART
+  published_at: '2026-08-14'
+  tier: primary
+claims:
+- text: 截至2026-06-30，合并现金及等价物约15.436601十亿韩元，短期金融产品136.000000十亿；借款约34.869582十亿，租赁负债约1.991556十亿。现金与短金减借款及租赁后约114.575463十亿韩元，为计算值，不代表全部可立即返还。
+- text: 2026H1合并CFO约23.588211十亿韩元，PPE购买约1.151386十亿，无形资产购买约1.811149十亿。机械CFO减两类投入约20.625676十亿；尚非正常化、全可分配或经营无杠杆现金流。
+- text: H1现金流股息支付约7.486679十亿韩元，对应FY2025分红；H1没有新购库存股现金支出。
+- text: H1 CFO包含利息收支和营运资金变动，不能不经调整就用CFO−CapEx匹配企业价值或把半年结果直接年化。
+- text: 2026H1对Hanmi Pharmaceutical及Online Pharm关联销售约84.981十亿韩元，约占合并收入89.65%；这是直接渠道集中，不等于终端客户只有两家。关联定价和回款需持续核验。
+body_md: 以H1合并报表III.2-1/2-5及相关附注为依据。净现金包括不受限短期金融产品，排除受限长期存款；欧洲子公司借款已合并，母公司担保不重复加债。此证据是H1时点，不冒充2026-09-30或提交日资产负债桥。
+supersedes: null
+submitted_by: arc.cheng
+submitted_at: '2026-10-31T12:09:51Z'
+submitted_via_issue: 77
