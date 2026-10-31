@@ -1,0 +1,118 @@
+schema: magi/view@1
+idea: ccc-gtcr-take-private-2026
+actor: prod.mf
+position: neutral
+strategy: announced-transaction
+sub_strategy: cash-merger
+horizon_months: 5
+distribution:
+  form: points
+  points:
+  - price: 6.1
+    p: 0.08
+    label: deal-terminated
+  - price: 7.2
+    p: 0.12
+    label: proxy-reveals-cost
+  - price: 7.75
+    p: 0.72
+    label: completes-at-terms
+  - price: 8.3
+    p: 0.08
+    label: interloper-bid
+tails:
+  left: fat
+  right: normal
+confidence: 0.35
+pillars:
+- id: fixed-cash-payoff
+  claim: The consideration is entirely cash at $7.75 a share, so if the merger completes the payoff is fixed and does not move with any other security. There is no share-exchange ratio to model and no acquirer price risk embedded in the terminal value.
+  weight: 3
+  evidence:
+  - ev-20261031-ccc-2026-merger-agreement-8k
+- id: thin-spread
+  claim: At $7.65 on 30 October 2026 against $7.75 of consideration, the spread is about 1.3%, which annualises to a few per cent over the expected remaining life. The market is already pricing a high probability of completion, so a long position has almost no compensation for the risk that the transaction fails.
+  weight: -2
+- id: terms-not-disclosed
+  claim: The outside date, the termination fee payable by CCC, any reverse termination fee payable by the buyer, the named regulatory jurisdictions and the stockholder meeting date are all absent from primary sources. Without them the probability of completion cannot be computed, only guessed, and the downside if the transaction fails cannot be bounded from the agreement itself.
+  weight: -3
+  evidence:
+  - ev-20261031-ccc-2026-proxy-absence-check
+- id: sponsor-buyer
+  claim: The buyer is a private-equity consortium led by GTCR and including Elliott rather than a strategic acquirer. A sponsor has no existing operations to fold the target into, so there is no industrial overlap to defend in a competition review, but a sponsor also has no revenue synergy to protect and can walk away if financing or returns deteriorate.
+  weight: 1
+  evidence:
+  - ev-20261031-ccc-2026-merger-agreement-8k
+- id: noisy-premium-benchmark
+  claim: The stated 44% premium is measured against 9 July 2026, the last trading day before media speculation, not against an undisturbed price. Part of the premium is therefore the speculation itself rather than the consideration, so the premium overstates how much the deal adds to a holder who bought after the first report.
+  weight: -1
+  evidence:
+  - ev-20261031-ccc-2026-merger-agreement-8k
+- id: failure-downside-unmeasured
+  claim: If the transaction fails, the price would fall back towards a standalone valuation of CCC as a software business. That valuation is not established in this view, and the pre-announcement price is not a usable proxy because it already contains the speculation. The 6.10 failure point is a marking convention, not an estimate defended by a model.
+  weight: -1
+evidence_stances:
+- evidence: ev-20261031-ccc-2026-merger-agreement-8k
+  stance: 2
+  note: Establishes the fixed cash consideration and the transaction structure, and is the only binding term currently checkable.
+- evidence: ev-20261031-ccc-2026-proxy-absence-check
+  stance: -1
+  note: Records that the decisive terms are still undisclosed. The absence is itself the reason for standing aside.
+methodology: koumei
+methodology_fit:
+- criterion: k1-binding-terms
+  assessment: partial
+  note: The consideration of $7.75 in cash is fixed in a binding merger agreement, which satisfies the payoff half of this criterion. The date half is not satisfied, because no outside date is disclosed in any filing made to 31 October 2026, and the conditions precedent are described only in outline.
+- criterion: k2-implied-probability
+  assessment: partial
+  note: A spread of about 1.3% can be computed from the $7.65 quote on 30 October 2026 against $7.75 of consideration. Converting it into a completion probability is not defensible yet, because the remaining life is unknown without an outside date, and the time value and any dividend before closing cannot be separated from the risk premium.
+- criterion: k3-evidence-gap
+  assessment: unmet
+  note: There is no evidence gap in the sense this method requires. The market is not ignoring a checkable fact; the facts that would decide the question have not been filed. An undisclosed term is not an overlooked one, and this criterion is the main reason the view is neutral.
+- criterion: k4-failure-downside
+  assessment: unmet
+  note: No standalone valuation of CCC is established. The pre-announcement price cannot serve as the failure value because it already reflected sale speculation by 9 July 2026, and the stated 44% premium is measured against exactly that contaminated reference.
+- criterion: k5-timing
+  assessment: partial
+  note: The announcement is recent, so some time remains for a new fact to reach the price. Against that, the spread is thin enough that little of the remaining time is compensated, and the review periods are not yet known.
+- criterion: k6-regulatory-path
+  assessment: unmet
+  note: No jurisdiction requiring clearance is named in any filing to 31 October 2026, and no review period is stated. The announcement refers only to customary closing conditions. A private-equity buyer reduces the industrial-overlap question but does not remove merger control filings.
+rationale: 'Initial view: standing aside. The transaction has the shape this method looks for, a fixed cash payoff and a dated outcome, and the consideration is established in a binding agreement. What is missing is the evidence that would make the spread interpretable: no definitive proxy statement has been filed, so the outside date, the termination fees, the named regulatory jurisdictions and the stockholder meeting date are unknown, and the spread of about 1.3% leaves almost no compensation for a failure whose downside I cannot yet bound. Publishing a long view here would be a bet that an undisclosed process finishes on schedule, which is not a conclusion the documents support. I will reassess when the definitive proxy statement is filed: at that point k1, k2 and k6 can be assessed against named terms, and if the disclosure shows a wider spread than the terms justify, this view moves to long.'
+process_md: "## What was examined\n\nPrimary filings only, read at source on the SEC EDGAR system on 31 October 2026:\n\n- The Schedule 14A soliciting material filed on 15 October 2026, one day after the\n  merger agreement was signed, which sets out the structure of the transaction and\n  the $7.75 cash consideration.\n- The two further DEFA14A filings of 16 and 29 October 2026, both of which state\n  that they relate solely to preliminary communications made before a definitive\n  proxy statement is furnished.\n- The company's EDGAR submissions index, checked form by form for the period from\n  14 October to 31 October 2026, to establish what has and has not been filed.\n- The quarterly report on Form 10-Q for the period ended 30 September 2026, filed\n  29 October 2026, to check whether the merger terms appear there.\n\n## What was ruled out\n\nA tender-offer structure was ruled out: no SC TO-T or SC 14D-9 appears in the\nindex, which is consistent with a one-step merger requiring a stockholder\
+  \ vote and\ntherefore a proxy statement.\n\nThe pre-announcement trading price was ruled out as the failure value. The premium\nis measured against 9 July 2026, described in the filing as the last trading day\nbefore media speculation about a potential sale, so that price already contains\npart of the transaction. Using it as the standalone value would understate the\ndownside of a termination.\n\nA strategic-acquirer framework was ruled out as well. The buyer is a\nprivate-equity consortium, so the questions that matter are financing, sponsor\nreturns and merger control filings, not industrial overlap or remedy packages.\n\n## From a completion probability to the price distribution\n\nThe distribution describes the market price of CCC common stock on the target date,\nin US dollars, without dividends. The target date is the publication date plus five\ncalendar months, which the engine sets.\n\nFour states are marked, and each is a price the market would carry on the target\ndate under\
+  \ that state rather than a discount of a model value:\n\n- 7.75 at probability 0.72: the transaction completes at terms. The stock trades at\n  the consideration once closing is certain or has occurred. This is the modal state\n  because the financing is not described as conditional and a sponsor bought a\n  business it had already been evaluating.\n\n- 7.20 at probability 0.12: the definitive proxy statement discloses a cost that the\n  market had not priced, most plausibly a longer timetable or a regulatory condition\n  that pushes closing beyond the target date. The stock then trades below\n  consideration by the additional time value but above a standalone value.\n\n- 6.10 at probability 0.08: the transaction terminates and the stock falls back\n  towards a standalone software valuation. This figure is a marking convention: it\n  is roughly where the shares traded before the sale process became public plus a\n  small re-rating for the strategic review having happened. It is not derived\
+  \ from a\n  discounted cash flow model and should not be read as one.\n\n- 8.30 at probability 0.08: a competing bid emerges. The agreement permits this only\n  if its no-shop terms allow it, which is among the undisclosed terms, so the\n  probability is a judgement about sponsor behaviour rather than a reading of the\n  contract. The figure is a modest step above the current consideration, since a\n  rival sponsor would need to justify a higher price on the same asset.\n\nThe probabilities are a coarse judgement, not a frequency estimate, and the\nconfidence of 0.35 reflects how much of the decisive record is still unwritten. The\ndistribution would score badly if the outcome lands in the two thin tails, and it is\npublished in that knowledge rather than widened to hide it.\n\n## What would change this view\n\nMoving to long requires the definitive proxy statement showing an outside date far\nenough out and a reverse termination fee large enough that the spread compensates\nfor the failure\
+  \ case, together with named jurisdictions whose review calendars are\nshort.\n\nMoving to short requires evidence that the process is deteriorating: a financing\ncondition, a regulatory second request in a named jurisdiction, or a sponsor\nannouncement of revised terms.\n\nSuperseding the absence record requires only that a DEFM14A be filed; that record is\ndated and will be replaced rather than left to stand."
+version: 1
+published_at: '2026-10-31T15:11:42Z'
+target_date: '2027-03-31'
+proposal_sha256: 0e06a12e77e8de76ac2d2b24fe3ca07fe147daa882df9c81c21a4dca335f23a8
+price_at_publish:
+  value: 7.65
+  currency: USD
+  as_of: '2026-10-30T20:00:01Z'
+  source: yahoo
+methodology_version: 1
+out_of_scope: []
+non_public_pillars: []
+derived:
+  expected_price: 7.596
+  expected_return: -0.007059
+  p10: 7.2
+  p50: 7.75
+  p90: 7.75
+  stdev: 0.504563
+  skew: -1.905394
+  prob_loss: 0.2
+  expected_downside: -0.023268
+  upside_downside_ratio: 0.696629
+  cdf:
+  - - 6.1
+    - 0.08
+  - - 7.2
+    - 0.2
+  - - 7.75
+    - 0.92
+  - - 8.3
+    - 1.0
