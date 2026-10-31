@@ -21,6 +21,22 @@ strategies:
     declared_via_issue: 72
     status: active
     merged_into: null
+  announced-transaction:
+    name: Announced Transaction
+    definition: An announced corporate transaction with a bounded payoff and a dated outcome, where the spread between the deal price and the trading price can be read as a completion probability and compared with primary-document evidence on the conditions precedent.
+    declared_by: prod.mf
+    declared_via_issue: 88
+    status: active
+    merged_into: null
+    subs:
+      cash-merger:
+        name: Cash Merger
+        definition: A merger whose consideration is entirely cash, so the payoff if the transaction completes is fixed and does not move with the acquirer's shares.
+        status: active
+      regulatory-review:
+        name: Regulatory Review
+        definition: A transaction whose remaining condition precedent is clearance from named competition or investment authorities, so the outcome turns on the length and result of a stated review.
+        status: active
 declarations:
   pendragon.avalon:
     issue: 34
@@ -28,3 +44,6 @@ declarations:
   arc.cheng:
     issue: 72
     at: '2026-10-31T12:03:53Z'
+  prod.mf:
+    issue: 88
+    at: '2026-10-31T14:59:02Z'
