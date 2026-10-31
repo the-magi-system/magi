@@ -359,6 +359,15 @@ def verdicts(comments: list[dict], number: int) -> list[dict]:
     return found
 
 
+def verdict_due(comments: list[dict], number: int, sha: str) -> bool:
+    """A new verdict is due when there is none, or when the newest verdict is for another version of the body.
+
+    Only the newest verdict counts, as for `/approve`: a body edited back to an earlier version, which had a
+    verdict of its own, needs a fresh one, because the verdict in between now stands."""
+    found = verdicts(comments, number)
+    return not found or found[-1]["body_sha"] != sha
+
+
 # Finding the work (Caspar's prepare) -----------------------------------------------------------------------------
 
 def maintainer_logins(state: RepoState) -> list[str]:
@@ -399,7 +408,7 @@ def join_work(state: RepoState, gh, now: datetime, turn: int = 0) -> dict:
                 notes.append({"issue": number, "newest": latest})
             continue
         sha = body_sha(issue.get("body"))
-        if find_marked(comments, VERDICT_KIND, f"{number}/{sha}"):
+        if not verdict_due(comments, number, sha):
             continue
         review = review_request(state, issue)
         item = {"issue": number, "body_sha": sha, "task": None}
@@ -441,7 +450,7 @@ def write_joins(root: Path, gh, sink, plan: dict, result_of, summary: dict) -> N
             if sha != item["body_sha"]:
                 summary["dropped"].append(f"join #{number}: edited after the work was prepared; reviewed next run")
                 continue
-            if find_marked(gh.comments(number), VERDICT_KIND, f"{number}/{sha}"):
+            if not verdict_due(gh.comments(number), number, sha):
                 continue
             state = RepoState.load(root)
             review = review_request(state, issue)
@@ -597,28 +606,38 @@ def _handle_command(root: Path, git, issue: dict, comments: list[dict], comment:
     return _approve(root, git, issue, comments, comment, maintainer, now)
 
 
-def run_join_commands(root: Path, gh, git, now: datetime) -> list[CommandOutcome]:
+def run_join_commands(root: Path, gh, git, now: datetime, outcomes: list | None = None) -> list[CommandOutcome]:
     """Answer every `/approve` and `/reject` on an open join request that has no answer yet, once each.
 
-    Approval commits the record but neither pushes nor posts: the intake run pushes first and posts after."""
-    outcomes = []
+    Approval commits the record but neither pushes nor posts: the intake run pushes first and posts after. Each
+    issue is handled on its own, reading its comments included: an issue that fails is left for the next run and
+    the others go on. Outcomes are appended to `outcomes` as they are made, so a caller that passes a list keeps
+    them even if this function is interrupted."""
+    outcomes = [] if outcomes is None else outcomes
     for issue in open_join_requests(gh):
-        comments = gh.comments(issue["number"])
-        answered = {reply.get("command") for reply in engine_replies(comments)
-                    if str(reply.get("status", "")).startswith("join_")}
-        for comment in comments:
-            if comment["user"]["login"] == BOT_LOGIN or comment["id"] in answered or _command(comment) is None:
-                continue
-            try:
-                outcome = _handle_command(root, git, issue, comments, comment, now)
-            except Exception as exc:  # keep the issue open for a maintainer; never leave half-written files behind
-                git.discard()
-                outcome = _refused(issue, comment, body_sha(issue.get("body")),
-                                   f"the engine failed ({type(exc).__name__}); a maintainer reviews it.")
-            outcomes.append(outcome)
-            if outcome.close:
-                break
+        try:
+            _commands_on(root, gh, git, issue, now, outcomes)
+        except Exception as exc:  # one join request must never stop the others, nor the proposals of this run
+            print(f"warning: join request #{issue['number']} was skipped: {type(exc).__name__}: {exc}")
     return outcomes
+
+
+def _commands_on(root: Path, gh, git, issue: dict, now: datetime, outcomes: list) -> None:
+    comments = gh.comments(issue["number"])
+    answered = {reply.get("command") for reply in engine_replies(comments)
+                if str(reply.get("status", "")).startswith("join_")}
+    for comment in comments:
+        if comment["user"]["login"] == BOT_LOGIN or comment["id"] in answered or _command(comment) is None:
+            continue
+        try:
+            outcome = _handle_command(root, git, issue, comments, comment, now)
+        except Exception as exc:  # keep the issue open for a maintainer; never leave half-written files behind
+            git.discard()
+            outcome = _refused(issue, comment, body_sha(issue.get("body")),
+                               f"the engine failed ({type(exc).__name__}); a maintainer reviews it.")
+        outcomes.append(outcome)
+        if outcome.close:
+            break
 
 
 def publish_command(gh, outcome: CommandOutcome) -> None:

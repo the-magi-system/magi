@@ -159,13 +159,20 @@ def run_intake(root: Path, gh, prices: PriceProvider, git: Git,
             git.discard()
             error = MagiError(E_INTERNAL, "", f"{type(exc).__name__}: {exc}")
             outcomes.append(Outcome(issue["number"], _result(issue, "rejected", _parsed(issue), [error]), "magi:rejected"))
-    joins = run_join_commands(root, gh, git, now_fn())
+    joins: list = []
+    try:  # the join path must never stop the push and the replies of the proposals accepted above
+        run_join_commands(root, gh, git, now_fn(), joins)
+    except Exception as exc:
+        print(f"warning: join requests were not handled in full: {type(exc).__name__}: {exc}")
     if any(o.result["status"] == "accepted" and not o.result.get("recovered") for o in outcomes) or \
             any(join.wrote for join in joins):
         git.push()
     for outcome in outcomes:
         _publish(gh, outcome)
     for join in joins:
-        publish_command(gh, join)
+        try:
+            publish_command(gh, join)
+        except Exception as exc:  # the next run answers the command again, or recovers an approval already pushed
+            print(f"warning: the answer on join request #{join.number} was not posted: {type(exc).__name__}: {exc}")
     _link_threads(root, gh, git)
     return outcomes + joins

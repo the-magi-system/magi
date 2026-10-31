@@ -193,6 +193,28 @@ def test_edit_from_severe_to_ok_assigns_and_ok_to_severe_unassigns(world):
     assert len(verdicts(world["gh"].comments(n), n)) == 3
 
 
+def test_a_body_edited_back_to_an_earlier_version_gets_a_new_verdict(world):
+    a, b = join_body(), join_body(handle="john")
+    n = open_form(world, a)
+    caspar(world, {n: OK})
+    assert latest_verdict(world, n)["verdict"] == "ok" and world["gh"].issues[n]["assignees"] == [MAINTAINER]
+    world["gh"].edit_issue_body(n, b)
+    caspar(world, {n: OK})
+    assert latest_verdict(world, n)["verdict"] == "severe" and world["gh"].issues[n]["assignees"] == []
+    world["gh"].edit_issue_body(n, a)  # restores version A, which already had a verdict of its own
+    plan, _ = caspar(world, {n: OK})
+    assert [item["issue"] for item in plan["joins"]] == [n]
+    newest = latest_verdict(world, n)
+    assert newest["verdict"] == "ok" and newest["body_sha"] == body_sha(a)
+    assert [v["verdict"] for v in verdicts(world["gh"].comments(n), n)] == ["ok", "severe", "ok"]
+    assert world["gh"].issues[n]["assignees"] == [MAINTAINER]
+    plan, _ = caspar(world, {n: OK})
+    assert plan["joins"] == [] and len(verdicts(world["gh"].comments(n), n)) == 3, "and then no further verdict"
+    command(world, n, "/approve")
+    assert [o.result["status"] for o in approve(world)] == ["join_approved"]
+    assert load_yaml(record_path(world, "pendragon"))["github_id"] == NEWCOMER
+
+
 # The model's answer --------------------------------------------------------------------------------------------
 
 @pytest.mark.parametrize("output", [
@@ -459,6 +481,59 @@ def test_intake_pushes_the_record_then_replies(world):
                             check=True, capture_output=True, text=True).stdout
     assert yaml.safe_load(remote)["github_id"] == NEWCOMER
     assert world["gh"].issues[n]["state"] == "closed" and answers(world, n)[-1]["status"] == "join_approved"
+
+
+class FlakyGitHub(FakeGitHub):
+    """Reading the comments of one issue fails, as an API error would."""
+
+    def __init__(self, broken: set[int]):
+        super().__init__()
+        self.broken = broken
+
+    def comments(self, number):
+        if number in self.broken:
+            raise RuntimeError(f"comments of #{number} could not be read")
+        return super().comments(number)
+
+
+def test_a_failing_join_request_never_stops_the_proposals_of_the_run(world):
+    from tests.util import body as proposal
+    gh = FlakyGitHub(set())
+    world["gh"] = gh
+    ok = open_form(world)
+    caspar(world, {ok: OK})
+    broken = open_form(world, join_body(handle="second"), author=NEWCOMER + 1, login="second")
+    command(world, ok, "/approve")
+    idea = {"id": "msft-copilot-2027", "asset": "msft", "title": "Copilot", "summary": "Copilot monetisation"}
+    accepted = gh.open_issue(ARTHUR_ID, MAINTAINER, proposal("create_idea", "arthur.val", idea))
+    gh.broken = {broken}
+    outcomes = run_intake(world["root"], gh, FakePrices(), Git(world["root"]), now_fn=lambda: NOW)
+    statuses = sorted(o.result["status"] for o in outcomes)
+    assert statuses == ["accepted", "join_approved"], "the broken issue is skipped, the others are handled"
+    log = subprocess.run(["git", "--git-dir", str(world["bare"]), "log", "--format=%s", "main"], check=True,
+                         capture_output=True, text=True).stdout
+    assert "create_idea: msft-copilot-2027" in log and f"join: register researcher pendragon (#{ok})" in log
+    assert gh.issues[accepted]["state"] == "closed" and gh.replies(accepted)[-1]["status"] == "accepted"
+    assert gh.issues[ok]["state"] == "closed" and gh.issues[broken]["state"] == "open"
+
+
+def test_even_a_failure_to_list_join_requests_keeps_the_proposals(world, monkeypatch):
+    import engine.caspar.join as join_module
+    from tests.util import body as proposal
+    gh = world["gh"]
+    idea = {"id": "msft-copilot-2027", "asset": "msft", "title": "Copilot", "summary": "Copilot monetisation"}
+    accepted = gh.open_issue(ARTHUR_ID, MAINTAINER, proposal("create_idea", "arthur.val", idea))
+
+    def fail(_gh):
+        raise RuntimeError("the issue list could not be read")
+
+    monkeypatch.setattr(join_module, "open_join_requests", fail)
+    outcomes = run_intake(world["root"], gh, FakePrices(), Git(world["root"]), now_fn=lambda: NOW)
+    assert [o.result["status"] for o in outcomes] == ["accepted"]
+    assert gh.issues[accepted]["state"] == "closed" and gh.replies(accepted)[-1]["status"] == "accepted"
+    log = subprocess.run(["git", "--git-dir", str(world["bare"]), "log", "--format=%s", "main"], check=True,
+                         capture_output=True, text=True).stdout
+    assert "create_idea: msft-copilot-2027" in log
 
 
 def test_an_approval_committed_but_not_answered_is_recovered(world):
