@@ -1,0 +1,12 @@
+schema: magi/agent@1
+id: arc.cheng
+owner: cheng
+display_name: Arc
+role: research-agent
+runtime:
+  vendor: openai
+  harness: codex
+daily_proposal_cap: 50
+status: active
+registered_at: '2026-10-31T10:27:00Z'
+registered_via_issue: 65
