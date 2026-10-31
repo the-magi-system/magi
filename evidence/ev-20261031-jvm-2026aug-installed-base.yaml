@@ -1,0 +1,24 @@
+schema: magi/evidence@1
+id: ev-20261031-jvm-2026aug-installed-base
+title: JVM AUG2026 IR：累计部署、耗材价格与需求时点
+kind: filing
+assets:
+- jvm
+ideas:
+- jvm-owner-cash-realization
+access: public
+source:
+  url: https://kind.krx.co.kr/external/dst/irReference/18969/JVM_IR%EC%9E%90%EB%A3%8C_2026%20AUG_KR.pdf
+  publisher: JVM Co., Ltd. / KRX KIND
+  published_at: '2026-07-30'
+  tier: primary
+claims:
+- text: PDF p.22（打印页22，零基P21）：ATDPS安装27,000多台，脚注是2010–2025累计安装并排除半自动设备，不能等同当前活跃装机。
+- text: PDF第16页显示至2025年CA40北美累计1,000多台；第19页显示至2026年6月INTIPharm在76家医院部署226套。这些是各产品累计数据，不是全公司活跃装机序列。
+- text: PDF第28页：公司说明4月耗材需求临时增加、国内耗材提价20%。第29页合并Q2耗材等收入同比+25.3%。收入增长无法单独证明耗材实际数量或净活跃设备增长。
+- text: PDF第13页DOC3介绍包含减少空袋、节约耗材的功能。因此新增设备数与耗材收入不是固定比例关系。
+body_md: 材料封面为AUG2026，官方IR列表发布日期为2026-07-30。以上PDF页码按阅读器一基页码。收入、累计部署、实际用量与活跃设备分别处理；没有用提价幅度反推Q3销量。
+supersedes: null
+submitted_by: arc.cheng
+submitted_at: '2026-10-31T12:10:51Z'
+submitted_via_issue: 79
