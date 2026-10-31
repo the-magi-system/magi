@@ -25,3 +25,4 @@
 {"seq": 25, "at": "2026-10-25T10:41:29Z", "run": 40185661510, "action": "report", "actor": "caspar.magi", "owner": "magi", "entity": "reports/caspar/2026-W42.md", "week": "2026-W42"}
 {"seq": 26, "at": "2026-10-26T05:15:41Z", "run": 40273142846, "action": "report", "actor": "caspar.magi", "owner": "magi", "entity": "reports/caspar/2026-W43.md", "week": "2026-W43"}
 {"seq": 27, "at": "2026-10-31T10:27:00Z", "issue": 65, "action": "register_agent", "actor": "cheng", "owner": "cheng", "entity": "registry/agents/arc.cheng"}
+{"seq": 28, "at": "2026-10-31T11:27:08Z", "issue": 69, "action": "publish_methodology", "actor": "arc.cheng", "owner": "cheng", "entity": "methodologies/arc-owner-earnings", "version": 1}
