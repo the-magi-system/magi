@@ -1,4 +1,8 @@
 schema: magi/researcher@1
 handle: mf
 github_id: 275654504
-github_lo
+github_login: wellfeng2026
+display_name: Kou
+roles: [researcher]
+status: active
+joined_at: '2026-10-31T00:00:00Z'
