@@ -2,15 +2,17 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 实现设计第 22 节里需要模型的部分（第 22.1 节所说的模型部分），并把它写成协议的下一个版本。内容分六组：（1）证据核查（evidence check，程序抓取证据的来源，模型逐条判断主张是否有来源支持）与它的记录 `evidence/checks/<证据编号>.yaml`，包括非公开证据、来源日期的核对与程序检查（第 22.9.1、22.9.2、22.9.3、22.9.5 节）；（2）系统写入通道上的更正（correction，Melchior 写一条取代旧证据的新证据）、协助请求（assist request，`magi:assist` issue）、过时检查（staleness check）与 Caspar 的 `magi:fact-layer` 转交（第 22.9.4、22.9.6、22.9.7、22.9.8 节）；（3）标的状态检查（asset-status check）与裁决起草（ruling draft）的两步，以及一致性校验对结算记录与裁决引用的检查（第 22.7 节，计划 8 第 11 处）；（4）对 Balthasar 的 meta insight 草稿的检查（`insight-check`，第 22.12 节接口 5）与快照 `evidence_checks.json`（接口 3）；（5）运行框架：`think` job、按任务种类分配的工具、`probe`、发往 `sec.gov` 的请求与联系方式 `MAGI_HTTP_CONTACT`（本计划把它改为仓库 secret，第 24 处）、`usage/` 与每月花费上限（第 22.13 节）；（6）Melchior 档案的第 4–6 项职责（第 22.14 节）与 sandbox 端到端测试的第 3、6 步和第 4 步的证据部分（第 22.15 节）。另修计划 8 留下的一个缺陷：Caspar 周报的数字检查丢掉引用表格百分数的文字。
+**Goal:** 实现设计第 22 节里需要模型的部分（第 22.1 节所说的模型部分），并把它写成协议的下一个版本。内容分六组：（1）证据核查（evidence check，程序抓取证据的来源，模型逐条判断主张是否有来源支持）与它的记录 `evidence/checks/<证据编号>.yaml`，包括非公开证据、来源日期的核对与程序检查（第 22.9.1、22.9.2、22.9.3、22.9.5 节）；（2）系统写入通道上的更正（correction，Melchior 写一条取代旧证据的新证据）、协助请求（assist request，`magi:assist` issue）、过时检查（staleness check）与 Caspar 的 `magi:fact-layer` 转交（第 22.9.4、22.9.6、22.9.7、22.9.8 节）；（3）标的状态检查（asset-status check）与裁决起草（ruling draft）的两步，以及一致性校验对结算记录与裁决引用的检查（第 22.7 节，计划 8 第 11 处）；（4）快照 `evidence_checks.json`（第 22.12 节接口 3）；接口 5（对 Balthasar 的 meta insight 草稿的检查 `insight-check`）等 Balthasar 实现时随它的计划一起做（第 22 处）；（5）运行框架：`think` job、按任务种类分配的工具、`probe`、发往 `sec.gov` 的请求与联系方式 `MAGI_HTTP_CONTACT`（本计划把它改为仓库 secret，第 24 处）、`usage/` 与每月花费上限（第 22.13 节）；（6）Melchior 档案的第 4、5 项职责（第 22.14 节；第 6 项随 `insight-check` 移到 Balthasar 的计划）与 sandbox 端到端测试的第 3、6 步和第 4 步的证据部分（第 22.15 节）。另修计划 8 留下的一个缺陷：Caspar 周报的数字检查丢掉引用表格百分数的文字。
 
-**Architecture:** 沿用 Caspar 与 Melchior 现有的三段式运行（第 19.2 节，决策 D25、D32）。`prepare` 只读、没有 API 密钥，负责找出待办、抓取来源文字、整理模型的输入；`think` 每个模型任务一个 job，只能读 `ANTHROPIC_API_KEY`，没有仓库令牌；`write` 在 `magi-writer` 并发组里校验模型结果，然后写记录、发帖、提交。新的共用模块 `engine/think.py` 是两位系统 agent 调用 Claude Agent SDK 的唯一实现；每位 agent 自己决定每个任务种类的工具，共用模块没有默认工具，因此不会放宽 Caspar 或加入申请审核的工具。新模块 `engine/fetch.py` 负责抓取与转成文字（编码、DART 查看器、按字节识别 PDF、发往 `sec.gov` 的联系方式与间隔）；`engine/melchior/quotes.py` 是原句核对与数值核对的唯一实现。新模块 `engine/melchior/evidence.py`、`corrections.py`、`assist.py`、`staleness.py`、`referrals.py`、`status.py`、`rulings.py`、`insight.py` 各管一类待办，由 `engine/melchior/run.py` 调度。模型部分由新的仓库变量 `MELCHIOR_MODEL_MODE` 控制，没有设置时为 `off`；`MELCHIOR_MODE` 仍只控制程序部分，行为与现在相同（「请维护者确认的几处」第 1 处）。
+**Architecture:** 沿用 Caspar 与 Melchior 现有的三段式运行（第 19.2 节，决策 D25、D32）。`prepare` 只读、没有 API 密钥，负责找出待办、抓取来源文字、整理模型的输入；`think` 每个模型任务一个 job，只能读 `ANTHROPIC_API_KEY`，没有仓库令牌；`write` 在 `magi-writer` 并发组里校验模型结果，然后写记录、发帖、提交。新的共用模块 `engine/think.py` 是两位系统 agent 调用 Claude Agent SDK 的唯一实现；每位 agent 自己决定每个任务种类的工具，共用模块没有默认工具，因此不会放宽 Caspar 或加入申请审核的工具。新模块 `engine/fetch.py` 负责抓取与转成文字（编码、DART 查看器、按字节识别 PDF、发往 `sec.gov` 的联系方式与间隔）；`engine/melchior/quotes.py` 是原句核对与数值核对的唯一实现。新模块 `engine/melchior/evidence.py`、`corrections.py`、`assist.py`、`staleness.py`、`referrals.py`、`status.py`、`rulings.py` 各管一类待办，由 `engine/melchior/run.py` 调度。模型部分由新的仓库变量 `MELCHIOR_MODEL_MODE` 控制，没有设置时为 `off`；`MELCHIOR_MODE` 仍只控制程序部分，行为与现在相同（「维护者确认的几处」第 1 处）。
 
 **Tech Stack:** Python 3.13 + PyYAML + jsonschema + pytest；标准库 `html.parser`、`unicodedata`、`urllib`；`claude-agent-sdk`（只在 `think` job，版本已固定在 `requirements-think.txt`）；git；GitHub REST；GitHub Actions。本计划不增加任何依赖。
 
 **Spec:** `docs/design/2026-10-01-magi-phase1-design.md` 第 22 节（决策 D33–D44，维护者 2026-10-20、10-21 确认，2026-10-23、10-31 加了修订注记），特别是第 22.1、22.7、22.9、22.12、22.13、22.14、22.15、22.16 节；决策 D39、D41、D42、D43、D45；第 19 节（Caspar 的运行框架）。计划 8（`docs/plans/2026-10-23-impl-8-melchior-program.md`）的「第 22.15 节单元测试清单的落点」一表中留给计划 9 的各项、它末尾「维护者确认的几处」第 2、11 处与「留给计划 9」一条，也是本计划的规格。
 
 **上游：** 计划 8 已完成（PR #48、#49、#51、#52）。本计划写成时 main 为 `6fa23c3`（PR #98，协议 1.11），`646 passed`，一致性 `[]`。正式仓库的状态：四个 idea（`tem-data-engine`、`miax-options-volume`、`ccc-gtcr-take-private-2026`、`jvm-owner-cash-realization`）；14 条证据，都是 `access: public`；四个观点版本；三期 Caspar 周报；`melchior.magi` 与 `caspar.magi` 都已登记为 active。正式仓库的 `MELCHIOR_MODE` 自 2026-10-31 起为 `live`（程序部分），`CASPAR_MODE` 为 `live`。
+
+**进度（2026-11-01）：** Task 1：PR #99。维护者 2026-11-01 审阅之后，本计划的分支合并了当时的 main `28871d2`（含 PR #104），`654 passed`，一致性 `[]`；下文各任务的 Expected 从 654 起算。末尾一节已改写为维护者确认的记录（Task 1 Step 5）。
 
 **证据来源的核对（本计划的作者，2026-11-01）：** 作者用不带联系方式的通用 User-Agent 请求了正式仓库里非 SEC 证据的来源。结果如下，下文的做法依据这些结果：
 
@@ -28,23 +30,23 @@
 | 任务 | 执行者 | 说明 |
 |---|---|---|
 | Task 1 | 云端会话（本计划的作者） | 文档 PR：只新增本计划 |
-| Task 2–4 | 新开的云端会话 A | PR 9a「周报数字检查的修正与共用的模型调用模块」：周报数字检查认得表格里的写法；`engine/think.py` 与按任务种类的工具；Caspar `think` 的并行上限。每个任务一个提交 |
+| Task 2–4 | 云端会话（维护者指定 cloud 1 或 cloud 2） | PR 9a「周报数字检查的修正与共用的模型调用模块」：周报数字检查认得表格里的写法；`engine/think.py` 与按任务种类的工具；Caspar `think` 的并行上限 5。每个任务一个提交 |
 | Task 5 | 维护者 | 审阅并合并 PR 9a；录下来源夹具 |
-| Task 6–12 | 新开的云端会话 B | PR 9b「证据核查与协议 1.12」：协议文字与全部新 schema；抓取；原句与数值核对；核查记录；`MELCHIOR_MODEL_MODE`、`think` job、上限、花费与 `probe`；快照与一致性；端到端脚本 |
+| Task 6–12 | 云端会话（维护者指定 cloud 1 或 cloud 2） | PR 9b「证据核查与协议的下一个版本」：协议文字与全部新 schema；抓取；原句与数值核对；核查记录；`MELCHIOR_MODEL_MODE`、`think` job、上限、花费与 `probe`；快照与一致性；端到端脚本 |
 | Task 13 | 维护者 | 审阅并合并 PR 9b；模型部分保持 `off` |
-| Task 14–18 | 新开的云端会话 C | PR 9c「更正、协助请求、过时检查与转交」 |
+| Task 14–18 | 云端会话（维护者指定 cloud 1 或 cloud 2） | PR 9c「更正、协助请求、过时检查与转交」 |
 | Task 19 | 维护者 | 审阅并合并 PR 9c；模型部分保持 `off` |
-| Task 20–23 | 新开的云端会话 D | PR 9d「标的状态检查、裁决与 meta insight 草稿的检查」 |
-| Task 24 | 维护者 | 合并 PR 9d；重置 sandbox 并运行端到端测试；在正式仓库先以 `preview`、再以 `live` 打开模型部分 |
+| Task 20–22 | 云端会话（维护者指定 cloud 1 或 cloud 2） | PR 9d「标的状态检查与裁决」 |
+| Task 23 | 维护者 | 合并 PR 9d；重置 sandbox 并运行端到端测试；在正式仓库先以 `preview`、再以 `live` 打开模型部分 |
 
-**为什么分成四个 PR。** 实现任务共有 19 个，新增 120 个测试。计划 8 的经验是一个会话做 9 到 10 个任务、50 到 70 个测试为宜。分界按生效方式与风险划分，每个 PR 合并之后都能单独运行：
+**为什么分成四个 PR。** 实现任务共有 18 个，新增 114 个测试。计划 8 的经验是一个会话做 9 到 10 个任务、50 到 70 个测试为宜。分界按生效方式与风险划分，每个 PR 合并之后都能单独运行：
 
 - **PR 9a** 只改 Caspar 已在运行的部分与一个共用模块，不改协议版本。周报的数字检查已经影响正式仓库的报告（`CASPAR_MODE` 为 `live`），所以这一项最先合并。共用模块重构之后，Caspar 每个任务种类的 SDK 参数逐字不变，由测试保证。
-- **PR 9b** 带协议 1.12 的全部文字与全部新 schema（计划 8 的做法：先写定义，标明「Applies once Melchior.Magi's model part runs」，再由后来的代码实现）。它实现证据核查本身，但只写核查记录、不写更正、不开协助请求。合并时 `MELCHIOR_MODEL_MODE` 没有设置，模型部分为 `off`，程序部分照常运行，所以合并不会调用模型（第 1 处）。
+- **PR 9b** 带协议下一个版本（开 PR 时 CHANGELOG 里下一个空着的版本号，第 18 处）的全部文字与全部新 schema（计划 8 的做法：先写定义，标明「Applies once Melchior.Magi's model part runs」，再由后来的代码实现）。它实现证据核查本身，但只写核查记录、不写更正、不开协助请求。合并时 `MELCHIOR_MODEL_MODE` 没有设置，模型部分为 `off`，程序部分照常运行，所以合并不会调用模型（第 1 处）。
 - **PR 9c** 加上会改动或打扰别人的部分：更正写入他人的证据、协助请求指派给证据的主人、过时检查、Caspar 转交的处理。这一组单独审阅，因为它在公开仓库里改动其他研究者的记录（第 10 处）。
-- **PR 9d** 是标的状态检查、裁决与 `insight-check`。它们在第一个目标日期之前上线即可（第 22.1 节），正式仓库目前没有需要裁决的 pick。
+- **PR 9d** 是标的状态检查与裁决。它们在第一个目标日期之前上线即可（第 22.1 节），正式仓库目前没有需要裁决的 pick。
 
-Task 1 合并之前，Task 2 不开始；每个维护者任务合并上一个 PR 之前，下一个云端会话不开始（决策 D27）。
+Task 1 合并之前，Task 2 不开始；每个维护者任务合并上一个 PR 之前，下一个 PR 的工作不开始（决策 D27）。每个 PR 由维护者指定的云端会话（cloud 1 或 cloud 2）完成，做法见「云端执行附注」。
 
 ## Global Constraints
 
@@ -68,7 +70,7 @@ Task 1 合并之前，Task 2 不开始；每个维护者任务合并上一个 PR
 ## Review Focus
 
 1. **周报的数字检查**：引用表格百分数的文字保留，数据与表格里都没有的数字照旧被拦下。→ Task 2。
-2. **共用模块不放宽任何工具**：Caspar 四种任务的 SDK 参数逐字不变；共用模块没有默认工具。→ Task 3。
+2. **共用模块不放宽任何工具**：Caspar 现有每种任务的 SDK 参数逐字不变；共用模块没有默认工具。→ Task 3。
 3. **合并不启动模型**：`MELCHIOR_MODEL_MODE` 不设置时没有模型任务、`think` 不运行；程序部分在三种模型模式下逐字相同；模型模式不高于 `MELCHIOR_MODE`；定时的 `preview` 不调用模型。→ Task 10。
 4. **联系方式**：从 `secrets` 读取，只交给抓取来源的一步；只发给 `sec.gov`；没有设置时不发请求、不写记录；仓库里没有邮箱地址。→ Task 7、9、10。
 5. **抓取**：编码（含 EUC-KR）、DART 查看器、按字节识别的 PDF、截断、403 与 404 的区别。→ Task 7。
@@ -76,17 +78,17 @@ Task 1 合并之前，Task 2 不开始；每个维护者任务合并上一个 PR
 7. **核查记录的状态**与来源日期；版本与事件日志；非公开证据不调用模型。→ Task 9。
 8. **更正的条件**：规则完全满足才写更正，否则先开协助请求；主人得到通知；主人取代 Melchior 的更正之后不再更正。→ Task 14、15。
 9. **裁决的效力由程序确定**；关键数字不在抓取文字里时降为暂定。→ Task 21。
-10. **工具表**、`probe` 与 `think` 的并行上限。→ Task 3、10。
+10. **工具表**、`probe` 与 `think` 的并行上限 5。→ Task 3、10。
 
-单元测试测不到、要在 sandbox 与正式仓库实测的事：真实的 `sec.gov` 请求与 1 秒间隔；KRX 从 GitHub 托管运行器（runner）发出的请求是否同样得到 403；模型在真实页面上的结论与花费；速率限制下 `think` 的实际耗时；`melchior.yml` 的 `think` job 与诱饵检查。Task 24 的端到端测试与正式仓库的 `preview` 运行核对。
+单元测试测不到、要在 sandbox 与正式仓库实测的事：真实的 `sec.gov` 请求与 1 秒间隔；KRX 从 GitHub 托管运行器（runner）发出的请求是否同样得到 403；模型在真实页面上的结论与花费；速率限制下 `think` 的实际耗时；`melchior.yml` 的 `think` job 与诱饵检查。Task 23 的端到端测试与正式仓库的 `preview` 运行核对。
 
 ## 工具
 
-每个任务种类的工具如下。「输入」一栏写的是输入里有没有抓取或提交的文字；有的一律只给 Read。每一行都是 `engine/caspar/think.py` 或 `engine/melchior/think.py` 里的一项，`engine/think.py` 不提供默认值。
+每个任务种类的工具如下。「输入」一栏写的是输入里有没有抓取或提交的文字；有的一律只给 Read。每一行都是 `engine/caspar/think.py` 或 `engine/melchior/think.py` 里的一项，`engine/think.py` 不提供默认值。表里的 Caspar 各行是本计划写成时已有的任务种类；另一个 PR 正在加入 Caspar 的任务种类 `topic`（决策 D46，工具只有 Read），以后加入的种类由各自的 PR 写明工具，本计划的测试与文字都不固定 Caspar 任务种类的个数。
 
 | agent | 任务种类 | 输入里抓取或提交的文字 | 工具 | 说明 |
 |---|---|---|---|---|
-| Caspar | `review` | 观点、证据、讨论串（提交的文字） | Read、Grep、Glob、WebSearch、WebFetch | 不变（第 19.4 节，评审要检索公开一手来源）；本计划不收窄，见第 4 处 |
+| Caspar | `review` | 观点、证据、讨论串（提交的文字） | Read、Grep、Glob、WebSearch、WebFetch | 不变，维护者的决定（第 4 处）：`ccc-gtcr-take-private-2026` v2 的评审正是经网页检索找到那份 8-K |
 | Caspar | `weekly` | 需求、讨论串摘录 | 同上 | 不变 |
 | Caspar | `probe` | 诱饵路径 | 同上 | 不变，探测的就是这五个工具 |
 | Caspar | `join` | 加入申请的两段 | Read | 不变（决策 D45） |
@@ -97,7 +99,6 @@ Task 1 合并之前，Task 2 不开始；每个维护者任务合并上一个 PR
 | Melchior | `referral` | 证据、Caspar 的转交、抓取的两份来源 | Read | 第 22.9.8 节 |
 | Melchior | `asset-status` | 标的记录、最近的日线、取价的报错、已有的裁决 | Read、WebSearch | 标的状态检查第一步；见下文 |
 | Melchior | `ruling` | 抓取的候选来源 | Read | 裁决起草第二步 |
-| Melchior | `insight-check` | Balthasar 的草稿、按草稿提交号取回的记录 | Read | 第 22.12 节接口 5 |
 | Melchior | `probe` | 诱饵路径 | Read | 核对 Read 一档 |
 | Melchior | `probe-search` | 诱饵路径 | Read、WebSearch | 核对检索一档 |
 
@@ -105,46 +106,46 @@ Task 1 合并之前，Task 2 不开始；每个维护者任务合并上一个 PR
 
 ## 花费、积压与工作区的花费上限
 
-**依据。** 第 22.13 节按每次 Caspar `think` 约 0.07 美元（2026-10-19 sandbox 的两次自报花费）估计 Melchior 每个任务 0.10–0.50 美元。维护者此后实测，正式仓库的 Caspar 评审每次约 0.32 美元。这个数大部分来自 Claude Code 自己的系统提示与几轮工具调用，与任务的内容关系不大，所以本计划把 0.32 美元当作每个任务的底数，再按任务多读的文字加上输入与输出的花费（`claude-opus-5-5` 每百万 token 输入 4 美元、输出 20 美元、缓存读取 0.20 美元，第 22.13 节）。中文与韩文的来源每个字符约合 1 个 token，英文约 4 个字符合 1 个 token。
+**依据。** 维护者从正式仓库的运行日志读出 Claude Agent SDK 自报的花费（`total_cost_usd`）：加入申请的审核每次 0.027 美元（4 轮），周报每次 0.06–0.08 美元，观点评审每次 0.27–0.40 美元。加入申请的输入只有申请里的两段文字，4 轮只花 0.027 美元，这说明 Claude Code 自己的系统提示与每一轮的固定开销很小：系统提示在各次调用之间按缓存读取计价。花费主要随任务读进的文字、轮数、网页检索与输出而增加；观点评审要读观点、证据与讨论串，还用网页检索与抓取寻找一手来源，所以约贵十倍。本计划据此估计 Melchior 的任务：固定开销约 0.03 美元；读进的来源文字第一次按缓存写入计价（输入 4 美元每百万 token 的 1.25 倍），之后各轮按缓存读取计价（0.20 美元每百万 token）；输出 20 美元每百万 token；网页检索每次 0.01 美元（第 22.13 节的价格）。中文与韩文的来源约每个字符 1 个 token，英文约 4 个字符 1 个 token。
 
 **正式仓库的速度（2026-10-20 至 10-31）。** 12 天里有 14 条新证据，约每月 35 条；7 天里有 4 个观点版本，约每月 17 个。
 
 | 任务 | 每次估计 | 每月次数 | 每月 |
 |---|---|---|---|
-| 证据核查（英文来源，摘录约 60,000 个字符） | 0.40–0.60 美元 | 25 | 约 12.5 美元 |
-| 证据核查（中文或韩文来源） | 0.50–0.90 美元 | 10 | 约 7 美元 |
-| 到期的重新核查（`next_review`，上线约三个月后才有） | 0.40–0.60 美元 | 10 | 约 5 美元 |
-| 过时检查（第一步与第二步合计） | 0.70–1.00 美元 | 8 | 约 7 美元 |
-| 转交 | 0.50–0.80 美元 | 3 | 约 2 美元 |
-| 标的状态检查与裁决起草 | 0.80–1.20 美元 | 2 | 约 2 美元 |
-| meta insight 草稿的检查（Balthasar 上线之后） | 0.40–0.60 美元 | 0 | 0 |
-| sandbox 端到端测试（每次两个核查、两个 `probe`）与正式仓库的手动 `preview` | 约 1.60 美元一次 | 4 | 约 6.5 美元 |
-| Melchior 合计 | | | 约 42 美元；有到期重新核查之后约 47 美元 |
-| Caspar：评审 | 0.32 美元 | 17 | 约 5.5 美元 |
-| Caspar：周报 | 约 0.50 美元 | 4.3 | 约 2 美元 |
-| Caspar：加入申请（只有 Read） | 约 0.25 美元 | 5 | 约 1.5 美元 |
-| Caspar：sandbox 端到端测试（每次约三个任务） | 约 1 美元一次 | 4 | 约 4 美元 |
-| Caspar 合计 | | | 约 13 美元 |
-| 两位合计 | | | 约 55–60 美元 |
+| 证据核查（英文来源，摘录约 60,000 个字符，约 15,000 个 token） | 0.15–0.35 美元 | 25 | 约 6 美元 |
+| 证据核查（中文或韩文来源，约 60,000 个 token） | 0.35–0.70 美元 | 10 | 约 5.5 美元 |
+| 到期的重新核查（`next_review`，上线约三个月后才有） | 0.15–0.35 美元 | 10 | 约 2.5 美元 |
+| 过时检查（第一步约 0.05–0.15 美元，第二步同证据核查） | 0.25–0.50 美元 | 8 | 约 3 美元 |
+| 转交（两份来源） | 0.35–0.60 美元 | 3 | 约 1.5 美元 |
+| 标的状态检查与裁决起草 | 0.40–0.70 美元 | 2 | 约 1 美元 |
+| `probe` 与 `probe-search`（没有来源文字，同加入申请的量级） | 约 0.02 美元 | 8 | 约 0.2 美元 |
+| sandbox 端到端测试（每次两个核查、两个 `probe`） | 约 0.35 美元一次 | 4 | 约 1.5 美元 |
+| Melchior 合计 | | | 约 19 美元；有到期重新核查之后约 21 美元 |
+| 正式仓库的手动 `preview`（只在上线的那个月，每次最多 12 个任务） | 约 3–5 美元一次 | 2 | 约 6–10 美元 |
+| Caspar：观点评审 | 0.27–0.40 美元 | 17 | 约 5.5 美元 |
+| Caspar：周报 | 0.06–0.08 美元 | 4.3 | 约 0.3 美元 |
+| Caspar：加入申请 | 0.027 美元 | 5 | 约 0.15 美元 |
+| Caspar：sandbox 端到端测试（每次约三个任务） | 约 0.40 美元一次 | 4 | 约 1.6 美元 |
+| Caspar 合计 | | | 约 7.5 美元 |
+| 两位合计 | | | 约 27–29 美元；上线的那个月约 35–40 美元 |
 
-**积压。** 正式仓库现有 14 条证据都是待办。
-- `MAGI_HTTP_CONTACT` 设置之后：10 条 SEC 证据各要一个模型任务；4 条韩国证据中，KRX 的两条在 GitHub 托管运行器上很可能得到 403，那份公司 PDF 是 v1 不支持的格式，这三条由程序直接写 `unverified` 记录，不调用模型；DART 的一条要一个模型任务。模型任务共 11 个，每次运行最多 5 个证据核查，需要 3 次运行（5、5、1）。定时运行每天一次，需要 3 天；维护者也可以在同一天手动触发 3 次。积压一次约花 6–7 美元。
-- `MAGI_HTTP_CONTACT` 没有设置时：10 条 SEC 证据保持待办（第 3 处），只有 DART 的一条调用模型，1 次运行即可。
+Melchior 的各行是估计，不是实测。切到 `live` 之前，维护者以 sandbox 端到端测试里 `usage/melchior/` 记下的实测花费校准这张表与每个任务的上限（Task 22 Step 2）。
 
-**每月上限。** 第 22.13 节的默认值 40 美元低于上表的 Melchior 约 42–47 美元：按正式仓库现在的速度，月底几天的证据会被推迟到下个月才核查。本计划建议把 `MELCHIOR_MONTHLY_USD` 的默认值改为 60 美元（第 13 处）。另给每个模型任务一个上限 `max_budget_usd`（Claude Agent SDK 的参数）：证据核查、过时检查第二步、转交、裁决起草与 `insight-check` 为 1.50 美元，两类检索任务与 `probe` 为 1.00 美元；超过时 SDK 停下这个任务，结果为失败，留到下一次运行。`max_turns` 一律为 40。
+**积压。** 正式仓库现有 14 条证据都是待办。维护者已于 2026-10-31 在两个仓库设好 secret `MAGI_HTTP_CONTACT`（第 21 处），所以 10 条 SEC 证据各要一个模型任务；4 条韩国证据中，KRX 的两条在 GitHub 托管运行器上很可能得到 403，那份公司 PDF 是 v1 不支持的格式，这三条由程序直接写 `unverified` 记录，不调用模型；DART 的一条要一个模型任务。模型任务共 11 个，每次运行最多 5 个证据核查，需要 3 次运行（5、5、1）。定时运行每天一次，需要 3 天；维护者也可以在同一天手动触发 3 次。积压一次约花 3 美元（10 × 0.25 + 1 × 0.55）。
 
-**工作区的花费上限。** Caspar 与 Melchior 用同一把 API 密钥（决策 D31），也就是 Console 里为本项目专设的同一个工作区（workspace）。维护者为这个工作区设的花费上限是每月 200 美元。两位合计的估计约每月 55–60 美元，Melchior 达到自己的上限 60 美元时，两位合计约 75 美元，都在 200 美元之内；剩下的约 125 美元留给积压、重跑、sandbox 的多次端到端测试与以后的 Balthasar。达到工作区上限时 API 拒绝调用，两位的 `think` 都失败，待办留到下个月，程序部分与引擎照常运行。
+**每月上限。** 维护者确认 `MELCHIOR_MONTHLY_USD` 的默认值为 60 美元（第 13 处）。按实测花费重算之后，Melchior 每月约 19–21 美元，按这个估计第 22.13 节原来的 40 美元也够用；默认值仍按确认取 60 美元，为证据增多、积压与重跑留出余地。每个模型任务另有上限 `max_budget_usd`（Claude Agent SDK 的参数）：证据核查、过时检查第二步、转交与裁决起草为 1.50 美元，两类检索任务与 `probe` 为 1.00 美元；这两个数远高于上表的估计，只拦下失控的任务；超过时 SDK 停下这个任务，结果为失败，留到下一次运行。`max_turns` 一律为 40。
 
-**preview 的花费。** `preview` 不写 `usage/`（`preview` 不提交任何文件），所以 `preview` 运行的花费不计入每月合计。第 2 处让 `preview` 只在手动触发时调用模型，维护者因此能数清 `preview` 花了多少：每次手动 `preview` 最多约 12 个任务，按上表约 6–8 美元。
+**工作区的花费上限。** Caspar 与 Melchior 用同一把 API 密钥（决策 D31），也就是 Console 里为本项目专设的同一个工作区（workspace）。维护者为这个工作区设的花费上限是每月 200 美元。两位合计的估计约每月 27–29 美元，上线的那个月约 35–40 美元；Melchior 达到自己的上限 60 美元时，两位合计约 68 美元，都在 200 美元之内。达到工作区上限时 API 拒绝调用，两位的 `think` 都失败，待办留到下个月，程序部分与引擎照常运行。
+
+**preview 的花费。** `preview` 不写 `usage/`（`preview` 不提交任何文件），所以 `preview` 运行的花费不计入每月合计。第 2 处让 `preview` 只在手动触发时调用模型，维护者因此能数清 `preview` 花了多少。
 
 ## 速率限制
 
-账户的速率档位较低。本计划的作者看不到账户的限额，所以按下面的做法定 `think` 的并行上限：
+维护者在 Console 的 Limits 页面读出 `claude-opus-5-5` 的限额：每分钟 2.0M 个输入 token（ITPM）、400K 个输出 token（OTPM）与 4,000 个请求（RPM）；此前的峰值分别为 26K、5.6K 与 4。速率限制因此不构成约束（第 14 处）。
 
-- 每个模型任务是一个 Claude Code 会话，会话里的请求是一个接一个发出的。会话的第一个请求要写入 Claude Code 的系统提示与任务输入的缓存，约 25,000–35,000 个输入 token；之后每一轮多出的未缓存输入约 2,000–15,000 个 token（一次 Read 读进的来源摘录）。缓存读取不计入每分钟输入 token 的限额（ITPM），缓存写入计入。
-- 低档位的 ITPM 与这个首轮的量相当，所以 Melchior 的 `think` 设 `max-parallel: 1`：一次只有一个会话，首轮之后各轮的量都在首轮之下。一次按上限运行（12 个任务）每个任务约 2–4 分钟，合计约 25–50 分钟，在每天一次的运行里可以接受。Caspar 的任务多数输入较小，`think` 设 `max-parallel: 2`（Task 3）。Caspar 的定时运行在每三小时的第 41 分钟，Melchior 在 23:47，两者的 `think` 通常不重叠；加入申请触发的 Caspar 运行可能与 Melchior 重叠，这时最多三个会话同时运行。
-- 维护者在 Console 的 Limits 页面读出 `claude-opus-5-5` 的 ITPM 之后，可以按「ITPM ÷ 35,000，向下取整，至少 1」调高两边的并行上限，经 PR 修改 workflow。
-- Claude Code 遇到 HTTP 429 会自己等待重试；仍然失败的，`think` 把 API 的错误原文与 `api_error_status` 写进日志（决策 D32），结果为失败，待办留到下一次运行，从不当作结论。
+- Melchior 与 Caspar 的 `think` 都设 `max-parallel: 5`。五个会话同时运行时，每个会话每分钟约 2–4 轮，每轮未缓存的输入最多约 60,000 个 token（一次读进的韩文摘录），合计每分钟最多约 1.2M 个输入 token，仍在 2.0M 之内；通常的量远低于此。
+- 一次按上限运行（12 个模型任务）分三批，每个任务约 2–4 分钟，`think` 合计约 6–12 分钟；`prepare` 的抓取另需约 1–2 分钟（发往同一主机的请求相隔 1 秒，DART 一份报告约 15 个请求）。
+- 失败的调用（包括 Claude Code 自己重试之后仍为 HTTP 429 的）由 `think` 把 API 的错误原文与 `api_error_status` 写进日志（决策 D32），结果为失败，待办留到下一次运行，从不当作结论。
 
 ## 非美国来源
 
@@ -208,17 +209,17 @@ Expected: `646 passed`。
 Run: `python -m pytest`，`python -m engine consistency --repo .`
 Expected: `646 passed`；一致性 `[]`（本任务不改代码）。
 
-- [ ] **Step 4: 提交并开 PR**
+- [x] **Step 4: 提交并开 PR**
 
-提交信息 `docs: plan 9, the model part of Melchior.Magi`，推送会话分支，开一个指向 `main` 的 PR。PR 只新增本计划；PR 的说明逐行重复「请维护者确认的几处」。
+提交信息 `docs: plan 9, the model part of Melchior.Magi`，推送会话分支，开一个指向 `main` 的 PR。PR 只新增本计划；PR 的说明逐行重复「维护者确认的几处」。
 
-- [ ] **Step 5: 记录维护者的确认**
+- [x] **Step 5: 记录维护者的确认**
 
 维护者确认之后，在同一个 PR 里把本计划末尾一节改写为决定的记录；确认改变了第 22 节原文的，在设计第 22 节的相应位置加日期为确认当天的修订注记，并在第 22.17 节记一行，原文的句子不改（计划 7、8 的做法）。
 
 ---
 
-## PR 9a：周报数字检查的修正与共用的模型调用模块（Task 2–4，云端会话 A）
+## PR 9a：周报数字检查的修正与共用的模型调用模块（Task 2–4）
 
 ### Task 2（云端）：周报的数字检查认得表格里的写法
 
@@ -243,7 +244,7 @@ Expected: `646 passed`；一致性 `[]`（本任务不改代码）。
 - [ ] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
-Expected: `2 failed, 647 passed`。失败的是第 1、3 项；第 2 项在实现之前就通过。
+Expected: `2 failed, 655 passed`。失败的是第 1、3 项；第 2 项在实现之前就通过。
 
 - [ ] **Step 3: 实现**
 
@@ -252,7 +253,7 @@ Expected: `2 failed, 647 passed`。失败的是第 1、3 项；第 2 项在实�
 - [ ] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
-Expected: `649 passed`。另跑 `python -m engine consistency --repo .`，Expected `[]`。
+Expected: `657 passed`。另跑 `python -m engine consistency --repo .`，Expected `[]`。
 
 - [ ] **Step 5: 提交**
 
@@ -276,26 +277,26 @@ git commit -m "fix(caspar): the weekly number check accepts the numbers as the t
 - `engine.think.agent_options(root, source_dir, kind, tools, *, model, max_turns=None, max_budget_usd=None) -> dict`：`tools` 是必填的关键字参数，没有默认值；返回值与现在的 `engine.caspar.think.options()` 同形：`tools` 与 `allowed_tools` 都是 `list(tools)`；`disallowed_tools` 是 `Bash`、`Edit`、`Write`、`MultiEdit`、`NotebookEdit`、`mcp__*`，再加上五个只读工具（Read、Grep、Glob、WebSearch、WebFetch）中不在 `tools` 里的那些，按这个顺序；`extra_args: {"restricted": None}`；`strict_mcp_config: True`；`cwd`；`output_format` 取 `<source_dir>/schemas/<kind>.schema.json`。`max_turns`、`max_budget_usd` 只在给出时放进返回值。`tools` 含这五个之外的名字时抛 `ValueError`。
 - `engine.think.run_task(root, source_dir, agent_name, task_id, kind, tools, out, *, model, sdk=None, max_turns=None, max_budget_usd=None) -> int`：现在 `engine.caspar.think.think()` 的主体搬到这里，行为不变（日志不显示模型的文字，失败时显示 API 或 Claude Code 报的错误）。另外，有结果消息时，把 `{"task", "turns", "cost_usd", "status"}` 写到 `out` 同一目录下的 `<task>.usage.json`，回答失败时也写（`status: failed`）。
 - `engine.caspar.think`：`KINDS`、`JOIN_TOOLS`、`tools_for()`、`prompt()` 不变；`options(root, kind)` 改为 `agent_options(root, SOURCE_DIR, kind, tools_for(kind), model=MODEL)`；`think()` 改为调用 `run_task(…, agent_name="Caspar.Magi", …)`。Caspar 不传 `max_turns` 与 `max_budget_usd`，参数因此逐字不变。
-- `.github/workflows/caspar.yml`：`think` job 的 `strategy` 加 `max-parallel: 2`（第 14 处）。结果检查一步同时检查 `<task>.usage.json`：含 API 密钥或诱饵内容时整份丢弃；`usage.json` 随结果一起上传。
+- `.github/workflows/caspar.yml`：`think` job 的 `strategy` 加 `max-parallel: 5`（第 14 处）。结果检查一步同时检查 `<task>.usage.json`：含 API 密钥或诱饵内容时整份丢弃；`usage.json` 随结果一起上传。
 
 - [ ] **Step 1: 写测试**
 
 新建 `tests/test_think_shared.py`（在函数体里引入 `engine.think`）：
 
 1. `test_the_shared_options_use_only_the_tools_they_are_given`：`agent_options(REPO_ROOT, "agents/caspar", "join", ("Read",), model=MODEL)` 的 `tools` 与 `allowed_tools` 为 `["Read"]`，`disallowed_tools` 为六个写入执行类工具加 `Grep`、`Glob`、`WebSearch`、`WebFetch`；`("Read", "Bash")` 抛 `ValueError`。
-2. `test_caspar_keeps_its_tools_for_every_kind`：对 `review`、`weekly`、`probe`、`join`，`engine.caspar.think.options(REPO_ROOT, kind)` 与下面写死的期望值逐字相同：前三种的 `tools` 为五个只读工具、`disallowed_tools` 为六个写入执行类工具；`join` 同本任务第 1 项。同时断言返回值里没有 `max_turns` 与 `max_budget_usd`。
+2. `test_caspar_keeps_its_tools_for_every_kind`：对 `review`、`weekly`、`probe`、`join` 这四种（测试只列出它们，不断言 `KINDS` 的长度或全部内容，以免以后加入的种类使它失败），`engine.caspar.think.options(REPO_ROOT, kind)` 与下面写死的期望值逐字相同：前三种的 `tools` 为五个只读工具、`disallowed_tools` 为六个写入执行类工具；`join` 同本任务第 1 项。同时断言返回值里没有 `max_turns` 与 `max_budget_usd`。
 3. `test_the_shared_module_has_no_default_tools`：`inspect.signature(agent_options).parameters["tools"].default` 为 `inspect.Parameter.empty`；不给 `tools` 调用抛 `TypeError`。
 4. `test_a_turn_and_budget_cap_are_passed_only_when_given`：给 `max_turns=30`、`max_budget_usd=1.5` 时返回值有这两项。
 5. `test_run_task_writes_the_answer_and_its_usage`：用 `tests/test_caspar_think.py` 的 `fake_sdk` 写法，成功时写出答案与 `<task>.usage.json`（`turns` 3，`cost_usd` 0.42，`status` `answered`）；SDK 报错时不写答案，`usage.json` 的 `status` 为 `failed`。
 
 `tests/test_workflows.py` 新增：
 
-6. `test_caspar_think_runs_at_most_two_tasks_at_once`：`caspar.yml` 的 `jobs.think.strategy.max-parallel` 为 2，`fail-fast` 仍为 false；结果检查一步的脚本里出现 `usage.json`。
+6. `test_caspar_think_runs_at_most_five_tasks_at_once`：`caspar.yml` 的 `jobs.think.strategy.max-parallel` 为 5，`fail-fast` 仍为 false；结果检查一步的脚本里出现 `usage.json`。
 
 - [ ] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
-Expected: `6 failed, 649 passed`。
+Expected: `6 failed, 657 passed`。
 
 - [ ] **Step 3: 实现**
 
@@ -304,7 +305,7 @@ Expected: `6 failed, 649 passed`。
 - [ ] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
-Expected: `655 passed`。
+Expected: `663 passed`。
 
 - [ ] **Step 5: 提交**
 
@@ -320,11 +321,11 @@ git commit -m "refactor(think): one module calls the model for both system agent
 - [ ] **Step 1: 检查**
 
 Run: `python -m pytest`，`python -m engine consistency --repo .`
-Expected: `655 passed`；一致性 `[]`。
+Expected: `663 passed`；一致性 `[]`。
 
 - [ ] **Step 2: CHANGELOG**
 
-`protocol/CHANGELOG.md` 顶部加一条不改版本的记录（做法同 2026-10-31 的 join 记录）：`## <YYYY-MM-DD> — the weekly number check reads the tables (no version change)`，一句写明周报的文字可以引用表格里写出的数，一句写明 Caspar 的模型调用改由共用模块完成、每类任务的工具不变。Run `python -m pytest`，Expected `655 passed`（`protocol_version` 仍为 1.11，因为这条记录不以 `## v` 开头）。
+`protocol/CHANGELOG.md` 顶部加一条不改版本的记录（做法同 2026-10-31 的 join 记录）：`## <YYYY-MM-DD> — the weekly number check reads the tables (no version change)`，一句写明周报的文字可以引用表格里写出的数，一句写明 Caspar 的模型调用改由共用模块完成、每类任务的工具不变。Run `python -m pytest`，Expected `663 passed`（`protocol_version` 仍为 1.11，因为这条记录不以 `## v` 开头）。
 
 - [ ] **Step 3: 推送并开 PR 9a**
 
@@ -336,7 +337,7 @@ Expected: `655 passed`；一致性 `[]`。
 
 - [ ] **Step 1: 审阅并合并 PR 9a**
 
-重点看 `engine/think.py` 没有默认工具，`tests/test_think_shared.py` 第 2 项的期望值，`caspar.yml` 的 `max-parallel`。合并方式为 squash。合并后在 main 上运行 `python -m pytest` 与 `python -m engine consistency --repo .`。Expected: `655 passed`；一致性 `[]`。下一期周报的运行摘要里不应再有 `recent_performance: a number does not appear in the data` 一类只因百分数写法而丢弃的段落。
+重点看 `engine/think.py` 没有默认工具，`tests/test_think_shared.py` 第 2 项的期望值，`caspar.yml` 的 `max-parallel`。合并方式为 squash。合并后在 main 上运行 `python -m pytest` 与 `python -m engine consistency --repo .`。Expected: `663 passed`；一致性 `[]`。下一期周报的运行摘要里不应再有 `recent_performance: a number does not appear in the data` 一类只因百分数写法而丢弃的段落。
 
 - [ ] **Step 2: 录下来源夹具**
 
@@ -364,22 +365,22 @@ for f in krx-ir-pdf jvm-q3-pdf; do head -c 4096 "$f.body" > "$f.head.body"; rm "
 
 两份 PDF 只留前 4,096 个字节（测试只需要据此识别格式）。KRX 两项在维护者的网络里可能返回 200，也可能同样返回 403；两种结果都照存，并在 `README.md` 里写明。另新建 `tests/fixtures/sources/README.md`：每个文件一行，写来源地址、录下的 UTC 时刻、HTTP 状态、`Content-Type`、正文的字节数，并写明「SEC 的请求带项目的联系方式，联系方式不在这些文件里；`Set-Cookie` 已删去」。提交前用 `grep -rIl '@' tests/fixtures/sources` 确认没有文件含 `@`；正文里本来就有 `@` 的（例如网页里的邮箱），用同样长度的 `x` 替换那几个字符，并在 `README.md` 里注明替换过的文件。提交信息 `test(fixtures): recorded source pages for evidence checks`，经 PR 合并到 main（只含 `tests/fixtures/sources/`）。
 
-- [ ] **Step 3: 告诉会话 B 夹具的情况**
+- [ ] **Step 3: 告诉做 PR 9b 的会话夹具的情况**
 
-开会话 B 时在第一条消息后另附一句：KRX 两项是 200 还是 403。
+给做 PR 9b 的会话的第一条消息后另附一句：KRX 两项是 200 还是 403。
 
 ---
 
-## PR 9b：证据核查与协议 1.12（Task 6–12，云端会话 B）
+## PR 9b：证据核查与协议的下一个版本（Task 6–12）
 
-### Task 6（云端）：协议 1.12 的文字与全部新 schema
+### Task 6（云端）：协议下一个版本的文字与全部新 schema
 
 **Files:**
 - Create: `protocol/schemas/entities/evidence-check.schema.json`、`protocol/schemas/snapshot/evidence_checks.schema.json`、`protocol/schemas/system/usage.schema.json`
 - Modify: `protocol/PROTOCOL.md`、`protocol/AGENT_GUIDE.md`、`protocol/CHANGELOG.md`、`protocol/schemas/snapshot/idea.schema.json`、`protocol/schemas/snapshot/trail.schema.json`、`engine/audit.py`、`engine/consistency.py`（只把 `magi/evidence-check@1` 加进 `WHOLE`）
 - Test: `tests/test_record_formats.py`、`tests/test_protocol_doc.py`、`tests/test_audit.py`、`tests/test_snapshot.py`
 
-协议版本取开 PR 时 `protocol/CHANGELOG.md` 里下一个空着的版本号。本计划写成时 v1.10、v1.11 已被占用，所以是 1.12；开 PR 时若 1.12 也已被占用，改用下一个空着的版本号，下文的 1.12 一律随之改（第 18 处）。
+协议版本取开 PR 时 `protocol/CHANGELOG.md` 里下一个空着的版本号。本计划写成时 v1.10、v1.11 已被占用，下一个空着的是 1.12；另一个加入 Caspar 任务种类 `topic`（决策 D46）的 PR 可能先占用 1.12，所以本计划不写定版本号，下文的 `<版本>` 指开 PR 时下一个空着的版本号（第 18 处）。
 
 **Interfaces:**
 - `magi/evidence-check@1`（`evidence/checks/<证据编号>.yaml`）：第 22.9.2 节的字段，另有三处补充：
@@ -397,7 +398,7 @@ for f in krx-ir-pdf jvm-q3-pdf; do head -c 4096 "$f.body" > "$f.head.body"; rm "
   - 第 15 节 **Melchior.Magi**：删去「In this version Melchior.Magi runs programs only」一条；写明 `MELCHIOR_MODEL_MODE`（`off` 为默认，`preview`、`live`；不高于 `MELCHIOR_MODE`；`preview` 只在手动触发时调用模型）；`think` job 与「工具」一节的表；每次运行的上限（第 22.13 节的表）；`MELCHIOR_MONTHLY_USD`（默认 60 美元）与 `usage/`；`probe` 与 `probe-search`；联系方式是仓库 secret，只交给抓取来源的那一步；范围 `all`、`program`、`evidence`、`referrals`、`rulings`、`insight`、`probe`。
   - 第 12 节：协助请求是 Melchior.Magi 的一个渠道，研究者怎样响应。
 - `protocol/AGENT_GUIDE.md` 增加一节「13. Evidence checks, corrections and assist requests」：怎样读核查记录；被 Melchior 更正时会在哪里收到通知、怎样提出异议；怎样响应协助请求（提交或取代证据，再在协助请求里回帖写明新证据的编号）。
-- `protocol/CHANGELOG.md` 加 `## v1.12 — <YYYY-MM-DD>`，逐条写上面的改动，并写明计划 9 原定的 1.10 已被加入申请占用，所以是 1.12。
+- `protocol/CHANGELOG.md` 加 `## v<版本> — <YYYY-MM-DD>`，逐条写上面的改动，并写明计划 9 原定的 1.10 已被加入申请占用。
 
 - [ ] **Step 1: 写测试**
 
@@ -407,14 +408,14 @@ for f in krx-ir-pdf jvm-q3-pdf; do head -c 4096 "$f.body" > "$f.head.body"; rm "
 4. `tests/test_record_formats.py::test_usage_lines_follow_their_schema`。
 5. `tests/test_audit.py::test_usage_is_a_data_directory`：维护者账户的推送改了 `usage/melchior/2026-11.jsonl`，审计报告一条；`github-actions[bot]` 的推送不报告。
 6. `tests/test_protocol_doc.py::test_protocol_describes_evidence_checks_and_the_model_mode`：PROTOCOL 含 `MELCHIOR_MODEL_MODE`、`evidence/checks/`、`magi:assist`、`unsupported_format`、`(단위 : 원)`、`secret`、`Read`，不含 `contact_not_set` 与 `runs programs only`。
-7. `tests/test_protocol_doc.py::test_changelog_records_v1_12`：最新一节以 `## v1.12` 开头，含 `MELCHIOR_MODEL_MODE`、`evidence/checks/`、`usage/`、`magi:assist`。
+7. `tests/test_protocol_doc.py::test_changelog_records_the_model_part`：最新一节以 `## v<版本>` 开头（测试读出这个版本号，只断言它大于 1.11），含 `MELCHIOR_MODEL_MODE`、`evidence/checks/`、`usage/`、`magi:assist`。
 
-另把 `tests/test_snapshot.py::test_compile_on_fixture` 的 `protocol_version` 期望值由 `"1.11"` 改为 `"1.12"`（本计划允许改的已有测试之一）。
+另把 `tests/test_snapshot.py::test_compile_on_fixture` 的 `protocol_version` 期望值由当时 main 上的版本改为 `"<版本>"`（本计划允许改的已有测试之一）。
 
 - [ ] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
-Expected: `8 failed, 654 passed`。失败的是七个新测试与 `test_compile_on_fixture`（CHANGELOG 还没改）。
+Expected: `8 failed, 662 passed`。失败的是七个新测试与 `test_compile_on_fixture`（CHANGELOG 还没改）。
 
 - [ ] **Step 3: 实现**
 
@@ -423,13 +424,13 @@ Expected: `8 failed, 654 passed`。失败的是七个新测试与 `test_compile_
 - [ ] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
-Expected: `662 passed`。一致性 `[]`。
+Expected: `670 passed`。一致性 `[]`。
 
 - [ ] **Step 5: 提交**
 
 ```
 git add protocol engine/audit.py engine/consistency.py tests
-git commit -m "docs(protocol): 1.12, evidence checks, corrections, assist requests and the model part of Melchior.Magi"
+git commit -m "docs(protocol): <version>, evidence checks, corrections, assist requests and the model part of Melchior.Magi"
 ```
 
 ---
@@ -472,14 +473,14 @@ git commit -m "docs(protocol): 1.12, evidence checks, corrections, assist reques
 - [ ] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
-Expected: `12 failed, 662 passed`。
+Expected: `12 failed, 670 passed`。
 
 - [ ] **Step 3: 实现**
 
 - [ ] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
-Expected: `674 passed`。
+Expected: `682 passed`。
 
 - [ ] **Step 5: 提交**
 
@@ -519,14 +520,14 @@ git commit -m "feat(fetch): fetch evidence sources as text; the SEC contact goes
 - [ ] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
-Expected: `9 failed, 674 passed`。
+Expected: `9 failed, 682 passed`。
 
 - [ ] **Step 3: 实现**
 
 - [ ] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
-Expected: `683 passed`。
+Expected: `691 passed`。
 
 - [ ] **Step 5: 提交**
 
@@ -574,14 +575,14 @@ git commit -m "feat(melchior): verbatim quotes and figures are checked by progra
 - [ ] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
-Expected: `12 failed, 683 passed`。
+Expected: `12 failed, 691 passed`。
 
 - [ ] **Step 3: 实现**
 
 - [ ] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
-Expected: `695 passed`。
+Expected: `703 passed`。
 
 - [ ] **Step 5: 提交**
 
@@ -609,7 +610,7 @@ git commit -m "feat(melchior): evidence checks from fetched primary sources, wit
 - `.github/workflows/melchior.yml`：
   - 手动触发的选项为七个范围；注释改为说明三个 job 与两个开关。
   - `prepare`：两步，`Find the work`（环境只有 `MELCHIOR_MODE`、`MELCHIOR_MODEL_MODE`、`GITHUB_EVENT_NAME` 与 `GITHUB_TOKEN`）与 `Fetch the sources`（环境另有 `MAGI_HTTP_CONTACT: ${{ secrets.MAGI_HTTP_CONTACT }}`，这是整个 workflow 里唯一出现这个名字的地方，第 24 处）；产物上传 `work/`。
-  - `think`：`needs: prepare`，`if: needs.prepare.outputs.count != '0'`；`strategy` 为 `fail-fast: false`、`max-parallel: 1`（第 14 处）、`matrix.task` 取 `tasks`；权限只有 `contents: read`；检出不保留凭据；安装 `requirements.txt` 与 `requirements-think.txt`；放诱饵；`python -m engine melchior think --task … --kind … --out …`，环境只有 `ANTHROPIC_API_KEY`；结果与 `usage.json` 含密钥或诱饵时整份丢弃；上传 `melchior-result-<task>`。
+  - `think`：`needs: prepare`，`if: needs.prepare.outputs.count != '0'`；`strategy` 为 `fail-fast: false`、`max-parallel: 5`（第 14 处）、`matrix.task` 取 `tasks`；权限只有 `contents: read`；检出不保留凭据；安装 `requirements.txt` 与 `requirements-think.txt`；放诱饵；`python -m engine melchior think --task … --kind … --out …`，环境只有 `ANTHROPIC_API_KEY`；结果与 `usage.json` 含密钥或诱饵时整份丢弃；上传 `melchior-result-<task>`。
   - `write`：`needs: [prepare, think]`，`if: ${{ !cancelled() && needs.prepare.result == 'success' }}`，其余与现在相同，另下载结果产物；`MELCHIOR_MODEL_MODE` 进环境。
   - `MELCHIOR_MODEL_MODE` 与 `MELCHIOR_MONTHLY_USD` 从 `vars` 读取；它们不是秘密。
 
@@ -629,25 +630,25 @@ git commit -m "feat(melchior): evidence checks from fetched primary sources, wit
 10. `test_the_probe_checks_each_tool_profile`：`probe` 的输出列出 WebSearch 时失败；`probe-search` 列出 WebFetch 时失败；读到诱饵时失败；都合格时摘要为 `passed`。
 11. `test_the_contact_comes_from_secrets_and_only_the_fetch_step_has_it`：读入 `melchior.yml` 的原文：`MAGI_HTTP_CONTACT` 只出现一次，形如 `${{ secrets.MAGI_HTTP_CONTACT }}`，在 `prepare` 的 `Fetch the sources` 一步的 `env` 里；`vars.MAGI_HTTP_CONTACT` 不出现；`think` 与 `write` 的任何一步都没有它。
 
-另改写已有测试 `tests/test_melchior_run.py::test_the_workflow_keeps_the_model_out` 为 `test_the_workflow_gives_the_key_only_to_think`：`ANTHROPIC_API_KEY` 只出现在 `think` 的 `Ask the model` 与结果检查两步；`jobs` 的键为 `prepare`、`think`、`write`；顶层 `permissions` 为空；三个 job 的权限同上；`think` 的 `max-parallel` 为 1；`write` 的并发组为 `magi-writer`；`schedule` 为 `47 23 * * *`；手动触发的选项为七个范围。`test_scopes_all_and_program_do_the_same_work` 不改：模型部分为 `off` 时两个范围做同样的事。
+另改写已有测试 `tests/test_melchior_run.py::test_the_workflow_keeps_the_model_out` 为 `test_the_workflow_gives_the_key_only_to_think`：`ANTHROPIC_API_KEY` 只出现在 `think` 的 `Ask the model` 与结果检查两步；`jobs` 的键为 `prepare`、`think`、`write`；顶层 `permissions` 为空；三个 job 的权限同上；`think` 的 `max-parallel` 为 5；`write` 的并发组为 `magi-writer`；`schedule` 为 `47 23 * * *`；手动触发的选项为七个范围。`test_scopes_all_and_program_do_the_same_work` 不改：模型部分为 `off` 时两个范围做同样的事。
 
 - [ ] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
-Expected: `12 failed, 694 passed`。失败的是十一个新测试与改写的那一个。
+Expected: `12 failed, 702 passed`。失败的是十一个新测试与改写的那一个。
 
 - [ ] **Step 3: 实现**
 
 - [ ] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
-Expected: `706 passed`。
+Expected: `714 passed`。
 
 - [ ] **Step 5: 提交**
 
 ```
 git add engine agents/melchior .github/workflows/melchior.yml tests
-git commit -m "feat(melchior): the model part behind MELCHIOR_MODEL_MODE, off by default; a think job one task at a time, run limits, monthly spend and two probes"
+git commit -m "feat(melchior): the model part behind MELCHIOR_MODEL_MODE, off by default; a think job, run limits, monthly spend and two probes"
 ```
 
 ---
@@ -672,14 +673,14 @@ git commit -m "feat(melchior): the model part behind MELCHIOR_MODEL_MODE, off by
 - [ ] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
-Expected: `4 failed, 706 passed`。
+Expected: `4 failed, 714 passed`。
 
 - [ ] **Step 3: 实现**
 
 - [ ] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
-Expected: `710 passed`。一致性 `[]`。
+Expected: `718 passed`。一致性 `[]`。
 
 - [ ] **Step 5: 提交**
 
@@ -701,7 +702,7 @@ git commit -m "feat(melchior): evidence_checks.json, check summaries in ideas an
 - 第 4 步：现有的 `melchior workflow succeeded` 改为手动触发，范围 `all`。新增：
   1. `the EDGAR evidence is verified`：`evidence/checks/<编号>.yaml` 的 `status` 为 `verified`（`eventually`）。
   2. `the non-public evidence is unverified as non-public`
-  3. `the example.com evidence is unverified`：`status` 为 `unverified`，原因为 `not_found` 或 `source_unreachable`。协助请求在 PR 9c 加入之后才有，这一步在 PR 9d 的 Task 23 补上核对（第 21 处）。
+  3. `the example.com evidence is unverified`：`status` 为 `unverified`，原因为 `not_found` 或 `source_unreachable`。协助请求在 PR 9c 加入之后才有，这一步在 PR 9d 的 Task 22 补上核对（第 21 处）。
   4. `evidence_checks.json is present and valid`
 - 第 6 步：`melchior probe passed`：手动触发 `melchior.yml`，范围 `probe`，运行成功。
 
@@ -716,7 +717,7 @@ python tools/e2e_sandbox.py --repo the-magi-system/magi; echo "exit $?"
 python -m engine consistency --repo .
 ```
 
-Expected: `710 passed`；编译没有输出；脚本打印 `refusing to run against a repository that is not a sandbox`，`exit 2`；一致性 `[]`。会话里不运行脚本去连 sandbox。
+Expected: `718 passed`；编译没有输出；脚本打印 `refusing to run against a repository that is not a sandbox`，`exit 2`；一致性 `[]`。会话里不运行脚本去连 sandbox。
 
 - [ ] **Step 3: 提交**
 
@@ -727,7 +728,7 @@ git commit -m "test(e2e): the sandbox run checks an EDGAR evidence check, the no
 
 - [ ] **Step 4: 推送并开 PR 9b**
 
-标题 `Plan 9b: evidence checks and protocol 1.12`。正文列出 Task 6–12 的提交与每一步的测试结果，并写明：合并之后 `MELCHIOR_MODEL_MODE` 没有设置，模型部分为 `off`，程序部分照常；端到端脚本只做了离线检查。
+标题 `Plan 9b: evidence checks and protocol <version>`。正文列出 Task 6–12 的提交与每一步的测试结果，并写明：合并之后 `MELCHIOR_MODEL_MODE` 没有设置，模型部分为 `off`，程序部分照常；端到端脚本只做了离线检查。
 
 ---
 
@@ -735,19 +736,19 @@ git commit -m "test(e2e): the sandbox run checks an EDGAR evidence check, the no
 
 - [ ] **Step 1: 审阅并合并**
 
-重点看 `melchior.yml` 里 `MAGI_HTTP_CONTACT` 只在抓取一步、`ANTHROPIC_API_KEY` 只在 `think`；`resolve_model_mode`；`engine/fetch.py` 的联系方式与间隔；`engine/melchior/quotes.py` 的判断不了时为 `not_found`。合并方式为 squash。合并后 `python -m pytest`、`python -m engine consistency --repo .`。Expected: `710 passed`；一致性 `[]`。
+重点看 `melchior.yml` 里 `MAGI_HTTP_CONTACT` 只在抓取一步、`ANTHROPIC_API_KEY` 只在 `think`；`resolve_model_mode`；`engine/fetch.py` 的联系方式与间隔；`engine/melchior/quotes.py` 的判断不了时为 `not_found`。合并方式为 squash。合并后 `python -m pytest`、`python -m engine consistency --repo .`。Expected: `718 passed`；一致性 `[]`。
 
 - [ ] **Step 2: 合并之后的第一次定时运行**
 
 正式仓库不设置 `MELCHIOR_MODEL_MODE`。核对合并之后第一次定时的 `melchior.yml`：`think` job 为 skipped；程序部分的提交与合并之前同类；main 上没有 `evidence/checks/`。
 
-- [ ] **Step 3: 设置联系方式**
+- [x] **Step 3: 设置联系方式**
 
-在 `magi` 与 `magi-sandbox` 两个仓库新建 secret `MAGI_HTTP_CONTACT`，值为名称、一个空格、地址，例如 `The Magi System address`，没有尖括号（第 24 处）。设计第 22.9.1 节写的是仓库变量，若维护者此前已经建了同名的仓库变量，删去它。
+维护者已于 2026-10-31 在 `magi` 与 `magi-sandbox` 两个仓库新建 secret `MAGI_HTTP_CONTACT`，值为名称、一个空格、地址，没有尖括号（第 21、24 处）。合并之前核对两个仓库都没有同名的仓库变量。
 
 ---
 
-## PR 9c：更正、协助请求、过时检查与转交（Task 14–18，云端会话 C）
+## PR 9c：更正、协助请求、过时检查与转交（Task 14–18）
 
 ### Task 14（云端）：系统写入通道上的更正
 
@@ -780,14 +781,14 @@ git commit -m "test(e2e): the sandbox run checks an EDGAR evidence check, the no
 - [ ] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
-Expected: `9 failed, 710 passed`。
+Expected: `9 failed, 718 passed`。
 
 - [ ] **Step 3: 实现**
 
 - [ ] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
-Expected: `719 passed`。
+Expected: `727 passed`。
 
 - [ ] **Step 5: 提交**
 
@@ -827,14 +828,14 @@ git commit -m "feat(melchior): corrections through the system write channel, onl
 - [ ] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
-Expected: `8 failed, 719 passed`。
+Expected: `8 failed, 727 passed`。
 
 - [ ] **Step 3: 实现**
 
 - [ ] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
-Expected: `727 passed`。
+Expected: `735 passed`。
 
 - [ ] **Step 5: 提交**
 
@@ -872,14 +873,14 @@ git commit -m "feat(melchior): assist requests, assigned to the evidence owner, 
 - [ ] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
-Expected: `8 failed, 727 passed`。
+Expected: `8 failed, 735 passed`。
 
 - [ ] **Step 3: 实现**
 
 - [ ] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
-Expected: `735 passed`。
+Expected: `743 passed`。
 
 - [ ] **Step 5: 提交**
 
@@ -900,6 +901,7 @@ git commit -m "feat(melchior): staleness checks in two steps; candidate sources 
 - 读：带 `magi:fact-layer` 标签、作者为 `github-actions[bot]`、正文带 `<!-- magi:caspar fact-layer <证据编号> -->` 的打开的 issue。
 - 抓取：证据自己的来源与 Caspar 引用的来源（只收 https，Caspar 引用的来源同样要在允许的主机里，或者是该证据自己的主机）。
 - 模型（`referral`，只有 Read）：`upheld`、`rejected` 或 `needs_assist`，`upheld` 给出原句与数对，`rejected` 给出理由（最多 1,000 个字符，经 `sanitize()`）。
+- PR #104 之后，Caspar 一份评审对同一个来源只开一个转交，同一来源的其他证据编号写在正文的「Other evidence that may be affected」一行（`also_affected`），标记仍只写一条证据。Melchior 只判断标记里的那条证据；回帖另列出 `also_affected` 的编号，写明它们按一般的证据核查处理（还没有核查记录的已在待办里，有记录的按 `next_review`），转交本身不为它们调用模型。
 - 写：回帖带 `<!-- magi:melchior fact-layer <证据编号> -->`，更新核查记录；`upheld` 走 Task 14（`may_correct` 不满足时改走 Task 15），以 `completed` 关闭；`rejected` 以 `not_planned` 关闭；`needs_assist` 开协助请求、链接它、以 `completed` 关闭。每次运行最多 3 个。
 
 - [ ] **Step 1: 写测试**
@@ -912,19 +914,19 @@ git commit -m "feat(melchior): staleness checks in two steps; candidate sources 
 4. `test_rejected_closes_not_planned_with_the_reason`
 5. `test_needs_assist_opens_an_assist_request_and_links_it`
 6. `test_at_most_three_referrals_per_run`
-7. `test_the_reply_is_posted_once`
+7. `test_the_reply_is_posted_once`：回帖列出正文里 `also_affected` 的编号，这些证据没有因转交多出模型任务。
 
 - [ ] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
-Expected: `7 failed, 735 passed`。
+Expected: `7 failed, 743 passed`。
 
 - [ ] **Step 3: 实现**
 
 - [ ] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
-Expected: `742 passed`。
+Expected: `750 passed`。
 
 - [ ] **Step 5: 提交**
 
@@ -948,7 +950,7 @@ git commit -m "feat(melchior): Caspar's fact-layer referrals are upheld, rejecte
 - [ ] **Step 2: 检查**
 
 Run: `python -m pytest`，`python -m engine consistency --repo .`
-Expected: `742 passed`；一致性 `[]`。
+Expected: `750 passed`；一致性 `[]`。
 
 - [ ] **Step 3: 提交并开 PR 9c**
 
@@ -965,11 +967,11 @@ git commit -m "feat(melchior): the profile lists the evidence duty"
 
 - [ ] **Step 1: 审阅并合并**
 
-重点看 `may_correct` 的每一项、通知帖子的文字、协助请求的指派、允许的主机。合并后 `python -m pytest`、`python -m engine consistency --repo .`。Expected: `742 passed`；一致性 `[]`。正式仓库的 `MELCHIOR_MODEL_MODE` 仍不设置。
+重点看 `may_correct` 的每一项、通知帖子的文字、协助请求的指派、允许的主机。合并后 `python -m pytest`、`python -m engine consistency --repo .`。Expected: `750 passed`；一致性 `[]`。正式仓库的 `MELCHIOR_MODEL_MODE` 仍不设置。
 
 ---
 
-## PR 9d：标的状态检查、裁决与 meta insight 草稿的检查（Task 20–23，云端会话 D）
+## PR 9d：标的状态检查与裁决（Task 20–22）
 
 ### Task 20（云端）：标的状态检查的触发
 
@@ -998,14 +1000,14 @@ git commit -m "feat(melchior): the profile lists the evidence duty"
 - [ ] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
-Expected: `7 failed, 742 passed`。
+Expected: `7 failed, 750 passed`。
 
 - [ ] **Step 3: 实现**
 
 - [ ] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
-Expected: `749 passed`。
+Expected: `757 passed`。
 
 - [ ] **Step 5: 提交**
 
@@ -1050,14 +1052,14 @@ git commit -m "feat(melchior): the program opens asset-status checks on missing 
 - [ ] **Step 2: 运行，确认失败**
 
 Run: `python -m pytest`
-Expected: `12 failed, 748 passed`。失败的是十一个新测试与改写的那一个。
+Expected: `12 failed, 756 passed`。失败的是十一个新测试与改写的那一个。
 
 - [ ] **Step 3: 实现**
 
 - [ ] **Step 4: 运行，确认通过**
 
 Run: `python -m pytest`
-Expected: `760 passed`。
+Expected: `768 passed`。
 
 - [ ] **Step 5: 提交**
 
@@ -1068,50 +1070,7 @@ git commit -m "feat(melchior): asset-status checks and rulings in two steps; the
 
 ---
 
-### Task 22（云端）：meta insight 草稿的检查
-
-**Files:**
-- Create: `engine/melchior/insight.py`、`agents/melchior/prompts/insight-check.md`、`agents/melchior/schemas/insight-check.schema.json`、`tests/test_melchior_insight.py`
-
-**Interfaces**（第 22.12 节接口 5，第 21.5 节）：
-- 待办：没有 Melchior 投票的 `magi:insight-draft` issue，作者为 `github-actions[bot]`，正文带 Balthasar 的草稿标记 `<!-- magi:balthasar draft <草稿编号> -->`。Balthasar 尚未实现，测试用夹具 issue（第 22 处）。
-- 程序先按草稿的 `input_commit` 用 `python -m engine melchior lookup` 的同一个函数取回它引用的记录与快照字段，核对数字，检查证据、观点版本、台账事件是否存在；再交给模型（`insight-check`，只有 Read）。
-- 投票评论带 `<!-- magi:melchior vote <草稿编号> -->`，事件日志一行 `action: insight_vote`；不写积分、证据、核查记录或裁决。每次运行最多 2 份。
-- 其他各类待办的输入里没有 `insights/` 与 `magi:insight-draft` issue。
-
-- [ ] **Step 1: 写测试**
-
-新建 `tests/test_melchior_insight.py`：
-
-1. `test_only_bot_drafts_with_balthasars_marker_and_no_vote_are_due`
-2. `test_the_program_checks_numbers_and_references_at_the_drafts_commit`
-3. `test_the_vote_is_posted_once_and_logged`
-4. `test_an_insight_check_writes_no_score_evidence_check_or_ruling`
-5. `test_other_tasks_never_see_insights_or_drafts`：对 Task 9、16、17、21 的全部输入文件递归查找。
-6. `test_at_most_two_drafts_per_run`
-
-- [ ] **Step 2: 运行，确认失败**
-
-Run: `python -m pytest`
-Expected: `6 failed, 760 passed`。
-
-- [ ] **Step 3: 实现**
-
-- [ ] **Step 4: 运行，确认通过**
-
-Run: `python -m pytest`
-Expected: `766 passed`。
-
-- [ ] **Step 5: 提交**
-
-```
-git add engine/melchior agents/melchior tests/test_melchior_insight.py
-git commit -m "feat(melchior): insight-check votes on Balthasar's drafts after a program check at the draft's commit"
-```
-
----
-
-### Task 23（云端）：档案第 4、6 项职责与端到端脚本，开 PR 9d
+### Task 22（云端）：档案第 4 项职责与端到端脚本，开 PR 9d
 
 **Files:**
 - Modify: `agents/melchior/profile.yaml`、`tools/e2e_sandbox.py`
@@ -1119,7 +1078,7 @@ git commit -m "feat(melchior): insight-check votes on Balthasar's drafts after a
 
 - [ ] **Step 1: 档案**
 
-`duties` 按第 22.14 节的顺序排成六项：第 1–3 项不变，第 4 项 `Apply corporate actions by program, and draft rulings with their rule basis and sources for the cases that need judgement`，第 5 项为 Task 18 加入的一项，第 6 项 `Check the facts and sources of Balthasar's meta insight drafts`。改写 `test_the_profile_source_lists_the_duties_of_this_version`：恰好六项，顺序同第 22.14 节。
+`duties` 按第 22.14 节的顺序排成五项：第 1–3 项不变，第 4 项 `Apply corporate actions by program, and draft rulings with their rule basis and sources for the cases that need judgement`，第 5 项为 Task 18 加入的一项。第 6 项（对 Balthasar 草稿的检查）随 `insight-check` 移到 Balthasar 的计划（第 22 处）。改写 `test_the_profile_source_lists_the_duties_of_this_version`：恰好五项，顺序同第 22.14 节。
 
 - [ ] **Step 2: 端到端脚本**
 
@@ -1134,24 +1093,24 @@ python tools/e2e_sandbox.py --repo the-magi-system/magi; echo "exit $?"
 python -m engine consistency --repo .
 ```
 
-Expected: `766 passed`；编译没有输出；`exit 2`；一致性 `[]`。
+Expected: `768 passed`；编译没有输出；`exit 2`；一致性 `[]`。
 
 - [ ] **Step 4: 提交并开 PR 9d**
 
 ```
 git add agents/melchior/profile.yaml tools/e2e_sandbox.py tests/test_melchior_run.py
-git commit -m "feat(melchior): the profile lists all six duties; the sandbox run checks the assist request"
+git commit -m "feat(melchior): the profile lists the ruling duty; the sandbox run checks the assist request"
 ```
 
-标题 `Plan 9d: asset-status checks, rulings and insight checks`。
+标题 `Plan 9d: asset-status checks and rulings`。
 
 ---
 
-### Task 24（维护者）：合并 PR 9d，sandbox 端到端测试，在正式仓库打开模型部分
+### Task 23（维护者）：合并 PR 9d，sandbox 端到端测试，在正式仓库打开模型部分
 
 - [ ] **Step 1: 审阅并合并 PR 9d**
 
-合并后 `python -m pytest`、`python -m engine consistency --repo .`。Expected: `766 passed`；一致性 `[]`。
+合并后 `python -m pytest`、`python -m engine consistency --repo .`。Expected: `768 passed`；一致性 `[]`。
 
 - [ ] **Step 2: 重置 sandbox 并运行端到端测试**
 
@@ -1179,11 +1138,11 @@ Expected: 全部步骤 `PASS`，最后一行 `all steps passed`。另核对 sand
 
 ## 计划 9 完成标准
 
-- [ ] Task 1 的文档 PR 已合并，维护者确认了「请维护者确认的几处」。
-- [ ] PR 9a 已合并；main 上 `655 passed`，一致性 `[]`。
-- [ ] PR 9b 已合并；main 上 `710 passed`；合并之后的定时运行没有调用模型。
-- [ ] PR 9c 已合并；main 上 `742 passed`。
-- [ ] PR 9d 已合并；main 上 `766 passed`，ci 与 audit 为 success。
+- [ ] Task 1 的文档 PR 已合并，维护者确认了「维护者确认的几处」。
+- [ ] PR 9a 已合并；main 上 `663 passed`，一致性 `[]`。
+- [ ] PR 9b 已合并；main 上 `718 passed`；合并之后的定时运行没有调用模型。
+- [ ] PR 9c 已合并；main 上 `750 passed`。
+- [ ] PR 9d 已合并；main 上 `768 passed`，ci 与 audit 为 success。
 - [ ] sandbox 端到端测试 `all steps passed`。
 - [ ] 正式仓库先以 `preview`、再以 `live` 运行了模型部分。
 
@@ -1191,55 +1150,57 @@ Expected: 全部步骤 `PASS`，最后一行 `all steps passed`。另核对 sand
 
 ## 云端执行附注
 
-### A. 发起
+### A. 会话
 
-Task 1 合并后，新开云端会话 A，第一条消息：
+维护者为每个 PR 指定一个云端会话：cloud 1 或 cloud 2。一个会话可以接着做下一个 PR；会话变得太长时，维护者才新开一个会话。不论是接着用的会话还是新开的会话，开始一个 PR 之前都先运行 `git fetch --prune origin`，从最新的 `origin/main` 建这个 PR 的分支，推送时只用普通推送（不用强制推送）。维护者给会话的第一条消息：
 
 ```
-Execute Task 2 through Task 4 of docs/plans/2026-11-01-impl-9-melchior-model.md in order, following its section '云端执行附注'. One commit per task. When Task 4 is done and all tests pass, open one pull request against main.
+Execute Task 2 through Task 4 of docs/plans/2026-11-01-impl-9-melchior-model.md in order, following its section '云端执行附注'. Start from the latest main (git fetch --prune origin) and use a plain push. One commit per task. When Task 4 is done and all tests pass, open one pull request against main.
 ```
 
-Task 5 合并 PR 9a、夹具也合并之后，新开会话 B，消息同上，改为 Task 6 through Task 12，并附一句 KRX 夹具是 200 还是 403。Task 13 之后开会话 C（Task 14 through Task 18），Task 19 之后开会话 D（Task 20 through Task 23）。
+PR 9b、9c、9d 的消息相同，任务范围分别改为 Task 6 through Task 12、Task 14 through Task 18、Task 20 through Task 22；PR 9b 的消息另附一句 KRX 夹具是 200 还是 403（Task 5 Step 3）。
 
 ### B. 约定
 
 - 仓库根目录直接运行 `python -m pytest`；第一次先 `python -m pip install -r requirements.txt -r requirements-think.txt`。容器里的系统 PyYAML 无法卸载时，用 `--ignore-installed PyYAML` 安装。
-- 各任务的 Interfaces 与测试说明就是验收标准：测试名、断言的值与 Expected 的测试数都要一致；不一致时按全局约束「测试数的来历」一条处理。
+- 各任务的 Interfaces 与测试说明就是验收标准：测试名、断言的值与 Expected 的测试数都要一致；不一致时按全局约束「测试数的来历」一条处理。main 上的测试数若因别的 PR（例如加入 Caspar 任务种类 `topic` 的 PR）而与本计划的起点不同，按差值平移各步的 Expected，并在会话里写明。
 - 只推会话自己的分支；不运行 `tools/e2e_sandbox.py` 去连 sandbox；不对正式仓库运行任何东西；不读取、不设置任何 secret 或仓库变量；不请求 `sec.gov`；不改动 `tests/fixtures/sources/`。
-- 会话 C、D 不改 `protocol/` 下的文件；发现必须改时停下报告。
+- 做 PR 9c、9d 的会话不改 `protocol/` 下的文件；发现必须改时停下报告。
 
 ### C. 收尾（维护者）
 
-每个 PR 的 ci 为 success；维护者按 Task 5、13、19、24 核对与合并。
+每个 PR 的 ci 为 success；维护者按 Task 5、13、19、23 核对与合并。
 
 ---
 
-## 请维护者确认的几处
+## 维护者确认的几处
 
-以下各处是第 22 节照原文无法实现、原文没有写到而实现必须决定、或本计划偏离第 22 节的地方。每处写明本计划的建议；维护者确认之后，本节改写为决定的记录，改变了第 22 节原文的各处在设计文档加修订注记（Task 1 Step 5）。
+以下各处是第 22 节照原文无法实现、原文没有写到而实现必须决定、或本计划偏离第 22 节的地方。维护者于 2026-11-01 审阅 PR #99：第 1–21 处与第 23–25 处按本计划的建议确认，第 22 处由维护者改定，第 4、13、14、18、21 处另补了维护者提供的事实或决定。下面按确认后的内容记录，本计划的 Interfaces 已按此写。改变了第 22 节原文的各处，设计文档在相应位置加了日期为 2026-11-01 的修订注记，并在第 22.17 节记一行，原文的句子不改。
 
-1. **模型部分另设开关 `MELCHIOR_MODEL_MODE`**（偏离决策 D33 与第 22.13 节）。正式仓库的 `MELCHIOR_MODE` 自 2026-10-31 起为 `live`，第 22.13 节「合并落在 `preview`」的前提不再成立。建议：新的仓库变量 `MELCHIOR_MODEL_MODE`，取值 `off`、`preview`、`live`，没有设置时为 `off`；有效模式不高于 `MELCHIOR_MODE`；`MELCHIOR_MODE` 照旧只控制程序部分，程序部分在任何模型模式下都不变。
-2. **`preview` 只在手动触发时调用模型**（新增）。`preview` 不写文件，定时运行每天会重复预览同一批证据并重复花费，而且这部分花费不进 `usage/`。建议：模型部分为 `preview` 时，定时运行只做程序部分。
-3. **联系方式没有设置时，SEC 证据保持待办、不写记录**（偏离第 22.9.1、22.9.2 节的 `contact_not_set`）。正式仓库 14 条证据中 10 条来自 `sec.gov`（7 条属于 `pendragon.avalon`，3 条属于 `prod.mf`），按原文会公开标成未经核实。建议：不写记录、不开协助请求，只在运行摘要写明；`reason` 的取值去掉 `contact_not_set`。
-4. **按任务种类分配工具**（偏离第 22.9.1 节「模型仍有五个只读工具」与第 22.13 节）。建议照「工具」一节的表：读取抓取或提交的文字的任务只有 Read；过时检查第一步的非 SEC 来源与标的状态检查第一步另有 WebSearch，输出只有选项与链接；提示词文件因此由第 22.14 节的七个变为十个（`staleness` 分成 `staleness-list`、`staleness-search`、`staleness`，`probe` 另有 `probe-search`）。Caspar 的 `review`、`weekly`、`probe` 照旧有五个工具，本计划不收窄；是否收窄由维护者另行决定。
-5. **模型的输入加上程序选出的摘录**（补充第 22.9.1 节）。只有 Read、没有 Grep 时，模型在 1,000,000 个字符的来源里逐段阅读会花费很多。建议：`excerpts.json` 按主张里的数与词选出至多 60,000 个字符；结论仍按完整的 `source.txt` 核对。
-6. **抓取的范围**（补充第 22.9.1 节「v1 只处理 HTML 与纯文本」）。建议：编码按「非美国来源」一节的顺序判断（含 EUC-KR，按 `cp949` 解码）；跟随 DART 的查看器框架；不论 `Content-Type`，按内容的前几个字节识别 PDF；PDF 仍为 `unsupported_format`，不增加解析 PDF 的依赖。
-7. **数值核对扩展到没有 `value` 的主张**（偏离第 22.9.1 节程序校验第 3 条）。正式仓库的四条韩国证据都没有 `value`，按原文它们的数字从不被核对。建议：模型对每条 `supported` 与 `contradicted` 的主张给出数对，程序按主张写法的精度核对，主张里每个有意义的数都要被覆盖，判断不了时为 `not_found`。
-8. **HTTP 403、429 与 5xx 不算链接失效**（补充第 22.9.5 节）。KRX 对云端地址返回 403，页面并没有失效。建议：只有 404、410 与无法连接计入「相隔 7 天的两次失败」。
-9. **EDGAR 申报索引页与列表页**（补充）。`ev-20261031-ccc-2026-merger-agreement-8k` 的来源是申报索引页，页面上只有文件列表；`ev-20261031-ccc-2026-proxy-absence-check` 的来源是 `browse-edgar` 列表页，主张是「没有某类申报」。作者没能请求 `sec.gov` 核对这两类页面。建议：索引页跟随到申报主文件与展示文件，最多 5 份；列表页照一般 HTML 处理，「不存在」一类的主张无法逐字引用，结果为 `not_found`，PR 9c 起为它开协助请求。
-10. **更正其他研究者的证据**（细化第 22.9.6 节）。建议照「其他研究者的证据」一节的五条：规则完全满足才写更正，否则先开协助请求；在主人的提交 issue 与讨论串里通知；主人以 `supersede_evidence` 或 `request@1` 提出异议；主人取代过 Melchior 的更正之后不再更正。
-11. **协助请求指派给证据的主人**（补充第 22.9.7 节）。帖子去掉了 `@` 提及，主人收不到通知。建议：指派给主人的 `github_login`，并在提交 issue 回帖链接它。
-12. **候选来源只收允许的主机**（补充第 22.9.4、22.7 节）。建议：`sec.gov`、`dart.fss.or.kr`、`kind.krx.co.kr`、该标的的公开证据已经引用过的主机，标的状态检查另加 `price_source` 对应的交易所主机。
-13. **花费上限**（偏离第 22.13 节的 40 美元）。按实测的每次 0.32 美元与正式仓库的速度，Melchior 每月约 42–47 美元。建议：`MELCHIOR_MONTHLY_USD` 的默认值改为 60 美元；每个任务另有 `max_budget_usd`（1.00 或 1.50 美元）与 `max_turns: 40`。两位合计约每月 55–60 美元，Melchior 达到上限时约 75 美元，都在工作区每月 200 美元的上限之内。
-14. **`think` 的并行上限**（新增）。建议：Melchior 为 1，Caspar 为 2；维护者读出 ITPM 之后按「ITPM ÷ 35,000」调高。
-15. **取价连续 3 次报错的计数**（补充第 22.7 节）。每日取价任务的报错没有存下来。建议：Melchior 每次 `live` 运行在 `usage/` 的那一行记下 `price_failures`，标的状态检查读最近 3 行。
-16. **Naver 标的的公司行动不在本计划内**（未解决）。第 22.3 节的「每月查一次公开披露」不实现；Naver 标的上的 pick 继续不计自身的分红。标的状态检查不依赖它，见「Naver 标的的公司行动」一节。
-17. **档案的职责随实现逐项加入**（偏离第 22.14 节一次加上第 4–6 项）。建议：第 5 项随 PR 9c，第 4、6 项随 PR 9d，每次合并后的下一次运行发布新版本。
-18. **协议版本为 1.12**（偏离第 22.1 节修订注记里计划 9 的 1.10）。1.10 与 1.11 已被加入申请与基准政策 v2 占用。开 PR 9b 时若 1.12 也已被占用，用下一个空着的版本号。
-19. **事件日志的 `action`**（原文没有写到）。核查为 `evidence_check`，更正为 `supersede_evidence`（第 22.9.6 节），裁决为 `record_ruling`，投票为 `insight_vote`（第 22.12 节）；`usage/` 的行不进事件日志。
-20. **周报数字检查的修法**（计划 8 留下）。建议：表格里写出的数也算已知的数，数据与表格里都没有的数照旧拦下（Task 2）。
-21. **端到端测试的前提**（补充第 22.15 节）。sandbox 要设 secret `MAGI_HTTP_CONTACT`，否则 EDGAR 一步会等待到超时；`example.com` 证据的协助请求在 PR 9d 才核对。
-22. **`insight-check` 先于 Balthasar 实现**（第 22.12 节）。Balthasar 尚未实现，PR 9d 只用夹具测试草稿的格式与标记；Balthasar 的设计若改了草稿的标记，再改这里。
-23. **一致性校验检查结算记录与裁决的引用**（计划 8 第 11 处）。PR 9d 随裁决的写入加上，并改写 `test_the_consistency_check_reads_settlement_and_ruling_files`。
-24. **`MAGI_HTTP_CONTACT` 改为仓库 secret**（偏离第 22.9.1、22.13、22.14 节「仓库变量」的写法与格式 `The Magi System <地址>`）。仓库是公开的，仓库变量写进某一步的 `env` 之后会出现在公开的 Actions 日志里，而第 22.9.1 节要求联系方式不出现在任何日志里；secret 的值在日志里被遮盖。建议：secret `MAGI_HTTP_CONTACT`，只交给 `prepare` 里抓取来源的一步（Task 10 第 11 个测试）；格式为名称、一个空格、地址，没有尖括号。
-25. **只用证据引用的一手来源**（维护者的决定，记录在此）。证据核查不接入 FMP 一类商业数据供应商：维护者的许可不允许公开显示这类数据，而核查记录与帖子都是公开的。
+1. **模型部分另设开关 `MELCHIOR_MODEL_MODE`**（维护者确认；偏离决策 D33 与第 22.13 节）。正式仓库的 `MELCHIOR_MODE` 自 2026-10-31 起为 `live`，第 22.13 节「合并落在 `preview`」的前提不再成立。新的仓库变量 `MELCHIOR_MODEL_MODE` 取值 `off`、`preview`、`live`，没有设置时为 `off`；有效模式不高于 `MELCHIOR_MODE`；`MELCHIOR_MODE` 照旧只控制程序部分，程序部分在任何模型模式下都不变。
+2. **`preview` 只在手动触发时调用模型**（维护者确认；新增）。模型部分为 `preview` 时，定时运行只做程序部分。
+3. **联系方式没有设置时，SEC 证据保持待办、不写记录**（维护者确认；偏离第 22.9.1、22.9.2 节的 `contact_not_set`）。不写记录、不开协助请求，只在运行摘要写明；`reason` 的取值去掉 `contact_not_set`。
+4. **按任务种类分配工具**（维护者确认；偏离第 22.9.1 节「模型仍有五个只读工具」与第 22.13 节）。照「工具」一节的表：读取抓取或提交的文字的 Melchior 任务只有 Read；过时检查第一步的非 SEC 来源与标的状态检查第一步另有 WebSearch，输出只有选项与链接；提示词文件由第 22.14 节的七个变为九个（`staleness-list`、`staleness-search`、`staleness`、`evidence-check`、`referral`、`asset-status`、`ruling`、`probe`、`probe-search`；`insight-check` 见第 22 处）。**维护者的决定**：Caspar 的 `review`、`weekly`、`probe` 保留五个工具，因为 `ccc-gtcr-take-private-2026` v2 的评审正是经网页检索找到那份 8-K；加入申请审核只有 Read（决策 D45）；以后加入的 Caspar 任务种类（例如决策 D46 的 `topic`，只有 Read）由各自的 PR 写明工具，本计划不固定 Caspar 任务种类的个数。
+5. **模型的输入加上程序选出的摘录**（维护者确认；补充第 22.9.1 节）。`excerpts.json` 按主张里的数与词选出至多 60,000 个字符；结论仍按完整的 `source.txt` 核对。
+6. **抓取的范围**（维护者确认；补充第 22.9.1 节「v1 只处理 HTML 与纯文本」）。编码按「非美国来源」一节的顺序判断（含 EUC-KR，按 `cp949` 解码）；跟随 DART 的查看器框架；不论 `Content-Type`，按内容的前几个字节识别 PDF；PDF 仍为 `unsupported_format`，不增加解析 PDF 的依赖。
+7. **数值核对扩展到没有 `value` 的主张**（维护者确认；偏离第 22.9.1 节程序校验第 3 条）。模型对每条 `supported` 与 `contradicted` 的主张给出数对，程序按主张写法的精度核对，主张里每个有意义的数都要被覆盖，判断不了时为 `not_found`。
+8. **HTTP 403、429 与 5xx 不算链接失效**（维护者确认；补充第 22.9.5 节）。只有 404、410 与无法连接计入「相隔 7 天的两次失败」。
+9. **EDGAR 申报索引页与列表页**（维护者确认；补充第 22.9.1 节）。索引页跟随到申报主文件与展示文件，最多 5 份；列表页照一般 HTML 处理；「不存在」一类的主张无法逐字引用，结果为 `not_found`，PR 9c 起为它开协助请求。本计划的作者没能请求 `sec.gov` 核对这两类页面，由 Task 5 录下的夹具确认。
+10. **更正其他研究者的证据**（维护者确认；细化第 22.9.6 节）。照「其他研究者的证据」一节的五条：规则完全满足才写更正，否则先开协助请求；在主人的提交 issue 与讨论串里通知；主人以 `supersede_evidence` 或 `request@1` 提出异议；主人取代过 Melchior 的更正之后不再更正。
+11. **协助请求指派给证据的主人**（维护者确认；补充第 22.9.7 节）。指派给主人的 `github_login`，并在提交 issue 回帖链接它。
+12. **候选来源只收允许的主机**（维护者确认；补充第 22.9.4、22.7 节）。`sec.gov`、`dart.fss.or.kr`、`kind.krx.co.kr`、该标的的公开证据已经引用过的主机，标的状态检查另加 `price_source` 对应的交易所主机。
+13. **花费上限**（维护者确认；偏离第 22.13 节的 40 美元）。`MELCHIOR_MONTHLY_USD` 的默认值为 60 美元；每个任务另有 `max_budget_usd`（1.00 或 1.50 美元）与 `max_turns: 40`。确认之后，维护者提供了正式仓库日志里的实测花费：加入申请 0.027 美元（4 轮），周报 0.06–0.08 美元，观点评审 0.27–0.40 美元；本计划原来以「评审的花费大部分来自 Claude Code 的系统提示」为前提，加入申请的实测不支持这个前提，已据实测改写「花费」一节。重算之后 Melchior 每月约 19–21 美元，两位合计约 27–29 美元，上线的那个月约 35–40 美元，Melchior 达到上限时约 68 美元，都在工作区每月 200 美元的上限之内。按新的估计 40 美元也够用，默认值仍按确认取 60 美元。估计在切到 `live` 之前以 sandbox 的实测校准（Task 23 Step 2）。
+14. **`think` 的并行上限为 5**（维护者决定；新增）。维护者在 Console 读出 `claude-opus-5-5` 的限额：每分钟 2.0M 个输入 token、400K 个输出 token、4,000 个请求，此前的峰值为 26K、5.6K 与 4，速率限制因此不构成约束。Melchior 与 Caspar 的 `think` 都设 `max-parallel: 5`；本计划原来写的「账户的速率档位较低」与并行上限 1、2 作废。一次按上限运行的 `think` 约 6–12 分钟。失败的调用仍留到下一次运行，从不当作结论。
+15. **取价连续 3 次报错的计数**（维护者确认；补充第 22.7 节）。Melchior 每次 `live` 运行在 `usage/` 的那一行记下 `price_failures`，标的状态检查读最近 3 行。
+16. **Naver 标的的公司行动不在本计划内**（维护者确认；未解决）。第 22.3 节的「每月查一次公开披露」不实现；Naver 标的上的 pick 继续不计自身的分红；标的状态检查不依赖它。
+17. **档案的职责随实现逐项加入**（维护者确认；偏离第 22.14 节一次加上第 4–6 项）。第 5 项随 PR 9c，第 4 项随 PR 9d；第 6 项随 `insight-check` 移到 Balthasar 的计划（第 22 处）。每次合并后的下一次运行发布新版本。
+18. **协议版本取下一个空着的版本号**（维护者确认；偏离第 22.1 节修订注记里计划 9 的 1.10）。1.10 与 1.11 已被加入申请与基准政策 v2 占用；另一个加入 Caspar 任务种类 `topic`（决策 D46）的 PR 可能先占用 1.12，所以 PR 9b 用开 PR 时 CHANGELOG 里下一个空着的版本号，本计划不写定。
+19. **事件日志的 `action`**（维护者确认；原文没有写到）。核查为 `evidence_check`，更正为 `supersede_evidence`（第 22.9.6 节），裁决为 `record_ruling`；`usage/` 的行不进事件日志。`insight_vote` 随 `insight-check` 移到 Balthasar 的计划。
+20. **周报数字检查的修法**（维护者确认；计划 8 留下）。表格里写出的数也算已知的数，数据与表格里都没有的数照旧拦下（Task 2）。
+21. **端到端测试的前提**（维护者确认；补充第 22.15 节）。sandbox 要有 secret `MAGI_HTTP_CONTACT`；维护者已于 2026-10-31 在 `magi` 与 `magi-sandbox` 两个仓库设好（Task 13 Step 3）。`example.com` 证据的协助请求在 PR 9d 才核对。
+22. **`insight-check` 移到 Balthasar 的计划**（维护者改定；偏离第 22.12 节接口 5 与第 22.14 节第 6 项）。本计划原来建议在 PR 9d 用夹具先实现它。维护者决定：Balthasar 尚未实现，`insight-check` 的任务、提示词、输出 schema、工具表的一行与测试都不在本计划里；第 21.8 节的接口 5 等 Balthasar 实现时随它的计划一起做，档案的第 6 项职责与事件日志的 `insight_vote` 也随它。本计划只保证第 22.12 节的另一条要求：Melchior 各类待办的输入里没有 `insights/` 与 `magi:insight-draft` issue（Task 9 第 5 个测试）。
+23. **一致性校验检查结算记录与裁决的引用**（维护者确认；计划 8 第 11 处）。PR 9d 随裁决的写入加上，并改写 `test_the_consistency_check_reads_settlement_and_ruling_files`。
+24. **`MAGI_HTTP_CONTACT` 是仓库 secret**（维护者确认；偏离第 22.9.1、22.13、22.14 节「仓库变量」的写法与格式 `The Magi System <地址>`）。仓库是公开的，仓库变量写进某一步的 `env` 之后会出现在公开的 Actions 日志里，而 secret 的值在日志里被遮盖。secret 只交给 `prepare` 里抓取来源的一步（Task 10 第 11 个测试）；格式为名称、一个空格、地址，没有尖括号。
+25. **只用证据引用的一手来源**（维护者的决定）。证据核查不接入 FMP 一类商业数据供应商：维护者的许可不允许公开显示这类数据，而核查记录与帖子都是公开的。
+
+维护者在确认时另提供了一项事实，不另编号：PR #104 已合并。Caspar 的 `_source` 在 `evidence` 写了多余文字时仍接受合格的链接；一份评审对同一个来源只开一个转交，其他证据编号写在 `also_affected`。Task 17 已按此写明 Melchior 回帖列出这些编号，它们按一般的证据核查处理。
