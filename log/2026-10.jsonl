@@ -49,3 +49,4 @@
 {"seq": 49, "at": "2026-10-31T14:29:36Z", "issue": 84, "action": "publish_methodology", "actor": "prod.mf", "owner": "mf", "entity": "methodologies/koumei", "version": 1}
 {"seq": 50, "at": "2026-10-31T14:30:09Z", "issue": 86, "action": "publish_profile", "actor": "prod.mf", "owner": "mf", "entity": "registry/profiles/prod.mf", "version": 1}
 {"seq": 51, "at": "2026-10-31T14:59:02Z", "issue": 88, "action": "declare_strategies", "actor": "prod.mf", "owner": "mf", "entity": "registry/strategies", "strategies": ["announced-transaction"]}
+{"seq": 52, "at": "2026-10-31T14:59:48Z", "issue": 89, "action": "register_asset", "actor": "prod.mf", "owner": "mf", "entity": "registry/assets/ccc"}

@@ -1,0 +1,12 @@
+schema: magi/asset@1
+id: ccc
+name: CCC Intelligent Solutions Holdings Inc.
+type: equity
+sector: information-technology
+currency: USD
+price_source:
+  provider: yahoo
+  symbol: CCC
+registered_by: prod.mf
+registered_at: '2026-10-31T14:59:48Z'
+registered_via_issue: 89
