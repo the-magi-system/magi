@@ -2,6 +2,12 @@
 
 Newest first. Each entry gives the date, what changed, and the request issue that prompted it, if any.
 
+## v1.11 — 2026-10-31
+
+- Benchmark policy v2 (`protocol/benchmarks/v2.yaml`, `effective_from: 2026-11-04`), decided by the maintainer on 2026-10-31 when the first Korean asset, `jvm` (Naver `054950`, KRW), was registered. It is v1 unchanged plus Korea: the markets `KR` for Yahoo symbols ending `.KS` or `.KQ` and for every Naver symbol; shares, funds and indices listed in Korea map to `069500-ks` (KODEX 200 ETF, Yahoo `069500.KS`, KRW), which tracks the KOSPI 200. `protocol/benchmarks/v1.yaml` is not edited.
+- The benchmark is the fund, not the index, as for `spy` and `1306-t`, and it is priced from Yahoo because Naver's ETF closes are back-adjusted for distributions and Naver gives no distribution records. Limits stated in protocol section 10: KOSDAQ shares use the same large-cap benchmark; a pick on a Naver asset counts none of the asset's own dividends while the benchmark's distributions count, so its excess return is understated for a long pick and overstated for a short one.
+- A Korean pick that entered before 2026-11-04 takes `069500-ks` by the gap rule, without a new record; picks in other markets that enter before 2026-11-04 keep policy 1. Melchior.Magi registers `069500-ks` with its backfill on its next run.
+
 ## v1.10 — 2026-10-31
 
 - Joining is reviewed by Caspar.Magi and approved by a maintainer with `/approve` (design decision D45). A maintainer no longer has to write `registry/researchers/<handle>.yaml` by hand.

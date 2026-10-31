@@ -97,7 +97,7 @@ def _close(repo, asset, day):
 
 def test_manifest_records_the_valuation_date_and_the_policy_version(repo):
     manifest = compile_snapshot(repo, NOW, "abc123")["manifest.json"]
-    assert manifest["valuation_date"] is None and manifest["benchmark_policy"] == 1
+    assert manifest["valuation_date"] is None and manifest["benchmark_policy"] == 2
     _close(repo, "nvda", "2026-10-01")
     _close(repo, "msft", "2026-10-02")
     manifest = compile_snapshot(repo, NOW, "abc123")["manifest.json"]

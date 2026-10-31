@@ -13,7 +13,7 @@ from engine.yamlio import load_yaml, write_yaml
 from tests.fakes import NOW, FakeGitHub, FakePrices, init_git_repo
 from tests.util import REPO_ROOT, T0, add_melchior, build_repo
 
-SERIES = ("spy", "1306-t", "xlf", "dbc", "btc-usd", "ive", "ivw", "iwm")
+SERIES = ("spy", "1306-t", "xlf", "dbc", "btc-usd", "ive", "ivw", "iwm", "069500-ks")
 
 
 @pytest.fixture
@@ -45,7 +45,7 @@ def test_missing_series_are_registered_as_system_writes(root, tmp_path):
         assert asset["registered_via_run"] == 7
         assert "registered_via_issue" not in asset
     lines = [entry for entry in read_log(root) if entry["action"] == "register_asset"]
-    assert len(lines) == 8
+    assert len(lines) == len(SERIES)
     assert all(entry["run"] == 7 and "issue" not in entry and entry["actor"] == "melchior.magi" for entry in lines)
     assert check_repository(root) == []
 
