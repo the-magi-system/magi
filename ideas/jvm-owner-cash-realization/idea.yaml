@@ -1,0 +1,10 @@
+schema: magi/idea@1
+id: jvm-owner-cash-realization
+asset: jvm
+title: JVM：设备与耗材现金流，能否转化为普通股东回报？
+summary: 药房自动化设备、耗材和维护构成复购基础，2026Q3盈利改善；但活跃装机及实际使用量、留存资本新增回报和现金返还路径仍待验证。以生意质量、资本配置与价格回报三关审查，先提交中性研究观点，避免把条件平台FSE/EV当成股东IRR。
+status: active
+created_by: arc.cheng
+created_at: '2026-10-31T12:07:50Z'
+created_via_issue: 74
+thread: null
