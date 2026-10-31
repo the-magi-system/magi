@@ -29,7 +29,8 @@ from engine.yamlio import dump_yaml, load_yaml, parse_yaml  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 SNAPSHOT_SCHEMAS = ROOT / "protocol" / "schemas" / "snapshot"
-SERIES = list(load_yaml(ROOT / "protocol" / "benchmarks" / "v1.yaml")["series"])
+SERIES = list(max((load_yaml(path) for path in (ROOT / "protocol" / "benchmarks").glob("v*.yaml")),
+                  key=lambda policy: policy["version"])["series"])  # the highest policy version
 WAITING_OR_HELD = ("pending_entry", "held")
 POLL_SECONDS = 15
 TIMEOUT_SECONDS = 1800  # GitHub's runner queue has delayed a job by more than 10 minutes
