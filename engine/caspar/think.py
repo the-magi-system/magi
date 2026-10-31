@@ -18,15 +18,16 @@ from pathlib import Path
 from .common import SOURCE_DIR
 from .run import MODEL, TOOLS
 
-KINDS = ("review", "weekly", "probe", "join")
+KINDS = ("review", "weekly", "probe", "join", "topic")
 DISALLOWED = ("Bash", "Edit", "Write", "MultiEdit", "NotebookEdit", "mcp__*")
 # A join task reads text that anyone with a GitHub account wrote, and needs only its prompt and its input file
-# (decision D45): it gets Read alone, and every other tool of the usual five is refused as well.
+# (decision D45): it gets Read alone, and every other tool of the usual five is refused as well. A topic task
+# (decision D46) reads the ideas' own text and gets Read alone for the same reason.
 JOIN_TOOLS = ("Read",)
 
 
 def tools_for(kind: str) -> tuple[str, ...]:
-    return JOIN_TOOLS if kind == "join" else TOOLS
+    return JOIN_TOOLS if kind in ("join", "topic") else TOOLS
 _TASK_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9-]{0,79}")
 
 

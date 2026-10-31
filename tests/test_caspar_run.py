@@ -355,11 +355,11 @@ def test_workflow_keeps_the_token_away_from_write_access_and_the_model_inside_it
     assert [item["cron"] for item in triggers["schedule"]] == ["41 */3 * * *"]
     assert "probe" in triggers["workflow_dispatch"]["inputs"]["scope"]["options"]
     jobs = flow["jobs"]
-    assert jobs["prepare"]["permissions"] == {"contents": "read", "issues": "read"}
+    assert jobs["prepare"]["permissions"] == {"contents": "read", "issues": "read", "discussions": "read"}
     assert jobs["prepare"]["steps"][0]["with"]["fetch-depth"] == 0
     assert jobs["think"]["permissions"] == {"contents": "read"}
     assert jobs["think"]["steps"][0]["with"]["persist-credentials"] is False
-    assert jobs["write"]["permissions"] == {"contents": "write", "issues": "write"}
+    assert jobs["write"]["permissions"] == {"contents": "write", "issues": "write", "discussions": "write"}
     assert jobs["write"]["concurrency"]["group"] == "magi-writer"
     text = yaml.safe_dump(flow)
     assert text.count("secrets.ANTHROPIC_API_KEY") == 2
