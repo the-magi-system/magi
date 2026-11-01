@@ -27,7 +27,8 @@ from .yamlio import load_yaml
 YAML_DIRS = ["registry", "evidence", "methodologies", "ideas", "ledger"]
 ENTITY_DIR = Path("protocol") / "schemas" / "entities"
 WHOLE = {"magi/researcher@1": "researcher", "magi/strategies@1": "strategies", "magi/ledger-event@1": "ledger-event",
-         "magi/judgement@1": "judgement", "magi/settlement@1": "settlement", "magi/ruling@1": "ruling"}
+         "magi/judgement@1": "judgement", "magi/settlement@1": "settlement", "magi/ruling@1": "ruling",
+         "magi/evidence-check@1": "evidence-check"}
 SPLIT = {"magi/agent@1": "agent", "magi/asset@1": "asset", "magi/methodology@1": "methodology", "magi/idea@1": "idea",
          "magi/evidence@1": "evidence", "magi/view@1": "view", "magi/profile@1": "profile"}
 ACTIONS = {"asset": "register_asset", "methodology": "publish_methodology", "idea": "create_idea",

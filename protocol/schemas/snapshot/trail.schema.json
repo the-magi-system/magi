@@ -167,7 +167,34 @@
           }
         },
         "evidence_checks": {
-          "type": "null"
+          "type": [
+            "object",
+            "null"
+          ],
+          "propertyNames": {
+            "pattern": "^ev-\\d{8}-[a-z0-9][a-z0-9-]*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "status",
+              "version"
+            ],
+            "properties": {
+              "status": {
+                "enum": [
+                  "verified",
+                  "discrepancy",
+                  "unverified"
+                ]
+              },
+              "version": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          }
         },
         "discussion_refs": {
           "type": [

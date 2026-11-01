@@ -84,3 +84,14 @@ def test_report_opens_then_comments():
     assert report(gh, "Audit: push abc", findings) == first
     assert gh.issues[first]["labels"] == [AUDIT_LABEL] and len(gh.comments(first)) == 1
     assert report(gh, "Audit: push abc", []) is None
+
+
+def test_usage_is_a_data_directory(git):
+    before = git.run("rev-parse", "HEAD")
+    path = git.root / "usage" / "melchior" / "2026-11.jsonl"
+    path.parent.mkdir(parents=True)
+    path.write_text('{"run": 1}\n', encoding="utf-8")
+    after = _commit(git)
+    findings = audit_push(git, before, after, "ThinkwChivalri")
+    assert [f.path for f in findings] == ["usage/melchior/2026-11.jsonl"]
+    assert audit_push(git, before, after, BOT_LOGIN) == []
