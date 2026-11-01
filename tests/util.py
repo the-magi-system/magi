@@ -353,3 +353,19 @@ def pick_event(root: Path, number: int, event: str, at: str, signal_date: str, *
     path = f"ledger/events/{at[:4]}/{at[5:7]}/{name}-{pick}-{event}.yaml"
     write_yaml(Path(root) / path, record)
     return path
+
+
+def evidence_check_record(evidence_id, status="verified", version=1, **overrides):
+    """A check record by Melchior.Magi (plan 9, Task 11), in the format magi/evidence-check@1."""
+    record = {"schema": "magi/evidence-check@1", "evidence": evidence_id, "status": status,
+              "reason": "not_found" if status == "unverified" else None, "source_date": None, "claims": [],
+              "source": {"url": "https://example.com/msft-fy27", "final_url": "https://example.com/msft-fy27",
+                         "http_status": 200, "content_type": "text/html", "format": "html", "parts": 1,
+                         "decoding": "declared", "fetched_at": "2026-10-02T23:50:00Z", "sha256": "a" * 64,
+                         "chars": 1000, "truncated": False},
+              "link": "ok", "currency": "current", "superseded_by": None, "same_source_as": [], "pending_sources": [],
+              "assist_issue": None, "next_review": "2026-12-31", "input_commit": "0" * 40, "prompt_sha256": "0" * 64,
+              "model": "claude-opus-5-5", "version": version, "checked_at": "2026-10-02T23:51:00Z",
+              "checked_via_run": 7}
+    record.update(overrides)
+    return record

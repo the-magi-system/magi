@@ -25,7 +25,7 @@ from tests.util import (
 )
 
 NY = Session("exchange", "America/New_York", "16:00")
-FILES = ("track", "forecasts", "settlements", "rulings", "benchmarks", "market_state", "ledger")
+FILES = ("track", "forecasts", "settlements", "rulings", "benchmarks", "market_state", "ledger", "evidence_checks")
 IDEA = "nvda-ai-capex-2026"
 SCHEMA_DIR = REPO_ROOT / "protocol" / "schemas" / "snapshot"
 
@@ -307,3 +307,41 @@ def test_results_between_slices_versions_and_picks_by_date(world):
     records = _records(world)
     assert october["versions"][f"{IDEA}/john.research/v1"] == \
         records["settlements.json"]["versions"][f"{IDEA}/john.research/v1"]
+
+
+def test_the_snapshot_lists_evidence_checks(repo):
+    from tests.util import evidence_check_record
+    other = "ev-20261002-nvda-orders"
+    write_yaml(repo / "evidence" / f"{other}.yaml", {
+        "schema": "magi/evidence@1", "id": other, "title": "Orders", "kind": "news", "assets": ["nvda"],
+        "ideas": ["nvda-ai-capex-2026"], "access": "public",
+        "source": {"url": "https://example.com/orders", "publisher": "Example", "published_at": "2026-10-01",
+                   "tier": "secondary"},
+        "claims": [{"text": "Orders rose"}], "supersedes": None, "submitted_by": "arthur.val",
+        "submitted_at": "2026-10-02T00:00:00Z"})
+    write_yaml(repo / "evidence" / "checks" / "ev-20261001-msft-fy27-capex.yaml",
+               evidence_check_record("ev-20261001-msft-fy27-capex", version=2))
+    checks = _records(repo)["evidence_checks.json"]
+    assert checks["checks"]["ev-20261001-msft-fy27-capex"] == {
+        "evidence": "ev-20261001-msft-fy27-capex", "status": "verified", "reason": None,
+        "checked_at": "2026-10-02T23:51:00Z", "version": 2, "link": "ok", "currency": "current",
+        "superseded_by": None, "assist_issue": None}
+    assert checks["checks"][other]["status"] == "pending" and checks["checks"][other]["version"] is None
+    schema = json.loads((REPO_ROOT / "protocol" / "schemas" / "snapshot" / "evidence_checks.schema.json")
+                        .read_text(encoding="utf-8"))
+    assert list(Draft202012Validator(schema).iter_errors(checks)) == []
+
+
+def test_each_evidence_in_an_idea_carries_its_check(repo):
+    from engine.snapshot import compile_snapshot
+    from tests.fakes import NOW
+    from tests.util import evidence_check_record
+    files = compile_snapshot(repo, NOW, "abc123")
+    assert [e["check"] for e in files["ideas/nvda-ai-capex-2026.json"]["evidence"]] == [None]
+    write_yaml(repo / "evidence" / "checks" / "ev-20261001-msft-fy27-capex.yaml",
+               evidence_check_record("ev-20261001-msft-fy27-capex", status="unverified"))
+    files = compile_snapshot(repo, NOW, "abc123")
+    assert [e["check"] for e in files["ideas/nvda-ai-capex-2026.json"]["evidence"]] == [
+        {"status": "unverified", "checked_at": "2026-10-02T23:51:00Z", "version": 1}]
+    schema = json.loads((REPO_ROOT / "protocol" / "schemas" / "snapshot" / "idea.schema.json").read_text(encoding="utf-8"))
+    assert list(Draft202012Validator(schema).iter_errors(files["ideas/nvda-ai-capex-2026.json"])) == []

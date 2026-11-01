@@ -432,3 +432,26 @@ def test_conflicting_corporate_action_rows_are_reported(repo):
                                   "source": "yahoo"}])
     found = _found(repo)
     assert found == [("market/actions/2026/09.jsonl", "nvda 2026-09-05: two dividend lines disagree", "melchior.magi")]
+
+
+def test_a_check_of_missing_evidence_or_without_a_log_line_is_reported(repo):
+    from tests.util import evidence_check_record
+    good = "ev-20261001-msft-fy27-capex"
+    write_yaml(repo / "evidence" / "checks" / f"{good}.yaml", evidence_check_record(good))
+    append(repo, [{"at": "2026-10-02T23:51:00Z", "run": 7, "action": "evidence_check", "actor": "melchior.magi",
+                   "owner": "magi", "entity": f"evidence/checks/{good}", "version": 1, "status": "verified"}])
+    assert check_repository(repo) == []
+    missing = "ev-20261002-nvda-gone"
+    write_yaml(repo / "evidence" / "checks" / f"{missing}.yaml", evidence_check_record(missing))
+    write_yaml(repo / "evidence" / "checks" / f"{good}.yaml",
+               evidence_check_record(good, version=2, superseded_by="ev-20261003-nvda-never"))
+    found = check_repository(repo)
+    by_path = {}
+    for finding in found:
+        by_path.setdefault(finding.path, []).append(finding.problem)
+        assert finding.owner == "melchior.magi"
+    assert any("does not exist" in problem for problem in by_path[f"evidence/checks/{missing}.yaml"])
+    assert any("no line in the event log" in problem for problem in by_path[f"evidence/checks/{missing}.yaml"])
+    problems = by_path[f"evidence/checks/{good}.yaml"]
+    assert any("version 2 of this check has no line in the event log" in p for p in problems)
+    assert any("ev-20261003-nvda-never" in p for p in problems)

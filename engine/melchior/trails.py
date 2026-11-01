@@ -80,7 +80,10 @@ def trails(root: Path, state: RepoState, ledger: EffectiveLedger, settlements: d
                 "process_md": record.get("process_md"), "diff": line.get("diff"),
                 "evidence": {"added": [e for e in current if e not in previous],
                              "removed": [e for e in previous if e not in current], "current": current},
-                "evidence_checks": None, "discussion_refs": line.get("discussion_refs", record.get("discussion_refs")),
+                "evidence_checks": {e: {"status": state.evidence_checks[e]["status"],
+                                        "version": state.evidence_checks[e]["version"]}
+                                    for e in current if e in state.evidence_checks},
+                "discussion_refs": line.get("discussion_refs", record.get("discussion_refs")),
                 "non_public_pillars": record.get("non_public_pillars", []), "review": _review(reviews.get(number)),
                 "picks": _picks(ledger, idea, actor, number),
                 "settlement": _settlement(settlements["versions"].get(key)),
