@@ -360,3 +360,52 @@ def test_no_join_line_without_waiting_join_requests(repo):
     assert material["join_requests"] == []
     text = report_markdown(material, check_weekly(material, {"overview": "", "actors": [], "suggestions": []})[0])
     assert "Join requests waiting" not in text
+
+
+# Plan 9 Task 2: the tables write returns as percentages (3.21%) while the data has decimals (0.032145).
+
+def _table_percentage(repo):
+    """The material, and the first percentage in the Recent performance table that the data alone does not know
+    and whose one-decimal rounding is a different number."""
+    import re
+    from engine.caspar.weekly import check_numbers
+    from tests.util import add_melchior
+    add_melchior(repo)
+    _market(repo)
+    _held(repo)
+    material = _material(repo)
+    text = report_markdown(material, check_weekly(material, {"overview": "", "actors": [], "suggestions": []})[0])
+    table = text.split("## Recent performance", 1)[1].split("## Forecast errors", 1)[0]
+    for token in re.findall(r"-?\d+\.\d+%", table):
+        rounded = f"{round(float(token[:-1]), 1)}%"
+        if not check_numbers(f"It returned {token}.", material) and rounded.rstrip("%") != token.rstrip("%0").rstrip("."):
+            return material, token, rounded
+    raise AssertionError("the fixture's performance table has no usable percentage")
+
+
+def test_text_that_quotes_a_percentage_from_the_tables_is_kept(repo):
+    material, token, _ = _table_percentage(repo)
+    sentence = f"The pick returned {token} since entry."
+    checked, dropped = check_weekly(material, {"overview": "", "actors": [], "suggestions": [],
+                                               "recent_performance": sentence, "forecast_errors": "",
+                                               "market_state": ""})
+    assert checked["recent_performance"] == sentence
+    assert not any(line.startswith("recent_performance") for line in dropped)
+
+
+def test_a_rounded_or_invented_percentage_is_still_dropped(repo):
+    material, _, rounded = _table_percentage(repo)
+    checked, dropped = check_weekly(material, {"overview": "", "actors": [], "suggestions": [],
+                                               "recent_performance": f"The pick returned about {rounded}.",
+                                               "forecast_errors": "The pick gained 987654 percent.",
+                                               "market_state": ""})
+    assert checked["recent_performance"] == "" and checked["forecast_errors"] == ""
+    assert "recent_performance: a number does not appear in the data" in dropped
+    assert "forecast_errors: a number does not appear in the data" in dropped
+
+
+def test_the_numbers_of_the_rendered_tables_are_known(repo):
+    from engine.caspar.weekly import table_numbers
+    material, token, _ = _table_percentage(repo)
+    assert token.rstrip("%").rstrip("0").rstrip(".") in table_numbers(material)
+    assert table_numbers({key: value for key, value in material.items() if key != "melchior"}) == set()

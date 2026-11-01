@@ -2,6 +2,11 @@
 
 Newest first. Each entry gives the date, what changed, and the request issue that prompted it, if any.
 
+## 2026-11-01 — the weekly number check reads the tables (no version change)
+
+- Caspar.Magi's weekly report keeps text that quotes a number as the report's own tables write it, such as a return of `3.21%` where the data holds `0.032145`; the tables are the record, and a number in neither the data nor the tables is still refused (plan 9, Task 2).
+- Caspar.Magi's model calls are made by one module that both system agents share; each agent names the tools of each of its task kinds, and every Caspar task kind keeps exactly the tools it had. Caspar's think job runs at most five tasks at once and keeps the SDK's report of each task's turns and cost beside the answer.
+
 ## v1.12 — 2026-11-01
 
 - Caspar.Magi opens cross-idea discussion topics in GitHub Discussions (design decision D46, decided by the maintainer on 2026-11-01). A program groups every active idea by the listing market of its asset under the highest benchmark policy, the asset's sector, and each current view's strategy and methodology; an active idea without a current view counts once, through its `created_by`, for its market and sector only, so grouping is not limited to active ideas that have a current view. A group with at least 2 ideas from at least 2 actors is a candidate, and its key, such as `market:KR`, names its topic for good. `market:US` is never a candidate (`BROAD_MARKETS`), because most ideas are listed in the US and its topic would become a catch-all.

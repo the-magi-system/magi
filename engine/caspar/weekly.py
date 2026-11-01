@@ -208,16 +208,27 @@ def _numbers(data, found: set[str]) -> set[str]:
     return found
 
 
-def check_numbers(text: str, data) -> bool:
-    """True when every number written in `text` also appears in `data`."""
-    known = _numbers(data, set())
+def check_numbers(text: str, data, extra=frozenset()) -> bool:
+    """True when every number written in `text` also appears in `data` or in `extra`."""
+    known = _numbers(data, set()) | set(extra)
     return all(_norm(token) in known for token in _NUMBER.findall(text))
 
 
-def _paragraph(text, material: dict, label: str, dropped: list[str]) -> str:
+def table_numbers(material: dict) -> set[str]:
+    """The numbers as the report's tables write them (3.21% for 0.032145). The tables are the record (design 19.7),
+    so text may quote them; a number in neither the data nor the tables is still refused."""
+    melchior = material.get("melchior")
+    if melchior is None:
+        return set()
+    lines = (_performance_section(melchior["recent_performance"], "") + _errors_section(melchior["forecast_errors"], "")
+             + _market_section(melchior["market_state"], ""))
+    return {_norm(token) for token in _NUMBER.findall("\n".join(lines))}
+
+
+def _paragraph(text, material: dict, label: str, dropped: list[str], tables: frozenset = frozenset()) -> str:
     if not isinstance(text, str) or not text.strip():
         return ""
-    if not check_numbers(text, material):
+    if not check_numbers(text, material, tables):
         dropped.append(f"{label}: a number does not appear in the data")
         return ""
     return sanitize(text.strip())[:4000]
@@ -231,17 +242,18 @@ def _sources(material: dict) -> set[str]:
 
 def check_weekly(material: dict, output: dict) -> tuple[dict, list[str]]:
     dropped: list[str] = []
-    checked = {"overview": _paragraph(output.get("overview"), material, "overview", dropped), "actors": {},
+    tables = frozenset(table_numbers(material))
+    checked = {"overview": _paragraph(output.get("overview"), material, "overview", dropped, tables), "actors": {},
                "suggestions": []}
     for key in MELCHIOR_SECTIONS:  # written only when the material has Melchior.Magi's data
-        checked[key] = _paragraph(output.get(key), material, key, dropped) if "melchior" in material else ""
+        checked[key] = _paragraph(output.get(key), material, key, dropped, tables) if "melchior" in material else ""
     known = {row["actor"] for row in material["actors"]}
     for item in output.get("actors") or []:
         actor = item.get("actor")
         if actor not in known:
             dropped.append(f"actor {actor}: not in this week's material")
             continue
-        checked["actors"][actor] = {key: _paragraph(item.get(key), material, f"{actor} {key}", dropped)
+        checked["actors"][actor] = {key: _paragraph(item.get(key), material, f"{actor} {key}", dropped, tables)
                                     for key in ("weaknesses", "style")}
     open_numbers = {item["number"] for item in material["open_suggestions"]}
     allowed, new = _sources(material), 0
@@ -249,7 +261,7 @@ def check_weekly(material: dict, output: dict) -> tuple[dict, list[str]]:
         existing = item.get("existing_issue")
         sources = [url for url in item.get("sources") or [] if url in allowed]
         theme = sanitize(str(item.get("theme") or "").strip())[:120]
-        summary = _paragraph(item.get("summary"), material, f"suggestion {number}", dropped)
+        summary = _paragraph(item.get("summary"), material, f"suggestion {number}", dropped, tables)
         if existing is not None and existing not in open_numbers:
             dropped.append(f"suggestion {number}: issue {existing} is not an open magi:suggestion issue")
         elif not sources:

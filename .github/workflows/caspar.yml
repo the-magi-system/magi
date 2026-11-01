@@ -64,6 +64,8 @@ jobs:
       contents: read
     strategy:
       fail-fast: false
+      # The limits of claude-opus-5-5 are far above Caspar's use, so five tasks run at once (plan 9, item 14).
+      max-parallel: 5
       matrix:
         task: ${{ fromJSON(needs.prepare.outputs.tasks) }}
     steps:
@@ -95,10 +97,12 @@ jobs:
           TOKEN: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           RESULT="$(cat "$RUNNER_TEMP/caspar/$TASK.json")"
+          USAGE="$(cat "$RUNNER_TEMP/caspar/$TASK.usage.json" 2>/dev/null || true)"
           DECOY="$(cat /tmp/caspar-decoy/secret.txt)"
-          case "$RESULT" in *"$TOKEN"*|*"$DECOY"*) echo "the result contains the token or the decoy; it is discarded"; exit 1;; esac
+          case "$RESULT$USAGE" in *"$TOKEN"*|*"$DECOY"*) echo "the result contains the token or the decoy; it is discarded"; exit 1;; esac
           mkdir -p result
           printf '%s' "$RESULT" > "result/$TASK.json"
+          if [ -n "$USAGE" ]; then printf '%s' "$USAGE" > "result/$TASK.usage.json"; fi
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: caspar-result-${{ matrix.task.id }}

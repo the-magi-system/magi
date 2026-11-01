@@ -76,3 +76,13 @@ def test_triage_can_be_run_by_hand_for_issues_already_open():
     assert condition.startswith("github.event_name == 'workflow_dispatch' ||")
     steps = flow["jobs"]["triage"]["steps"]
     assert any(step.get("run") == "python -m engine triage --repo ." for step in steps)
+
+
+def test_caspar_think_runs_at_most_five_tasks_at_once():
+    # The limits of claude-opus-5-5 (2.0M input tokens, 400K output tokens, 4,000 requests a minute) are no
+    # constraint, so five tasks run at once (plan 9, item 14).
+    flow, _ = _flow("caspar.yml")
+    strategy = flow["jobs"]["think"]["strategy"]
+    assert strategy["max-parallel"] == 5 and strategy["fail-fast"] is False
+    guard = next(step for step in flow["jobs"]["think"]["steps"] if step.get("name", "").startswith("Keep the result"))
+    assert "usage.json" in guard["run"]
