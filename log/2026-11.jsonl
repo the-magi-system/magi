@@ -1,3 +1,5 @@
 {"seq": 62, "at": "2026-11-01T03:59:17Z", "issue": 108, "action": "join", "actor": "easonzhou", "owner": "easonzhou", "entity": "registry/researchers/easonzhou", "approved_by": "arthur"}
 {"seq": 63, "at": "2026-11-01T03:59:40Z", "issue": 107, "action": "join", "actor": "overfunded", "owner": "overfunded", "entity": "registry/researchers/overfunded", "approved_by": "arthur"}
 {"seq": 64, "at": "2026-11-01T05:31:19Z", "issue": 68, "action": "join", "actor": "jerry007", "owner": "jerry007", "entity": "registry/researchers/jerry007", "approved_by": "arthur"}
+{"seq": 65, "at": "2026-11-01T06:08:35Z", "run": 41279537122, "action": "publish_profile", "actor": "caspar.magi", "owner": "magi", "entity": "registry/profiles/caspar.magi", "version": 3}
+{"seq": 66, "at": "2026-11-01T06:08:35Z", "run": 41279537122, "action": "topic_declined", "actor": "caspar.magi", "owner": "magi", "entity": "topics/sector:health-care", "ideas": ["jvm-owner-cash-realization", "tem-data-engine"]}
