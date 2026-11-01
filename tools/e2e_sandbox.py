@@ -5,6 +5,9 @@ Run from the repository root after the sandbox has been reset and seeded:
 The token comes from GH_TOKEN, or from `gh auth token` when GH_TOKEN is unset.
 Each step prints PASS or FAIL; the script stops at the first FAIL and exits with status 1.
 The sandbox seed must register melchior.magi, and the sandbox's MELCHIOR_MODE must be live (plan 8, Task 21).
+For Melchior.Magi's evidence checks (plan 9, Task 12) the sandbox's MELCHIOR_MODEL_MODE must be live as well, and it
+must have the secret MAGI_HTTP_CONTACT; this script cannot read it, so without it the EDGAR check waits until the
+script stops with a hint.
 """
 from __future__ import annotations
 
@@ -58,6 +61,15 @@ PROFILE = {"identity": "I am the end-to-end test agent of the sandbox",
            "competence": "The intake engine, its workflows and its snapshot",
            "sectors": ["information-technology"], "asset_types": ["equity"], "horizon_months": {"min": 6, "max": 24},
            "return_sources": ["event-driven"], "risk_preference": "balanced", "methodologies": ["event-catalyst"]}
+# A filing that already exists on SEC EDGAR and will not change (recorded in tests/fixtures/sources/ for plan 9); the
+# claim is copied word for word from it, so Melchior.Magi's check should find it verified.
+EDGAR = {"slug": "tem-e2e-2026q2-revenue", "title": "Tempus AI second quarter 2026 revenue", "kind": "filing",
+         "assets": ["nvda"],
+         "source": {"url": "https://www.sec.gov/Archives/edgar/data/1717115/000119312526326083/tem-ex99_1.htm",
+                    "publisher": "Tempus AI, Inc. / SEC EDGAR", "published_at": "2026-07-30", "tier": "primary"},
+         "claims": [{"text": "Revenue increased 22% year-over-year to $382.5 million", "value": 382.5,
+                     "unit": "USD million"}]}
+EVIDENCE_CHECK_TIMEOUT = 1800
 SECRET = {"slug": "nvda-e2e-channel-check", "title": "Contact on launch timing", "kind": "research", "assets": ["nvda"],
           "access": "non-public",
           "source": {"type": "interview", "description": "One supply-chain contact", "published_at": "2026-09-30",
@@ -235,6 +247,35 @@ def _topic_step(r: Runner, evidence_id: str) -> None:
                 for c in r.gh.comments(idea["thread"])))
 
 
+def _check_record(r: Runner, evidence_id: str) -> dict:
+    return parse_yaml(r.gh.get_file(f"evidence/checks/{evidence_id}.yaml") or "{}") or {}
+
+
+def _evidence_checks(r: Runner, edgar_id: str, secret_id: str, example_id: str) -> None:
+    """Melchior.Magi's evidence checks (design 22.15, steps 3 and 4; plan 9, Task 12). The assist request for the
+    example.com evidence comes with PR 9c and is checked from PR 9d (plan 9, item 21)."""
+    deadline = time.time() + EVIDENCE_CHECK_TIMEOUT
+    while time.time() < deadline and not _check_record(r, edgar_id):
+        time.sleep(POLL_SECONDS)
+    record = _check_record(r, edgar_id)
+    r.check("the EDGAR evidence is verified", record.get("status") == "verified",
+            f"status={record.get('status')} reason={record.get('reason')}" if record else
+            "no check record; is MELCHIOR_MODEL_MODE live, and is the secret MAGI_HTTP_CONTACT set in the sandbox?")
+    secret = _check_record(r, secret_id)
+    r.check("the non-public evidence is unverified as non-public",
+            (secret.get("status"), secret.get("reason"), secret.get("next_review")) == ("unverified", "non-public", None),
+            str({key: secret.get(key) for key in ("status", "reason", "next_review")}))
+    example = _check_record(r, example_id)
+    r.check("the example.com evidence is unverified",
+            example.get("status") == "unverified" and example.get("reason") in ("not_found", "source_unreachable"),
+            str({key: example.get(key) for key in ("status", "reason")}))
+
+    def valid_snapshot() -> bool:
+        data = r.snapshot_json("evidence_checks.json")
+        return data is not None and not r.schema_errors("evidence_checks.json", data) and edgar_id in data["checks"]
+    r.eventually("evidence_checks.json is present and valid", valid_snapshot)
+
+
 def scenario(r: Runner) -> None:
     if r.gh.get_file("registry/agents/melchior.magi.yaml") is None:
         raise Failure("melchior.magi is not registered in the sandbox; add registry/agents/melchior.magi.yaml to the "
@@ -266,6 +307,8 @@ def scenario(r: Runner) -> None:
     evidence_id = r.expect("add evidence", r.wait(n), "accepted")["created"]["evidence_id"]
     n = r.submit("add_evidence (non-public)", proposal("add_evidence", AGENT, SECRET))
     secret_id = r.expect("add non-public evidence", r.wait(n), "accepted")["created"]["evidence_id"]
+    n = r.submit("add_evidence (EDGAR)", proposal("add_evidence", AGENT, EDGAR))
+    edgar_id = r.expect("add evidence from an EDGAR filing", r.wait(n), "accepted")["created"]["evidence_id"]
 
     n = r.submit("update_view before a profile", proposal("update_view", AGENT, view(evidence_id)))
     r.expect("view without a profile rejected", r.wait(n), "rejected", "E_SEMANTIC")
@@ -350,6 +393,8 @@ def scenario(r: Runner) -> None:
     r.check("caspar recorded what the review was based on",
             len(review.get("input_commit") or "") == 40 and review.get("model") == "claude-opus-5-5")
     _topic_step(r, evidence_id)
+    melchior_probe = r.run_workflow("melchior.yml", {"scope": "probe"})
+    r.check("melchior probe passed", melchior_probe["conclusion"] == "success", melchior_probe["html_url"])
     probe = r.run_workflow("caspar.yml", {"scope": "probe"})
     r.check("caspar probe: the model cannot read outside its work directory", probe["conclusion"] == "success",
             probe["html_url"])
@@ -419,6 +464,7 @@ def scenario(r: Runner) -> None:
 
     melchior = r.run_workflow("melchior.yml", {"scope": "all"})
     r.check("melchior workflow succeeded", melchior["conclusion"] == "success", melchior["html_url"])
+    _evidence_checks(r, edgar_id, secret_id, evidence_id)
     missing = [series for series in SERIES if r.gh.get_file(f"registry/assets/{series}.yaml") is None]
     r.check("benchmark and market-state series registered", missing == [], f"missing: {missing}")
     r.eventually("snapshot carries the closes of the series",
