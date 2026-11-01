@@ -1,0 +1,11 @@
+{
+  "title": "Melchior.Magi permission probe (probe-search): the structured output the model returns (design 22.13)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["tools", "read", "first_line"],
+  "properties": {
+    "tools": {"type": "array", "items": {"type": "string"}},
+    "read": {"type": "boolean"},
+    "first_line": {"type": "string"}
+  }
+}
