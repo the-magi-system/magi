@@ -266,6 +266,19 @@ class Fetcher:
             return self._edgar_index(url, now, raw, decode(raw.body, raw.content_type)[0], decoding)
         return self._result(url, now, raw, format=format_, text=text, decoding=decoding)
 
+    def page(self, url: str) -> str | None:
+        """One page as decoded HTML, without following anything: an EDGAR filing index page, to read its filing
+        date. None when it cannot be fetched; the same rules for https, the contact and spacing apply."""
+        parts = urllib.parse.urlsplit(url)
+        if parts.scheme.lower() != "https" or not parts.hostname:
+            return None
+        if is_sec_host(parts.hostname) and self._contact is None:
+            return None
+        raw = self._get(url)
+        if raw.error or raw.body.startswith(b"%PDF-"):
+            return None
+        return decode(raw.body, raw.content_type)[0]
+
     # DART ------------------------------------------------------------------------------------------------------
 
     def _dart(self, url: str, now: datetime, raw: _Raw, text_source: str, decoding: str | None) -> Fetched:

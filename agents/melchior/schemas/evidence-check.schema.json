@@ -1,0 +1,50 @@
+{
+  "title": "Melchior.Magi evidence check: the structured output the model returns (design 22.9.1; plan 9, Task 9)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["claims", "source_date"],
+  "properties": {
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["index", "verdict", "timing", "quote", "figures", "correct", "note"],
+        "properties": {
+          "index": {"type": "integer", "minimum": 0},
+          "verdict": {"enum": ["supported", "contradicted", "not_found"]},
+          "timing": {"enum": ["historical", "standing"]},
+          "quote": {"type": ["string", "null"]},
+          "figures": {"type": "array", "items": {"$ref": "#/$defs/figure"}},
+          "correct": {
+            "anyOf": [
+              {"type": "null"},
+              {"type": "object", "additionalProperties": false, "required": ["text", "figures"],
+               "properties": {"text": {"type": "string"}, "figures": {"type": "array", "items": {"$ref": "#/$defs/figure"}}}}
+            ]
+          },
+          "note": {"type": ["string", "null"], "maxLength": 500}
+        }
+      }
+    },
+    "source_date": {
+      "anyOf": [
+        {"type": "null"},
+        {"type": "object", "additionalProperties": false, "required": ["quote", "date"],
+         "properties": {"quote": {"type": "string"}, "date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"}}}
+      ]
+    }
+  },
+  "$defs": {
+    "figure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim", "source", "unit"],
+      "properties": {
+        "claim": {"type": "string"},
+        "source": {"type": "string"},
+        "unit": {"type": ["string", "null"]}
+      }
+    }
+  }
+}
