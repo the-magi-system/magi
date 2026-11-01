@@ -7,7 +7,8 @@ from .queue import BOT_LOGIN
 
 AUDIT_LABEL = "magi:audit"
 ZERO = "0" * 40
-DATA_PREFIXES = ("registry/", "evidence/", "methodologies/", "ideas/", "ledger/", "log/", "market/", "reports/")
+DATA_PREFIXES = ("registry/", "evidence/", "methodologies/", "ideas/", "ledger/", "log/", "market/", "reports/",
+                 "usage/")
 MAINTAINER_MANAGED = ("registry/researchers/",)
 
 

@@ -112,3 +112,73 @@ def test_the_consistency_check_reads_settlement_and_ruling_files(repo):
     write_yaml(ruling, {**RULING, "effect": "soon"})
     found = check_repository(repo)
     assert len(found) == 1 and found[0].path == "ledger/rulings/2027/08/20270831T234730Z-rl-000001.yaml"
+
+
+# Evidence checks, protocol 1.13 (design 22.9.2; plan 9, Task 6) ----------------------------------------------------
+
+CHECK = {
+    "schema": "magi/evidence-check@1", "evidence": "ev-20261020-tem-2026q2-results", "status": "verified",
+    "reason": None,
+    "source_date": {"quote": "July 30, 2026", "date": "2026-07-30", "filing_date": "2026-07-30", "matches": True},
+    "claims": [
+        {"index": 0, "verdict": "supported", "timing": "historical",
+         "quote": "Revenue was $382.5 million, an increase of 90%", "note": "The press release states it.",
+         "figures": [{"claim": "$382.5 million", "source": "$382.5 million", "unit": None,
+                      "claim_value": 382500000, "source_value": 382500000}], "correct": None},
+        {"index": 1, "verdict": "supported", "timing": "standing", "quote": "full year 2026 revenue guidance",
+         "note": None, "figures": [], "correct": None},
+    ],
+    "source": {"url": "https://www.sec.gov/Archives/edgar/data/1717115/000119312526326083/tem-ex99_1.htm",
+               "final_url": "https://www.sec.gov/Archives/edgar/data/1717115/000119312526326083/tem-ex99_1.htm",
+               "http_status": 200, "content_type": "text/html", "format": "html", "parts": 1, "decoding": "declared",
+               "fetched_at": "2026-11-10T23:51:02Z", "sha256": "5d0a" + "0" * 60, "chars": 61234, "truncated": False},
+    "link": "ok", "currency": "current", "superseded_by": None, "same_source_as": [], "pending_sources": [],
+    "assist_issue": None, "next_review": "2027-02-08", "input_commit": "0" * 40, "prompt_sha256": "0" * 64,
+    "model": "claude-opus-5-5", "version": 1, "checked_at": "2026-11-10T23:51:30Z", "checked_via_run": 123456789,
+}
+NON_PUBLIC_CHECK = {**CHECK, "status": "unverified", "reason": "non-public", "source_date": None, "claims": [],
+                    "source": None, "next_review": None, "prompt_sha256": None, "model": None}
+
+
+def test_evidence_check_records_follow_their_schema():
+    assert errors("evidence-check", CHECK) == []
+    assert errors("evidence-check", NON_PUBLIC_CHECK) == []
+    contradicted = {**CHECK, "status": "discrepancy", "claims": [{
+        **CHECK["claims"][0], "verdict": "contradicted",
+        "correct": {"text": "Revenue was $382.5 million", "figures": CHECK["claims"][0]["figures"]}}]}
+    assert errors("evidence-check", contradicted) == []
+    assert errors("evidence-check", {**NON_PUBLIC_CHECK, "reason": "contact_not_set"})
+    assert errors("evidence-check", {**NON_PUBLIC_CHECK, "next_review": "2027-02-08"})
+    assert errors("evidence-check", {**CHECK, "extra": 1})
+
+
+def test_a_check_needs_a_reason_exactly_when_unverified():
+    assert errors("evidence-check", {**CHECK, "reason": "not_found"})
+    assert errors("evidence-check", {**CHECK, "status": "unverified", "reason": None})
+    assert errors("evidence-check", {**CHECK, "status": "unverified", "reason": "not_found"}) == []
+
+
+def test_the_evidence_checks_snapshot_schema():
+    schema = json.loads((REPO_ROOT / "protocol" / "schemas" / "snapshot" / "evidence_checks.schema.json")
+                        .read_text(encoding="utf-8"))
+    pending = {"evidence": "ev-20261031-jvm-2026q3-official", "status": "pending", "reason": None, "checked_at": None,
+               "version": None, "link": None, "currency": None, "superseded_by": None, "assist_issue": None}
+    verified = {"evidence": CHECK["evidence"], "status": "verified", "reason": None, "checked_at": CHECK["checked_at"],
+                "version": 1, "link": "ok", "currency": "current", "superseded_by": None, "assist_issue": None}
+    snapshot = {"checks": {pending["evidence"]: pending, verified["evidence"]: verified}}
+    assert list(Draft202012Validator(schema).iter_errors(snapshot)) == []
+    broken = {"checks": {pending["evidence"]: without(pending, "status")}}
+    assert list(Draft202012Validator(schema).iter_errors(broken))
+
+
+def test_usage_lines_follow_their_schema():
+    schema = json.loads((REPO_ROOT / "protocol" / "schemas" / "system" / "usage.schema.json").read_text(encoding="utf-8"))
+    line = {"run": 123456789, "at": "2026-11-10T23:55:00Z", "model_mode": "live",
+            "tasks": [{"id": "evidence-1", "kind": "evidence-check", "cost_usd": 0.21, "turns": 6, "status": "answered"},
+                      {"id": "evidence-2", "kind": "evidence-check", "cost_usd": None, "turns": None,
+                       "status": "failed"}],
+            "price_failures": ["jvm"]}
+    validator = Draft202012Validator(schema)
+    assert list(validator.iter_errors(line)) == []
+    assert list(validator.iter_errors({**line, "model_mode": "preview"}))
+    assert list(validator.iter_errors(without(line, "tasks")))

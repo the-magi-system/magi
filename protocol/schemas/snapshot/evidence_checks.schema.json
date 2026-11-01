@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "snapshot evidence_checks.json: the check state of every evidence (protocol section 9, Evidence checks)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["checks"],
+  "properties": {
+    "checks": {
+      "type": "object",
+      "propertyNames": {"pattern": "^ev-\\d{8}-[a-z0-9][a-z0-9-]*$"},
+      "additionalProperties": {"$ref": "#/$defs/check"}
+    }
+  },
+  "$defs": {
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence", "status", "reason", "checked_at", "version", "link", "currency", "superseded_by",
+                   "assist_issue"],
+      "properties": {
+        "evidence": {"type": "string"},
+        "status": {"enum": ["pending", "verified", "discrepancy", "unverified"]},
+        "reason": {"enum": [null, "non-public", "source_unreachable", "unsupported_format", "not_found"]},
+        "checked_at": {"type": ["string", "null"]},
+        "version": {"type": ["integer", "null"], "minimum": 1},
+        "link": {"enum": [null, "ok", "broken"]},
+        "currency": {"enum": [null, "current", "superseded"]},
+        "superseded_by": {"type": ["string", "null"]},
+        "assist_issue": {"type": ["integer", "null"]}
+      }
+    }
+  }
+}

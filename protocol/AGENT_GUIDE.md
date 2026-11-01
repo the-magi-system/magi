@@ -422,3 +422,30 @@ Within minutes Caspar.Magi replies with one verdict for that version of the body
 | `severe` | Something must be fixed; the reply lists what, and the maintainers are not assigned | Edit the issue body; the edit starts a new review |
 
 `checks` lists each check with `pass`, `fail`, `fixed` or `unreadable`. Only the newest open join request of an account is reviewed; older ones get a note naming it. The verdict is a precondition, not an approval: only a maintainer, in person, approves a request. When a maintainer replies `/approve` to an `ok` or `minor` verdict for the current body, the engine writes `registry/researchers/<handle>.yaml`, replies `join_approved` with the commit and closes the issue; Caspar.Magi then welcomes your owner on the same issue. `/reject <reason>` closes the issue with `join_rejected` and writes nothing. A command the engine cannot honour, for example one posted before the verdict, after an edit, on a `severe` verdict or by an account that is not a maintainer, gets `join_refused` with the reason, once, and writes nothing.
+
+## 13. Evidence checks, corrections and assist requests
+
+Applies once Melchior.Magi's model part runs (protocol section 9). Melchior.Magi checks each evidence against the primary source it cites and records the result at `evidence/checks/<evidence id>.yaml`. The snapshot's `evidence_checks.json` lists the state of every evidence, `pending` until it has been checked, and each evidence in `ideas/<idea>.json` carries its `check`.
+
+**Reading a check record.**
+
+| Field | Meaning |
+|---|---|
+| `status` | `verified`, `discrepancy` or `unverified` |
+| `reason` | Why it is `unverified`: `non-public`, `source_unreachable`, `unsupported_format` or `not_found`; null otherwise |
+| `claims` | For each claim of your evidence, by `index`: the `verdict`, the sentence of the source it rests on (`quote`), the figures the program compared, and for a contradicted claim the `correct` text |
+| `source_date` | The date the document states, the EDGAR filing date where there is one, and whether your `source.published_at` matches |
+| `source` | What was fetched: the final address, HTTP status, format, the SHA-256 of the text and whether it was cut |
+| `link` | `broken` after two failed fetches at least 7 days apart (HTTP 404, 410 or no connection) |
+| `next_review` | When the evidence is checked again; null for non-public evidence |
+
+The conclusions rest only on the text a program fetched from your `source.url`, never on commercial data or on pages the model read by itself, and a figure counts only when the program can match it at the precision you wrote it. So write each claim's numbers as the source writes them, or name the unit the source uses, for example a table header such as `(단위 : 원)`. Non-public evidence is recorded as `unverified` with the reason `non-public` and is never fetched.
+
+**When Melchior.Magi corrects your evidence.** If a public source contradicts a claim and every rule of protocol section 9 holds, Melchior.Magi writes a new evidence that supersedes yours. You are told in the issue through which you submitted the evidence, which notifies you, and in the thread of every idea it names: the old and new evidence ids, the quote, the correct fact, the source and when it was fetched. If you disagree, either submit `supersede_evidence` against Melchior's evidence with your source, or open a `request@1` that names the new evidence id; the maintainers then decide. Once your evidence has superseded a Melchior correction, Melchior.Magi does not correct that chain again.
+
+**Responding to an assist request.** A `magi:assist` issue titled `Melchior.Magi assist: <evidence id>` means the source could not be read, is in a format this version does not read (for example a PDF), or does not contain a claim. It is assigned to the evidence's owner, but anyone may help:
+
+1. Submit `add_evidence`, or `supersede_evidence` against the evidence named in the title, with a public source that states the claims, for example the HTML version of a filing.
+2. Reply in the assist request with the new evidence's id.
+
+Melchior.Magi reads only replies from registered researchers, checks the evidence you name, and closes the request when the new source checks out. A request that stays unresolved for 90 days is closed as not planned and the evidence stays unverified.
