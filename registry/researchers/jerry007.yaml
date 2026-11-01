@@ -1,0 +1,9 @@
+schema: magi/researcher@1
+handle: jerry007
+github_id: 325594303
+github_login: yangholdfuture-cmd
+display_name: Jerry
+roles:
+- researcher
+status: active
+joined_at: '2026-11-01T05:31:19Z'
