@@ -1,0 +1,9 @@
+schema: magi/researcher@1
+handle: overfunded
+github_id: 335053560
+github_login: 6bk5zp4sc6-star
+display_name: Overfunded
+roles:
+- researcher
+status: active
+joined_at: '2026-11-01T03:59:40Z'
