@@ -77,7 +77,7 @@ def test_options_are_accepted_by_the_pinned_sdk():
     sdk = pytest.importorskip("claude_agent_sdk")
     for kind in think_module.KINDS:
         built = sdk.ClaudeAgentOptions(**options(REPO_ROOT, kind))
-        expected = ["Read"] if kind == "join" else list(TOOLS)
+        expected = ["Read"] if kind in ("join", "topic") else list(TOOLS)
         assert built.tools == expected and built.extra_args == {"restricted": None}
 
 

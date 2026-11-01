@@ -1,4 +1,7 @@
-"""Minimal GitHub REST client for the engine. REST only, so any runtime can do what the engine does (D12)."""
+"""Minimal GitHub REST client for the engine. REST only, so any runtime can do what the engine does (D12).
+
+The one exception is graphql(): GitHub Discussions have no REST interface, and Caspar.Magi's cross-idea topics live
+there (decision D46). Nothing that changes canonical state goes through it."""
 from __future__ import annotations
 
 import base64
@@ -41,6 +44,16 @@ class GitHubClient:
         except urllib.error.HTTPError as exc:
             raise GitHubError(f"{method} {path} failed with HTTP {exc.code}") from exc
         return json.loads(raw) if raw else None
+
+    def graphql(self, query: str, variables: dict | None = None) -> dict:
+        """One GraphQL request; returns `data`, and raises on any error GitHub reports."""
+        answer = self.request("POST", "/graphql", {"query": query, "variables": variables or {}})
+        if not isinstance(answer, dict) or answer.get("errors") or not isinstance(answer.get("data"), dict):
+            errors = answer.get("errors") if isinstance(answer, dict) else None
+            first = errors[0].get("message", "") if isinstance(errors, list) and errors and isinstance(errors[0], dict) \
+                else "no data"
+            raise GitHubError(f"GraphQL request failed: {str(first)[:200]}")
+        return answer["data"]
 
     def _pages(self, path: str, query: dict) -> list[dict]:
         items, page = [], 1

@@ -1,0 +1,12 @@
+{
+  "title": "Caspar.Magi discussion topic: the structured output the model returns (design decision D46)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["open", "title", "questions", "reason"],
+  "properties": {
+    "open": {"type": "boolean"},
+    "title": {"type": "string", "maxLength": 80},
+    "questions": {"type": "array", "maxItems": 4, "items": {"type": "string", "minLength": 1, "maxLength": 300}},
+    "reason": {"type": "string", "minLength": 1, "maxLength": 300}
+  }
+}

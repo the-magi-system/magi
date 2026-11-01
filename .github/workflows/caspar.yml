@@ -5,6 +5,8 @@ name: caspar
 # A join request that is opened or edited starts a run that does join work only (scope join, decision D45), so the
 # applicant has Caspar's verdict within minutes; scheduled runs also review join requests with no verdict for their
 # current body. Every run's write job is in the magi-writer group, so its posts never overlap intake's.
+# Scheduled runs also open cross-idea topics in GitHub Discussions (decision D46): prepare reads Discussions and write
+# posts there, so they hold discussions: read and discussions: write; a join-only run does no topic work.
 on:
   schedule:
     - cron: "41 */3 * * *"
@@ -15,7 +17,7 @@ on:
       scope:
         description: "Which work to do (probe checks the model's tool and file limits)"
         type: choice
-        options: [all, regular, reviews, welcome, weekly, probe, join]
+        options: [all, regular, reviews, welcome, weekly, probe, join, topics]
         default: all
 permissions: {}
 jobs:
@@ -29,6 +31,7 @@ jobs:
     permissions:
       contents: read
       issues: read
+      discussions: read
     outputs:
       tasks: ${{ steps.plan.outputs.tasks }}
       count: ${{ steps.plan.outputs.count }}
@@ -112,6 +115,7 @@ jobs:
     permissions:
       contents: write
       issues: write
+      discussions: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:

@@ -9,4 +9,5 @@ duties:
 - Score each new view version on five style-neutral criteria; the scores are signed opinions and never enter the ledger
 - Write a weekly report on each actor's activity and on how its declared style compares with its views
 - Gather suggestions for improving the system and pass them to the maintainers
+- Open discussion topics in GitHub Discussions for related ideas, with neutral questions, and link them from each idea's thread
 - Refer possible problems in the fact layer to Melchior.Magi instead of changing anything
