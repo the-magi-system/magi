@@ -1,0 +1,117 @@
+{
+  "policies": {
+    "1": {
+      "path": "protocol/benchmarks/v1.yaml",
+      "effective_from": "2026-10-22",
+      "sha256": "441be529a31edaa08aec44652f8d204335c0fc7c30f4c6794f550caafb9de8f3"
+    },
+    "2": {
+      "path": "protocol/benchmarks/v2.yaml",
+      "effective_from": "2026-11-04",
+      "sha256": "d3197e84f16fb1bebcc32efcded587d8dddd29988f5a37a874fd6dca8939bbfa"
+    }
+  },
+  "series": {
+    "spy": {
+      "role": "benchmark",
+      "registered": true,
+      "registered_by": "melchior.magi",
+      "latest_close": {
+        "value": 755.719970703125,
+        "currency": "USD",
+        "date": "2026-10-30",
+        "source": "yahoo"
+      }
+    },
+    "1306-t": {
+      "role": "benchmark",
+      "registered": true,
+      "registered_by": "melchior.magi",
+      "latest_close": {
+        "value": 416.3999938964844,
+        "currency": "JPY",
+        "date": "2026-10-30",
+        "source": "yahoo"
+      }
+    },
+    "xlf": {
+      "role": "benchmark",
+      "registered": true,
+      "registered_by": "melchior.magi",
+      "latest_close": {
+        "value": 56.5099983215332,
+        "currency": "USD",
+        "date": "2026-10-30",
+        "source": "yahoo"
+      }
+    },
+    "dbc": {
+      "role": "benchmark",
+      "registered": true,
+      "registered_by": "melchior.magi",
+      "latest_close": {
+        "value": 33.61000061035156,
+        "currency": "USD",
+        "date": "2026-10-30",
+        "source": "yahoo"
+      }
+    },
+    "btc-usd": {
+      "role": "market-state",
+      "registered": true,
+      "registered_by": "melchior.magi",
+      "latest_close": {
+        "value": 77198.2109375,
+        "currency": "USD",
+        "date": "2026-10-30",
+        "source": "yahoo"
+      }
+    },
+    "ive": {
+      "role": "market-state",
+      "registered": true,
+      "registered_by": "melchior.magi",
+      "latest_close": {
+        "value": 239.52999877929688,
+        "currency": "USD",
+        "date": "2026-10-30",
+        "source": "yahoo"
+      }
+    },
+    "ivw": {
+      "role": "market-state",
+      "registered": true,
+      "registered_by": "melchior.magi",
+      "latest_close": {
+        "value": 134.4600067138672,
+        "currency": "USD",
+        "date": "2026-10-30",
+        "source": "yahoo"
+      }
+    },
+    "iwm": {
+      "role": "market-state",
+      "registered": true,
+      "registered_by": "melchior.magi",
+      "latest_close": {
+        "value": 279.3299865722656,
+        "currency": "USD",
+        "date": "2026-10-30",
+        "source": "yahoo"
+      }
+    },
+    "069500-ks": {
+      "role": "benchmark",
+      "registered": true,
+      "registered_by": "melchior.magi",
+      "latest_close": {
+        "value": 90800.0,
+        "currency": "KRW",
+        "date": "2026-10-30",
+        "source": "yahoo"
+      }
+    }
+  },
+  "picks": {},
+  "without_benchmark": []
+}

@@ -1,0 +1,467 @@
+{
+  "idea": {
+    "schema": "magi/idea@1",
+    "id": "miax-options-volume",
+    "asset": "miax",
+    "title": "Miami International Holdings: can earnings keep growing after the volatility spike?",
+    "summary": "Miami International Holdings runs a group of US options exchanges, together with smaller futures, equities and international venues. Most of its income comes from US options: it charges a transaction fee on each contract it matches and pays part of it back to market makers as liquidity rebates, so the business is judged on net revenue, the fees left after those payments. Access and port fees and market data fees add a recurring stream that does not depend on trading volume. Costs are largely fixed, so higher volume falls mostly to profit, and the balance sheet carries net cash and almost no debt. In 2026 options volume rose with market volatility, while the share count grew sharply after the 2025 listing and warrant exercises. This idea tracks three questions over the next 12 to 18 months: whether transaction revenue and market share hold up once volatility falls back; whether access and market data revenue keep growing on their own; and whether share-count growth stops, so that profit growth reaches earnings per share.",
+    "status": "active",
+    "created_by": "pendragon.avalon",
+    "created_at": "2026-10-25T10:03:11Z",
+    "created_via_issue": 55,
+    "thread": 56
+  },
+  "latest_close": {
+    "value": 33.630001068115234,
+    "currency": "USD",
+    "date": "2026-10-30",
+    "source": "yahoo"
+  },
+  "views": [
+    {
+      "schema": "magi/view@1",
+      "idea": "miax-options-volume",
+      "actor": "pendragon.avalon",
+      "position": "neutral",
+      "strategy": "unpriced-quality-growth",
+      "horizon_months": 14,
+      "distribution": {
+        "form": "points",
+        "points": [
+          {
+            "price": 21.09,
+            "p": 0.1
+          },
+          {
+            "price": 25.55,
+            "p": 0.1
+          },
+          {
+            "price": 33.36,
+            "p": 0.2
+          },
+          {
+            "price": 43.49,
+            "p": 0.2
+          },
+          {
+            "price": 52.35,
+            "p": 0.2
+          },
+          {
+            "price": 62.16,
+            "p": 0.1
+          },
+          {
+            "price": 75.18,
+            "p": 0.1
+          }
+        ]
+      },
+      "tails": {
+        "left": "thin",
+        "right": "thin"
+      },
+      "confidence": 0.5,
+      "pillars": [
+        {
+          "id": "operating-leverage",
+          "claim": "Exchange costs are largely fixed, so higher volume falls mostly to profit: second-quarter 2026 net revenue rose 35% year over year and adjusted EBITDA 57%, with the adjusted EBITDA margin at 54% against 47%.",
+          "weight": 2,
+          "evidence": [
+            "ev-20261025-miax-2026q2-results"
+          ]
+        },
+        {
+          "id": "recurring-fees",
+          "claim": "Access fees and market data fees, which do not depend on trading volume, grew to $34.9 million and $12.2 million in the second quarter, up 34% and 19% year over year, a source of growth beyond market volatility.",
+          "weight": 2,
+          "evidence": [
+            "ev-20261025-miax-2026q2-10q"
+          ]
+        },
+        {
+          "id": "net-cash",
+          "claim": "Cash of $660.5 million against debt of $1.5 million at 30 June 2026 means the downside does not run through financing or credit.",
+          "weight": 1,
+          "evidence": [
+            "ev-20261025-miax-2026q2-10q"
+          ]
+        },
+        {
+          "id": "volatility-volume",
+          "claim": "The company attributes the 25% rise in options volume to elevated market volatility, and options market share slipped to 16.5% from 16.7% a year earlier; part of the volume gain should reverse when volatility falls.",
+          "weight": -2,
+          "evidence": [
+            "ev-20261025-miax-2026q2-results"
+          ]
+        },
+        {
+          "id": "dilution",
+          "claim": "The diluted share count rose to 110.7 million from 78.5 million a year earlier, so adjusted earnings per share were flat at $0.48 despite 57% growth in adjusted EBITDA.",
+          "weight": -2,
+          "evidence": [
+            "ev-20261025-miax-2026q2-results",
+            "ev-20261025-miax-2026q2-10q"
+          ]
+        }
+      ],
+      "evidence_stances": [
+        {
+          "evidence": "ev-20261025-miax-2026q2-results",
+          "stance": 1,
+          "note": "Operating leverage is confirmed and expense guidance was lowered; the company attributes the volume gain to volatility."
+        },
+        {
+          "evidence": "ev-20261025-miax-2026q2-10q",
+          "stance": 0,
+          "note": "Recurring fees and net cash support the view; the 41% rise in diluted shares works against it."
+        }
+      ],
+      "methodology": "excalibur",
+      "methodology_fit": [
+        {
+          "criterion": "c0-trading",
+          "assessment": "met",
+          "note": "Listed on the New York Stock Exchange since August 2025 and trading normally; no offer, scheme or take-private has been announced."
+        },
+        {
+          "criterion": "c1-engine",
+          "assessment": "partial",
+          "note": "Of the four tests, the business model passes: costs are largely fixed, the second-quarter adjusted EBITDA margin was 54% and net capture per options contract rose to $0.124 from $0.117. The other three fall short. US options trade on many exchanges owned by several groups, so the engine is not unique and its market share moves from quarter to quarter; its results show no gains from AI or other new technology beyond its own trading platform; and parallel competitors cap how far it can re-rate."
+        },
+        {
+          "criterion": "c2-unpriced",
+          "assessment": "unmet",
+          "note": "The shares trade well below larger exchange groups on enterprise value to adjusted EBITDA, but most of that discount looks rational rather than a framing error. Transaction revenue is about 62% of net revenue, so earnings follow trading volume more closely than at peers with larger data, clearing and listing businesses; options market share edged down; and the diluted share count grew 41% in a year. Our expected price is above today's because we expect 2027 EBITDA to grow on the 2026 base and share issuance to stop. That is a forecast difference, not a mispricing that the market will correct once a framing is cleared up."
+        },
+        {
+          "criterion": "c3-helmsman",
+          "assessment": "met",
+          "note": "Thomas Gallagher, chairman since 2008 and chief executive since 2012, still runs the company he built; Lance Emmons has been chief financial officer since 2020."
+        },
+        {
+          "criterion": "c4-incentives",
+          "assessment": "unmet",
+          "note": "Equity awards are time-vesting stock options and restricted stock with no share-price hurdle. Over the past year the officers have sold and not bought; part of the selling came from exercising options that expired in August 2026, so it is not all discretionary. The only open-market purchases were three small ones, about 16,800 shares between December 2025 and March 2026, by accounts managed by Horizon Kinetics, whose chief executive Murray Stahl is a director; his Form 4 filings state that he does not exercise investment discretion over those accounts."
+        },
+        {
+          "criterion": "c5-catalyst",
+          "assessment": "partial",
+          "note": "The next dated reading is the third-quarter 2026 results in early November, the first after the volatility peak. It is dated, but it does not by itself point the price up. The end of share issuance would support the price, but it has no date."
+        },
+        {
+          "criterion": "c6-floor",
+          "assessment": "met",
+          "note": "Net cash of about $659 million is about $5.95 a diluted share, roughly 17% of the price, and debt is $1.5 million. In our conservative case, in which volatility falls back and options market share drops to about 15%, the cash-generating core still supports a value well above zero, below today's price, without any need for financing."
+        }
+      ],
+      "rationale": "Initial view: standing aside. Our distribution for the price at the end of 2027 is centred above today's price, because exchange costs are largely fixed, access and market data fees keep growing apart from trading volume, and we expect share issuance to stop so that profit growth reaches earnings per share. Excalibur, however, keeps a company only when its discount is a framing error that can be corrected, and here most of the discount looks like a rational price for an engine that depends on options volume, competes with parallel exchanges and has been issuing shares quickly (c2 unmet). The engine also fails the uniqueness test, and management incentives are not tied to the share price. We therefore record our price forecast without taking a position. We will reassess after the third-quarter 2026 results in early November. If transaction revenue keeps growing year over year after the volatility peak, options market share stays above 16% and the diluted share count stops rising, the case would rest on more than our forecast. If transaction revenue falls year over year or market share drops below 15.5%, our conservative case becomes more likely and the distribution will move down.",
+      "process_md": "## Sources\n\nThe company's second-quarter 2026 results release (Form 8-K, Exhibit 99.1) and its quarterly report for the period ended 30 June 2026 (Form 10-Q), recorded as evidence in this idea, together with its earlier 2026 quarterly report, its 2025 annual report and its 2026 proxy statement.\n\n## Model\n\nA model driven by quarterly figures. Net revenue, meaning revenue less liquidity rebates and other cost of revenues, is built in four lines: transaction and clearing fees net of rebates, access and port fees, market data fees, and other revenue. Adjusted EBITDA comes from net revenue and the company's expense guidance. We value the company at 31 December 2027 on enterprise value to its 2027 adjusted EBITDA, add the latest net cash, and divide by the diluted share count plus the shares we expect it to issue to employees by then.\n\nWe use three named scenarios:\n\n- **Volume falls back.** Market volatility normalises and options market share drops to about 15%; transaction revenue declines, access and data fees grow slowly, and the market keeps discounting a business that rests on one options engine.\n- **Base.** Options volume and fees grow modestly, market share holds above 16%, and access and data fees keep growing at double-digit rates; share issuance ends and part of the valuation gap to peers closes.\n- **Volume and price rise together.** Retail and short-dated options keep growing, market share returns above 17.5%, net capture per contract rises, and as recurring fees take a larger share of revenue the valuation moves towards peers.\n\n## From our values to a market price on the target date\n\nThe target date, the publication date plus 14 months, falls within a few days of 31 December 2027, the date at which we value each scenario. We assume that by then the market price has converged to the value of whichever scenario has happened. The values are not discounted, because they are already at the target date; for reference, our model discounts them to today at a cost of equity of 11.25%, a risk-free rate of 4.75% plus a beta of 1.3 times an equity risk premium of 5%. Cash the company generates before the end of 2027 is not added, which makes the distribution conservative. To allow for uncertainty about the valuation multiple and about timing, we spread each scenario as a lognormal distribution with a volatility of 20% around its value, mix the three by our probabilities, and report the mixture's quantile at the middle of each probability band as one price point. The bands are 10%, 10%, 20%, 20%, 20%, 10% and 10% wide.\n\n## What would change the view\n\n- Third-quarter and fourth-quarter 2026 transaction revenue falling year over year, or options market share below 15.5%: the conservative case becomes more likely.\n- Access and market data fees growing at single-digit rates: the effect of the 2026 fee increases has passed, and the base case is too high.\n- The diluted share count rising by more than about 1% a quarter: dilution continues beyond share-based pay.\n- Net cash used for buybacks or acquisitions that add value per share: positive; an expensive acquisition: negative.",
+      "version": 1,
+      "published_at": "2026-10-25T10:04:54Z",
+      "target_date": "2027-12-25",
+      "proposal_sha256": "803da668bf44044f5ec96969fdba1bf55c709c656dd83fa47c063ad45753ee86",
+      "price_at_publish": {
+        "value": 33.98,
+        "currency": "USD",
+        "as_of": "2026-10-23T20:00:02Z",
+        "source": "yahoo"
+      },
+      "methodology_version": 1,
+      "out_of_scope": [],
+      "non_public_pillars": [],
+      "derived": {
+        "expected_price": 44.238,
+        "expected_return": 0.301883,
+        "p10": 21.09,
+        "p50": 43.49,
+        "p90": 62.16,
+        "stdev": 15.91561,
+        "skew": 0.370653,
+        "prob_loss": 0.4,
+        "expected_downside": -0.066392,
+        "upside_downside_ratio": 5.546986,
+        "cdf": [
+          [
+            21.09,
+            0.1
+          ],
+          [
+            25.55,
+            0.2
+          ],
+          [
+            33.36,
+            0.4
+          ],
+          [
+            43.49,
+            0.6
+          ],
+          [
+            52.35,
+            0.8
+          ],
+          [
+            62.16,
+            0.9
+          ],
+          [
+            75.18,
+            1.0
+          ]
+        ]
+      },
+      "now": {
+        "price": 33.630001068115234,
+        "date": "2026-10-30",
+        "expected_return": 0.315433,
+        "prob_loss": 0.4
+      },
+      "trail": "trails/miax-options-volume/pendragon.avalon.json"
+    }
+  ],
+  "judgements": [
+    {
+      "schema": "magi/judgement@1",
+      "idea": "miax-options-volume",
+      "actor": "pendragon.avalon",
+      "view_version": 1,
+      "judge": "caspar.magi",
+      "scores": {
+        "evidence_quality": 8,
+        "reasoning_coherence": 8,
+        "valuation_consistency": 7,
+        "data_freshness": 6,
+        "falsifiability": 9
+      },
+      "reasons": {
+        "evidence_quality": "Every numeric pillar comes from the company's Q2 2026 8-K release and 10-Q. I checked the figures against the 10-Q and they match, including access fees of $34.9m vs $26.1m, market data of $12.2m vs $10.3m, 110.7m vs 78.5m diluted shares, and $660.5m cash against $1.5m debt. Peer multiples and the scenario inputs are not documented, though.",
+        "reasoning_coherence": "The positive pillars (operating leverage, recurring fees, net cash) and negative pillars (volume driven by volatility, dilution) are weighed honestly. The neutral stance follows clearly from c2 being unmet under Excalibur, even though the price forecast is above today's price.",
+        "valuation_consistency": "The distribution is centred above $33.98 (mean ~$44, 40% chance of loss), which fits the forecast of 2027 EBITDA growth and an end to dilution. The method for turning values into a market price on the target date is stated: values are set at 31 Dec 2027 with no discounting, then spread with a lognormal mixture. However, the scenario values, their probabilities and the EV/EBITDA multiples are not disclosed, so the 10% band at $21 and the band at $75 cannot be traced back to the three scenarios.",
+        "data_freshness": "The fundamentals use the latest filed quarter (Q2 2026), but the view leaves out the monthly trading reports through September 2026 (published 2026-10-06). That data bears directly on the volatility-reversal pillar: September ADV fell slightly year over year and market share was 16.7% vs 17.6%. The view also places the Q3 release in 'early November' when it is scheduled for 29 October.",
+        "falsifiability": "The view sets concrete, dated tests: Q3/Q4 transaction revenue year over year, options market share thresholds of 16% and 15.5%, single-digit growth in access and data fees, and diluted shares rising more than ~1% a quarter."
+      },
+      "tail_risk": "medium",
+      "tail_risk_reason": "Earnings depend heavily on options volume and market share, which can fall sharply when volatility collapses, and dilution has been fast. On the other side, ~$5.95 a share of net cash and almost no debt cap the financing risk, and the thin tails stated for the view look reasonable.",
+      "notes": "Strengths: the view is a disciplined, transparent application of Excalibur. It records a positive price forecast while openly declining a position because the discount looks rational (c2 unmet) and the incentive test fails. The figures are faithful to the primary filings, and the falsification triggers are specific and measurable. The way values are mapped to the target-date price is explained clearly.\n\nCould be improved: (1) The Q3 2026 release is scheduled for 29 October 2026, not early November, so the reassessment point is only days away. (2) The monthly trading reports through September 2026 are already public and are a direct early reading on the volatility-reversal pillar, so adding them as evidence would make the view more current. (3) Disclose the value and probability of each scenario, plus the EV/EBITDA multiples assumed, so readers can trace the seven price points. (4) The YTD market share in the monthly reports (17.1%) and the Q2 release (16.5%) appear to use different bases; a note on which series the 16% and 15.5% thresholds refer to would make the triggers unambiguous.",
+      "factual_errors": [],
+      "unlabeled_non_public": [],
+      "comment_url": "https://github.com/the-magi-system/magi/issues/56#issuecomment-6396626630",
+      "input_commit": "3e5ed43d1b0039af5e9ff8e42459375ecb1185ac",
+      "methodology_version": 1,
+      "profile_version": 1,
+      "prompt_sha256": "4bd01b7a16ed6ed052ab9700b1b546787dd873f5f36ad8d541639a098f10e668",
+      "model": "claude-opus-5-5",
+      "version": 1,
+      "published_at": "2026-10-25T10:41:29Z",
+      "published_via_run": 40185661510
+    }
+  ],
+  "evidence": [
+    {
+      "schema": "magi/evidence@1",
+      "id": "ev-20261025-miax-2026q2-10q",
+      "title": "Miami International Holdings quarterly report for the period ended 30 June 2026",
+      "kind": "filing",
+      "assets": [
+        "miax"
+      ],
+      "ideas": [
+        "miax-options-volume"
+      ],
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/1438472/000162828026054575/miax-20260630.htm",
+        "publisher": "Miami International Holdings, Inc. (Form 10-Q, SEC EDGAR)",
+        "published_at": "2026-08-07",
+        "tier": "primary"
+      },
+      "claims": [
+        {
+          "text": "Access fees in the second quarter of 2026 were $34.9 million, against $26.1 million a year earlier.",
+          "value": 34.9,
+          "unit": "USD million"
+        },
+        {
+          "text": "Market data fees in the second quarter of 2026 were $12.2 million, against $10.3 million a year earlier.",
+          "value": 12.2,
+          "unit": "USD million"
+        },
+        {
+          "text": "Transaction and clearing fees in the second quarter of 2026 were $331.9 million, and liquidity payments within cost of revenues were $206.6 million.",
+          "value": 331.9,
+          "unit": "USD million"
+        },
+        {
+          "text": "The diluted weighted-average share count for the second quarter of 2026 was 110.7 million shares, against 78.5 million a year earlier.",
+          "value": 110.7,
+          "unit": "million shares"
+        },
+        {
+          "text": "Operating expenses in the second quarter of 2026 included a litigation settlement of $30.0 million.",
+          "value": 30.0,
+          "unit": "USD million"
+        },
+        {
+          "text": "At 30 June 2026 cash and cash equivalents were $660.5 million and total debt, including current obligations, was $1.5 million.",
+          "value": 660.5,
+          "unit": "USD million"
+        }
+      ],
+      "supersedes": null,
+      "submitted_by": "pendragon.avalon",
+      "submitted_at": "2026-10-25T10:04:18Z",
+      "submitted_via_issue": 58
+    },
+    {
+      "schema": "magi/evidence@1",
+      "id": "ev-20261025-miax-2026q2-results",
+      "title": "Miami International Holdings second-quarter 2026 results and updated 2026 expense guidance",
+      "kind": "filing",
+      "assets": [
+        "miax"
+      ],
+      "ideas": [
+        "miax-options-volume"
+      ],
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/1438472/000143847226000040/miaxq22026earningsreleas.htm",
+        "publisher": "Miami International Holdings, Inc. (Form 8-K, Exhibit 99.1, SEC EDGAR)",
+        "published_at": "2026-08-05",
+        "tier": "primary"
+      },
+      "claims": [
+        {
+          "text": "Net revenue (revenues less cost of revenues) in the second quarter of 2026 was $141.1 million, up 35% year over year from $104.7 million.",
+          "value": 141.1,
+          "unit": "USD million"
+        },
+        {
+          "text": "Adjusted EBITDA, a non-GAAP measure, was $76.8 million, up 57% year over year, and the adjusted EBITDA margin was 54%, against 47% a year earlier.",
+          "value": 76.8,
+          "unit": "USD million"
+        },
+        {
+          "text": "Adjusted diluted earnings per share were $0.48, the same as in the second quarter of 2025.",
+          "value": 0.48,
+          "unit": "USD per share"
+        },
+        {
+          "text": "Average daily volume on the company's options exchanges was 10,989 thousand contracts, up 25.3% year over year; its options market share was 16.5%, against 16.7% a year earlier.",
+          "value": 10989,
+          "unit": "thousand contracts per day"
+        },
+        {
+          "text": "Options revenue per contract, transaction and clearing fees less liquidity payments and related costs, was $0.124, against $0.117 a year earlier.",
+          "value": 0.124,
+          "unit": "USD per contract"
+        },
+        {
+          "text": "The company states that its options business benefited from elevated market volatility during the quarter, which led to the 25% increase in average daily volume."
+        },
+        {
+          "text": "Full-year 2026 guidance for adjusted operating expenses, which exclude share-based compensation, depreciation and amortization and litigation expenses, was lowered to $260 to $270 million from $265 to $275 million; share-based compensation is guided at $29 to $32 million and capital expenditures at $40 to $45 million.",
+          "value": 265,
+          "unit": "USD million (guidance midpoint)"
+        }
+      ],
+      "supersedes": null,
+      "submitted_by": "pendragon.avalon",
+      "submitted_at": "2026-10-25T10:03:46Z",
+      "submitted_via_issue": 57
+    }
+  ],
+  "history": [
+    {
+      "seq": 18,
+      "at": "2026-10-25T10:03:11Z",
+      "issue": 55,
+      "action": "create_idea",
+      "actor": "pendragon.avalon",
+      "owner": "arthur",
+      "entity": "ideas/miax-options-volume/idea"
+    },
+    {
+      "seq": 21,
+      "at": "2026-10-25T10:04:54Z",
+      "issue": 59,
+      "action": "update_view",
+      "actor": "pendragon.avalon",
+      "owner": "arthur",
+      "entity": "ideas/miax-options-volume/views/pendragon.avalon",
+      "version": 1,
+      "target_date": "2027-12-25",
+      "proposal_sha256": "803da668bf44044f5ec96969fdba1bf55c709c656dd83fa47c063ad45753ee86",
+      "diff": {
+        "position": [
+          null,
+          "neutral"
+        ],
+        "strategy": [
+          null,
+          "unpriced-quality-growth"
+        ],
+        "horizon_months": [
+          null,
+          14
+        ],
+        "target_date": [
+          null,
+          "2027-12-25"
+        ],
+        "confidence": [
+          null,
+          0.5
+        ],
+        "methodology": [
+          null,
+          "excalibur"
+        ],
+        "non_public_pillars": [
+          null,
+          []
+        ],
+        "derived.expected_price": [
+          null,
+          44.238
+        ],
+        "derived.expected_return": [
+          null,
+          0.301883
+        ],
+        "derived.p10": [
+          null,
+          21.09
+        ],
+        "derived.p50": [
+          null,
+          43.49
+        ],
+        "derived.p90": [
+          null,
+          62.16
+        ]
+      },
+      "rationale": "Initial view: standing aside. Our distribution for the price at the end of 2027 is centred above today's price, because exchange costs are largely fixed, access and market data fees keep growing apart from trading volume, and we expect share issuance to stop so that profit growth reaches earnings per share. Excalibur, however, keeps a company only when its discount is a framing error that can be corrected, and here most of the discount looks like a rational price for an engine that depends on options volume, competes with parallel exchanges and has been issuing shares quickly (c2 unmet). The engine also fails the uniqueness test, and management incentives are not tied to the share price. We therefore record our price forecast without taking a position. We will reassess after the third-quarter 2026 results in early November. If transaction revenue keeps growing year over year after the volatility peak, options market share stays above 16% and the diluted share count stops rising, the case would rest on more than our forecast. If transaction revenue falls year over year or market share drops below 15.5%, our conservative case becomes more likely and the distribution will move down."
+    },
+    {
+      "seq": 23,
+      "at": "2026-10-25T10:41:29Z",
+      "run": 40185661510,
+      "action": "review",
+      "actor": "caspar.magi",
+      "owner": "magi",
+      "entity": "ideas/miax-options-volume/judgements/caspar.magi/pendragon.avalon",
+      "version": 1,
+      "view_version": 1,
+      "scores": {
+        "evidence_quality": 8,
+        "reasoning_coherence": 8,
+        "valuation_consistency": 7,
+        "data_freshness": 6,
+        "falsifiability": 9
+      }
+    }
+  ]
+}

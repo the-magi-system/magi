@@ -1,0 +1,177 @@
+[
+  {
+    "id": "arc-owner-earnings",
+    "name": "Arc 投资方法论：生意质量、资本配置与股东回报",
+    "owner": "arc.cheng",
+    "version": 1,
+    "thread": 70,
+    "scope": {
+      "asset_types": [
+        "equity"
+      ],
+      "sectors": [
+        "energy",
+        "materials",
+        "industrials",
+        "financials",
+        "information-technology",
+        "communication-services",
+        "utilities",
+        "consumer-discretionary",
+        "consumer-staples"
+      ],
+      "horizon_months": {
+        "min": 12,
+        "max": 120
+      }
+    },
+    "view_count": 1
+  },
+  {
+    "id": "durandal",
+    "name": "Durandal: compounders hidden by accounting",
+    "owner": "pendragon.avalon",
+    "version": 1,
+    "thread": 19,
+    "scope": {
+      "asset_types": [
+        "equity"
+      ],
+      "sectors": [
+        "information-technology",
+        "communication-services",
+        "health-care",
+        "industrials",
+        "financials",
+        "consumer-discretionary",
+        "consumer-staples",
+        "materials",
+        "energy",
+        "utilities",
+        "real-estate"
+      ],
+      "markets": [
+        "US",
+        "JP",
+        "KR",
+        "EU",
+        "AU",
+        "CA"
+      ],
+      "horizon_months": {
+        "min": 12,
+        "max": 18
+      }
+    },
+    "view_count": 0
+  },
+  {
+    "id": "excalibur",
+    "name": "Excalibur: unpriced quality growth engines",
+    "owner": "pendragon.avalon",
+    "version": 1,
+    "thread": 15,
+    "scope": {
+      "asset_types": [
+        "equity"
+      ],
+      "sectors": [
+        "information-technology",
+        "communication-services",
+        "health-care",
+        "industrials",
+        "financials",
+        "consumer-discretionary",
+        "consumer-staples",
+        "materials",
+        "energy",
+        "utilities",
+        "real-estate"
+      ],
+      "markets": [
+        "US",
+        "JP",
+        "KR",
+        "EU",
+        "AU",
+        "CA"
+      ],
+      "horizon_months": {
+        "min": 12,
+        "max": 18
+      }
+    },
+    "view_count": 1
+  },
+  {
+    "id": "koumei",
+    "name": "Koumei: the terms of an announced transaction",
+    "owner": "prod.mf",
+    "version": 1,
+    "thread": 85,
+    "scope": {
+      "asset_types": [
+        "equity"
+      ],
+      "sectors": [
+        "information-technology",
+        "communication-services",
+        "industrials",
+        "health-care",
+        "financials",
+        "consumer-discretionary",
+        "consumer-staples",
+        "materials",
+        "energy"
+      ],
+      "horizon_months": {
+        "min": 1,
+        "max": 12
+      },
+      "industries": [
+        "semiconductors and semiconductor equipment",
+        "software and internet services",
+        "electronic components"
+      ],
+      "markets": [
+        "US listings"
+      ]
+    },
+    "view_count": 1
+  },
+  {
+    "id": "masamune",
+    "name": "Masamune: beneficiaries of real technology inflections",
+    "owner": "pendragon.avalon",
+    "version": 1,
+    "thread": 17,
+    "scope": {
+      "asset_types": [
+        "equity"
+      ],
+      "sectors": [
+        "information-technology",
+        "communication-services",
+        "health-care",
+        "industrials",
+        "financials",
+        "consumer-discretionary",
+        "materials",
+        "energy"
+      ],
+      "markets": [
+        "US",
+        "JP",
+        "KR",
+        "EU",
+        "AU",
+        "CA"
+      ],
+      "horizon_months": {
+        "min": 12,
+        "max": 18
+      }
+    },
+    "view_count": 0
+  }
+]

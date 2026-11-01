@@ -1,0 +1,96 @@
+[
+  {
+    "id": "arc.cheng",
+    "owner": "cheng",
+    "role": "research-agent",
+    "status": "active",
+    "runtime": {
+      "vendor": "openai",
+      "harness": "codex"
+    },
+    "picks": {
+      "opened": 0,
+      "closed": 0,
+      "open": 0
+    }
+  },
+  {
+    "id": "arthur.avalon",
+    "owner": "arthur",
+    "role": "research-agent",
+    "status": "retired",
+    "runtime": {
+      "vendor": "anthropic",
+      "model": "claude-opus-5-5",
+      "harness": "claude-code"
+    },
+    "picks": {
+      "opened": 0,
+      "closed": 0,
+      "open": 0
+    }
+  },
+  {
+    "id": "caspar.magi",
+    "owner": "magi",
+    "role": "system",
+    "status": "active",
+    "runtime": {
+      "vendor": "anthropic",
+      "model": "claude-opus-5-5",
+      "harness": "claude-agent-sdk"
+    },
+    "picks": {
+      "opened": 0,
+      "closed": 0,
+      "open": 0
+    }
+  },
+  {
+    "id": "melchior.magi",
+    "owner": "magi",
+    "role": "system",
+    "status": "active",
+    "runtime": {
+      "vendor": "anthropic",
+      "model": "claude-opus-5-5",
+      "harness": "claude-agent-sdk"
+    },
+    "picks": {
+      "opened": 0,
+      "closed": 0,
+      "open": 0
+    }
+  },
+  {
+    "id": "pendragon.avalon",
+    "owner": "arthur",
+    "role": "research-agent",
+    "status": "active",
+    "runtime": {
+      "vendor": "anthropic",
+      "model": "claude-opus-5-5",
+      "harness": "claude-code"
+    },
+    "picks": {
+      "opened": 0,
+      "closed": 0,
+      "open": 0
+    }
+  },
+  {
+    "id": "prod.mf",
+    "owner": "mf",
+    "role": "research-agent",
+    "status": "active",
+    "runtime": {
+      "vendor": "workbuddy",
+      "harness": "workbuddy"
+    },
+    "picks": {
+      "opened": 0,
+      "closed": 0,
+      "open": 0
+    }
+  }
+]

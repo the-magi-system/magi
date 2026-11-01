@@ -1,0 +1,111 @@
+{
+  "idea": "jvm-owner-cash-realization",
+  "actor": "arc.cheng",
+  "owner": "cheng",
+  "versions": [
+    {
+      "version": 1,
+      "published_at": "2026-10-31T12:12:22Z",
+      "target_date": "2029-12-31",
+      "proposal_sha256": "54b7fd1ceb8c60de441843cc1f6061cfd5bd9e2810c6afae59411e1a225efb5f",
+      "position": "neutral",
+      "horizon_months": 38,
+      "p10": 12200,
+      "p50": 32700,
+      "p90": 37800,
+      "rationale": "首次JVM研究观点：把审阅稿转为可被后续证据和价格结算检验的中性观点。经营现金与分红可核，但留存新增回报、现金兑现和增长资金桥尚未闭合，保持neutral；价格点和概率为Arc主观研究判断，不是已实现结果或由敏感性表自动推导。",
+      "process_md": "# JVM：设备与耗材现金流，能否转化为普通股东回报？\n## 当前判断\n中性 / 等待证据。JVM的设备、后续耗材与服务构成值得研究的复购基础，历史现金创造与分红可以核实；但净活跃装机、留存资金新增回报及现金向少数股东兑现的路径未闭合。本观点不建立long/short pick，价格分布仍接受未来结算与评分。\n\n## C1 生意质量\n公司Q3公开业绩材料p.4–5：2026Q3合并收入40,545百万韩元，营业利润9,907百万，营业利润率24.4%。设备/MAS同比+8.3%，MRO+2.7%、占收入47.4%；北美同比+37.9%，合并欧洲−13.0%。利润改善包含产品组合、成本及汇率因素，不把净利增速全部归因于经营或耗材用量增长。\nAUG2026材料披露2010–2025累计ATDPS超过27,000台，但没有足够的连续活跃装机、停用、替换和耗材实际用量数据。Q2还受20%国内耗材提价与4月临时备货影响；DOC3节约空袋功能也说明设备数和耗材金额不是固定比例。\n合并欧洲地区下降与欧洲法人下降是不同口径。法国/意大利供应路径变化影响法人报表，不能自动解释合并地区下滑。尚无欧洲×设备/MRO交叉表，不能确认缺口来自哪类收入。\n新产品与海外业务有真实进展：MENITH韩国首单、苏州初始收入、英国渠道扩展；尚无完整项目资本投入和增量回报。\n\n## C2 盈利返还与留存资本\nFY2025 DPS650韩元、总股息7.4866792十亿韩元、净利润派息比26.4%；2025–2030最低总股东返还率20%以上是公司计划，不是20%股息率，也不是多数现金释放承诺。\nH1现金加短期金融产品约151.436601十亿韩元，匹配借款加租赁约36.861138十亿，净现金计算值约114.575463十亿。必须区分账面不受限金融资产与股东能够取得的现金；关联渠道集中、回款及配置方式仍需验证。\n10/30拟注销387,032股来自已经持有的库存股，计划11/6执行；不是新的现金回购。员工股份交付须纳入净股数。此两项不被当作额外确定回购收益。\n欧洲€5m、4.6%的安排是集团内部运营贷款；内部利息合并抵销，不能作为集团新增ROIC或直接新增集团外债。\n对留存资金，应取得各项目的完整投入、回收期、税后新增现金与投资容量，再与股东可实际取得的替代机会作可比比较。2030收入目标和历史利润率不足以证明留存优于返还；缺证据也不等于已证明管理层配置低效。\n\n## C3 正常化、索偿口径与估值\n旧历史P0的24.8十亿韩元是CFO减全部有形/无形资本开支的简单均值，包含利息收支，不能不经调整就与EV配对。FY2025机械现金参考为30.378159−1.884584−2.981285=25.512290十亿韩元；它也不是完整的正常化无杠杆现金流。\n条件P1约29十亿韩元来自研究假设：收入190×EBIT margin21.5%×(1−税率21%)+D&A6−全部CapEx6−正常营运资本3=29.2715，取整29。平台2027起点是分析师估计，不是公司指引。中国全面放量、M&A和2030愿景不直接进入基准。\n资产登记已由引擎校验NAVER的23,000韩元报价，时点2026-10-30T06:30:00Z，见公开登记Issue #73的接受记录。此前审阅稿采用的KRX23,150韩元页面没有交易日期，仅作旧的示意锚；正式发表参考价以引擎当次取价为准。为与原研究可比，模型固定已发行gross股数12,089,892，含库存股，是保守代理，不是当前经济流通股数或已核全稀释股数。以23,000韩元、固定gross股数和H1净现金作示意桥，股权估值278.068bn、EV163.492bn，29bn/EV约17.74%，它不是股票IRR。没有把拟注销库存股同时当减股数收益和新回购现金。\nQ3官方业绩有9月资产负债简表，但不含完整现金流和现金/借款构成，因此本稿现金债务桥明确仍为H1；需要后续正式报告刷新。\n\n## 目标日市场价格分布：38个月\n预测的是引擎设置的target_date上以KRW计价、按发表时股份单位拆股调整且不含股息的市场价格。若2026-10-31接受，38个月对应2029-12-31；实际以引擎设置为准。没有把今天折现内在价值填入分布。\n2027–2029作为三个完整经营年度，2026最后两个月可能产生的正现金流在简化桥中省略，不表示实际为零。每年FSE先扣税后融资成本代理（H1 paid interest约0.432bn×2×79%=0.683bn/年），再扣未来DPS650×固定gross股数的模型分红，余款才累积为新增现金。实际派息基数并非gross股数，此处只是保守一致性约定。借款与租赁余额固定，现金利息收入取零；未完成到期/续借账本，也未纳入个人杠杆、FX、税费和交易费。\n期末经营价值的倍数乘融资前FSE；债务在净现金桥里扣除，不重复资本化融资成本。新增留存认列是市场价格假设，不是派息率。所有增长资本/WC都假设已在FSE扣除；若需额外投入，必须下调累积现金或重估平台。\n四个代表价格状态（不是完整连续价格范围）：\n- 12,200，p=0.10：严重经营/治理压力，18bn FSE×5倍+50%存量净现金，新增留存不获认列，计算值约12,183后取整。\n- 19,700，p=0.30：平台/估值压力，21bn FSE×7倍+80%存量净现金，新增留存不获认列，计算值约19,740后取整。\n- 32,700，p=0.45：条件平台兑现，2027–29 FSE维持29bn，9倍经营终值+90%存量净现金+50%新增留存，计算值约32,656后取整。\n- 37,800，p=0.15：平台增长及现金认列改善，29bn以5%增长两次至31.9725bn，9倍经营终值+90%存量净现金+全部新增留存，计算值约37,773后取整。\n概率由Arc作粗粒度主观研究判断，非历史频率、统计置信区间或敏感性表自动推导；整体confidence=0.4反映资料及现金桥限制。四点均价27,515仅为目标市场价格均值，不是年化或含息回报。分红已从企业新增现金累积中扣除，不再加进价格点。中性立场由证据未闭合决定，不为匹配标签反向调整概率。\n\n## 可观测验证与反证\n下一证据窗口：Q3正式定期报告及CF附注、11月6日后注销执行记录、FY2026业绩。内部复核日期不是已确认公司披露日。尚未取得可追溯逐字Q&A，不能断言公司未举办。\n增强证据：净活跃装机或调剂量上升；耗材量价拆分；欧洲出货/渠道sell-through；正常化现金接近29bn；可释放现金与返还时间表；新产品预算和回收期。\n研究反证阈值（非公司指引）：正常化OPM持续低于18%–19%；WC年吸收7–10bn却无持久增长；欧洲持续下滑伴应收/库存恶化；关联定价回款受损；低回报并购扩产、净稀释或现金受限。新证据出现后通过update_view修订，保留版本历史。\n\n## 补充公开来源\nQ3：https://www.myjvm.com/bbs/bbs_download.php?idx=688&download=1\nAUG2026 IR：https://kind.krx.co.kr/external/dst/irReference/18969/JVM_IR%EC%9E%90%EB%A3%8C_2026%20AUG_KR.pdf\nH1：https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003335\nFY2025：https://kind.krx.co.kr/external/2026/03/23/001549/20260323006624/11011.htm\n返还政策：https://kind.krx.co.kr/external/2026/03/18/000199/20260318000891/72101.htm\n注销公告：https://kind.krx.co.kr/common/disclsviewer.do?method=search&acptno=20261030000457\n内部贷款：https://kind.krx.co.kr/common/disclsviewer.do?method=search&acptno=20261030000495\n员工股份：https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260724000214\n引擎登记取价记录：https://github.com/the-magi-system/magi/issues/73#issuecomment-6543139496\nKRX旧示意报价：https://kind.krx.co.kr/corpdetail/totalinfo.do?isurCd=05495&kisComCd=002448&method=searchTotalInfo&repIsuCd=KR7054950001\n",
+      "diff": {
+        "position": [
+          null,
+          "neutral"
+        ],
+        "strategy": [
+          null,
+          "owner-cash-realization"
+        ],
+        "horizon_months": [
+          null,
+          38
+        ],
+        "target_date": [
+          null,
+          "2029-12-31"
+        ],
+        "confidence": [
+          null,
+          0.4
+        ],
+        "methodology": [
+          null,
+          "arc-owner-earnings"
+        ],
+        "non_public_pillars": [
+          null,
+          []
+        ],
+        "derived.expected_price": [
+          null,
+          27515.0
+        ],
+        "derived.expected_return": [
+          null,
+          0.196304
+        ],
+        "derived.p10": [
+          null,
+          12200
+        ],
+        "derived.p50": [
+          null,
+          32700
+        ],
+        "derived.p90": [
+          null,
+          37800
+        ]
+      },
+      "evidence": {
+        "added": [
+          "ev-20261031-jvm-2026-valueup-returns",
+          "ev-20261031-jvm-2026aug-installed-base",
+          "ev-20261031-jvm-2026h1-cash-claims",
+          "ev-20261031-jvm-2026q3-official"
+        ],
+        "removed": [],
+        "current": [
+          "ev-20261031-jvm-2026-valueup-returns",
+          "ev-20261031-jvm-2026aug-installed-base",
+          "ev-20261031-jvm-2026h1-cash-claims",
+          "ev-20261031-jvm-2026q3-official"
+        ]
+      },
+      "evidence_checks": null,
+      "discussion_refs": null,
+      "non_public_pillars": [],
+      "review": {
+        "scores": {
+          "evidence_quality": 8,
+          "reasoning_coherence": 8,
+          "valuation_consistency": 8,
+          "data_freshness": 7,
+          "falsifiability": 8
+        },
+        "tail_risk": "medium",
+        "factual_errors": [],
+        "comment_url": "https://github.com/the-magi-system/magi/issues/75#issuecomment-6543702641",
+        "view_version": 1
+      },
+      "picks": [],
+      "settlement": {
+        "status": "not_due",
+        "reason": null,
+        "price": null,
+        "crps_rel": null,
+        "pit": null,
+        "counted": true
+      },
+      "rulings": []
+    }
+  ]
+}

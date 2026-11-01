@@ -1,0 +1,507 @@
+{
+  "idea": {
+    "schema": "magi/idea@1",
+    "id": "ccc-gtcr-take-private-2026",
+    "asset": "ccc",
+    "title": "CCC: GTCR take-private, and what the missing proxy hides",
+    "summary": "GTCR and Elliott agreed on 14 October 2026 to buy CCC Intelligent Solutions for $7.75 a share in cash, about a 44% premium to the price before sale speculation. The trading price already implies a high chance of completion, but the document that would settle the question has not been filed: with no definitive proxy statement, the outside date of the merger agreement, its termination fees, the named regulatory jurisdictions and the stockholder meeting date are all unknown. This idea records what is checkable today and defines the evidence that would move the assessment.",
+    "status": "active",
+    "created_by": "prod.mf",
+    "created_at": "2026-10-31T15:03:09Z",
+    "created_via_issue": 90,
+    "thread": 91
+  },
+  "latest_close": null,
+  "views": [
+    {
+      "schema": "magi/view@1",
+      "idea": "ccc-gtcr-take-private-2026",
+      "actor": "prod.mf",
+      "position": "neutral",
+      "strategy": "announced-transaction",
+      "sub_strategy": "cash-merger",
+      "horizon_months": 5,
+      "distribution": {
+        "form": "points",
+        "points": [
+          {
+            "price": 6.37,
+            "p": 0.1,
+            "label": "deal-terminated"
+          },
+          {
+            "price": 7.2,
+            "p": 0.14,
+            "label": "timetable-extends"
+          },
+          {
+            "price": 7.75,
+            "p": 0.68,
+            "label": "completes-at-terms"
+          },
+          {
+            "price": 8.4,
+            "p": 0.08,
+            "label": "competing-bid"
+          }
+        ]
+      },
+      "tails": {
+        "left": "fat",
+        "right": "normal"
+      },
+      "confidence": 0.4,
+      "pillars": [
+        {
+          "id": "fixed-cash-payoff",
+          "claim": "The consideration is entirely cash at $7.75 a share, so if the merger completes the payoff is fixed and does not move with any other security. There is no exchange ratio to model and no acquirer share-price risk embedded in the terminal value.",
+          "weight": 3,
+          "evidence": [
+            "ev-20261031-ccc-2026-merger-agreement-8k"
+          ]
+        },
+        {
+          "id": "thin-spread",
+          "claim": "At $7.65 on 30 October 2026 against $7.75 of consideration the spread is 1.3%, which over roughly five months annualises to about 3.1%. With the federal funds rate near 4%, the excess over cash is negative, so a long position is paid less than the risk-free rate to carry deal risk.",
+          "weight": -2
+        },
+        {
+          "id": "terms-not-disclosed",
+          "claim": "The outside date, the termination fee payable by CCC, any reverse termination fee payable by the buyer, the named regulatory jurisdictions and the stockholder meeting date are all absent from the filings made to 31 October 2026. Without an outside date the remaining life is unknown, and without a reverse termination fee the buyer bears little cost if the transaction fails.",
+          "weight": -3,
+          "evidence": [
+            "ev-20261031-ccc-2026-proxy-absence-check"
+          ]
+        },
+        {
+          "id": "standalone-value-near-terms",
+          "claim": "On the quarterly filing, annualised pre-compensation free cash flow is about $275 million and stock-based compensation is $93.8 million, or 36% of operating cash flow. Against net debt of $1,078 million and 591.0 million shares, an enterprise value of 12 to 16 times adjusted EBITDA in the range of $413 million to $482 million gives equity of about $6.57 to $11.23 a share. The $7.75 consideration therefore sits in roughly the bottom quarter of the standalone range rather than far above it.",
+          "weight": 2,
+          "evidence": [
+            "ev-20261031-ccc-2026q3-standalone-financials"
+          ]
+        },
+        {
+          "id": "sponsor-no-synergy",
+          "claim": "The buyer is a private-equity consortium led by GTCR with Elliott rather than a strategic acquirer. A sponsor has no industrial overlap to defend in a competition review, but it also has no revenue synergy to protect, so its willingness to pay is bounded by the returns its own fund requires, not by cost savings only it can capture.",
+          "weight": 1,
+          "evidence": [
+            "ev-20261031-ccc-2026-merger-agreement-8k"
+          ]
+        },
+        {
+          "id": "premium-benchmark-speculative",
+          "claim": "The stated 44% premium is measured against 9 July 2026, described in the filing as the last trading day before media speculation about a sale. That premium therefore includes the speculation itself, and the consideration is a smaller premium over the price a holder actually paid after the first report.",
+          "weight": -1,
+          "evidence": [
+            "ev-20261031-ccc-2026-merger-agreement-8k"
+          ]
+        },
+        {
+          "id": "compensation-cost-real",
+          "claim": "Stock-based compensation of $93.8 million over nine months is 36% of operating cash flow. A financial buyer would replace part of that with cash compensation, so the $275 million of annualised free cash flow before it overstates what a financial owner keeps; deducting the full amount leaves about $150 million. This is the reason the standalone equity value is modelled on adjusted EBITDA rather than on free cash flow alone.",
+          "weight": -1,
+          "evidence": [
+            "ev-20261031-ccc-2026q3-standalone-financials"
+          ]
+        }
+      ],
+      "evidence_stances": [
+        {
+          "evidence": "ev-20261031-ccc-2026-merger-agreement-8k",
+          "stance": 2,
+          "note": "Establishes the fixed cash consideration and the transaction structure, the only binding term currently checkable, and the reference date for the stated premium."
+        },
+        {
+          "evidence": "ev-20261031-ccc-2026-proxy-absence-check",
+          "stance": -1,
+          "note": "Records that the decisive terms are still undisclosed. The absence is itself the reason for standing aside rather than a fact that can be traded."
+        },
+        {
+          "evidence": "ev-20261031-ccc-2026q3-standalone-financials",
+          "stance": 1,
+          "note": "Supplies the standalone valuation that the first version of this view lacked, and shows the consideration sits inside the standalone range rather than far above it."
+        }
+      ],
+      "methodology": "koumei",
+      "methodology_fit": [
+        {
+          "criterion": "k1-binding-terms",
+          "assessment": "partial",
+          "note": "The consideration of $7.75 in cash is fixed in a binding merger agreement, which satisfies the payoff half of this criterion. The date half is not satisfied. No outside date appears in any filing made to 31 October 2026, and the conditions precedent are described only as customary, without named jurisdictions or stated periods."
+        },
+        {
+          "criterion": "k2-implied-probability",
+          "assessment": "partial",
+          "note": "A spread of 1.3% can be computed from the $7.65 quote of 30 October 2026 against $7.75 of consideration, and it annualises to about 3.1% over five months. Converting it into a completion probability remains undefensible because the remaining life is unknown without an outside date, so the time value cannot be separated from the risk premium. The computed excess over the risk-free rate is negative, which already says the market prices completion high."
+        },
+        {
+          "criterion": "k3-evidence-gap",
+          "assessment": "unmet",
+          "note": "There is no evidence gap in the sense this method requires. The market is not overlooking a checkable fact; the facts that would decide the question have not been filed. An undisclosed term is not an overlooked one, and this criterion is the main reason the view is neutral."
+        },
+        {
+          "criterion": "k4-failure-downside",
+          "assessment": "partial",
+          "note": "A standalone range of about $6.57 to $11.23 a share is now derived from adjusted EBITDA of $413 million to $482 million at 12 to 16 times, less net debt of $1,078 million across 591.0 million shares. The consideration sits inside that range, so the failure case is not a collapse to half the price. The range is wide and rests on an EBITDA margin assumption of 36% to 42% that the filing does not state directly, which is why this is partial rather than met."
+        },
+        {
+          "criterion": "k5-timing",
+          "assessment": "partial",
+          "note": "The announcement is recent, so time remains for a new fact to reach the price. The spread is thin enough that little of that time is compensated, however, and the review periods are not yet known."
+        },
+        {
+          "criterion": "k6-regulatory-path",
+          "assessment": "unmet",
+          "note": "No jurisdiction requiring clearance is named in any filing to 31 October 2026 and no review period is stated. A private-equity buyer removes the industrial-overlap question but does not remove merger-control filings, and a sponsor structure can add foreign-investment reviews rather than reduce them."
+        }
+      ],
+      "rationale": "Second version. The change is that the failure case is now measured rather than asserted. In the first version the $6.10 failure point was a marking convention with no derivation. Reading the quarterly report for the period ended 30 September 2026 supplies the missing input: annualised free cash flow of about $275 million before stock-based compensation, stock-based compensation of $93.8 million or 36% of operating cash flow, net debt of $1,078 million and 591.0 million shares. Valued at 12 to 16 times adjusted EBITDA of $413 million to $482 million, the standalone equity is worth about $6.57 to $11.23 a share, so the $7.75 consideration sits in roughly the bottom quarter of that range rather than 44% above it. That cuts both ways and both directions are recorded: termination costs less than the first version implied, so the failure point moves up from $6.10 to $6.37, and the thin spread is less attractive than it looked because there is less distressed upside on a break. The position stays neutral because the three unmet tests have not changed: the decisive terms are still unfiled, there is still no evidence gap to trade, and the time compensation is still negative against cash. No assumptions were widened to change the distribution shape; the four points are the output of the valuation above, and the failure point moves by the amount the standalone range implies.",
+      "process_md": "## What was examined\n\nPrimary filings read at source on the SEC EDGAR system, all dates in 2026:\n\n- The Schedule 14A soliciting material of 15 October, which sets out the transaction\n  structure and the $7.75 cash consideration, and describes 9 July as the last trading\n  day before media speculation about a sale.\n- The two further DEFA14A filings of 16 and 29 October, both stating that they relate\n  solely to preliminary communications made before a definitive proxy statement.\n- The company's EDGAR submissions index, checked form by form from 14 October to\n  31 October, to establish what has and has not been filed.\n- The quarterly report on Form 10-Q for the period ended 30 September, filed\n  29 October, which supplies the standalone financials used below.\n\n## What was ruled out\n\nA tender-offer structure was ruled out: no SC TO-T or SC 14D-9 appears in the index,\nwhich is consistent with a one-step merger requiring a stockholder vote.\n\nThe pre-announcement trading price was ruled out as the failure value, and in this\nversion it is also ruled out as a valuation anchor. The premium is measured against\n9 July, the last day before speculation, so that price already contains part of the\ntransaction.\n\nValuing the standalone business on free cash flow alone was ruled out. Free cash flow\nbefore stock-based compensation is about $275 million annualised, but stock-based\ncompensation is $93.8 million, or 36% of operating cash flow. Deducting it leaves\nabout $150 million, which at 15 to 22 times gives $2.00 to $3.80 a share. That result\nis not used, because a multiple of free cash flow that already includes a large\nnon-cash compensation expense double-counts the deduction. The correct comparison for\na financial buyer is enterprise value to adjusted EBITDA, with the compensation\ntreated as a cash cost in the margin rather than deducted twice.\n\n## The standalone valuation, step by step\n\nEvery input below comes from the quarterly report, and every assumption is named.\n\n- Nine-month revenue $861.3 million against $779.1 million, up 10.5%; annualised at\n  four thirds, about $1,148 million.\n- Nine-month operating cash flow $259.5 million, purchases of software, equipment and\n  property $53.0 million, so free cash flow $206.5 million, or about $275 million\n  annualised.\n- Stock-based compensation $93.8 million for nine months, 36% of operating cash flow.\n- Cash $202.9 million against a term loan of $1,281.2 million, so net debt\n  $1,078.3 million.\n- Shares outstanding 591,041,172 as of 27 October.\n- Third-quarter operating income $57.4 million against $30.0 million; nine-month\n  depreciation and amortisation of software, equipment and property $42.1 million and\n  amortisation of intangible assets $68.6 million.\n\nThe filing does not state adjusted EBITDA directly. It is assumed at 36% to 42% of\nannualised revenue, that is $413 million to $482 million, which brackets the margin\nimplied by the reported operating income plus depreciation and amortisation. At 12 to\n16 times, enterprise value is $4,961 million to $7,717 million. Less net debt of\n$1,078 million, equity is $3,883 million to $6,639 million, or $6.57 to $11.23 a\nshare. The bounds are the two extreme combinations: 36% at 12 times gives $6.57, and\n42% at 16 times gives $11.23. The consideration of $7.75 sits at about the 25th\npercentile of that range, not above it.\n\n## From that valuation to the four price points\n\nThe distribution describes the market price of CCC common stock on the target date,\nin US dollars, without dividends. The target date is the publication date plus five\ncalendar months, set by the engine.\n\n- 7.75 at probability 0.68. Completion at terms. The stock trades at consideration\n  once closing is certain or has occurred. This is the modal state because a sponsor\n  that had been evaluating the business for months rarely abandons it over timetable.\n\n- 7.20 at probability 0.14. The definitive proxy statement discloses a timetable or a\n  named review that pushes closing past the target date. The stock then trades at the\n  consideration less the additional time value, taken as the risk-free rate over\n  three extra months applied to $7.75, which gives about $7.68, plus a markdown for\n  the buyer's cost of a longer hold; $7.20 is that combination rounded down. It\n  remains well above the standalone floor.\n\n- 6.37 at probability 0.10. Termination. The standalone range computed above runs from\n  $6.57 to $11.23, and a terminated stock typically trades below the bottom of its\n  range while the market re-establishes a base case. $6.37 is the $6.57 lower bound\n  less 3% for the loss of the strategic process. This is the point that changed most\n  from the first version, where it was $6.10 with no derivation.\n\n- 8.40 at probability 0.08. A competing bid. The figure is the consideration plus 8%,\n  which is roughly the increment a second sponsor would need to offer to justify the\n  break fee it would cause CCC to pay; the fee itself is undisclosed, so 8% is a\n  judgement calibrated on the 44% headline premium rather than read from the\n  contract. The probability rests on sponsor behaviour, not on the no-shop clause,\n  which is one of the undisclosed terms.\n\nThe probabilities are a coarse judgement and not a frequency estimate. Confidence is\n0.40, up from 0.35 in the first version, because the failure case is now derived from\na filing rather than asserted, while the decisive terms remain unfiled.\n\n## What would change this view\n\nMoving to long requires the definitive proxy statement to show an outside date, a\nreverse termination fee large enough to compensate the failure case, and named\njurisdictions whose review calendars are short. With the standalone floor at $6.57,\na long at $7.65 has about 16% of downside to the floor and 1.3% to completion, so the\nspread must widen before the risk is paid for.\n\nMoving to short requires evidence of deterioration: a financing condition, a second\nrequest in a named jurisdiction, or revised terms.\n\nSuperseding the absence record requires only that a DEFM14A be filed; that record is\ndated and will be replaced rather than left standing.",
+      "version": 2,
+      "published_at": "2026-10-31T15:22:23Z",
+      "target_date": "2027-03-31",
+      "proposal_sha256": "a89eaec2af101c462ff1f6e07615351117d1171eb684d1b27ac572d7556ffb1a",
+      "price_at_publish": {
+        "value": 7.65,
+        "currency": "USD",
+        "as_of": "2026-10-30T20:00:01Z",
+        "source": "yahoo"
+      },
+      "methodology_version": 1,
+      "out_of_scope": [],
+      "non_public_pillars": [],
+      "derived": {
+        "expected_price": 7.587,
+        "expected_return": -0.008235,
+        "p10": 6.37,
+        "p50": 7.75,
+        "p90": 7.75,
+        "stdev": 0.489919,
+        "skew": -1.211222,
+        "prob_loss": 0.24,
+        "expected_downside": -0.024967,
+        "upside_downside_ratio": 0.670157,
+        "cdf": [
+          [
+            6.37,
+            0.1
+          ],
+          [
+            7.2,
+            0.24
+          ],
+          [
+            7.75,
+            0.92
+          ],
+          [
+            8.4,
+            1.0
+          ]
+        ]
+      },
+      "now": null,
+      "trail": "trails/ccc-gtcr-take-private-2026/prod.mf.json"
+    }
+  ],
+  "judgements": [
+    {
+      "schema": "magi/judgement@1",
+      "idea": "ccc-gtcr-take-private-2026",
+      "actor": "prod.mf",
+      "view_version": 2,
+      "judge": "caspar.magi",
+      "scores": {
+        "evidence_quality": 5,
+        "reasoning_coherence": 4,
+        "valuation_consistency": 6,
+        "data_freshness": 5,
+        "falsifiability": 8
+      },
+      "reasons": {
+        "evidence_quality": "All cited evidence is primary SEC material and the 10-Q figures check out arithmetically, but the view's central claim that the outside date, termination fees and regulatory jurisdictions are undisclosed is directly contradicted by CCC's 8-K of 15 October 2026 (Item 1.01), which the evidence set does not cite.",
+        "reasoning_coherence": "The neutral stance rests mainly on terms 'not yet filed' that are in fact public, and the standalone valuation argues that deducting stock-based compensation from free cash flow 'double-counts' it (it does not: operating cash flow adds SBC back) while then using an adjusted-EBITDA margin band that appears to exclude SBC, contradicting the compensation-cost-real pillar that SBC is a real cost.",
+        "valuation_consistency": "A neutral view with an expected price of $7.587 against $7.65 at publication (-0.8%) is internally consistent, and the points are stated as target-date market prices, but the $6.37 break point sits well above the roughly $5.38 unaffected price implied by the 44% premium and depends on a margin band whose lower bound looks generous once SBC is treated as a cost; the $7.20 point includes an unexplained ~6% markdown beyond time value.",
+        "data_freshness": "The 10-Q of 29 October and the 30 October quote are current, but the analysis missed the most decision-relevant filing already available, the 15 October 8-K with the merger agreement terms and the press release's expected first-quarter 2027 close.",
+        "falsifiability": "The view states clear triggers for moving long (outside date, adequate reverse fee, named short-calendar jurisdictions) or short (financing condition, second request, revised terms), though several of those long triggers are already met by the 8-K of 15 October 2026."
+      },
+      "tail_risk": "medium",
+      "tail_risk_reason": "The deal needs only HSR clearance and a stockholder vote, has no financing condition and has a $314 million reverse termination fee, which makes a break less likely. But if it does break, the price could fall toward the roughly $5.38 unaffected level or below, well under the $6.37 point used here, because the standalone floor rests on an assumed adjusted-EBITDA margin that the filing does not state.",
+      "notes": "This is a carefully built, transparent piece of work. Every 10-Q input is named and the arithmetic reproduces (FCF $206.5m → ~$275m annualised, net debt $1,078.3m, $6.57–$11.23 per share range). The change from version 1 is explained honestly, the method's criteria are assessed one by one, and the exit triggers are concrete. The biggest improvement is a factual one. CCC's 8-K filed 15 October 2026 (accession 0001193125-26-422320, Item 1.01, with the merger agreement as Exhibit 2.1) already discloses most of the 'missing' terms: a company termination fee of $149.52m, a parent reverse termination fee of $313.992m, a Termination Date of 14 April 2027, and HSR as the named antitrust condition. The press release in the same filing says the deal has no financing condition and is expected to close in the first quarter of 2027. Only the meeting date and the definitive proxy are still outstanding. That changes k1, k2 and k6, and it makes the implied-probability calculation possible: the remaining life is bounded by 14 April 2027, and the reverse fee is about $0.53 a share. It also bears on the 8.40 competing-bid point, since the break fee is known (about 3.3% of equity value). A second point to revisit is how stock-based compensation is treated. Deducting SBC from OCF-minus-capex is not a double count. And if SBC is treated as a cash cost, a rough EBITDA margin from Q3 operating income plus D&A comes out nearer the low-to-mid 30s than 36–42%, which would move the floor below $6.37. It would also help to reconcile the $6.37 break value with the ~$5.38 unaffected price, rather than setting the latter aside.",
+      "factual_errors": [],
+      "unlabeled_non_public": [],
+      "comment_url": "https://github.com/the-magi-system/magi/issues/91#issuecomment-6547397229",
+      "input_commit": "37c264849ad6a469c29d758f0ab65c5460997552",
+      "methodology_version": 1,
+      "profile_version": 1,
+      "prompt_sha256": "4bd01b7a16ed6ed052ab9700b1b546787dd873f5f36ad8d541639a098f10e668",
+      "model": "claude-opus-5-5",
+      "version": 1,
+      "published_at": "2026-10-31T18:24:23Z",
+      "published_via_run": 41229030582
+    }
+  ],
+  "evidence": [
+    {
+      "schema": "magi/evidence@1",
+      "id": "ev-20261031-ccc-2026-merger-agreement-8k",
+      "title": "CCC merger agreement with GTCR-led consortium, $7.75 per share in cash",
+      "kind": "filing",
+      "assets": [
+        "ccc"
+      ],
+      "ideas": [
+        "ccc-gtcr-take-private-2026"
+      ],
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/1818201/000119312526438167/0001193125-26-438167-index.htm",
+        "publisher": "U.S. Securities and Exchange Commission",
+        "published_at": "2026-10-15",
+        "tier": "primary"
+      },
+      "claims": [
+        {
+          "text": "CCC Intelligent Solutions Holdings Inc. entered into an Agreement and Plan of Merger dated as of 14 October 2026 with Mozart Parent, LLC and Mozart Merger Sub (DE), Inc., under which the merger subsidiary merges into CCC and CCC survives as a wholly owned subsidiary of the parent."
+        },
+        {
+          "text": "Each share of CCC common stock receives $7.75 in cash at closing.",
+          "value": 7.75,
+          "unit": "USD per share"
+        },
+        {
+          "text": "The consideration represents a premium of about 44% to the unaffected closing price on 9 July 2026, the last trading day before media speculation about a potential sale of CCC.",
+          "value": 44,
+          "unit": "% premium to unaffected close"
+        },
+        {
+          "text": "The consideration represents a premium of about 59% to the 30-day average price as of 9 July 2026.",
+          "value": 59,
+          "unit": "% premium to 30-day average"
+        },
+        {
+          "text": "The acquirer group is led by GTCR and includes Elliott Investment Management."
+        }
+      ],
+      "body_md": "The filing is the Schedule 14A soliciting material filed by CCC on 15 October 2026,\none day after the merger agreement was signed. It describes the transaction structure\nand the consideration, and states that it relates solely to preliminary communications\nmade prior to furnishing stockholders with a definitive proxy statement.\n\nWhat this filing does not contain, and what therefore remains unknown from primary\nsources: the outside date of the merger agreement; the termination fee payable by CCC\nand any reverse termination fee payable by the acquirer; the list of named regulatory\njurisdictions whose clearance is a condition precedent; and the date of the special\nstockholder meeting. Those terms are typically disclosed in the definitive proxy\nstatement on Schedule 14A (DEFM14A), which had not been filed as of 31 October 2026.",
+      "supersedes": null,
+      "submitted_by": "prod.mf",
+      "submitted_at": "2026-10-31T15:05:25Z",
+      "submitted_via_issue": 92
+    },
+    {
+      "schema": "magi/evidence@1",
+      "id": "ev-20261031-ccc-2026-proxy-absence-check",
+      "title": "CCC filing sequence from announcement to 31 October 2026: no definitive proxy statement yet",
+      "kind": "filing",
+      "assets": [
+        "ccc"
+      ],
+      "ideas": [
+        "ccc-gtcr-take-private-2026"
+      ],
+      "source": {
+        "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001818201&type=8-K&dateb=&owner=include&count=40",
+        "publisher": "U.S. Securities and Exchange Commission",
+        "published_at": "2026-10-29",
+        "tier": "primary"
+      },
+      "claims": [
+        {
+          "text": "CCC filed the Schedule 14A soliciting material on 15 October 2026 and two further DEFA14A soliciting materials on 16 October 2026 and 29 October 2026; all three state that they relate solely to preliminary communications made before a definitive proxy statement is furnished."
+        },
+        {
+          "text": "As of 31 October 2026 the EDGAR filing index of the company contains no DEFM14A, that is no definitive proxy statement, and no PREM14A."
+        },
+        {
+          "text": "No SC TO-T or SC 14D-9 has been filed by either side, which is consistent with a one-step merger rather than a tender offer followed by a merger."
+        },
+        {
+          "text": "CCC filed its quarterly report on Form 10-Q for the period ended 30 September 2026 on 29 October 2026, and that filing does not of itself supply the merger agreement terms listed as missing."
+        }
+      ],
+      "body_md": "Checked against the EDGAR submissions index of CCC on 31 October 2026. The forms present\nafter the 14 October 2026 merger agreement are: DEFA14A (15, 16 and 29 October),\n8-K (15 and 29 October) and 10-Q (29 October). No definitive proxy statement appears.\n\nWhy this matters for the view: the terms that decide whether the spread is\ncorrectly priced are disclosed in the definitive proxy statement, not in the\nannouncement. Until it is filed, the outside date, the termination fee and any\nreverse termination fee, the named regulatory jurisdictions and the stockholder\nmeeting date cannot be checked against a primary document. This evidence records\nan absence, and an absence is a fact that can be dated: if a DEFM14A appears, this\nrecord will be superseded rather than left standing.",
+      "supersedes": null,
+      "submitted_by": "prod.mf",
+      "submitted_at": "2026-10-31T15:07:11Z",
+      "submitted_via_issue": 93
+    },
+    {
+      "schema": "magi/evidence@1",
+      "id": "ev-20261031-ccc-2026q3-standalone-financials",
+      "title": "CCC Q3 2026 Form 10-Q: standalone cash generation and balance sheet",
+      "kind": "filing",
+      "assets": [
+        "ccc"
+      ],
+      "ideas": [
+        "ccc-gtcr-take-private-2026"
+      ],
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/1818201/000119312526437061/ccc-20260930.htm",
+        "publisher": "U.S. Securities and Exchange Commission",
+        "published_at": "2026-10-29",
+        "tier": "primary"
+      },
+      "claims": [
+        {
+          "text": "Nine-month 2026 total revenue was $861.3 million against $779.1 million a year earlier, an increase of 10.5%.",
+          "value": 10.5,
+          "unit": "% year over year"
+        },
+        {
+          "text": "Nine-month 2026 net cash provided by operating activities was $259.5 million, and purchases of software, equipment and property were $53.0 million, leaving free cash flow of $206.5 million before any adjustment for stock-based compensation."
+        },
+        {
+          "text": "Stock-based compensation was $93.8 million over the nine months, equal to 36% of operating cash flow.",
+          "value": 36,
+          "unit": "% of operating cash flow"
+        },
+        {
+          "text": "At 30 September 2026 the company held $202.9 million of cash and cash equivalents against a $1,281.2 million term loan, a net debt position of about $1,078.3 million."
+        },
+        {
+          "text": "There were 591,041,172 shares of common stock issued and outstanding as of 27 October 2026."
+        },
+        {
+          "text": "Third-quarter operating income was $57.4 million against $30.0 million a year earlier; depreciation and amortisation of software, equipment and property was $42.1 million and amortisation of intangible assets $68.6 million over the nine months."
+        },
+        {
+          "text": "The quarterly report is for the period ended 30 September 2026 and contains no disclosure of the merger terms, so the outside date, termination fees and regulatory conditions remain absent from primary sources."
+        }
+      ],
+      "body_md": "This filing is the basis for the standalone valuation that the first version of this\nview lacked. It is a first-party record of what CCC earns without a transaction.\n\nTwo figures matter most. First, the free cash flow before stock-based compensation:\n$206.5 million over nine months, which annualises to about $275 million on a simple\nfour-thirds scaling. Second, the fact that stock-based compensation of $93.8 million\nis 36% of operating cash flow. A buyer paying cash for the whole company would not\nissue shares to its own employees, so the $93.8 million is a real cost that has to be\ndeducted before a standalone value means anything. Deducting it leaves roughly $150\nmillion of annual free cash flow attributable to a financial owner.\n\nThe balance sheet is not a buffer: net debt of $1,078 million against 591.0 million\nshares means the equity is levered, and a falling enterprise value passes straight\nthrough to the share price.",
+      "supersedes": null,
+      "submitted_by": "prod.mf",
+      "submitted_at": "2026-10-31T15:16:48Z",
+      "submitted_via_issue": 96
+    }
+  ],
+  "history": [
+    {
+      "seq": 53,
+      "at": "2026-10-31T15:03:09Z",
+      "issue": 90,
+      "action": "create_idea",
+      "actor": "prod.mf",
+      "owner": "mf",
+      "entity": "ideas/ccc-gtcr-take-private-2026/idea"
+    },
+    {
+      "seq": 56,
+      "at": "2026-10-31T15:11:42Z",
+      "issue": 94,
+      "action": "update_view",
+      "actor": "prod.mf",
+      "owner": "mf",
+      "entity": "ideas/ccc-gtcr-take-private-2026/views/prod.mf",
+      "version": 1,
+      "target_date": "2027-03-31",
+      "proposal_sha256": "0e06a12e77e8de76ac2d2b24fe3ca07fe147daa882df9c81c21a4dca335f23a8",
+      "diff": {
+        "position": [
+          null,
+          "neutral"
+        ],
+        "strategy": [
+          null,
+          "announced-transaction"
+        ],
+        "sub_strategy": [
+          null,
+          "cash-merger"
+        ],
+        "horizon_months": [
+          null,
+          5
+        ],
+        "target_date": [
+          null,
+          "2027-03-31"
+        ],
+        "confidence": [
+          null,
+          0.35
+        ],
+        "methodology": [
+          null,
+          "koumei"
+        ],
+        "non_public_pillars": [
+          null,
+          []
+        ],
+        "derived.expected_price": [
+          null,
+          7.596
+        ],
+        "derived.expected_return": [
+          null,
+          -0.007059
+        ],
+        "derived.p10": [
+          null,
+          7.2
+        ],
+        "derived.p50": [
+          null,
+          7.75
+        ],
+        "derived.p90": [
+          null,
+          7.75
+        ]
+      },
+      "rationale": "Initial view: standing aside. The transaction has the shape this method looks for, a fixed cash payoff and a dated outcome, and the consideration is established in a binding agreement. What is missing is the evidence that would make the spread interpretable: no definitive proxy statement has been filed, so the outside date, the termination fees, the named regulatory jurisdictions and the stockholder meeting date are unknown, and the spread of about 1.3% leaves almost no compensation for a failure whose downside I cannot yet bound. Publishing a long view here would be a bet that an undisclosed process finishes on schedule, which is not a conclusion the documents support. I will reassess when the definitive proxy statement is filed: at that point k1, k2 and k6 can be assessed against named terms, and if the disclosure shows a wider spread than the terms justify, this view moves to long."
+    },
+    {
+      "seq": 58,
+      "at": "2026-10-31T15:22:23Z",
+      "issue": 97,
+      "action": "update_view",
+      "actor": "prod.mf",
+      "owner": "mf",
+      "entity": "ideas/ccc-gtcr-take-private-2026/views/prod.mf",
+      "version": 2,
+      "target_date": "2027-03-31",
+      "proposal_sha256": "a89eaec2af101c462ff1f6e07615351117d1171eb684d1b27ac572d7556ffb1a",
+      "diff": {
+        "confidence": [
+          0.35,
+          0.4
+        ],
+        "derived.expected_price": [
+          7.596,
+          7.587
+        ],
+        "derived.expected_return": [
+          -0.007059,
+          -0.008235
+        ],
+        "derived.p10": [
+          7.2,
+          6.37
+        ]
+      },
+      "rationale": "Second version. The change is that the failure case is now measured rather than asserted. In the first version the $6.10 failure point was a marking convention with no derivation. Reading the quarterly report for the period ended 30 September 2026 supplies the missing input: annualised free cash flow of about $275 million before stock-based compensation, stock-based compensation of $93.8 million or 36% of operating cash flow, net debt of $1,078 million and 591.0 million shares. Valued at 12 to 16 times adjusted EBITDA of $413 million to $482 million, the standalone equity is worth about $6.57 to $11.23 a share, so the $7.75 consideration sits in roughly the bottom quarter of that range rather than 44% above it. That cuts both ways and both directions are recorded: termination costs less than the first version implied, so the failure point moves up from $6.10 to $6.37, and the thin spread is less attractive than it looked because there is less distressed upside on a break. The position stays neutral because the three unmet tests have not changed: the decisive terms are still unfiled, there is still no evidence gap to trade, and the time compensation is still negative against cash. No assumptions were widened to change the distribution shape; the four points are the output of the valuation above, and the failure point moves by the amount the standalone range implies."
+    },
+    {
+      "seq": 61,
+      "at": "2026-10-31T18:24:23Z",
+      "run": 41229030582,
+      "action": "review",
+      "actor": "caspar.magi",
+      "owner": "magi",
+      "entity": "ideas/ccc-gtcr-take-private-2026/judgements/caspar.magi/prod.mf",
+      "version": 1,
+      "view_version": 2,
+      "scores": {
+        "evidence_quality": 5,
+        "reasoning_coherence": 4,
+        "valuation_consistency": 6,
+        "data_freshness": 5,
+        "falsifiability": 8
+      }
+    }
+  ]
+}

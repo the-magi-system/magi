@@ -1,0 +1,199 @@
+{
+  "valuation_date": "2026-10-30",
+  "rules": [
+    "crps-rel@1"
+  ],
+  "groups": {
+    "13-36/equity": {
+      "actors": {
+        "pendragon.avalon": {
+          "owner": "arthur",
+          "counted_settled": 0,
+          "not_counted": 0,
+          "mean_crps_rel": null,
+          "median_crps_rel": null,
+          "due": 0,
+          "settled": 0,
+          "unsettled": {},
+          "provisional": 0,
+          "pending": 0,
+          "not_due": 1,
+          "assets": 1,
+          "ideas": 1,
+          "uncertainty": null,
+          "calibration": {
+            "below_p10": 0,
+            "above_p90": 0,
+            "within_p10_p90": 0,
+            "pit_mean": null,
+            "too_few": true
+          }
+        }
+      },
+      "all": {
+        "owners": 0,
+        "mean_crps_rel": null
+      },
+      "ranking": {
+        "ranked": [],
+        "too_few": [
+          "pendragon.avalon"
+        ]
+      }
+    },
+    "37-120/equity": {
+      "actors": {
+        "arc.cheng": {
+          "owner": "cheng",
+          "counted_settled": 0,
+          "not_counted": 0,
+          "mean_crps_rel": null,
+          "median_crps_rel": null,
+          "due": 0,
+          "settled": 0,
+          "unsettled": {},
+          "provisional": 0,
+          "pending": 0,
+          "not_due": 1,
+          "assets": 1,
+          "ideas": 1,
+          "uncertainty": null,
+          "calibration": {
+            "below_p10": 0,
+            "above_p90": 0,
+            "within_p10_p90": 0,
+            "pit_mean": null,
+            "too_few": true
+          }
+        }
+      },
+      "all": {
+        "owners": 0,
+        "mean_crps_rel": null
+      },
+      "ranking": {
+        "ranked": [],
+        "too_few": [
+          "arc.cheng"
+        ]
+      }
+    },
+    "4-12/equity": {
+      "actors": {
+        "prod.mf": {
+          "owner": "mf",
+          "counted_settled": 0,
+          "not_counted": 1,
+          "mean_crps_rel": null,
+          "median_crps_rel": null,
+          "due": 0,
+          "settled": 0,
+          "unsettled": {},
+          "provisional": 0,
+          "pending": 0,
+          "not_due": 2,
+          "assets": 1,
+          "ideas": 1,
+          "uncertainty": null,
+          "calibration": {
+            "below_p10": 0,
+            "above_p90": 0,
+            "within_p10_p90": 0,
+            "pit_mean": null,
+            "too_few": true
+          }
+        }
+      },
+      "all": {
+        "owners": 0,
+        "mean_crps_rel": null
+      },
+      "ranking": {
+        "ranked": [],
+        "too_few": [
+          "prod.mf"
+        ]
+      }
+    }
+  },
+  "actors": {
+    "arc.cheng": {
+      "owner": "cheng",
+      "all": {
+        "owner": "cheng",
+        "counted_settled": 0,
+        "not_counted": 0,
+        "mean_crps_rel": null,
+        "median_crps_rel": null,
+        "due": 0,
+        "settled": 0,
+        "unsettled": {},
+        "provisional": 0,
+        "pending": 0,
+        "not_due": 1,
+        "assets": 1,
+        "ideas": 1,
+        "uncertainty": null,
+        "calibration": {
+          "below_p10": 0,
+          "above_p90": 0,
+          "within_p10_p90": 0,
+          "pit_mean": null,
+          "too_few": true
+        }
+      }
+    },
+    "pendragon.avalon": {
+      "owner": "arthur",
+      "all": {
+        "owner": "arthur",
+        "counted_settled": 0,
+        "not_counted": 0,
+        "mean_crps_rel": null,
+        "median_crps_rel": null,
+        "due": 0,
+        "settled": 0,
+        "unsettled": {},
+        "provisional": 0,
+        "pending": 0,
+        "not_due": 1,
+        "assets": 1,
+        "ideas": 1,
+        "uncertainty": null,
+        "calibration": {
+          "below_p10": 0,
+          "above_p90": 0,
+          "within_p10_p90": 0,
+          "pit_mean": null,
+          "too_few": true
+        }
+      }
+    },
+    "prod.mf": {
+      "owner": "mf",
+      "all": {
+        "owner": "mf",
+        "counted_settled": 0,
+        "not_counted": 1,
+        "mean_crps_rel": null,
+        "median_crps_rel": null,
+        "due": 0,
+        "settled": 0,
+        "unsettled": {},
+        "provisional": 0,
+        "pending": 0,
+        "not_due": 2,
+        "assets": 1,
+        "ideas": 1,
+        "uncertainty": null,
+        "calibration": {
+          "below_p10": 0,
+          "above_p90": 0,
+          "within_p10_p90": 0,
+          "pit_mean": null,
+          "too_few": true
+        }
+      }
+    }
+  }
+}
