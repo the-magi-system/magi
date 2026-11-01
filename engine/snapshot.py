@@ -24,6 +24,13 @@ def protocol_version(root: Path) -> str:
     return match.group(1) if match else "unknown"
 
 
+def _check(record: dict | None) -> dict | None:
+    """An evidence's check, as each idea file shows it (protocol section 9, Evidence checks)."""
+    if record is None:
+        return None
+    return {"status": record["status"], "checked_at": record["checked_at"], "version": record["version"]}
+
+
 def _log(root: Path) -> list[dict]:
     directory = Path(root) / LOG_DIR
     entries: list[dict] = []
@@ -124,7 +131,8 @@ def compile_snapshot(root: Path, now: datetime, commit: str) -> dict[str, object
             "views": [{**view, "now": _now(view, line, today), "trail": f"trails/{idea_id}/{view['actor']}.json"}
                       for view in views],
             "judgements": [j for (owner_idea, _, _), j in sorted(state.judgements.items()) if owner_idea == idea_id],
-            "evidence": [e for _, e in sorted(state.evidence.items())
+            "evidence": [{**e, "check": _check(state.evidence_checks.get(evidence_id))}
+                         for evidence_id, e in sorted(state.evidence.items())
                          if idea_id in e.get("ideas", []) or idea["asset"] in e["assets"]],
             "history": [entry for entry in log if entry["entity"].startswith(f"ideas/{idea_id}/")],
         }

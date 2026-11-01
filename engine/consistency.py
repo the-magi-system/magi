@@ -185,6 +185,24 @@ def _reports_logged(root: Path) -> list[Finding]:
             for rel in (path.relative_to(root).as_posix() for path in paths) if rel not in logged]
 
 
+def _evidence_checks(root: Path, state: RepoState) -> list[Finding]:
+    """Melchior.Magi's check records: the evidence and the evidence that supersedes it exist, and every version has
+    a line in the event log (protocol section 9, Evidence checks)."""
+    logged = {(entry["entity"], entry.get("version")) for entry in read_log(root) if entry.get("action") == "evidence_check"}
+    found = []
+    for evidence_id, record in sorted(state.evidence_checks.items()):
+        path = f"evidence/checks/{evidence_id}.yaml"
+        if evidence_id not in state.evidence:
+            found.append(Finding(path, f"checks evidence {evidence_id!r}, which does not exist", MELCHIOR))
+        superseded = record.get("superseded_by")
+        if superseded and superseded not in state.evidence:
+            found.append(Finding(path, f"superseded_by names {superseded!r}, which does not exist", MELCHIOR))
+        if (path.removesuffix(".yaml"), record.get("version")) not in logged:
+            found.append(Finding(path, f"version {record.get('version')} of this check has no line in the event log",
+                                 MELCHIOR))
+    return found
+
+
 def _reviews_logged(root: Path, state: RepoState) -> list[Finding]:
     logged = {(entry["entity"], entry.get("version")) for entry in read_log(root) if entry.get("action") == "review"}
     found = []
@@ -482,6 +500,7 @@ def check_repository(root: Path, now: datetime | None = None) -> list[Finding]:
         return [Finding("", f"repository could not be loaded: {type(exc).__name__}: {exc}")]
     ledger = effective_ledger(root)
     today = (now or utc_now()).date().isoformat()
-    return _references(state) + _reviews_logged(root, state) + _reports_logged(root) + _ledger(root) + \
+    return _references(state) + _reviews_logged(root, state) + _evidence_checks(root, state) + _reports_logged(root) + \
+        _ledger(root) + \
         _corrections(root) + _log(root) + _fills(root, state, ledger) + _settlements(root, state, ledger, today) + \
         _market(root, state, ledger, today)
