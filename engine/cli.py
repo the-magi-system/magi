@@ -23,7 +23,10 @@ from .intake import run_intake
 from .melchior.common import SCOPES as MELCHIOR_SCOPES
 from .melchior.lookup import lookup
 from .melchior.records import compile_records
+from .melchior.run import fetch_sources as melchior_fetch
 from .melchior.run import prepare as melchior_prepare
+from .melchior.think import KINDS as MELCHIOR_KINDS
+from .melchior.think import think as melchior_think
 from .melchior.run import preview_markdown
 from .melchior.run import write as melchior_write
 from .market import record_market
@@ -153,21 +156,42 @@ def _caspar_write(args) -> int:
 
 
 def _melchior_prepare(args) -> int:
-    plan = melchior_prepare(args.repo, args.out, args.scope, args.mode, utc_now())
+    plan = melchior_prepare(args.repo, args.out, args.scope, args.mode, utc_now(), model_mode=args.model_mode,
+                            event=args.event, turn=args.run_number,
+                            monthly_usd=os.environ.get("MELCHIOR_MONTHLY_USD"))
     print(json.dumps(plan, indent=2, ensure_ascii=False))
     return 0
 
 
+def _melchior_fetch(args) -> int:
+    """The only step that reads the SEC contact (plan 9, item 24); it never prints it."""
+    from .fetch import Fetcher
+    plan = melchior_fetch(args.repo, args.work, Fetcher(os.environ.get("MAGI_HTTP_CONTACT")), utc_now())
+    tasks = [{"id": task["id"], "kind": task["kind"]} for task in plan["tasks"]]
+    output = os.environ.get("GITHUB_OUTPUT")
+    if output:
+        with open(output, "a", encoding="utf-8") as handle:
+            handle.write(f"tasks={json.dumps(tasks)}\ncount={len(tasks)}\n")
+    print(json.dumps({"model_mode": plan["model_mode"], "model_notice": plan["model_notice"], "tasks": tasks,
+                      "records": [record["evidence"] for record in plan["records"]],
+                      "waiting": plan["pending_contact"]}, indent=2, ensure_ascii=False))
+    return 0
+
+
+def _melchior_think(args) -> int:
+    return melchior_think(args.repo, args.task, args.kind, args.out)
+
+
 def _melchior_write(args) -> int:
     summary = melchior_write(args.repo, None, Git(args.repo), args.work, args.mode, args.run_id, utc_now(),
-                             PriceRouter())
-    if summary["preview"] is not None:
+                             PriceRouter(), model_mode=args.model_mode)
+    if summary["preview"] is not None or summary["model_preview"]:
         (Path(args.work) / "preview.md").write_text(preview_markdown(summary), encoding="utf-8")
     if summary["findings"]:
         report(GitHubClient.from_env(), "Melchior.Magi found problems", [Finding(**f) for f in summary["findings"]])
-    print(json.dumps({**summary, "preview": len(summary["preview"]) if summary["preview"] is not None else None},
-                     indent=2, ensure_ascii=False))
-    return 0
+    print(json.dumps({**summary, "preview": len(summary["preview"]) if summary["preview"] is not None else None,
+                      "model_preview": len(summary["model_preview"])}, indent=2, ensure_ascii=False))
+    return 1 if (summary["probe"] or "").startswith("failed") else 0
 
 
 def _melchior_lookup(args) -> int:
@@ -256,20 +280,39 @@ def build_parser() -> argparse.ArgumentParser:
     write.set_defaults(handler=_caspar_write, json_errors=False)
 
     melchior = commands.add_parser("melchior", help="Melchior.Magi, the recorder system agent (run by the melchior "
-                                                    "workflow); it runs programs only")
+                                                    "workflow)")
     steps = melchior.add_subparsers(dest="step", required=True)
     plan = steps.add_parser("prepare", help="find the work and write plan.json; never writes to the repository")
     plan.add_argument("--repo", type=Path, default=Path("."), help="repository root")
     plan.add_argument("--out", type=Path, required=True, help="directory for plan.json")
     plan.add_argument("--scope", choices=sorted(MELCHIOR_SCOPES), default="all",
-                      help="which work to do; all and program are the same in this version")
+                      help="which work to do; every scope does the program part")
     plan.add_argument("--mode", default="", help="MELCHIOR_MODE: preview (the default when empty), live or off")
+    plan.add_argument("--model-mode", default="", help="MELCHIOR_MODEL_MODE: off (the default when empty), preview "
+                                                       "or live; never higher than --mode")
+    plan.add_argument("--event", default="schedule", help="the workflow event; preview asks the model only for "
+                                                          "workflow_dispatch")
+    plan.add_argument("--run-number", type=int, default=0,
+                      help="the workflow run number; it moves the starting point of a long queue")
     plan.set_defaults(handler=_melchior_prepare, json_errors=False)
+    fetch = steps.add_parser("fetch", help="fetch the evidence sources in plan.json and settle the model tasks; reads "
+                                           "MAGI_HTTP_CONTACT, which only sec.gov receives")
+    fetch.add_argument("--repo", type=Path, default=Path("."), help="repository root")
+    fetch.add_argument("--work", type=Path, required=True, help="the prepare directory, with plan.json")
+    fetch.set_defaults(handler=_melchior_fetch, json_errors=False)
+    model = steps.add_parser("think", help="run the model on one task through the Claude Agent SDK; needs "
+                                           "ANTHROPIC_API_KEY and the packages in requirements-think.txt")
+    model.add_argument("--repo", type=Path, default=Path("."), help="repository root, with work/<task>/input.json")
+    model.add_argument("--task", required=True, help="the task id from the prepare step")
+    model.add_argument("--kind", choices=MELCHIOR_KINDS, required=True, help="the task kind")
+    model.add_argument("--out", type=Path, required=True, help="file for the model's answer, as JSON")
+    model.set_defaults(handler=_melchior_think, json_errors=False)
     write = steps.add_parser("write", help="register series, record fills and settlements; commit them in live mode, "
                                            "describe them in work/preview.md in preview mode")
     write.add_argument("--repo", type=Path, default=Path("."), help="repository root")
     write.add_argument("--work", type=Path, required=True, help="the prepare directory, with plan.json")
     write.add_argument("--mode", default="", help="MELCHIOR_MODE: preview (the default when empty), live or off")
+    write.add_argument("--model-mode", default=None, help="MELCHIOR_MODEL_MODE now; it can only lower the plan's")
     write.add_argument("--run-id", type=int, required=True, help="the workflow run id, recorded instead of an issue")
     write.set_defaults(handler=_melchior_write, json_errors=False)
     find = steps.add_parser("lookup", help="recompile a commit's snapshot with that commit's own engine and print the "

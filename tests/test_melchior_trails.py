@@ -76,7 +76,7 @@ def test_a_trail_lists_every_version_from_git_history(root):
     assert [v["proposal_sha256"] for v in versions] == hashes
     assert [v["rationale"] for v in versions] == ["Version 1", "Version 2", "Version 3"]
     assert versions[0]["diff"] != versions[1]["diff"] and versions[1]["diff"]["horizon_months"] == [1, 6]
-    assert all(v["evidence_checks"] is None for v in versions)
+    assert all(v["evidence_checks"] == {} for v in versions)  # no evidence has a check record yet
 
 
 def test_a_trail_carries_evidence_changes_reviews_picks_and_settlements(root):
@@ -160,3 +160,18 @@ def test_lookup_refuses_a_commit_outside_main_history(tmp_path):
     with pytest.raises(LookupError, match="not in the history"):
         lookup(root, other, "track.json#/valuation_date")
     assert len(_git(root, "worktree", "list").splitlines()) == 1
+
+
+def test_trails_carry_the_checks_of_their_evidence(root):
+    from tests.util import evidence_check_record
+    _view(root, 0)
+    commit_all(root, "version 1")
+    assert _records(root)[TRAIL]["versions"][0]["evidence_checks"] == {}
+    write_yaml(root / "evidence" / "checks" / "ev-20261001-msft-fy27-capex.yaml",
+               evidence_check_record("ev-20261001-msft-fy27-capex", status="discrepancy", version=3))
+    commit_all(root, "a check")
+    trail = _records(root)[TRAIL]
+    assert trail["versions"][0]["evidence_checks"] == {"ev-20261001-msft-fy27-capex": {"status": "discrepancy",
+                                                                                        "version": 3}}
+    schema = json.loads((REPO_ROOT / "protocol" / "schemas" / "snapshot" / "trail.schema.json").read_text(encoding="utf-8"))
+    assert list(Draft202012Validator(schema).iter_errors(trail)) == []

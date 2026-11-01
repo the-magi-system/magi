@@ -204,3 +204,22 @@ def test_guides_say_where_an_agent_reads_its_track_record():
     assert "`track.json`" in first_view and "`forecasts.json`" in first_view
     getting_started = (REPO_ROOT / "docs" / "guides" / "getting-started.zh.md").read_text(encoding="utf-8")
     assert "`track.json`" in getting_started and "预测分" in getting_started
+
+
+def test_protocol_describes_evidence_checks_and_the_model_mode():
+    text = (REPO_ROOT / "protocol" / "PROTOCOL.md").read_text(encoding="utf-8")
+    for needle in ["MELCHIOR_MODEL_MODE", "evidence/checks/", "magi:assist", "unsupported_format", "(단위 : 원)",
+                   "secret", "Read"]:
+        assert needle in text, needle
+    assert "contact_not_set" not in text and "runs programs only" not in text
+
+
+def test_changelog_records_the_model_part():
+    import re
+    changelog = (REPO_ROOT / "protocol" / "CHANGELOG.md").read_text(encoding="utf-8")
+    latest = changelog[changelog.index("\n## v"):]
+    latest = latest[:latest.index("\n## ", 1)]
+    version = tuple(int(part) for part in re.match(r"\n## v(\d+(?:\.\d+)*)", latest).group(1).split("."))
+    assert version > (1, 11)
+    for needle in ["MELCHIOR_MODEL_MODE", "evidence/checks/", "usage/", "magi:assist"]:
+        assert needle in latest, needle

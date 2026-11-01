@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import copy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from .yamlio import load_yaml
@@ -43,6 +43,7 @@ class RepoState:
     views: dict[tuple[str, str], dict]
     judgements: dict[tuple[str, str, str], dict]  # (idea, judge, actor of the reviewed view)
     ledger_files: set[str]  # every YAML file under ledger/
+    evidence_checks: dict[str, dict] = field(default_factory=dict)  # evidence/checks/<evidence id>.yaml
 
     @classmethod
     def load(cls, root: Path) -> "RepoState":
@@ -69,6 +70,7 @@ class RepoState:
             views=_keyed(root / "ideas", "*/views/*.yaml", "idea", "actor"),
             judgements=_keyed(root / "ideas", "*/judgements/*/*.yaml", "idea", "judge", "actor"),
             ledger_files=ledger_files,
+            evidence_checks=_records(root / "evidence" / "checks", "*.yaml", "evidence"),
         )
 
     def researcher_by_github_id(self, github_id: int) -> dict | None:

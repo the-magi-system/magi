@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "evidence/checks/<evidence id>.yaml (written by Melchior.Magi; a new check raises the version, older versions stay in git history)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "evidence", "status", "reason", "source_date", "claims", "source", "link", "currency",
+               "superseded_by", "same_source_as", "pending_sources", "assist_issue", "next_review", "input_commit",
+               "prompt_sha256", "model", "version", "checked_at", "checked_via_run"],
+  "properties": {
+    "schema": {"const": "magi/evidence-check@1"},
+    "evidence": {"$ref": "#/$defs/evidence_id"},
+    "status": {"enum": ["verified", "discrepancy", "unverified"]},
+    "reason": {"enum": [null, "non-public", "source_unreachable", "unsupported_format", "not_found"]},
+    "source_date": {
+      "oneOf": [
+        {"type": "null"},
+        {"type": "object", "additionalProperties": false, "required": ["quote", "date", "filing_date", "matches"],
+         "properties": {
+           "quote": {"type": ["string", "null"]},
+           "date": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/date"}]},
+           "filing_date": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/date"}]},
+           "matches": {"type": ["boolean", "null"]}
+         }}
+      ]
+    },
+    "claims": {"type": "array", "items": {"$ref": "#/$defs/claim"}},
+    "source": {
+      "oneOf": [
+        {"type": "null"},
+        {"type": "object", "additionalProperties": false,
+         "required": ["url", "final_url", "http_status", "content_type", "format", "parts", "decoding", "fetched_at",
+                      "sha256", "chars", "truncated"],
+         "properties": {
+           "url": {"type": "string", "pattern": "^https://"},
+           "final_url": {"type": ["string", "null"]},
+           "http_status": {"type": ["integer", "null"]},
+           "content_type": {"type": ["string", "null"]},
+           "format": {"enum": ["html", "text", "pdf", "other"]},
+           "parts": {"type": "integer", "minimum": 0},
+           "decoding": {"enum": [null, "declared", "detected", "replaced"]},
+           "fetched_at": {"$ref": "#/$defs/datetime"},
+           "sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+           "chars": {"type": "integer", "minimum": 0},
+           "truncated": {"type": "boolean"}
+         }}
+      ]
+    },
+    "link": {"enum": ["ok", "broken"]},
+    "currency": {"enum": ["current", "superseded"]},
+    "superseded_by": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/evidence_id"}]},
+    "same_source_as": {"type": "array", "items": {"$ref": "#/$defs/evidence_id"}, "uniqueItems": true},
+    "pending_sources": {"type": "array", "maxItems": 3, "items": {"type": "string", "pattern": "^https://"}},
+    "assist_issue": {"type": ["integer", "null"], "minimum": 1},
+    "next_review": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/date"}]},
+    "input_commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+    "prompt_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "model": {"type": ["string", "null"]},
+    "version": {"type": "integer", "minimum": 1},
+    "checked_at": {"$ref": "#/$defs/datetime"},
+    "checked_via_run": {"type": "integer", "minimum": 1}
+  },
+  "allOf": [
+    {"if": {"properties": {"status": {"const": "unverified"}}},
+     "then": {"properties": {"reason": {"type": "string"}}},
+     "else": {"properties": {"reason": {"type": "null"}}}},
+    {"if": {"properties": {"reason": {"const": "non-public"}}},
+     "then": {"properties": {"next_review": {"type": "null"}, "source": {"type": "null"}}},
+     "else": {"properties": {"next_review": {"$ref": "#/$defs/date"}}}}
+  ],
+  "$defs": {
+    "evidence_id": {"type": "string", "pattern": "^ev-\\d{8}-[a-z0-9][a-z0-9-]*$"},
+    "date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+    "datetime": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"},
+    "figure": {
+      "type": "object", "additionalProperties": false,
+      "required": ["claim", "source", "unit", "claim_value", "source_value"],
+      "properties": {
+        "claim": {"type": "string", "minLength": 1},
+        "source": {"type": "string", "minLength": 1},
+        "unit": {"type": ["string", "null"]},
+        "claim_value": {"type": "number"},
+        "source_value": {"type": "number"}
+      }
+    },
+    "claim": {
+      "type": "object", "additionalProperties": false,
+      "required": ["index", "verdict", "timing", "quote", "figures", "correct", "note"],
+      "properties": {
+        "index": {"type": "integer", "minimum": 0},
+        "verdict": {"enum": ["supported", "contradicted", "not_found"]},
+        "timing": {"enum": [null, "historical", "standing"]},
+        "quote": {"type": ["string", "null"]},
+        "figures": {"type": "array", "items": {"$ref": "#/$defs/figure"}},
+        "correct": {
+          "oneOf": [
+            {"type": "null"},
+            {"type": "object", "additionalProperties": false, "required": ["text", "figures"],
+             "properties": {"text": {"type": "string", "minLength": 1},
+                            "figures": {"type": "array", "items": {"$ref": "#/$defs/figure"}}}}
+          ]
+        },
+        "note": {"type": ["string", "null"], "maxLength": 500}
+      }
+    }
+  }
+}

@@ -501,6 +501,21 @@ def ledger_file(inputs: Inputs) -> dict:
                         for entry in entries if entry.kind}}
 
 
+def evidence_checks_file(inputs) -> dict:
+    """The check state of every evidence (protocol section 9, Evidence checks); `pending` until it has a record."""
+    checks = {}
+    for evidence_id in sorted(inputs.state.evidence):
+        record = inputs.state.evidence_checks.get(evidence_id)
+        if record is None:
+            checks[evidence_id] = {"evidence": evidence_id, "status": "pending", "reason": None, "checked_at": None,
+                                   "version": None, "link": None, "currency": None, "superseded_by": None,
+                                   "assist_issue": None}
+        else:
+            checks[evidence_id] = {"evidence": evidence_id, **{key: record.get(key) for key in (
+                "status", "reason", "checked_at", "version", "link", "currency", "superseded_by", "assist_issue")}}
+    return {"checks": checks}
+
+
 def compile_records(root: Path, as_of: str | None = None) -> dict[str, object]:
     inputs = Inputs.load(root, as_of)
     rulings = rulings_file(inputs)
@@ -515,5 +530,6 @@ def compile_records(root: Path, as_of: str | None = None) -> dict[str, object]:
         "benchmarks.json": benchmarks_file(inputs, valued),
         "market_state.json": market_state_file(inputs),
         "ledger.json": ledger_file(inputs),
+        "evidence_checks.json": evidence_checks_file(inputs),
         **trails(inputs.root, inputs.state, inputs.ledger, settlements, rulings),
     }
