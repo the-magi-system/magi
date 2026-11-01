@@ -1,7 +1,9 @@
 """Stand-ins for the price source, the GitHub API and the git remote. Tests never touch the network."""
 from __future__ import annotations
 
+import copy
 import itertools
+import re
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
@@ -94,6 +96,12 @@ class FakeGitHub:
         self._numbers = itertools.count(1)
         self._comment_ids = itertools.count(1000)
         self._clock = itertools.count(1)
+        # GitHub Discussions, reached only through graphql()
+        self.categories = [{"id": "DIC_1", "name": "Announcements"}, {"id": "DIC_2", "name": "General"}]
+        self.discussions: list[dict] = []
+        self.discussion_time = "2026-10-02T03:00:00Z"
+        self.graphql_calls: list[str] = []
+        self.graphql_fail: set[str] = set()
 
     def _ts(self) -> str:
         tick = next(self._clock)
@@ -176,3 +184,50 @@ class FakeGitHub:
     def edit_comment(self, comment_id: int, body: str) -> None:
         comment = next(c for comments in self.comments_by_issue.values() for c in comments if c["id"] == comment_id)
         comment["body"] = body
+
+    # GitHub Discussions through GraphQL: the operations Caspar's topics use (decision D46)
+    BOT_GRAPHQL = {"__typename": "Bot", "login": "github-actions"}
+
+    def add_discussion(self, login: str, body: str, title: str = "A discussion", typename: str = "User",
+                       created_at: str | None = None, category: str = "DIC_2") -> dict:
+        return self._new_discussion({"__typename": typename, "login": login}, title, body, category, created_at)
+
+    def add_discussion_comment(self, discussion: dict, login: str, body: str, typename: str = "User") -> None:
+        discussion["comments"].append({"body": body, "author": {"__typename": typename, "login": login}})
+
+    def _new_discussion(self, author: dict, title: str, body: str, category: str, created_at: str | None) -> dict:
+        number = len(self.discussions) + 1
+        discussion = {"id": f"D_{number}", "number": number, "title": title, "body": body, "category": category,
+                      "url": f"https://github.com/{self.repo}/discussions/{number}", "author": author,
+                      "createdAt": created_at or self.discussion_time, "comments": []}
+        self.discussions.append(discussion)
+        return discussion
+
+    def graphql(self, query: str, variables: dict | None = None) -> dict:
+        from engine.github import GitHubError
+        operation = re.search(r"\b(?:query|mutation)\s+(\w+)", query).group(1)
+        self.graphql_calls.append(operation)
+        if operation in self.graphql_fail:
+            raise GitHubError(f"GraphQL request failed: simulated failure of {operation}")
+        variables = variables or {}
+        if operation == "MagiTopics":
+            nodes = [{**{k: copy.deepcopy(d[k]) for k in ("id", "number", "url", "createdAt", "body", "author")},
+                      "comments": {"pageInfo": {"hasNextPage": False, "endCursor": None},
+                                   "nodes": copy.deepcopy(d["comments"])}} for d in self.discussions]
+            return {"repository": {"id": "R_1", "discussionCategories": {"nodes": copy.deepcopy(self.categories)},
+                                   "discussions": {"pageInfo": {"hasNextPage": False, "endCursor": None},
+                                                   "nodes": nodes}}}
+        if operation == "MagiTopicComments":
+            found = next(d for d in self.discussions if d["id"] == variables["id"])
+            return {"node": {"comments": {"pageInfo": {"hasNextPage": False}, "nodes": copy.deepcopy(found["comments"])}}}
+        if operation == "MagiCreateDiscussion":
+            assert variables["repositoryId"] == "R_1"
+            assert any(c["id"] == variables["categoryId"] for c in self.categories)
+            made = self._new_discussion(dict(self.BOT_GRAPHQL), variables["title"], variables["body"],
+                                        variables["categoryId"], None)
+            return {"createDiscussion": {"discussion": {"id": made["id"], "number": made["number"], "url": made["url"]}}}
+        if operation == "MagiAddDiscussionComment":
+            found = next(d for d in self.discussions if d["id"] == variables["discussionId"])
+            self.add_discussion_comment(found, "github-actions", variables["body"], typename="Bot")
+            return {"addDiscussionComment": {"comment": {"id": "DC", "url": f"{found['url']}#comment"}}}
+        raise AssertionError(f"unexpected GraphQL operation {operation}")

@@ -25,16 +25,17 @@ def test_caspar_keeps_its_tools_for_every_kind():
     from engine.caspar.think import options
     from engine.think import agent_options
     assert callable(agent_options), "the shared module exists"
-    # Only these four kinds are listed; KINDS may grow (decision D46 adds topic), so its length is not asserted.
+    # Only these kinds are pinned; KINDS may grow, so its length is not asserted.
     for kind in ("review", "weekly", "probe"):
         opts = options(REPO_ROOT, kind)
         assert opts["tools"] == READ_ONLY and opts["allowed_tools"] == READ_ONLY, kind
         assert opts["disallowed_tools"] == WRITING, kind
         assert "max_turns" not in opts and "max_budget_usd" not in opts
-    opts = options(REPO_ROOT, "join")
-    assert opts["tools"] == ["Read"] and opts["allowed_tools"] == ["Read"]
-    assert opts["disallowed_tools"] == WRITING + ["Grep", "Glob", "WebSearch", "WebFetch"]
-    assert "max_turns" not in opts and "max_budget_usd" not in opts
+    for kind in ("join", "topic"):  # decisions D45 and D46: Read alone
+        opts = options(REPO_ROOT, kind)
+        assert opts["tools"] == ["Read"] and opts["allowed_tools"] == ["Read"], kind
+        assert opts["disallowed_tools"] == WRITING + ["Grep", "Glob", "WebSearch", "WebFetch"], kind
+        assert "max_turns" not in opts and "max_budget_usd" not in opts
 
 
 def test_the_shared_module_has_no_default_tools():

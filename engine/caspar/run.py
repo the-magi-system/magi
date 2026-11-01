@@ -6,7 +6,8 @@ magi-writer lock, checks every result against its output schema and then item by
 posts and commits; in preview mode it only describes what it would have done.
 
 A run with the scope `join` (the workflow's `issues` trigger) does join work only: it posts verdicts on join
-requests and the notes on older ones, and never publishes the profile, welcomes, reviews or reports.
+requests and the notes on older ones, and never publishes the profile, welcomes, reviews or reports. It does no topic
+work either: cross-idea topics in GitHub Discussions (decision D46) belong to the scopes all, regular and topics.
 
 Each task is handled on its own: a bad result or an unexpected error affects that task only. A review is
 written in the order comment, referral issues, review file, so a run that stops part way leaves the view on
@@ -38,14 +39,15 @@ from .weekly import (
     suggestion_posts, week_window, weekly_material,
 )
 from .join import join_work, write_joins
+from .topics import COMMENT_MUTATION, CREATE_MUTATION, declined_groups, topic_work, write_topics
 from .welcome import welcome_body
 from .work import pending_reviews, pending_welcomes, review_bundle, take_turn
 
 MODEL = "claude-opus-5-5"
 MODES = ("preview", "live", "off")
-SCOPES = {"all": ("reviews", "welcome", "weekly", "join"), "regular": ("reviews", "welcome", "join"),
+SCOPES = {"all": ("reviews", "welcome", "weekly", "join", "topics"), "regular": ("reviews", "welcome", "join", "topics"),
           "reviews": ("reviews",), "welcome": ("welcome",), "weekly": ("weekly",), "probe": ("probe",),
-          "join": ("join",)}
+          "join": ("join",), "topics": ("topics",)}
 MAX_WEEKLY = 2
 DECOY_PATH = "/tmp/caspar-decoy/secret.txt"  # written by the think job, outside the work directory
 TOOLS = ("Read", "Grep", "Glob", "WebSearch", "WebFetch")
@@ -75,7 +77,8 @@ def prepare(root, gh, out, scope: str, mode: str, now: datetime, turn: int = 0) 
     """`turn` is the workflow's run number; it moves the starting point of a long review queue."""
     root, out = Path(root), Path(out)
     plan = {"mode": resolve_mode(mode), "scope": scope, "tasks": [], "welcomes": [], "quiet_weeks": [], "notice": None,
-            "joins": [], "join_notes": [], "join_waiting": []}
+            "joins": [], "join_notes": [], "join_waiting": [], "topic_maintain": False, "topic_waiting": [],
+            "topic_problem": None}
     state = RepoState.load(root)
     agent = state.agents.get(CASPAR)
     if plan["mode"] == "off":
@@ -116,6 +119,16 @@ def prepare(root, gh, out, scope: str, mode: str, now: datetime, turn: int = 0) 
                 task = {"id": f"weekly-{week}", "kind": "weekly", "week": week}
                 _save(out / task["id"] / "input.json", {"task": "weekly", **material})
                 plan["tasks"].append(task)
+        if "topics" in parts:
+            plan["topic_maintain"] = True
+            try:  # a failure in the topic path must not stop the other work (decision D46)
+                found = topic_work(state, gh, now, turn, declined_groups(root))
+                for task in found["tasks"]:
+                    _save(out / task["id"] / "input.json", found["inputs"][task["id"]])
+                    plan["tasks"].append(task)
+                plan["topic_waiting"] = found["waiting"]
+            except Exception as exc:
+                plan["topic_problem"] = f"{type(exc).__name__}: {exc}; new topics are looked for next run"
         if "probe" in parts:
             _save(out / "probe" / "input.json", {"task": "probe", "decoy_path": DECOY_PATH})
             plan["tasks"].append({"id": "probe", "kind": "probe"})
@@ -153,6 +166,15 @@ class LiveSink:
 
     def unassign(self, number: int, logins: list[str]) -> None:
         self.gh.unassign(number, logins)
+
+    def create_discussion(self, repository_id: str, category: dict, title: str, body: str) -> dict:
+        data = self.gh.graphql(CREATE_MUTATION, {"repositoryId": repository_id, "categoryId": category["id"],
+                                                 "title": title, "body": cap(body)})
+        return data["createDiscussion"]["discussion"]
+
+    def discussion_comment(self, topic: dict, body: str) -> str:
+        data = self.gh.graphql(COMMENT_MUTATION, {"discussionId": topic["id"], "body": cap(body)})
+        return data["addDiscussionComment"]["comment"]["url"]
 
     def write(self, changes: ChangeSet) -> None:
         write_changes(self.root, changes)
@@ -201,6 +223,14 @@ class PreviewSink:
 
     def unassign(self, number: int, logins: list[str]) -> None:
         self.lines += [f"## Remove the assignment of #{number} from {', '.join(logins)}", ""]
+
+    def create_discussion(self, repository_id: str, category: dict, title: str, body: str) -> dict:
+        self._block(f"New discussion in {category['name']}: {title}", cap(body))
+        return {"id": None, "number": None, "url": f"https://github.com/{self.repo}/discussions#preview"}
+
+    def discussion_comment(self, topic: dict, body: str) -> str:
+        self._block(f"Comment on discussion {topic['url']}", cap(body))
+        return f"{topic['url']}#preview"
 
     def write(self, changes: ChangeSet) -> None:
         for path, data in changes.writes.items():
@@ -365,7 +395,7 @@ def write(root, gh, git: Git, work, mode: str, run: int, now: datetime) -> dict:
     mode = resolve_mode(mode)
     plan = json.loads((work / "plan.json").read_text(encoding="utf-8"))
     summary = {"mode": mode, "notice": plan.get("notice"), "welcomes": 0, "reviews": [], "reports": [], "probe": None,
-               "joins": [], "dropped": [], "commit": None}
+               "joins": [], "topics": [], "dropped": [], "commit": None}
     if mode == "off" or plan.get("notice"):
         return summary
     sink = LiveSink(root, gh, git) if mode == "live" else PreviewSink(gh.repo)
@@ -385,7 +415,7 @@ def write(root, gh, git: Git, work, mode: str, run: int, now: datetime) -> dict:
             summary["dropped"].append(f"welcome on #{item['issue']}: {type(exc).__name__}: {exc}")
     budget = [MAX_FACT_LAYER_ISSUES]
     for task in plan["tasks"]:
-        if task["kind"] == "join":  # posted by write_joins above
+        if task["kind"] in ("join", "topic"):  # posted by write_joins above and write_topics below
             continue
         try:
             output, problem = _result(root, work, task)
@@ -401,6 +431,10 @@ def write(root, gh, git: Git, work, mode: str, run: int, now: datetime) -> dict:
                     summary["reports"].append(week)
         except Exception as exc:  # one failed task must not stop the rest of the run
             summary["dropped"].append(f"{task['id']}: {type(exc).__name__}: {exc}; {RETRY}")
+    try:  # a failure in the topic path must not stop the rest of the run (decision D46)
+        write_topics(root, gh, sink, plan, work, lambda task: _result(root, work, task), now, run, summary)
+    except Exception as exc:
+        summary["dropped"].append(f"topics: {type(exc).__name__}: {exc}; {RETRY}")
     for quiet in plan.get("quiet_weeks", []):
         if not report_path(root, quiet["week"]).exists():
             text = quiet_report(quiet["week"], parse_iso(quiet["start"]), parse_iso(quiet["end"]))

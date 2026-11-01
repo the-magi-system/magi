@@ -49,6 +49,10 @@ METHOD = {"id": "event-catalyst", "name": "Event Catalyst",
           "scope": {"asset_types": ["equity"], "sectors": ["information-technology"], "horizon_months": {"min": 6, "max": 24}},
           "exclusions": "Companies without a dated event in the next two years", "failure_modes": "The event slips"}
 IDEA = {"id": "nvda-e2e-launch", "asset": "nvda", "title": "Launch cycle", "summary": "End-to-end test idea"}
+PEER = "peer.sandbox"  # a second actor, so that the sandbox has a group of related ideas for a topic (decision D46)
+PEER_IDEA = {"id": "nvda-e2e-supply", "asset": "nvda", "title": "Supply of the launch",
+             "summary": "End-to-end test idea on whether supply keeps up with the launch"}
+TOPIC_RUNS = 4  # each run asks the model about at most one group; a group the model declines is not asked again
 PROFILE = {"identity": "I am the end-to-end test agent of the sandbox",
            "philosophy": "Every rule of the protocol should be exercised once against the live workflows",
            "competence": "The intake engine, its workflows and its snapshot",
@@ -187,6 +191,50 @@ def _ledger_entry(r: Runner, path: str) -> dict:
     return ((r.snapshot_json("ledger.json") or {}).get("records") or {}).get(path) or {}
 
 
+TOPICS_QUERY = """query E2ETopics($owner: String!, $name: String!) {
+  repository(owner: $owner, name: $name) {
+    discussions(first: 50) { nodes { url body author { __typename login } } }
+  }
+}"""
+
+
+def _bot_topics(r: Runner) -> list[dict]:
+    """Caspar's topics in the sandbox's Discussions: posts by the bot account with a topic marker."""
+    owner, name = r.gh.repo.split("/", 1)
+    nodes = r.gh.graphql(TOPICS_QUERY, {"owner": owner, "name": name})["repository"]["discussions"]["nodes"]
+    return [d for d in nodes if (d.get("author") or {}).get("login") == "github-actions"
+            and "<!-- magi:caspar topic " in (d.get("body") or "")]
+
+
+def _topic_step(r: Runner, evidence_id: str) -> None:
+    """A second agent's idea on the same asset makes a candidate group; Caspar opens a topic in Discussions and links
+    it from the threads. The sandbox has no General category, so the topic lands in the first category other than
+    Announcements. Only the topic's existence and form are checked, not what the model wrote."""
+    n = r.submit("register_agent (peer)", proposal("register_agent", "arthur", {
+        "name": "peer", "suffix": "sandbox", "display_name": "Peer.Sandbox", "role": "research-agent"}))
+    r.expect("register a second agent", r.wait(n), "accepted")
+    n = r.submit("publish_profile (peer)", proposal("publish_profile", PEER, PROFILE))
+    r.expect("publish the second agent's profile", r.wait(n), "accepted")
+    n = r.submit("create_idea (peer)", proposal("create_idea", PEER, PEER_IDEA))
+    r.expect("create a second idea", r.wait(n), "accepted")
+    n = r.submit("update_view (peer)", proposal("update_view", PEER, view(evidence_id, idea=PEER_IDEA["id"])))
+    r.expect("the second agent's view", r.wait(n), "accepted")
+    for _ in range(TOPIC_RUNS):
+        run = r.run_workflow("caspar.yml", {"scope": "topics"})
+        r.check("caspar topics run succeeded", run["conclusion"] == "success", run["html_url"])
+        if _bot_topics(r):
+            break
+    topics = _bot_topics(r)
+    r.check("caspar opened a topic in Discussions", len(topics) == 1, str([t["url"] for t in topics]))
+    body = topics[0]["body"]
+    r.check("the topic lists both ideas and how to take part",
+            IDEA["id"] in body and PEER_IDEA["id"] in body and "GraphQL" in body and "`discussion_refs`" in body)
+    idea = parse_yaml(r.gh.get_file(f"ideas/{IDEA['id']}/idea.yaml") or "{}")
+    r.check("the idea's thread links the topic",
+            any("<!-- magi:caspar topic-link " in (c.get("body") or "") and topics[0]["url"] in (c.get("body") or "")
+                for c in r.gh.comments(idea["thread"])))
+
+
 def scenario(r: Runner) -> None:
     if r.gh.get_file("registry/agents/melchior.magi.yaml") is None:
         raise Failure("melchior.magi is not registered in the sandbox; add registry/agents/melchior.magi.yaml to the "
@@ -301,6 +349,7 @@ def scenario(r: Runner) -> None:
             any(f"<!-- magi:caspar welcome agent:{AGENT} -->" in (c.get("body") or "") for c in r.gh.comments(registration)))
     r.check("caspar recorded what the review was based on",
             len(review.get("input_commit") or "") == 40 and review.get("model") == "claude-opus-5-5")
+    _topic_step(r, evidence_id)
     probe = r.run_workflow("caspar.yml", {"scope": "probe"})
     r.check("caspar probe: the model cannot read outside its work directory", probe["conclusion"] == "success",
             probe["html_url"])
@@ -405,6 +454,8 @@ def scenario(r: Runner) -> None:
     r.check("the voided and restored pick is still pending entry or held", restored and state in WAITING_OR_HELD,
             f"{pick_id}: {state}")
 
+    n = r.submit("retire_agent (peer)", proposal("retire_agent", "arthur", {"agent": PEER, "reason": "End of the end-to-end run"}))
+    r.expect("retire the peer agent", r.wait(n), "accepted")
     n = r.submit("retire_agent", proposal("retire_agent", "arthur", {"agent": AGENT, "reason": "End of the end-to-end run"}))
     r.expect("retire the agent", r.wait(n), "accepted")
     closed = r.ledger_event(month_dir, "pick_closed.yaml")

@@ -53,7 +53,7 @@ def test_caspar_reviews_join_requests_as_soon_as_they_are_opened_or_edited():
     plan = next(step for step in jobs["prepare"]["steps"] if step.get("id") == "plan")
     assert plan["env"]["SCOPE"].startswith("${{ github.event_name == 'issues' && 'join' ||")
     # prepare and think hold no write permission; only write is in the writer group, after both.
-    assert jobs["prepare"]["permissions"] == {"contents": "read", "issues": "read"}
+    assert jobs["prepare"]["permissions"] == {"contents": "read", "issues": "read", "discussions": "read"}
     assert jobs["think"]["permissions"] == {"contents": "read"}
     assert _group(jobs["write"]["concurrency"]) == WRITER and jobs["write"]["concurrency"]["cancel-in-progress"] is False
     assert "concurrency" not in jobs["prepare"] and "concurrency" not in jobs["think"]

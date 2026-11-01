@@ -2,9 +2,10 @@
 
 The call itself is made by the module both system agents share (engine/think.py, design 22.13). Caspar names the
 tools of each of its task kinds here: review, weekly and probe keep the five read-only tools (the review of
-ccc-gtcr-take-private-2026 v2 found its 8-K through web search; plan 9, item 4), and a join task reads text that
-anyone with a GitHub account wrote and needs only its prompt and its input file, so it gets Read alone (decision
-D45). Caspar passes no turn or budget cap, so its options are exactly what they were before the module was shared.
+ccc-gtcr-take-private-2026 v2 found its 8-K through web search; plan 9, item 4). A join task reads text that anyone
+with a GitHub account wrote and needs only its prompt and its input file (decision D45), and a topic task reads the
+ideas' own text (decision D46); both get Read alone, and every other read-only tool is refused. Caspar passes no turn
+or budget cap, so its options are exactly what they were before the module was shared.
 """
 from __future__ import annotations
 
@@ -13,12 +14,13 @@ from .common import SOURCE_DIR
 from .run import MODEL, TOOLS
 
 AGENT_NAME = "Caspar.Magi"
-KINDS = ("review", "weekly", "probe", "join")
+KINDS = ("review", "weekly", "probe", "join", "topic")
 JOIN_TOOLS = ("Read",)
+READ_ALONE = ("join", "topic")  # decisions D45 and D46
 
 
 def tools_for(kind: str) -> tuple[str, ...]:
-    return JOIN_TOOLS if kind == "join" else TOOLS
+    return JOIN_TOOLS if kind in READ_ALONE else TOOLS
 
 
 def prompt(kind: str, task_id: str) -> str:
