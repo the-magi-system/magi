@@ -90,23 +90,30 @@ def test_live_publishes_the_profile_once_in_one_commit(world):
     assert again["commit"] is None and _git(root, "rev-parse", "HEAD") == head
 
 
-def test_the_workflow_keeps_the_model_out():
+def test_the_workflow_gives_the_key_only_to_think():
     text = (REPO_ROOT / ".github" / "workflows" / "melchior.yml").read_text(encoding="utf-8")
     flow = yaml.safe_load(text)
-    assert "ANTHROPIC_API_KEY" not in text
-    assert set(flow["jobs"]) == {"prepare", "write"}
+    assert set(flow["jobs"]) == {"prepare", "think", "write"}
     assert flow["permissions"] == {}
-    prepare, write = flow["jobs"]["prepare"], flow["jobs"]["write"]
+    prepare, think, write = flow["jobs"]["prepare"], flow["jobs"]["think"], flow["jobs"]["write"]
+    holders = [(name, step.get("name")) for name, job in flow["jobs"].items() for step in job["steps"]
+               if "ANTHROPIC_API_KEY" in yaml.safe_dump(step)]
+    assert holders == [("think", "Ask the model"), ("think", "Keep the result, unless it contains the key or the decoy")]
     assert prepare["permissions"] == {"contents": "read", "issues": "read"}
+    assert think["permissions"] == {"contents": "read"}
     assert write["permissions"] == {"contents": "write", "issues": "write"}
+    assert think["strategy"]["max-parallel"] == 5 and think["strategy"]["fail-fast"] is False
     assert write["concurrency"]["group"] == "magi-writer"
     triggers = flow[True]
     assert triggers["schedule"] == [{"cron": "47 23 * * *"}]
-    assert triggers["workflow_dispatch"]["inputs"]["scope"]["options"] == ["all", "program"]
-    for job in flow["jobs"].values():
-        for step in job["steps"]:
+    assert triggers["workflow_dispatch"]["inputs"]["scope"]["options"] == \
+        ["all", "program", "evidence", "referrals", "rulings", "insight", "probe"]
+    for name in ("prepare", "write"):
+        for step in flow["jobs"][name]["steps"]:
             if str(step.get("uses", "")).startswith("actions/checkout@"):
                 assert step["with"]["fetch-depth"] == 0
+    checkout = next(step for step in think["steps"] if str(step.get("uses", "")).startswith("actions/checkout@"))
+    assert checkout["with"]["persist-credentials"] is False
 
 
 def test_scopes_all_and_program_do_the_same_work(world, tmp_path):
