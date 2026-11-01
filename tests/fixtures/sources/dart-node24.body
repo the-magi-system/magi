@@ -1,0 +1,216 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='table-group-xbrl'><A name='toc1'>2-5. 연결 현금흐름표</A></P>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23' align='CENTER'>연결 현금흐름표</TD>
+</TR>
+<TR height='30'>
+  <TD width='591' height='23' align='CENTER'>제 31 기 반기 2026.01.01 부터 2026.06.30 까지</TD>
+</TR>
+<TR height='30'>
+  <TD width='591' height='23' align='CENTER'>제 30 기 반기 2025.01.01 부터 2025.06.30 까지</TD>
+</TR>
+<TR height='30'>
+  <TD width='591' height='23' align='RIGHT' valign='BOTTOM'>(단위 : 원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='599'>
+<COLGROUP>
+<COL width='318'></COL>
+<COL width='141'></COL>
+<COL width='140'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='309' height='23'>　</TH>
+  <TH width='132' height='23'>제 31 기 반기</TH>
+  <TH width='131' height='23'>제 30 기 반기</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='309' height='23'>영업활동현금흐름</TD>
+  <TD width='132' height='23' align='RIGHT'>23,588,210,893</TD>
+  <TD width='131' height='23' align='RIGHT'>16,475,892,045</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>　영업에서 창출된 현금흐름</TD>
+  <TD width='132' height='23' align='RIGHT'>26,273,512,081</TD>
+  <TD width='131' height='23' align='RIGHT'>19,632,780,973</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>　반기순이익</TD>
+  <TD width='132' height='23' align='RIGHT'>19,172,238,653</TD>
+  <TD width='131' height='23' align='RIGHT'>16,676,875,513</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>　조정</TD>
+  <TD width='132' height='23' align='RIGHT'>7,484,539,434</TD>
+  <TD width='131' height='23' align='RIGHT'>7,227,354,211</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>　영업활동으로 인한 자산 부채의 변동</TD>
+  <TD width='132' height='23' align='RIGHT'>(383,266,006)</TD>
+  <TD width='131' height='23' align='RIGHT'>(4,271,448,751)</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>　이자의 수취</TD>
+  <TD width='132' height='23' align='RIGHT'>1,820,794,535</TD>
+  <TD width='131' height='23' align='RIGHT'>1,937,375,695</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>　이자의 지급</TD>
+  <TD width='132' height='23' align='RIGHT'>(431,514,620)</TD>
+  <TD width='131' height='23' align='RIGHT'>(569,120,012)</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>　법인세 부담액</TD>
+  <TD width='132' height='23' align='RIGHT'>(4,074,581,103)</TD>
+  <TD width='131' height='23' align='RIGHT'>(4,525,144,611)</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>투자활동현금흐름</TD>
+  <TD width='132' height='23' align='RIGHT'>(11,450,226,759)</TD>
+  <TD width='131' height='23' align='RIGHT'>(11,141,461,279)</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>　단기금융상품의 증가</TD>
+  <TD width='132' height='23' align='RIGHT'>(71,000,000,000)</TD>
+  <TD width='131' height='23' align='RIGHT'>(61,000,000,000)</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>　단기금융상품의 감소</TD>
+  <TD width='132' height='23' align='RIGHT'>61,000,000,000</TD>
+  <TD width='131' height='23' align='RIGHT'>45,000,000,000</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>　대여금의 증가</TD>
+  <TD width='132' height='23' align='RIGHT'>(105,000,000)</TD>
+  <TD width='131' height='23' align='RIGHT'>(70,000,000)</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>　대여금의 감소</TD>
+  <TD width='132' height='23' align='RIGHT'>185,710,348</TD>
+  <TD width='131' height='23' align='RIGHT'>148,444,929</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>　장기금융상품의 감소</TD>
+  <TD width='132' height='23' align='RIGHT'>6,311,222</TD>
+  <TD width='131' height='23' align='RIGHT'>0</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>　장기금융상품의 증가</TD>
+  <TD width='132' height='23' align='RIGHT'>0</TD>
+  <TD width='131' height='23' align='RIGHT'>(4,536,508)</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>　당기손익-공정가치 측정 금융자산의 처분</TD>
+  <TD width='132' height='23' align='RIGHT'>865,977,624</TD>
+  <TD width='131' height='23' align='RIGHT'>6,511,793,612</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>　유형자산의 처분</TD>
+  <TD width='132' height='23' align='RIGHT'>5,363,636</TD>
+  <TD width='131' height='23' align='RIGHT'>6,272,726</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>　유형자산의 취득</TD>
+  <TD width='132' height='23' align='RIGHT'>(1,151,385,824)</TD>
+  <TD width='131' height='23' align='RIGHT'>(1,150,988,649)</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>　무형자산의 취득</TD>
+  <TD width='132' height='23' align='RIGHT'>(1,811,149,320)</TD>
+  <TD width='131' height='23' align='RIGHT'>(1,147,096,068)</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>　임차보증금의 증가</TD>
+  <TD width='132' height='23' align='RIGHT'>(3,773,214)</TD>
+  <TD width='131' height='23' align='RIGHT'>0</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>　정부보조금의 수취</TD>
+  <TD width='132' height='23' align='RIGHT'>4,261,934</TD>
+  <TD width='131' height='23' align='RIGHT'>65,633,787</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>　미수금의 감소</TD>
+  <TD width='132' height='23' align='RIGHT'>553,456,835</TD>
+  <TD width='131' height='23' align='RIGHT'>499,014,892</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>재무활동현금흐름</TD>
+  <TD width='132' height='23' align='RIGHT'>(5,719,233,515)</TD>
+  <TD width='131' height='23' align='RIGHT'>(7,185,267,624)</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>　단기차입금의 차입</TD>
+  <TD width='132' height='23' align='RIGHT'>2,854,582,500</TD>
+  <TD width='131' height='23' align='RIGHT'>0</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>　단기차입금의 상환</TD>
+  <TD width='132' height='23' align='RIGHT'>(605,517,500)</TD>
+  <TD width='131' height='23' align='RIGHT'>(1,091,909,000)</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>　리스부채의 감소</TD>
+  <TD width='132' height='23' align='RIGHT'>(501,619,315)</TD>
+  <TD width='131' height='23' align='RIGHT'>(335,374,624)</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>　임대보증금의 감소</TD>
+  <TD width='132' height='23' align='RIGHT'>(30,000,000)</TD>
+  <TD width='131' height='23' align='RIGHT'>(2,000,000)</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>　임대보증금의 증가</TD>
+  <TD width='132' height='23' align='RIGHT'>50,000,000</TD>
+  <TD width='131' height='23' align='RIGHT'>3,000,000</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>　배당금의 지급</TD>
+  <TD width='132' height='23' align='RIGHT'>(7,486,679,200)</TD>
+  <TD width='131' height='23' align='RIGHT'>(5,758,984,000)</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>외화환산으로 인한 현금및현금성자산의 변동</TD>
+  <TD width='132' height='23' align='RIGHT'>345,680,147</TD>
+  <TD width='131' height='23' align='RIGHT'>224,199,131</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>현금및현금성자산의증가(감소)</TD>
+  <TD width='132' height='23' align='RIGHT'>6,764,430,766</TD>
+  <TD width='131' height='23' align='RIGHT'>(1,626,637,727)</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>기초현금및현금성자산</TD>
+  <TD width='132' height='23' align='RIGHT'>8,672,169,887</TD>
+  <TD width='131' height='23' align='RIGHT'>12,463,178,760</TD>
+</TR>
+<TR height='30'>
+  <TD width='309' height='23'>기말현금및현금성자산</TD>
+  <TD width='132' height='23' align='RIGHT'>15,436,600,653</TD>
+  <TD width='131' height='23' align='RIGHT'>10,836,541,033</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+<P><BR/></P>
+</BODY>
+</HTML>

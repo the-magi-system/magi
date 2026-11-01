@@ -1,0 +1,481 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ENG">
+<head>
+<title>EDGAR Search Results</title>
+<link href="/include/interactive2.css" rel="stylesheet" type="text/css" />
+<link  rel="stylesheet" href="/edgar/search/global/css/bootstrap/bootstrap.min.css" type="text/css" />
+<link href="/edgar/search/css/smartSearchCompanyLanding.css" rel="stylesheet" type="text/css" />
+<script language="JavaScript" src="/edgar/search/js/smartSearchCompanyLanding.js" type="text/javascript"></script>
+<link rel="alternate" type="application/atom+xml" title="ATOM" href="/cgi-bin/browse-edgar?action=getcompany&amp;CIK=0001818201&amp;type=8-K%25&amp;dateb=&amp;owner=include&amp;count=40&amp;output=atom" />
+
+</head>
+<body style="margin: 0">
+<!-- SEC Web Analytics - For information please visit: https://www.sec.gov/privacy.htm#collectedinfo -->
+<noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-TD3BKV"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-TD3BKV');</script>
+<!-- End SEC Web Analytics -->
+
+<!-- BEGIN BANNER -->
+<div  id="header" style="text-align: center;">
+    <nav id="main-navbar" class="navbar navbar-expand">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav__sec_link" href="https://www.sec.gov">
+                    <img src="/edgar/search/images/edgar-logo-2x.png" alt="" style="height:6.25rem">
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav__sec_link" href="https://www.sec.gov">
+                    <span class="link-text d-inline">SEC.gov</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav__link" href="//www.sec.gov/submit-filings/about-edgar" id="edgar-short-form"><span class="link-text">EDGAR</span></a>
+            </li>
+        </ul>
+
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+		                        <a href="/cgi-bin/browse-edgar?action=getcurrent" class="nav__link">Latest Filings</a>
+
+            </li>
+            <li class="nav-item">
+                <a href="https://www.sec.gov/edgar/search-and-access" class="nav__link">Filings search tools</a>
+            </li>
+        </ul>
+    </nav>
+    <h1 style="position: relative; top: -40px;">EDGAR Company Search Results</h1>
+</div>
+<!-- END BANNER -->
+
+
+<!-- BEGIN BREADCRUMBS -->
+<div id="breadCrumbs">
+   <ul>
+      <li><a href="/index.htm">SEC Home</a> &#187;</li>
+      <li><a href="/edgar/searchedgar/companysearch.html">Company Search</a> &#187;</li>
+      <li class="last">Current Page</li>
+   </ul>
+</div>
+<!-- END BREADCRUMBS -->
+
+<div id="contentDiv">
+   <!-- START FILER DIV -->
+<div class="filerDiv"> 
+      <div class="mailer">Mailing Address
+         <span class="mailerAddress">167 N. GREEN STREET</span>
+         <span class="mailerAddress">9TH FLOOR</span>
+         <span class="mailerAddress">
+CHICAGO IL 60607         </span>
+      </div>
+      <div class="mailer">Business Address
+         <span class="mailerAddress">167 N. GREEN STREET</span>
+         <span class="mailerAddress">9TH FLOOR</span>
+         <span class="mailerAddress">
+CHICAGO IL 60607         </span>
+         <span class="mailerAddress">(800) 621-8070</span>
+      </div>
+      <div class="companyInfo">
+         <span class="companyName">CCC Intelligent Solutions Holdings Inc. <acronym title="Central Index Key">CIK</acronym>#: <a href="/cgi-bin/browse-edgar?action=getcompany&amp;CIK=0001818201&amp;owner=include&amp;count=40">0001818201 (see all company filings)</a></span>
+         <p class="identInfo"><acronym title="Standard Industrial Code">SIC</acronym>: <a href="/cgi-bin/browse-edgar?action=getcompany&amp;SIC=7372&amp;owner=include&amp;count=40">7372</a> - SERVICES-PREPACKAGED SOFTWARE<br />State location: <a href="/cgi-bin/browse-edgar?action=getcompany&amp;State=IL&amp;owner=include&amp;count=40">IL</a> | State of Inc.: <strong>DE</strong> | Fiscal Year End: 1231<br />formerly: Dragoneer Growth Opportunities Corp. (filings through 2021-07-29)<br /><span>(CF Office: 06 Technology)<span><br />Get <a href="/cgi-bin/own-disp?action=getissuer&amp;CIK=0001818201"><b>insider transactions</b></a> for this <b>issuer</b>.
+</p>
+      </div>
+   </div>
+   <div style="width: 100%;">
+      <form method="GET" action="/cgi-bin/browse-edgar">
+         <input type="hidden" name="action" value="getcompany">
+         <input type="hidden" name="CIK" value="0001818201">
+         <table style="margin: 0px; background:#FFFFFF; border: 1px solid #BCD6F8; width: 100%;">
+            <tr>
+            <tr>
+                <td colspan="5" class="filter-results-title"><strong>Filter Results</strong></td>
+                <td rowspan="2" class="efts_form forms_separator"><div></div></td>
+                <td class="efts_form"><strong>Search Within Files</strong> <img src="/edgar/search/images/edgar_full_text_search.png" class="efts-logo-image"></td>
+            </tr>
+            <tr>
+               <td><label for="type">Filing Type:</label><br /><input name="type" size="10" tabindex="1" id="type" value="8-K"></td>
+               <td><label for="prior_to">Prior to:</label> (YYYYMMDD)<br /><input name="dateb" size="10" tabindex="2" id="prior_to" value=""></td>
+               <td>Ownership?<br /><input type="radio" name="owner" value="include" id="include" checked="checked" tabindex="3"><label for="include">include</label><input type="radio" name="owner" value="exclude" id="exclude" tabindex="4"><label for="exclude">exclude</label><input type="radio" name="owner" value="only" id="only" tabindex="5"/><label for="only">only</label>
+               <td><label for="count">Limit Results Per Page</label><br />
+					 <select name="count" id="count" tabindex="6">
+                     <option value="10" >10 Entries
+                     <option value="20" >20 Entries
+                     <option value="40"  selected>40 Entries
+                     <option value="80" >80 Entries
+                     <option value="100" >100 Entries
+                  </select>
+               </td>
+               <td style="text-align: middle;"><input type="submit" value="Search"><br /><input type="submit" onClick="this.form.type.value=''" value="Show All"></td>
+                <td class="efts_form">Enter keywords<br /><input name="search_text" id="keywords" class="smart-search" type="text"><button id="smart_search_execute_fts" class="smart-search">Search</button></td>
+            </tr>
+         </table>
+      </form>
+   </div>
+<!-- END FILER DIV -->
+   <div style="margin-top: 5px; margin-bottom: 5px;">
+      <form>
+         <table border="0" width="100%">
+            <tr>
+               <td>Items 1 - 40&nbsp;&nbsp;<a href="/cgi-bin/browse-edgar?action=getcompany&amp;CIK=0001818201&amp;type=8-K%25&amp;dateb=&amp;owner=include&amp;start=0&amp;count=40&amp;output=atom"><img src="/images/rss-feed-icon-14x14.png" alt="0001818201 Filings" border="0" align="top" /> RSS Feed</a></td>
+               <td style="text-align: right;"> <input type="button" value="Next40" onClick="parent.location='/cgi-bin/browse-edgar?action=getcompany&amp;CIK=0001818201&amp;type=8-K%25&amp;dateb=&amp;owner=include&amp;start=40&amp;count=40'"></td>
+            </tr>
+         </table>
+      </form>
+   </div>
+   <div id="seriesDiv" style="margin-top: 0px;">
+      <table class="tableFile2" summary="Results">
+         <tr>
+            <th width="7%" scope="col">Filings</th>
+            <th width="10%" scope="col">Format</th>
+            <th scope="col">Description</th>
+            <th width="10%" scope="col">Filing Date</th>
+            <th width="15%" scope="col">File/Film Number</th>
+         </tr>
+<tr>
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000119312526436974/0001193125-26-436974-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0001193125-26-436974&amp;amp;xbrl_type=f" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, items 2.02 and 9.01
+<br />Acc-no: 0001193125-26-436974&nbsp;(34 Act)&nbsp; Size: 1 MB            </td>
+            <td>2026-10-29</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>261497462         </td>
+         </tr>
+<tr class="evenRow">
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000119312526422320/0001193125-26-422320-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0001193125-26-422320&amp;amp;xbrl_type=f" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, items 1.01, 7.01, and 9.01
+<br />Acc-no: 0001193125-26-422320&nbsp;(34 Act)&nbsp; Size: 971 KB            </td>
+            <td>2026-10-15</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>261461388         </td>
+         </tr>
+<tr>
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000119312526324886/0001193125-26-324886-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0001193125-26-324886&amp;amp;xbrl_type=f" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, items 2.02 and 9.01
+<br />Acc-no: 0001193125-26-324886&nbsp;(34 Act)&nbsp; Size: 1 MB            </td>
+            <td>2026-07-30</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>261220171         </td>
+         </tr>
+<tr class="evenRow">
+<td nowrap="nowrap">8-K/A</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000119312526248437/0001193125-26-248437-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0001193125-26-248437&amp;amp;xbrl_type=f" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" ><b>[Amend]</b> Current report, item 5.02
+<br />Acc-no: 0001193125-26-248437&nbsp;(34 Act)&nbsp; Size: 151 KB            </td>
+            <td>2026-05-29</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>261045119         </td>
+         </tr>
+<tr>
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000119312526237116/0001193125-26-237116-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0001193125-26-237116&amp;amp;xbrl_type=f" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, item 5.07
+<br />Acc-no: 0001193125-26-237116&nbsp;(34 Act)&nbsp; Size: 168 KB            </td>
+            <td>2026-05-22</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>261014808         </td>
+         </tr>
+<tr class="evenRow">
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000119312526194029/0001193125-26-194029-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0001193125-26-194029&amp;amp;xbrl_type=f" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, items 5.02, 7.01, and 9.01
+<br />Acc-no: 0001193125-26-194029&nbsp;(34 Act)&nbsp; Size: 172 KB            </td>
+            <td>2026-04-30</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>26920111         </td>
+         </tr>
+<tr>
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000119312526193969/0001193125-26-193969-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0001193125-26-193969&amp;amp;xbrl_type=f" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, items 2.02 and 9.01
+<br />Acc-no: 0001193125-26-193969&nbsp;(34 Act)&nbsp; Size: 929 KB            </td>
+            <td>2026-04-30</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>26920051         </td>
+         </tr>
+<tr class="evenRow">
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000119312526084317/0001193125-26-084317-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0001193125-26-084317&amp;amp;xbrl_type=f" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, items 5.02, 7.01, and 9.01
+<br />Acc-no: 0001193125-26-084317&nbsp;(34 Act)&nbsp; Size: 178 KB            </td>
+            <td>2026-03-02</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>26703597         </td>
+         </tr>
+<tr>
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000119312526066949/0001193125-26-066949-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0001193125-26-066949&amp;amp;xbrl_type=f" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, items 2.02 and 9.01
+<br />Acc-no: 0001193125-26-066949&nbsp;(34 Act)&nbsp; Size: 1 MB            </td>
+            <td>2026-02-24</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>26671531         </td>
+         </tr>
+<tr class="evenRow">
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000119312526031802/0001193125-26-031802-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0001193125-26-031802&amp;amp;xbrl_type=f" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, items 7.01 and 9.01
+<br />Acc-no: 0001193125-26-031802&nbsp;(34 Act)&nbsp; Size: 172 KB            </td>
+            <td>2026-01-30</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>26583456         </td>
+         </tr>
+<tr>
+<td nowrap="nowrap">8-K/A</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000119312525327078/0001193125-25-327078-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0001193125-25-327078&amp;amp;xbrl_type=f" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" ><b>[Amend]</b> Current report, item 5.02
+<br />Acc-no: 0001193125-25-327078&nbsp;(34 Act)&nbsp; Size: 144 KB            </td>
+            <td>2025-12-19</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>251588534         </td>
+         </tr>
+<tr class="evenRow">
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000119312525316877/0001193125-25-316877-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0001193125-25-316877&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, items 1.01, 2.03, 8.01, and 9.01
+<br />Acc-no: 0001193125-25-316877&nbsp;(34 Act)&nbsp; Size: 3 MB            </td>
+            <td>2025-12-12</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>251566639         </td>
+         </tr>
+<tr>
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000119312525274381/0001193125-25-274381-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0001193125-25-274381&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, items 8.01 and 9.01
+<br />Acc-no: 0001193125-25-274381&nbsp;(34 Act)&nbsp; Size: 383 KB            </td>
+            <td>2025-11-10</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>251466727         </td>
+         </tr>
+<tr class="evenRow">
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000119312525257407/0001193125-25-257407-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0001193125-25-257407&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, items 2.02 and 9.01
+<br />Acc-no: 0001193125-25-257407&nbsp;(34 Act)&nbsp; Size: 1 MB            </td>
+            <td>2025-10-30</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>251432186         </td>
+         </tr>
+<tr>
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000119312525250038/0001193125-25-250038-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0001193125-25-250038&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, item 5.02
+<br />Acc-no: 0001193125-25-250038&nbsp;(34 Act)&nbsp; Size: 140 KB            </td>
+            <td>2025-10-24</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>251416577         </td>
+         </tr>
+<tr class="evenRow">
+<td nowrap="nowrap">8-K/A</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000119312525220791/0001193125-25-220791-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0001193125-25-220791&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" ><b>[Amend]</b> Current report, items 5.02 and 9.01
+<br />Acc-no: 0001193125-25-220791&nbsp;(34 Act)&nbsp; Size: 262 KB            </td>
+            <td>2025-09-26</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>251351411         </td>
+         </tr>
+<tr>
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000119312525203776/0001193125-25-203776-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0001193125-25-203776&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, item 5.02
+<br />Acc-no: 0001193125-25-203776&nbsp;(34 Act)&nbsp; Size: 140 KB            </td>
+            <td>2025-09-15</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>251315074         </td>
+         </tr>
+<tr class="evenRow">
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000119312525175422/0001193125-25-175422-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0001193125-25-175422&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, items 8.01 and 9.01
+<br />Acc-no: 0001193125-25-175422&nbsp;(34 Act)&nbsp; Size: 381 KB            </td>
+            <td>2025-08-07</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>251193947         </td>
+         </tr>
+<tr>
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000095017025100913/0000950170-25-100913-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0000950170-25-100913&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, items 2.02 and 9.01
+<br />Acc-no: 0000950170-25-100913&nbsp;(34 Act)&nbsp; Size: 1 MB            </td>
+            <td>2025-07-31</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>251171851         </td>
+         </tr>
+<tr class="evenRow">
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000095017025095594/0000950170-25-095594-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0000950170-25-095594&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, items 5.02, 7.01, and 9.01
+<br />Acc-no: 0000950170-25-095594&nbsp;(34 Act)&nbsp; Size: 169 KB            </td>
+            <td>2025-07-14</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>251121985         </td>
+         </tr>
+<tr>
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000095017025077048/0000950170-25-077048-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0000950170-25-077048&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, item 5.07
+<br />Acc-no: 0000950170-25-077048&nbsp;(34 Act)&nbsp; Size: 165 KB            </td>
+            <td>2025-05-23</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>25983182         </td>
+         </tr>
+<tr class="evenRow">
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000095017025067565/0000950170-25-067565-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0000950170-25-067565&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, item 5.02
+<br />Acc-no: 0000950170-25-067565&nbsp;(34 Act)&nbsp; Size: 149 KB            </td>
+            <td>2025-05-09</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>25928575         </td>
+         </tr>
+<tr>
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000095017025063960/0000950170-25-063960-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0000950170-25-063960&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, items 2.02 and 9.01
+<br />Acc-no: 0000950170-25-063960&nbsp;(34 Act)&nbsp; Size: 924 KB            </td>
+            <td>2025-05-06</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>25915219         </td>
+         </tr>
+<tr class="evenRow">
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000095017025048681/0000950170-25-048681-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0000950170-25-048681&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, item 5.02
+<br />Acc-no: 0000950170-25-048681&nbsp;(34 Act)&nbsp; Size: 147 KB            </td>
+            <td>2025-04-01</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>25800625         </td>
+         </tr>
+<tr>
+<td nowrap="nowrap">8-K/A</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000119312525067152/0001193125-25-067152-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0001193125-25-067152&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" ><b>[Amend]</b> Current report, item 5.02
+<br />Acc-no: 0001193125-25-067152&nbsp;(34 Act)&nbsp; Size: 155 KB            </td>
+            <td>2025-03-28</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>25786864         </td>
+         </tr>
+<tr class="evenRow">
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000119312525044127/0001193125-25-044127-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0001193125-25-044127&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, items 8.01 and 9.01
+<br />Acc-no: 0001193125-25-044127&nbsp;(34 Act)&nbsp; Size: 405 KB            </td>
+            <td>2025-03-03</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>25698105         </td>
+         </tr>
+<tr>
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000095017025026678/0000950170-25-026678-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0000950170-25-026678&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, items 2.02 and 9.01
+<br />Acc-no: 0000950170-25-026678&nbsp;(34 Act)&nbsp; Size: 1 MB            </td>
+            <td>2025-02-25</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>25663392         </td>
+         </tr>
+<tr class="evenRow">
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000119312525011469/0001193125-25-011469-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0001193125-25-011469&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, items 1.01, 2.03, and 9.01
+<br />Acc-no: 0001193125-25-011469&nbsp;(34 Act)&nbsp; Size: 1 MB            </td>
+            <td>2025-01-23</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>25550546         </td>
+         </tr>
+<tr>
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000119312525002624/0001193125-25-002624-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0001193125-25-002624&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, items 1.01, 2.03, 3.02, 7.01, 8.01, and 9.01
+<br />Acc-no: 0001193125-25-002624&nbsp;(34 Act)&nbsp; Size: 1 MB            </td>
+            <td>2025-01-07</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>25513561         </td>
+         </tr>
+<tr class="evenRow">
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000095017025001340/0000950170-25-001340-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0000950170-25-001340&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, item 5.01
+<br />Acc-no: 0000950170-25-001340&nbsp;(34 Act)&nbsp; Size: 150 KB            </td>
+            <td>2025-01-03</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>25507717         </td>
+         </tr>
+<tr>
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000119312524283677/0001193125-24-283677-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0001193125-24-283677&amp;amp;xbrl_type=r" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, items 1.01, 3.02, 7.01, and 9.01
+<br />Acc-no: 0001193125-24-283677&nbsp;(34 Act)&nbsp; Size: 1 MB            </td>
+            <td>2024-12-23</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>241569879         </td>
+         </tr>
+<tr class="evenRow">
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000095017024137402/0000950170-24-137402-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0000950170-24-137402&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, item 5.02
+<br />Acc-no: 0000950170-24-137402&nbsp;(34 Act)&nbsp; Size: 145 KB            </td>
+            <td>2024-12-17</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>241556825         </td>
+         </tr>
+<tr>
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000095017024121853/0000950170-24-121853-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0000950170-24-121853&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, items 5.02 and 7.01
+<br />Acc-no: 0000950170-24-121853&nbsp;(34 Act)&nbsp; Size: 175 KB            </td>
+            <td>2024-11-06</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>241429378         </td>
+         </tr>
+<tr class="evenRow">
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000095017024117736/0000950170-24-117736-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0000950170-24-117736&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, items 2.02 and 9.01
+<br />Acc-no: 0000950170-24-117736&nbsp;(34 Act)&nbsp; Size: 980 KB            </td>
+            <td>2024-10-28</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>241401080         </td>
+         </tr>
+<tr>
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000095017024112727/0000950170-24-112727-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0000950170-24-112727&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, items 2.02 and 5.02
+<br />Acc-no: 0000950170-24-112727&nbsp;(34 Act)&nbsp; Size: 152 KB            </td>
+            <td>2024-10-04</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>241353520         </td>
+         </tr>
+<tr class="evenRow">
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000119312524224074/0001193125-24-224074-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0001193125-24-224074&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, items 1.01 and 2.03
+<br />Acc-no: 0001193125-24-224074&nbsp;(34 Act)&nbsp; Size: 146 KB            </td>
+            <td>2024-09-24</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>241317468         </td>
+         </tr>
+<tr>
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000095017024087864/0000950170-24-087864-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0000950170-24-087864&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, items 2.02 and 9.01
+<br />Acc-no: 0000950170-24-087864&nbsp;(34 Act)&nbsp; Size: 971 KB            </td>
+            <td>2024-07-30</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>241157574         </td>
+         </tr>
+<tr class="evenRow">
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000119312524173385/0001193125-24-173385-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0001193125-24-173385&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, items 8.01 and 9.01
+<br />Acc-no: 0001193125-24-173385&nbsp;(34 Act)&nbsp; Size: 395 KB            </td>
+            <td>2024-07-01</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>241091420         </td>
+         </tr>
+<tr>
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000119312524150389/0001193125-24-150389-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0001193125-24-150389&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, items 8.01 and 9.01
+<br />Acc-no: 0001193125-24-150389&nbsp;(34 Act)&nbsp; Size: 394 KB            </td>
+            <td>2024-05-30</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>241005968         </td>
+         </tr>
+<tr class="evenRow">
+<td nowrap="nowrap">8-K</td>
+<td nowrap="nowrap"><a href="/Archives/edgar/data/1818201/000095017024064781/0000950170-24-064781-index.htm" id="documentsbutton">&nbsp;Documents</a>&nbsp; <a href="/cgi-bin/viewer?action=view&amp;amp;cik=1818201&amp;amp;accession_number=0000950170-24-064781&amp;amp;xbrl_type=v" id="interactiveDataBtn">&nbsp;Interactive Data</a></td>
+<td class="small" >Current report, item 5.07
+<br />Acc-no: 0000950170-24-064781&nbsp;(34 Act)&nbsp; Size: 167 KB            </td>
+            <td>2024-05-28</td>
+            <td nowrap="nowrap"><a href="/cgi-bin/browse-edgar?action=getcompany&amp;filenum=001-39447&amp;owner=include&amp;count=40">001-39447</a><br>24985776         </td>
+         </tr>
+      </table>
+   </div>
+   <div style="margin-top: 5px; margin-bottom: 5px;">
+      <form>
+         <table border="0" width="100%">
+            <tr>
+               <td style="text-align: right;"> <input type="button" value="Next40" onClick="parent.location='/cgi-bin/browse-edgar?action=getcompany&amp;CIK=0001818201&amp;type=8-K%25&amp;dateb=&amp;owner=include&amp;start=40&amp;count=40'"></td>
+            </tr>
+         </table>
+      </form>
+   </div>
+</div>
+
+<!-- BEGIN FOOTER -->
+<div id="footer">
+  <div class="currentURL">https://www.sec.gov/cgi-bin/browse-edgar</div>
+  <div class="links"><a href="/index.htm">Home</a> | <a href="/edgar/searchedgar/webusers.htm">Search the Next-Generation EDGAR System</a> | <a href="javascript:history.back()">Previous Page</a></div>
+  <div class="modified">Modified 07/18/2014</div>
+</div>
+<!-- END FOOTER -->
+
+<script type="text/javascript"  src="/SY-XWR/c/K/eZVBtbY8lQ/c5fiwV0twzh0NLz3/CA5MPg/R35M/MThsW1w"></script></body>
+</html>
