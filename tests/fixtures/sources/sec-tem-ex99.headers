@@ -1,0 +1,24 @@
+HTTP/1.1 200 OK
+Content-Type: text/html
+Referrer-Policy: strict-origin-when-cross-origin
+Permissions-Policy: geolocation=(), microphone=(), camera=()
+Content-Security-Policy: frame-ancestors 'self'
+X-Frame-Options: SAMEORIGIN
+x-amz-id-2: 5NS5F+iyNcQSnnedCiZtDj04GXAx/P4oFr07wWL3YGF89AKsh4t5265y68GPK2vdIoG7Q0CiqJaha8ib0IvsHCd86wQISCJW
+x-amz-request-id: JK71BFTACNSMJM7N
+x-amz-replication-status: COMPLETED
+Last-Modified: Thu, 30 Jul 2026 20:01:41 GMT
+x-amz-server-side-encryption: AES256
+x-amz-meta-mode: 33188
+x-amz-version-id: Xz7hjl319wsC7Y0EEXG8Exy6b1LXzo1V
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Pragma: no-cache
+X-Akamai-Transformed: 0 - 0 -
+Cache-Control: no-cache, no-store, no-transform, proxy-revalidate
+Date: Sun, 01 Nov 2026 06:02:24 GMT
+Transfer-Encoding:  chunked
+Connection: keep-alive
+Connection: Transfer-Encoding
+Strict-Transport-Security: max-age=31536000 ; includeSubDomains ; preload
+

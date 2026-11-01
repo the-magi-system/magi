@@ -1,0 +1,12 @@
+HTTP/1.1 200 OK
+Server: openresty
+Date: Sun, 01 Nov 2026 06:02:54 GMT
+Content-Type: file/unknown
+Content-Length: 2000600
+Connection: keep-alive
+Content-Disposition: attachment;  filename=3Q26_JVM_Earnings_EN.pdf
+Content-Description: PHP3 Generated Data
+Pragma: dummy=bogus
+Cache-Control: private
+Expires: 0
+

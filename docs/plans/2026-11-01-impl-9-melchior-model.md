@@ -335,11 +335,11 @@ Expected: `663 passed`；一致性 `[]`。
 
 ### Task 5（维护者）：合并 PR 9a，录下来源夹具
 
-- [ ] **Step 1: 审阅并合并 PR 9a**
+- [x] **Step 1: 审阅并合并 PR 9a**
 
 重点看 `engine/think.py` 没有默认工具，`tests/test_think_shared.py` 第 2 项的期望值，`caspar.yml` 的 `max-parallel`。合并方式为 squash。合并后在 main 上运行 `python -m pytest` 与 `python -m engine consistency --repo .`。Expected: `663 passed`；一致性 `[]`。下一期周报的运行摘要里不应再有 `recent_performance: a number does not appear in the data` 一类只因百分数写法而丢弃的段落。
 
-- [ ] **Step 2: 录下来源夹具**
+- [x] **Step 2: 录下来源夹具**
 
 在维护者自己的机器上、仓库根目录运行。`$MAGI_HTTP_CONTACT` 是维护者 shell 里的环境变量，值与仓库 secret 相同（名称、一个空格、地址，没有尖括号）；它只出现在请求头里，不写进任何文件。每个响应存两份：`<名字>.body`（响应正文，原样字节）与 `<名字>.headers`（状态行与响应头，删去 `Set-Cookie` 行）。
 
@@ -364,6 +364,8 @@ for f in krx-ir-pdf jvm-q3-pdf; do head -c 4096 "$f.body" > "$f.head.body"; rm "
 ```
 
 两份 PDF 只留前 4,096 个字节（测试只需要据此识别格式）。KRX 两项在维护者的网络里可能返回 200，也可能同样返回 403；两种结果都照存，并在 `README.md` 里写明。另新建 `tests/fixtures/sources/README.md`：每个文件一行，写来源地址、录下的 UTC 时刻、HTTP 状态、`Content-Type`、正文的字节数，并写明「SEC 的请求带项目的联系方式，联系方式不在这些文件里；`Set-Cookie` 已删去」。提交前用 `grep -rIl '@' tests/fixtures/sources` 确认没有文件含 `@`；正文里本来就有 `@` 的（例如网页里的邮箱），用同样长度的 `x` 替换那几个字符，并在 `README.md` 里注明替换过的文件。提交信息 `test(fixtures): recorded source pages for evidence checks`，经 PR 合并到 main（只含 `tests/fixtures/sources/`）。
+
+**执行记录（2026-11-01）：** PR 9a（#106）squash 合并为 main `d66f43c`，本机 688 个测试通过、1 个跳过（本机没有装模型 SDK），一致性 `[]`。夹具已录下。与上文一处不同：SEC 的请求用通用 User-Agent，不带项目的联系方式，因为联系方式是仓库 secret，不经过录制它们的会话；录下的文件里没有联系方式。KRX 两项在维护者的网络里都返回 200。
 
 - [ ] **Step 3: 告诉做 PR 9b 的会话夹具的情况**
 

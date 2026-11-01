@@ -1,0 +1,12 @@
+HTTP/1.1 200 OK
+x-amzn-RequestId: 83758fae-bcf5-45a1-af98-e31412bf7cb5
+Access-Control-Allow-Origin: *
+x-amz-apigw-id: GJZdeFjVoAMEocA=
+X-Amzn-Trace-Id: Root=1-6ae6d5ef-626d5cf69cb4fa96fd7bf8c0
+Content-Type: application/json
+Date: Sun, 01 Nov 2026 06:02:30 GMT
+Transfer-Encoding:  chunked
+Connection: keep-alive
+Connection: Transfer-Encoding
+Strict-Transport-Security: max-age=31536000 ; preload
+

@@ -1,0 +1,12 @@
+HTTP/1.1 200 OK
+ETag: "0-3d58-69ba0956"
+Last-Modified: Wed, 18 Mar 2026 02:09:26 GMT
+Accept-Ranges: bytes
+Content-Length: 15704
+Content-Type: text/html
+Expires: Sun, 01 Nov 2026 06:02:45 GMT
+Cache-Control: max-age=0, no-cache, no-store
+Pragma: no-cache
+Date: Sun, 01 Nov 2026 06:02:45 GMT
+Connection: keep-alive
+
