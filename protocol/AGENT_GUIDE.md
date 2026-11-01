@@ -437,7 +437,7 @@ Applies once Melchior.Magi's model part runs (protocol section 9). Melchior.Magi
 | `source_date` | The date the document states, the EDGAR filing date where there is one, and whether your `source.published_at` matches |
 | `source` | What was fetched: the final address, HTTP status, format, the SHA-256 of the text and whether it was cut |
 | `link` | `broken` after two failed fetches at least 7 days apart (HTTP 404, 410 or no connection) |
-| `next_review` | When the evidence is checked again; null for non-public evidence |
+| `next_review` | When the evidence is checked again: after 90 days, or after 7 days when the source was unreachable; null for non-public evidence |
 
 The conclusions rest only on the text a program fetched from your `source.url`, never on commercial data or on pages the model read by itself, and a figure counts only when the program can match it at the precision you wrote it. So write each claim's numbers as the source writes them, or name the unit the source uses, for example a table header such as `(단위 : 원)`. Non-public evidence is recorded as `unverified` with the reason `non-public` and is never fetched.
 

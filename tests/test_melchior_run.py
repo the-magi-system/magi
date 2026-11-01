@@ -107,7 +107,7 @@ def test_the_workflow_gives_the_key_only_to_think():
     triggers = flow[True]
     assert triggers["schedule"] == [{"cron": "47 23 * * *"}]
     assert triggers["workflow_dispatch"]["inputs"]["scope"]["options"] == \
-        ["all", "program", "evidence", "referrals", "rulings", "insight", "probe"]
+        ["all", "program", "evidence", "referrals", "rulings", "probe"]
     for name in ("prepare", "write"):
         for step in flow["jobs"][name]["steps"]:
             if str(step.get("uses", "")).startswith("actions/checkout@"):
