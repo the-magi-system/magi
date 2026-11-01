@@ -27,6 +27,7 @@ from .quotes import significant_numbers, verdict
 KIND = "evidence-check"
 ACTION = "evidence_check"
 REVIEW_DAYS = 90
+UNREACHABLE_REVIEW_DAYS = 7  # so that two failures 7 days apart can mark a broken link (design 22.9.5)
 BROKEN_GAP = timedelta(days=7)
 BROKEN_STATUSES = (404, 410)
 MAX_EXCERPTS = 60_000
@@ -92,58 +93,75 @@ def _digits(token: str) -> str:
     return token.replace(",", "").replace(".", "").lstrip("0").rstrip("0")
 
 
-def _terms(claims: list[dict]) -> tuple[list[str], list[str]]:
-    numbers, words = [], []
-    for claim in claims:
-        text = str(claim.get("text", ""))
-        for number in significant_numbers(text):
-            key = _digits(number.rstrip("%"))
-            if len(key) >= 2:
-                numbers.append(key[:max(3, len(key) - 1)])
-        words += [word.lower() for word in _WORD.findall(normalize(text))]
+def _claim_terms(claim: dict) -> tuple[list[str], list[str]]:
+    text = str(claim.get("text", ""))
+    numbers = []
+    for number in significant_numbers(text):
+        key = _digits(number.rstrip("%"))
+        if len(key) >= 2:
+            numbers.append(key[:max(3, len(key) - 1)])
+    words = [word.lower() for word in _WORD.findall(normalize(text))]
     return list(dict.fromkeys(numbers)), list(dict.fromkeys(words))
 
 
-def select_excerpts(claims: list[dict], source: str, limit: int = MAX_EXCERPTS) -> list[dict]:
-    """Passages of the source around each claim's significant numbers, then around its longer words; each passage
-    carries its position in source.txt. Overlapping passages are merged, and the whole stays within `limit`."""
-    numbers, words = _terms(claims)
-    hits: list[int] = []
-    for match in _SOURCE_NUMBER.finditer(source):
-        digits = _digits(match.group(0))
-        if any(digits.startswith(key) for key in numbers):
-            hits.append(match.start())
-    lowered = source.lower()
-    word_hits: list[int] = []
+def _claim_hits(claim: dict, source: str, lowered: str, numbers_in_source: list[tuple[int, str]]) -> list[int]:
+    """Where a claim's significant numbers occur in the source, then where its longer words occur."""
+    numbers, words = _claim_terms(claim)
+    hits = [position for position, digits in numbers_in_source if any(digits.startswith(key) for key in numbers)]
     for word in words:
         start = lowered.find(word)
-        while start >= 0 and len(word_hits) < 2000:
-            word_hits.append(start)
+        while start >= 0 and len(hits) < 5000:
+            hits.append(start)
             start = lowered.find(word, start + len(word))
-    spans: list[list[int]] = []
-    total = 0
-    for position in hits + word_hits:
-        start, end = max(0, position - CONTEXT), min(len(source), position + CONTEXT)
-        merged = False
-        for span in spans:
-            if start <= span[1] and end >= span[0]:
-                grown = (min(span[0], start), max(span[1], end))
-                extra = (grown[1] - grown[0]) - (span[1] - span[0])
-                if total + extra > limit:
-                    merged = True
+    return list(dict.fromkeys(hits))
+
+
+def _merge(spans: list[tuple[int, int]]) -> list[tuple[int, int]]:
+    merged: list[list[int]] = []
+    for start, end in sorted(spans):
+        if merged and start <= merged[-1][1]:
+            merged[-1][1] = max(merged[-1][1], end)
+        else:
+            merged.append([start, end])
+    return [(start, end) for start, end in merged]
+
+
+def _uncovered(spans: list[tuple[int, int]], start: int, end: int) -> int:
+    covered = sum(max(0, min(end, b) - max(start, a)) for a, b in spans)
+    return (end - start) - covered
+
+
+def select_excerpts(claims: list[dict], source: str, limit: int = MAX_EXCERPTS) -> list[dict]:
+    """Passages of the source for the model to read first, each with its position in source.txt.
+
+    A source that fits the limit is one passage. Otherwise each claim gets a fair share: passages are taken in rounds,
+    one per claim per round, around the claim's significant numbers first and then its longer words, so every claim
+    with a hit is covered before any claim gets more. Overlapping passages are merged, so no text appears twice, and
+    the whole stays within the limit."""
+    if len(source) <= limit:
+        return [{"start": 0, "end": len(source), "text": source}] if source else []
+    lowered = source.lower()
+    in_source = [(match.start(), _digits(match.group(0))) for match in _SOURCE_NUMBER.finditer(source)]
+    queues = [_claim_hits(claim, source, lowered, in_source) for claim in claims]
+    spans: list[tuple[int, int]] = []
+    total, progress = 0, True
+    while progress:
+        progress = False
+        for queue in queues:
+            while queue:
+                position = queue.pop(0)
+                start, end = max(0, position - CONTEXT), min(len(source), position + CONTEXT)
+                extra = _uncovered(spans, start, end)
+                if extra == 0:
+                    progress = True  # already covered: this claim's turn in the round is done, its queue shrank
                     break
+                if total + extra > limit:
+                    continue
+                spans = _merge(spans + [(start, end)])
                 total += extra
-                span[0], span[1] = grown
-                merged = True
+                progress = True
                 break
-        if merged:
-            continue
-        if total + (end - start) > limit:
-            continue
-        spans.append([start, end])
-        total += end - start
-    spans.sort()
-    return [{"start": start, "end": end, "text": source[start:end]} for start, end in spans]
+    return [{"start": start, "end": end, "text": source[start:end]} for start, end in _merge(spans)]
 
 
 # Prepare ---------------------------------------------------------------------------------------------------------
@@ -223,7 +241,8 @@ def _finish(state: RepoState, base: dict, now: datetime, run: int, inputs: dict 
         "same_source_as": same_source(state, evidence_id),
         "pending_sources": list((previous or {}).get("pending_sources") or []),
         "assist_issue": (previous or {}).get("assist_issue"),
-        "next_review": None if non_public else (now.date() + timedelta(days=REVIEW_DAYS)).isoformat(),
+        "next_review": None if non_public else (now.date() + timedelta(
+            days=UNREACHABLE_REVIEW_DAYS if base["reason"] == "source_unreachable" else REVIEW_DAYS)).isoformat(),
         "input_commit": (inputs or {}).get("input_commit"), "prompt_sha256": (inputs or {}).get("prompt_sha256"),
         "model": (inputs or {}).get("model"),
         "version": int((previous or {}).get("version", 0)) + 1, "checked_at": iso(now), "checked_via_run": run,

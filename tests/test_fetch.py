@@ -66,8 +66,10 @@ class Opener:
         if isinstance(answer, Exception):
             raise answer
         status, headers, body = answer
-        if status >= 400:
+        if status >= 300:  # the Fetcher's own opener never follows a redirect; it raises, as for an error
             hdrs = email.message.Message()
+            for key, value in headers.items():
+                hdrs[key] = value
             raise urllib.error.HTTPError(url, status, "error", hdrs, io.BytesIO(body))
         return Response(url, status, headers, body)
 
@@ -228,3 +230,60 @@ def test_only_https_is_fetched():
     for url in ("http://www.sec.gov/x.htm", "ftp://example.org/x.txt"):
         fetch, opener, _ = fetcher(default=HTML)
         assert fetch.fetch(url, NOW).error == "not_https" and opener.requests == []
+
+
+# Redirects (review of PR #111): every hop is checked, and the contact still goes only to sec.gov ---------------------
+
+def moved(location, status=301):
+    return status, {"Location": location}, b""
+
+
+def test_a_redirect_from_sec_to_another_host_never_gets_the_contact():
+    from engine.prices import USER_AGENT
+    other = "https://mirror.example.org/tem-ex99_1.htm"
+    fetch, opener, _ = fetcher(routes={EX99: moved(other), other: HTML})
+    result = fetch.fetch(EX99, NOW)
+    assert result.error is None and result.final_url == other and result.url == EX99
+    agents = [(r["url"], r["headers"]["user-agent"]) for r in opener.requests]
+    assert agents == [(EX99, CONTACT), (other, USER_AGENT)]
+
+
+def test_a_redirect_to_http_is_refused():
+    plain = "http://www.sec.gov/Archives/x.htm"
+    fetch, opener, _ = fetcher(routes={EX99: moved(plain, 302)}, default=HTML)
+    result = fetch.fetch(EX99, NOW)
+    assert result.error == "not_https" and result.final_url == plain and [r["url"] for r in opener.requests] == [EX99]
+
+
+def test_another_host_redirecting_to_sec_gets_the_contact_or_waits_for_it():
+    from engine.prices import USER_AGENT
+    start = "https://www.example.org/filing"
+    leading_zero = "https://www.sec.gov/Archives/edgar/data/0001717115/000119312526326083/tem-ex99_1.htm"
+    routes = {start: moved(leading_zero, 302), leading_zero: moved(EX99), EX99: HTML}
+    fetch, opener, _ = fetcher(routes=routes)
+    result = fetch.fetch(start, NOW)
+    assert result.error is None and result.final_url == EX99
+    assert [r["headers"]["user-agent"] for r in opener.requests] == [USER_AGENT, CONTACT, CONTACT]
+    fetch, opener, _ = fetcher(contact=None, routes=routes)
+    result = fetch.fetch(start, NOW)
+    assert result.error == "pending_contact" and [r["url"] for r in opener.requests] == [start]
+
+
+def test_more_than_five_redirects_are_unreachable():
+    hops = [f"https://www.example.org/hop{n}" for n in range(7)]
+    routes = {hop: moved(hops[n + 1], 307) for n, hop in enumerate(hops[:-1])}
+    routes[hops[-1]] = HTML
+    fetch, opener, _ = fetcher(routes=routes)
+    result = fetch.fetch(hops[0], NOW)
+    assert result.error == "unreachable" and result.broken_candidate is False and len(opener.requests) == 6
+    fetch, _, _ = fetcher(routes={**routes, hops[5]: HTML})
+    assert fetch.fetch(hops[0], NOW).error is None  # five hops are followed
+
+
+def test_an_ip_address_or_localhost_is_never_fetched():
+    for url in ("https://127.0.0.1/x.htm", "https://[::1]/x.htm", "https://localhost/x.htm", "https://10.0.0.8/a"):
+        fetch, opener, _ = fetcher(default=HTML)
+        result = fetch.fetch(url, NOW)
+        assert result.error == "unreachable" and result.broken_candidate is False and opener.requests == [], url
+    fetch, opener, _ = fetcher(routes={"https://www.example.org/a": moved("https://169.254.169.254/latest")})
+    assert fetch.fetch("https://www.example.org/a", NOW).error == "unreachable" and len(opener.requests) == 1

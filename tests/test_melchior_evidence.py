@@ -273,3 +273,57 @@ def test_hostile_source_text_cannot_change_the_record(root, tmp_path):
     text = json.dumps(record["claims"], ensure_ascii=False)
     assert "EVIL" not in text and "mallory" not in text and "evil.example" not in text
     assert record["status"] == "unverified" and record["reason"] == "not_found"
+
+
+# Review of PR #111: excerpts without duplicated text, a fair share for every claim, and next_review ---------------
+
+def _overlaps(excerpts):
+    spans = sorted((item["start"], item["end"]) for item in excerpts)
+    return any(later[0] < earlier[1] for earlier, later in zip(spans, spans[1:]))
+
+
+def test_excerpts_never_overlap_and_stay_within_the_source_and_the_limit():
+    from engine.melchior.evidence import select_excerpts
+    from engine.fetch import decode, html_to_text
+    from tests.test_fetch import SOURCES
+    source = html_to_text(decode((SOURCES / "sec-tem-ex99.body").read_bytes(), "text/html")[0])
+    claims = [{"text": "Revenue increased 22% year-over-year to $382.5 million"},
+              {"text": "Diagnostics generated $289.3 million of revenue"},
+              {"text": "Data and services revenue was $93.2 million"}]
+    for limit in (5_000, 20_000, 60_000):
+        excerpts = select_excerpts(claims, source, limit)
+        total = sum(len(item["text"]) for item in excerpts)
+        assert not _overlaps(excerpts) and total <= min(len(source), limit)
+        assert all(source[item["start"]:item["end"]] == item["text"] for item in excerpts)
+    short = "Revenue increased 22% year-over-year to $382.5 million."
+    assert select_excerpts(claims, short) == [{"start": 0, "end": len(short), "text": short}]
+
+
+def test_a_late_claim_gets_its_share_of_a_long_source():
+    from engine.melchior.evidence import select_excerpts
+    filler = "".join(f"Segment revenue was 34.9 million in period {n}. " + "x" * 2900 + "\n" for n in range(60))
+    source = filler + "Late in the filing: total assets were 660.5 million at period end.\n" + "y" * 5000
+    claims = [{"text": "Segment revenue was $34.9 million"}, {"text": "Total assets were $660.5 million"}]
+    excerpts = select_excerpts(claims, source, 20_000)
+    text = " ".join(item["text"] for item in excerpts)
+    assert "660.5" in text and "34.9" in text
+    assert not _overlaps(excerpts) and sum(len(item["text"]) for item in excerpts) <= 20_000
+
+
+def test_an_unreachable_source_is_checked_again_after_seven_days(root, tmp_path):
+    from engine.melchior.evidence import prepare_check, program_changes
+    ev = "ev-20261020-tem-gone"
+    put_evidence(root, ev, PAGE)
+    for status, days in ((403, 7), (503, 7), (404, 7)):
+        state = RepoState.load(root)
+        found = prepare_check(state, ev, fetcher({PAGE: (status, {}, b"")}), NOW, tmp_path / f"s{status}")
+        record = record_of(program_changes(state, found["record"], NOW, 7), ev)
+        assert record["reason"] == "source_unreachable" and record["next_review"] == "2026-11-17", status
+    pdf = "https://www.myjvm.com/report.pdf"
+    put_evidence(root, ev, pdf)
+    state = RepoState.load(root)
+    found = prepare_check(state, ev, fetcher({pdf: fixture("jvm-q3-pdf.head")}), NOW, tmp_path / "pdf")
+    assert record_of(program_changes(state, found["record"], NOW, 7), ev)["next_review"] == "2027-02-08"
+    record = record_of(check(root, tmp_path, ev, answer(["supported", "supported"]),
+                             routes={pdf: page()}), ev)
+    assert record["next_review"] == "2027-02-08"

@@ -13,7 +13,7 @@ on:
       scope:
         description: "Which work to do (every scope does the program part; probe checks the model's tool limits)"
         type: choice
-        options: [all, program, evidence, referrals, rulings, insight, probe]
+        options: [all, program, evidence, referrals, rulings, probe]
         default: all
 permissions: {}
 jobs:

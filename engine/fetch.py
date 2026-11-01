@@ -16,11 +16,16 @@ This module is the one implementation of that fetch:
 - An EDGAR filing index page (-index.htm) is followed to the filing's main document and its exhibits, at most five.
 - HTTP 404, 410 and failed connections mark a fetch as a candidate for a broken link; 403, 429 and 5xx do not,
   because they say nothing about whether the page exists.
+- Redirects are never followed by urllib, which would resend the same headers to any host and scheme. The Fetcher
+  follows them itself, at most five hops: every hop must be https and is checked again, the User-Agent is chosen
+  again for each hop's host, so the contact still goes only to sec.gov, and a host that is an IP address or
+  localhost is never contacted. `final_url` is the last address.
 """
 from __future__ import annotations
 
 import codecs
 import hashlib
+import ipaddress
 import re
 import time
 import unicodedata
@@ -39,6 +44,8 @@ MAX_BYTES = 20_000_000
 TIMEOUT = 30
 SPACING = 1.0  # seconds between two requests to the same host
 MAX_EDGAR_PARTS = 5
+MAX_REDIRECTS = 5
+REDIRECT_STATUSES = (301, 302, 303, 307, 308)
 SNIFF_BYTES = 4096
 BROKEN_STATUSES = (404, 410)
 KOREAN_CHARSETS = {"euc-kr", "euc_kr", "euckr", "ks_c_5601-1987", "ks_c_5601", "ksc5601", "cp949", "uhc", "x-windows-949"}
@@ -73,6 +80,28 @@ def normalize(text: str) -> str:
 def is_sec_host(host: str) -> bool:
     host = (host or "").lower().rstrip(".")
     return host == "sec.gov" or host.endswith(".sec.gov")
+
+
+def is_local_host(host: str) -> bool:
+    """An IP address (v4 or v6) or localhost: never fetched, for the first address and for every redirect."""
+    host = (host or "").lower().rstrip(".").strip("[]")
+    if host == "localhost" or host.endswith(".localhost"):
+        return True
+    try:
+        ipaddress.ip_address(host)
+    except ValueError:
+        return False
+    return True
+
+
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    """Hands every redirect back to the caller as an HTTPError, so that Fetcher checks each hop itself."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+_OPENER = urllib.request.build_opener(_NoRedirect)
 
 
 # HTML to text ----------------------------------------------------------------------------------------------------
@@ -188,7 +217,7 @@ class _Raw:
 
 
 class Fetcher:
-    def __init__(self, contact: str | None, opener=urllib.request.urlopen, clock=time.monotonic, sleep=time.sleep):
+    def __init__(self, contact: str | None, opener=_OPENER.open, clock=time.monotonic, sleep=time.sleep):
         self._contact = (contact or "").strip() or None
         self._open, self._clock, self._sleep = opener, clock, sleep
         self._last: dict[str, float] = {}
@@ -200,25 +229,45 @@ class Fetcher:
             if wait > 0:
                 self._sleep(wait)
 
+    def _refused(self, url: str) -> _Raw | None:
+        """Why an address may not be requested, as a result, or None when it may."""
+        parts = urllib.parse.urlsplit(url)
+        if parts.scheme.lower() != "https" or not parts.hostname:
+            return _Raw(None, url, None, b"", False, "not_https")
+        if is_local_host(parts.hostname):
+            return _Raw(None, url, None, b"", False, "unreachable")
+        if is_sec_host(parts.hostname) and self._contact is None:
+            return _Raw(None, url, None, b"", False, "pending_contact")
+        return None
+
     def _get(self, url: str) -> _Raw:
-        host = urllib.parse.urlsplit(url).hostname or ""
-        agent = self._contact if is_sec_host(host) else USER_AGENT
-        self._wait(host)
-        request = urllib.request.Request(url, headers={"User-Agent": agent})
-        try:
-            with self._open(request, timeout=TIMEOUT) as response:
-                body = response.read(MAX_BYTES + 1)
-                status = getattr(response, "status", None) or 200
-                final = response.geturl() if hasattr(response, "geturl") else url
-                content_type = response.headers.get("Content-Type") if response.headers is not None else None
-        except urllib.error.HTTPError as exc:
-            return _Raw(exc.code, url, None, b"", False, "unreachable", exc.code in BROKEN_STATUSES)
-        except (urllib.error.URLError, OSError, ValueError):
-            return _Raw(None, url, None, b"", False, "unreachable", True)
-        finally:
-            self._last[host] = self._clock()
-        truncated = len(body) > MAX_BYTES
-        return _Raw(status, final, content_type, body[:MAX_BYTES], truncated)
+        """One address, following at most MAX_REDIRECTS redirects; every hop is checked as the first address is."""
+        for _ in range(MAX_REDIRECTS + 1):
+            refused = self._refused(url)
+            if refused is not None:
+                return refused
+            host = urllib.parse.urlsplit(url).hostname or ""
+            agent = self._contact if is_sec_host(host) else USER_AGENT
+            self._wait(host)
+            request = urllib.request.Request(url, headers={"User-Agent": agent})
+            try:
+                with self._open(request, timeout=TIMEOUT) as response:
+                    body = response.read(MAX_BYTES + 1)
+                    status = getattr(response, "status", None) or 200
+                    content_type = response.headers.get("Content-Type") if response.headers is not None else None
+            except urllib.error.HTTPError as exc:
+                location = exc.headers.get("Location") if exc.headers is not None else None
+                if exc.code in REDIRECT_STATUSES and location:
+                    url = urllib.parse.urljoin(url, location.strip())
+                    continue
+                return _Raw(exc.code, url, None, b"", False, "unreachable", exc.code in BROKEN_STATUSES)
+            except (urllib.error.URLError, OSError, ValueError):
+                return _Raw(None, url, None, b"", False, "unreachable", True)
+            finally:
+                self._last[host] = self._clock()
+            truncated = len(body) > MAX_BYTES
+            return _Raw(status, url, content_type, body[:MAX_BYTES], truncated)
+        return _Raw(None, url, None, b"", False, "unreachable")  # too many redirects
 
     def _result(self, url: str, now: datetime, raw: _Raw | None = None, *, format: str = "other", text: str = "",
                 error: str | None = None, parts: int = 1, decoding: str | None = None,
@@ -250,11 +299,9 @@ class Fetcher:
 
     def fetch(self, url: str, now: datetime) -> Fetched:
         parts = urllib.parse.urlsplit(url)
-        if parts.scheme.lower() != "https" or not parts.hostname:
-            return self._result(url, now, error="not_https")
-        if is_sec_host(parts.hostname) and self._contact is None:
-            return self._result(url, now, error="pending_contact")
         raw = self._get(url)
+        if raw.error in ("not_https", "pending_contact") and raw.final_url == url:
+            return self._result(url, now, error=raw.error)
         if raw.error:
             return self._result(url, now, raw, error=raw.error)
         format_, text, decoding, error = self._convert(raw)
@@ -267,13 +314,8 @@ class Fetcher:
         return self._result(url, now, raw, format=format_, text=text, decoding=decoding)
 
     def page(self, url: str) -> str | None:
-        """One page as decoded HTML, without following anything: an EDGAR filing index page, to read its filing
-        date. None when it cannot be fetched; the same rules for https, the contact and spacing apply."""
-        parts = urllib.parse.urlsplit(url)
-        if parts.scheme.lower() != "https" or not parts.hostname:
-            return None
-        if is_sec_host(parts.hostname) and self._contact is None:
-            return None
+        """One page as decoded HTML, without following its links: an EDGAR filing index page, to read its filing
+        date. None when it cannot be fetched; the same rules for https, redirects, the contact and spacing apply."""
         raw = self._get(url)
         if raw.error or raw.body.startswith(b"%PDF-"):
             return None
@@ -291,8 +333,9 @@ class Fetcher:
                                             ("rcpNo", "dcmNo", "eleId", "offset", "length", "dtd")})
             part = self._get(f"https://dart.fss.or.kr/report/viewer.do?{query}")
             if part.error:
+                error = part.error if part.error == "pending_contact" else "unreachable"
                 return self._result(url, now, _Raw(part.status, raw.final_url, raw.content_type, b"", False,
-                                                   "unreachable", False), error="unreachable")
+                                                   error, False), error=error)
             format_, text, part_decoding, error = self._convert(part)
             if error:
                 return self._result(url, now, raw, format=format_, error=error)
@@ -313,8 +356,9 @@ class Fetcher:
         for document in documents:
             part = self._get(document)
             if part.error:
+                error = part.error if part.error == "pending_contact" else "unreachable"
                 return self._result(url, now, _Raw(part.status, raw.final_url, raw.content_type, b"", False,
-                                                   "unreachable", False), error="unreachable")
+                                                   error, False), error=error)
             format_, text, _, error = self._convert(part)
             if error:
                 continue

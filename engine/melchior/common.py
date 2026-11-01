@@ -7,10 +7,11 @@ MODES = ("preview", "live", "off")
 MODEL_MODES = ("off", "preview", "live")
 _RANK = {"off": 0, "preview": 1, "live": 2}
 # Every scope does the program part; `all` adds every kind of model task, the next four only their own kind, and
-# `probe` the two permission probes. In this version `referrals`, `rulings` and `insight` have no work yet.
-MODEL_KINDS = ("evidence", "referrals", "rulings", "insight")
+# `probe` the two permission probes. In this version `referrals` and `rulings` have no work yet. The checks of
+# Balthasar's drafts (insight-check) come with Balthasar's own plan (plan 9, item 22), and with them their scope.
+MODEL_KINDS = ("evidence", "referrals", "rulings")
 SCOPES = {"all": ("program", *MODEL_KINDS), "program": ("program",), "evidence": ("program", "evidence"),
-          "referrals": ("program", "referrals"), "rulings": ("program", "rulings"), "insight": ("program", "insight"),
+          "referrals": ("program", "referrals"), "rulings": ("program", "rulings"),
           "probe": ("program", "probe")}
 
 
