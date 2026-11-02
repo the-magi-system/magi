@@ -37,6 +37,7 @@ from ..timeutil import iso
 from ..yamlio import dump_yaml, load_yaml
 from ..caspar.work import take_turn
 from .common import MELCHIOR, SCOPES, SOURCE_DIR, resolve_mode, resolve_model_mode
+from . import assist
 from .corrections import MAX_CORRECTIONS, CorrectionRejected, correction, find_marked, may_correct, notices
 from .evidence import check_changes, check_path, pending_checks, prepare_check, program_changes
 from .think import MODEL
@@ -192,6 +193,15 @@ class Job:
     # target, body). The hidden marker of kind and target keeps a post from being repeated.
     posts: list[tuple[int, str, str, str]] = field(default_factory=list)
     new_ids: list[str] = field(default_factory=list)  # evidence ids this run has given out
+    closes: list[tuple[int, str]] = field(default_factory=list)  # (issue, state reason), after the posts
+    gh: object = None
+    open_assist: dict | None = None  # open assist requests by evidence id, read once per run
+    assists_new: int = 0
+
+    def assist_requests(self) -> dict:
+        if self.open_assist is None:
+            self.open_assist = assist.open_requests(self.gh) if self.gh is not None else {}
+        return self.open_assist
 
     def apply(self, changes: ChangeSet) -> None:
         write_changes(self.root, changes)
@@ -388,30 +398,70 @@ def _probe(kind: str, output: dict | None) -> str | None:
     return None
 
 
-def _correct(job: "Job", state: RepoState, evidence_id: str, check: dict, model_mode: str, source=None):
-    """Write a correction of a checked evidence and queue its notices; None when it was not written, with why."""
-    summary = job.summary
+def _correction(job: "Job", state: RepoState, evidence_id: str, check: dict, source=None):
+    """The correction of a checked evidence, not yet written; None with the reason when it cannot be written."""
     try:
         fix = correction(state, evidence_id, check, job.now, job.run, taken=job.new_ids, source=source)
     except CorrectionRejected as exc:
         return None, f"the correction does not pass the checks of supersede_evidence ({exc})"
-    new_id = fix.created["evidence_id"]
-    job.new_ids.append(new_id)
+    job.new_ids.append(fix.created["evidence_id"])
+    return fix, None
+
+
+def _write_correction(job: "Job", state: RepoState, evidence_id: str, fix: ChangeSet, check: dict,
+                      model_mode: str) -> None:
+    summary = job.summary
     if model_mode == "live":
         job.apply(fix)
     else:
         summary["model_preview"] += [{"path": path, "content": dump_yaml(data)} for path, data in fix.writes.items()]
     summary["corrections"].append(evidence_id)
+    new_id = fix.created["evidence_id"]
     for number, body in notices(state, evidence_id, new_id, fix.writes.get(check_path(evidence_id), check)):
         job.posts.append((number, "correction", evidence_id, body))
-    return new_id, None
+
+
+def _assist(job: "Job", state: RepoState, evidence_id: str, record: dict, reason: str | None,
+            model_mode: str) -> int | None:
+    """Open the assist request of an evidence, or find its open one (design 22.9.7); returns its number."""
+    if reason is None:
+        return None
+    summary, found = job.summary, job.assist_requests()
+    if evidence_id in found:
+        return found[evidence_id]["number"]
+    if record.get("assist_issue"):
+        return None  # a request was opened before and is closed: the evidence stays as it is
+    if job.assists_new >= assist.MAX_NEW:
+        summary["dropped"].append(f"{evidence_id}: this run's {assist.MAX_NEW} new assist requests are used; "
+                                  "it is asked next run")
+        return None
+    job.assists_new += 1
+    summary["assists"].append(evidence_id)
+    body = assist.request_body(state, evidence_id, record, reason)
+    if model_mode != "live" or job.gh is None:
+        summary["model_preview"].append({"path": f"new issue: {assist.title(evidence_id)} ({assist.LABEL})",
+                                         "content": body})
+        return None
+    number = job.gh.create_issue(assist.title(evidence_id), body, [assist.LABEL])["number"]
+    found[evidence_id] = {"number": number}
+    login = assist.owner_login(state, evidence_id)
+    if login:
+        job.gh.assign(number, [login])
+    submission = (state.evidence.get(evidence_id) or {}).get("submitted_via_issue")
+    if isinstance(submission, int) and submission > 0:
+        job.posts.append((submission, "assist-notice", evidence_id, assist.notice_body(evidence_id, number, reason)))
+    return number
 
 
 def _checked(job: "Job", state: RepoState, evidence_id: str, changes: ChangeSet, keep, model_mode: str) -> None:
-    """A checked evidence: its record, and for a discrepancy a correction when every rule holds (design 22.9.6)."""
+    """A checked evidence: its record; for a discrepancy a correction when every rule holds (design 22.9.6), and
+    an assist request when the evidence cannot be checked or corrected by program (design 22.9.7)."""
     summary = job.summary
     check = changes.writes[check_path(evidence_id)]
     if check["status"] != "discrepancy":
+        number = _assist(job, state, evidence_id, check, assist.why(check), model_mode)
+        if number:
+            check["assist_issue"] = number
         keep(changes, evidence_id)
         return
     ok, reason = may_correct(state, evidence_id, check, check.get("source"))
@@ -419,11 +469,44 @@ def _checked(job: "Job", state: RepoState, evidence_id: str, changes: ChangeSet,
         summary["dropped"].append(f"{evidence_id}: the run's {MAX_CORRECTIONS} corrections are used; it is checked "
                                   "again next run")
         return
-    keep(changes, evidence_id)
+    fix = None
     if ok:
-        _, reason = _correct(job, state, evidence_id, check, model_mode)
-    if reason:
+        fix, reason = _correction(job, state, evidence_id, check)
+    if fix is None:
         summary["discrepancies"].append(f"{evidence_id}: {reason}")
+        number = _assist(job, state, evidence_id, check, assist.why(check, reason), model_mode)
+        if number:
+            check["assist_issue"] = number
+        keep(changes, evidence_id)
+        return
+    keep(changes, evidence_id)
+    _write_correction(job, state, evidence_id, fix, check, model_mode)
+
+
+def _assist_sweep(job: "Job", keep, model_mode: str, done: set[str]) -> None:
+    """Requests that an earlier run's limit held back, then what each open request needs: a reply, a close, and
+    for a resolved one the old check marked superseded."""
+    state = RepoState.load(job.root)
+    for evidence_id, record in sorted(state.evidence_checks.items()):
+        if evidence_id in done or record.get("assist_issue") or evidence_id not in state.evidence:
+            continue
+        reason = assist.why(record)
+        if reason is None or evidence_id in job.assist_requests():
+            continue
+        number = _assist(job, state, evidence_id, record, reason, model_mode)
+        if number:
+            keep(assist.revised(state, evidence_id, job.now, job.run, assist_issue=number), evidence_id)
+    if job.gh is None:
+        return
+    state = RepoState.load(job.root)
+    for action in assist.lifecycle(state, job.gh, job.now):
+        kind, body = action["post"]
+        job.posts.append((action["issue"], kind, action["evidence"], body))
+        if action["close"]:
+            job.closes.append((action["issue"], action["close"]))
+        if action["superseded_by"] and action["evidence"] in state.evidence_checks:
+            keep(assist.revised(state, action["evidence"], job.now, job.run,
+                                superseded_by=action["superseded_by"]), action["evidence"])
 
 
 def _post(job: "Job", gh, mode: str) -> None:
@@ -440,6 +523,14 @@ def _post(job: "Job", gh, mode: str) -> None:
                 job.summary["posts"] += 1
         except Exception as exc:  # a failed post is made next time; the records are already on main
             job.summary["dropped"].append(f"post on #{number}: {type(exc).__name__}: {exc}")
+    for number, reason in job.closes:
+        if mode != "live" or gh is None:
+            job.summary["model_preview"].append({"path": f"close #{number}", "content": f"closed as {reason}"})
+            continue
+        try:
+            gh.close(number, reason)
+        except Exception as exc:  # closed next run
+            job.summary["dropped"].append(f"close #{number}: {type(exc).__name__}: {exc}")
 
 
 def _model(job: "Job", plan: dict, work: Path, mode: str, model_cap: str | None) -> None:
@@ -461,9 +552,13 @@ def _model(job: "Job", plan: dict, work: Path, mode: str, model_cap: str | None)
             summary["model_preview"] += [{"path": path, "content": dump_yaml(data)} for path, data in changes.writes.items()]
         summary["checks"].append(evidence_id)
 
+    done: set[str] = set()
     for base in plan.get("records", []):
         try:
-            keep(program_changes(RepoState.load(root), base, job.now, job.run, job.input_commit or None), base["evidence"])
+            state = RepoState.load(root)
+            changes = program_changes(state, base, job.now, job.run, job.input_commit or None)
+            _checked(job, state, base["evidence"], changes, keep, model_mode)
+            done.add(base["evidence"])
         except Exception as exc:  # one failed record must not stop the rest
             summary["dropped"].append(f"{base.get('evidence')}: {type(exc).__name__}: {exc}; {RETRY}")
     usage, probes = [], []
@@ -485,8 +580,14 @@ def _model(job: "Job", plan: dict, work: Path, mode: str, model_cap: str | None)
                 changes = check_changes(state, evidence_id, output, work / task["id"], job.now, job.run,
                                         plan.get("inputs") or {})
                 _checked(job, state, evidence_id, changes, keep, model_mode)
+                done.add(evidence_id)
         except Exception as exc:  # one failed task must not stop the others
             summary["dropped"].append(f"{task.get('evidence', task['id'])}: {type(exc).__name__}: {exc}; {RETRY}")
+    if "evidence" in SCOPES.get(plan.get("scope"), ()):
+        try:
+            _assist_sweep(job, keep, model_mode, done)
+        except Exception as exc:  # the requests are read again next run
+            summary["dropped"].append(f"assist requests: {type(exc).__name__}: {exc}; {RETRY}")
     if probes:
         failed = [reason for reason in probes if reason]
         summary["probe"] = "failed: " + "; ".join(failed) if failed else "passed"
@@ -508,10 +609,10 @@ def write(root, gh, git: Git, work, mode: str, run: int, now: datetime, prices: 
     summary = {"mode": mode, "notice": plan.get("notice"), "profile": None, "series": [], "closes": 0, "actions": 0,
                "fills": [], "settlements": [], "findings": [], "dropped": [], "commit": None, "preview": None,
                "model_mode": "off", "model_notice": plan.get("model_notice"), "checks": [], "waiting": [],
-               "probe": None, "model_preview": [], "corrections": [], "discrepancies": [], "posts": 0}
+               "probe": None, "model_preview": [], "corrections": [], "discrepancies": [], "assists": [], "posts": 0}
     if mode == "off" or plan.get("notice"):
         return summary
-    job = Job(root, prices, now, run, summary, input_commit=git.run("rev-parse", "HEAD"))
+    job = Job(root, prices, now, run, summary, input_commit=git.run("rev-parse", "HEAD"), gh=gh)
     for name, step in STEPS:
         try:
             step(job)
