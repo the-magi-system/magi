@@ -1,0 +1,9 @@
+schema: magi/researcher@1
+handle: hoaiquangtrieu-ops
+github_id: 350916926
+github_login: hoaiquangtrieu-ops
+display_name: hoaiquangtrieu-ops
+roles:
+- researcher
+status: active
+joined_at: '2026-11-02T16:56:37Z'
