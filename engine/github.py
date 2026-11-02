@@ -73,6 +73,17 @@ class GitHubClient:
     def open_issues(self) -> list[dict]:
         return self._issues({"state": "open"})
 
+    def issue(self, number: int) -> dict | None:
+        """One issue, read directly; None when it does not exist or is a pull request. The issue list can lag
+        behind an issue opened seconds earlier, so a workflow reads its event's own issue this way."""
+        try:
+            found = self.request("GET", self._issue_path(number))
+        except GitHubError as exc:
+            if "HTTP 404" in str(exc) or "HTTP 410" in str(exc):
+                return None
+            raise
+        return None if not isinstance(found, dict) or "pull_request" in found else found
+
     def issues_created_since(self, since: str) -> list[dict]:
         return [issue for issue in self._issues({"state": "all", "since": since}) if issue["created_at"] >= since]
 

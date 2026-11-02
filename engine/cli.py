@@ -77,7 +77,9 @@ def _intake(args) -> int:
 
 
 def _triage(args) -> int:
-    _summarise(run_triage(args.repo, GitHubClient.from_env()))
+    # MAGI_EVENT_ISSUE is the number of the issue that started the run; it is empty on other events.
+    event = (os.environ.get("MAGI_EVENT_ISSUE") or "").strip()
+    _summarise(run_triage(args.repo, GitHubClient.from_env(), event_issue=int(event) if event.isdigit() else None))
     return 0
 
 

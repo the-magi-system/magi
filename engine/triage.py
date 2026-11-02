@@ -103,9 +103,22 @@ def triage_issue(root: Path, issue: dict) -> TriageOutcome:
     return TriageOutcome(issue["number"], result, labels, _maintainers(state))
 
 
-def run_triage(root: Path, gh) -> list[TriageOutcome]:
+def _issues(gh, event_issue: int | None) -> list[dict]:
+    """Every open issue, plus the event's own issue read directly when it is open and not listed yet: the list can
+    lag behind an issue opened seconds before the run (sandbox run 41434477664)."""
+    issues = {issue["number"]: issue for issue in gh.open_issues()}
+    if event_issue is not None and event_issue not in issues:
+        issue = gh.issue(event_issue)
+        if issue is not None and issue.get("state", "open") == "open":
+            issues[event_issue] = issue
+    return [issues[number] for number in sorted(issues)]
+
+
+def run_triage(root: Path, gh, event_issue: int | None = None) -> list[TriageOutcome]:
+    """Answer every open request issue whose current body has no reply yet. `event_issue` is the issue of the
+    workflow event, if any; it is answered even when the issue list does not include it yet."""
     outcomes = []
-    for issue in sorted(gh.open_issues(), key=lambda i: i["number"]):
+    for issue in _issues(gh, event_issue):
         if not has_request_marker(issue.get("body")):
             continue
         replies = engine_replies(gh.comments(issue["number"]))

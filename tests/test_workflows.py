@@ -37,7 +37,12 @@ def test_triage_runs_for_requests_only():
     flow, on = _flow("triage.yml")
     assert set(on["issues"]["types"]) >= {"opened", "edited"}
     condition = " ".join(flow["jobs"]["triage"]["if"].split())
-    assert condition == "github.event_name == 'workflow_dispatch' || contains(github.event.issue.body, 'request@1')"
+    assert condition == ("github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' "
+                         "|| contains(github.event.issue.body, 'request@1')")
+    assert on["schedule"] == [{"cron": "37 */3 * * *"}]
+    step = next(step for step in flow["jobs"]["triage"]["steps"] if step.get("name") == "Answer request issues")
+    assert step["run"] == "python -m engine triage --repo ."
+    assert step["env"]["MAGI_EVENT_ISSUE"] == "${{ github.event.issue.number }}"
     assert "Join request" not in condition and "magi:join" not in condition
     assert flow["permissions"] == {"contents": "read", "issues": "write"}
 

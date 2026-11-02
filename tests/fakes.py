@@ -139,6 +139,9 @@ class FakeGitHub:
     def open_issues(self) -> list[dict]:
         return [dict(issue) for issue in self.issues.values() if issue["state"] == "open"]
 
+    def issue(self, number: int) -> dict | None:
+        return dict(self.issues[number]) if number in self.issues else None
+
     def issues_created_since(self, since: str) -> list[dict]:
         return [dict(issue) for issue in self.issues.values() if issue["created_at"] >= since]
 
