@@ -327,3 +327,20 @@ def test_an_unreachable_source_is_checked_again_after_seven_days(root, tmp_path)
     record = record_of(check(root, tmp_path, ev, answer(["supported", "supported"]),
                              routes={pdf: page()}), ev)
     assert record["next_review"] == "2027-02-08"
+
+
+def test_every_number_of_a_claim_is_reached_on_a_long_source():
+    # One claim with three numbers. The leading digits of 34.9 occur many times early (as 34,912 thousand), while the
+    # exact spellings of 34.9, 26.1 and 12.2 occur only late and far apart, each needing its own passage.
+    from engine.melchior.evidence import select_excerpts
+    early = "".join(f"Line {n}: deferred items of 34,912 thousand. " + "x" * 2900 + "\n" for n in range(60))
+    late = "".join(f"Note {n}: {text}\n" + "y" * 4000 + "\n" for n, text in enumerate((
+        "Revenue for the quarter was 34.9 million.", "Operating expenses were 26.1 million.",
+        "Net income was 12.2 million.")))
+    source = early + late
+    claims = [{"text": "Revenue was $34.9 million, operating expenses $26.1 million and net income $12.2 million"}]
+    excerpts = select_excerpts(claims, source, 20_000)
+    text = " ".join(item["text"] for item in excerpts)
+    for number in ("34.9 million", "26.1 million", "12.2 million"):
+        assert number in text, number
+    assert not _overlaps(excerpts) and sum(len(item["text"]) for item in excerpts) <= 20_000

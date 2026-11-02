@@ -31,6 +31,7 @@ UNREACHABLE_REVIEW_DAYS = 7  # so that two failures 7 days apart can mark a brok
 BROKEN_GAP = timedelta(days=7)
 BROKEN_STATUSES = (404, 410)
 MAX_EXCERPTS = 60_000
+MAX_WORD_HITS = 50  # places per word of a claim in the excerpt queues
 CONTEXT = 1500
 MIN_WORD = 4
 MAX_NOTE = 500
@@ -93,27 +94,34 @@ def _digits(token: str) -> str:
     return token.replace(",", "").replace(".", "").lstrip("0").rstrip("0")
 
 
-def _claim_terms(claim: dict) -> tuple[list[str], list[str]]:
+def _number_queue(number: str, source: str, numbers_in_source: list[tuple[int, str]]) -> list[int]:
+    """Where one number of a claim occurs: first where its exact spelling stands alone (not inside a longer number),
+    then where a number of the source starts with the same leading digits."""
+    spelling = number.rstrip("%")
+    exact = [match.start() for match in re.finditer(r"(?<![\d.,])" + re.escape(spelling) + r"(?![\d]|[.,]\d)", source)]
+    key = _digits(spelling)
+    leading = []
+    if len(key) >= 2:
+        key = key[:max(3, len(key) - 1)]
+        leading = [position for position, digits in numbers_in_source if digits.startswith(key)]
+    return list(dict.fromkeys(exact + leading))
+
+
+def _word_queue(word: str, lowered: str) -> list[int]:
+    found, start = [], lowered.find(word)
+    while start >= 0 and len(found) < MAX_WORD_HITS:
+        found.append(start)
+        start = lowered.find(word, start + len(word))
+    return found
+
+
+def _claim_queues(claim: dict, source: str, lowered: str, numbers_in_source: list[tuple[int, str]]) -> list[list[int]]:
+    """One queue per significant number of the claim, then one per longer word; empty queues are left out."""
     text = str(claim.get("text", ""))
-    numbers = []
-    for number in significant_numbers(text):
-        key = _digits(number.rstrip("%"))
-        if len(key) >= 2:
-            numbers.append(key[:max(3, len(key) - 1)])
-    words = [word.lower() for word in _WORD.findall(normalize(text))]
-    return list(dict.fromkeys(numbers)), list(dict.fromkeys(words))
-
-
-def _claim_hits(claim: dict, source: str, lowered: str, numbers_in_source: list[tuple[int, str]]) -> list[int]:
-    """Where a claim's significant numbers occur in the source, then where its longer words occur."""
-    numbers, words = _claim_terms(claim)
-    hits = [position for position, digits in numbers_in_source if any(digits.startswith(key) for key in numbers)]
-    for word in words:
-        start = lowered.find(word)
-        while start >= 0 and len(hits) < 5000:
-            hits.append(start)
-            start = lowered.find(word, start + len(word))
-    return list(dict.fromkeys(hits))
+    queues = [_number_queue(number, source, numbers_in_source) for number in dict.fromkeys(significant_numbers(text))]
+    words = dict.fromkeys(word.lower() for word in _WORD.findall(normalize(text)))
+    queues += [_word_queue(word, lowered) for word in words]
+    return [queue for queue in queues if queue]
 
 
 def _merge(spans: list[tuple[int, int]]) -> list[tuple[int, int]]:
@@ -134,15 +142,17 @@ def _uncovered(spans: list[tuple[int, int]], start: int, end: int) -> int:
 def select_excerpts(claims: list[dict], source: str, limit: int = MAX_EXCERPTS) -> list[dict]:
     """Passages of the source for the model to read first, each with its position in source.txt.
 
-    A source that fits the limit is one passage. Otherwise each claim gets a fair share: passages are taken in rounds,
-    one per claim per round, around the claim's significant numbers first and then its longer words, so every claim
-    with a hit is covered before any claim gets more. Overlapping passages are merged, so no text appears twice, and
-    the whole stays within the limit."""
+    A source that fits the limit is one passage. Otherwise every number and word of every claim gets a fair share:
+    each claim has one queue per significant number (where its exact spelling stands alone first, then where its
+    leading digits match) and one per longer word (at most 50 places), and passages are taken in rounds in which
+    every queue of every claim takes one passage, numbers before words within a claim. So a claim's late numbers
+    are reached before earlier ones take more. Overlapping passages are merged, so no text appears twice, and the
+    whole stays within the limit."""
     if len(source) <= limit:
         return [{"start": 0, "end": len(source), "text": source}] if source else []
     lowered = source.lower()
     in_source = [(match.start(), _digits(match.group(0))) for match in _SOURCE_NUMBER.finditer(source)]
-    queues = [_claim_hits(claim, source, lowered, in_source) for claim in claims]
+    queues = [queue for claim in claims for queue in _claim_queues(claim, source, lowered, in_source)]
     spans: list[tuple[int, int]] = []
     total, progress = 0, True
     while progress:
@@ -153,7 +163,7 @@ def select_excerpts(claims: list[dict], source: str, limit: int = MAX_EXCERPTS) 
                 start, end = max(0, position - CONTEXT), min(len(source), position + CONTEXT)
                 extra = _uncovered(spans, start, end)
                 if extra == 0:
-                    progress = True  # already covered: this claim's turn in the round is done, its queue shrank
+                    progress = True  # already covered: this queue's turn in the round is done, and it shrank
                     break
                 if total + extra > limit:
                     continue
