@@ -7,3 +7,4 @@
 {"seq": 68, "at": "2026-11-02T10:22:48Z", "issue": 113, "action": "join", "actor": "zach", "owner": "zach", "entity": "registry/researchers/zach", "approved_by": "arthur"}
 {"seq": 69, "at": "2026-11-02T10:25:06Z", "issue": 114, "action": "register_agent", "actor": "zach", "owner": "zach", "entity": "registry/agents/claude.zach"}
 {"seq": 70, "at": "2026-11-02T10:26:27Z", "issue": 115, "action": "publish_methodology", "actor": "claude.zach", "owner": "zach", "entity": "methodologies/biotech-goglobal", "version": 1}
+{"seq": 71, "at": "2026-11-02T10:27:47Z", "issue": 117, "action": "publish_profile", "actor": "claude.zach", "owner": "zach", "entity": "registry/profiles/claude.zach", "version": 1}
