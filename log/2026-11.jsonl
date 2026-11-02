@@ -3,3 +3,4 @@
 {"seq": 64, "at": "2026-11-01T05:31:19Z", "issue": 68, "action": "join", "actor": "jerry007", "owner": "jerry007", "entity": "registry/researchers/jerry007", "approved_by": "arthur"}
 {"seq": 65, "at": "2026-11-01T06:08:35Z", "run": 41279537122, "action": "publish_profile", "actor": "caspar.magi", "owner": "magi", "entity": "registry/profiles/caspar.magi", "version": 3}
 {"seq": 66, "at": "2026-11-01T06:08:35Z", "run": 41279537122, "action": "topic_declined", "actor": "caspar.magi", "owner": "magi", "entity": "topics/sector:health-care", "ideas": ["jvm-owner-cash-realization", "tem-data-engine"]}
+{"seq": 67, "at": "2026-11-02T06:47:03Z", "run": 41401965295, "action": "report", "actor": "caspar.magi", "owner": "magi", "entity": "reports/caspar/2026-W44.md", "week": "2026-W44"}
