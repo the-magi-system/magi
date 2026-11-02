@@ -10,7 +10,8 @@
     "supersedes": {"type": ["string", "null"]},
     "submitted_by": {"type": "string", "minLength": 1},
     "submitted_at": {"$ref": "#/$defs/timestamp"},
-    "submitted_via_issue": {"type": "integer", "minimum": 0}
+    "submitted_via_issue": {"type": "integer", "minimum": 0},
+    "submitted_via_run": {"type": "integer", "minimum": 1}
   },
   "$defs": {"timestamp": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"}}
 }

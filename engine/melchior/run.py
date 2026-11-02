@@ -37,6 +37,7 @@ from ..timeutil import iso
 from ..yamlio import dump_yaml, load_yaml
 from ..caspar.work import take_turn
 from .common import MELCHIOR, SCOPES, SOURCE_DIR, resolve_mode, resolve_model_mode
+from .corrections import MAX_CORRECTIONS, CorrectionRejected, correction, find_marked, may_correct, notices
 from .evidence import check_changes, check_path, pending_checks, prepare_check, program_changes
 from .think import MODEL
 from .fills import fill_changes, pending_fills
@@ -187,6 +188,10 @@ class Job:
     input_commit: str = ""
     subjects: list[str] = field(default_factory=list)
     price_failures: list[str] = field(default_factory=list)
+    # Posts made after the push, so that a post never announces a record that is not on main: (issue, kind,
+    # target, body). The hidden marker of kind and target keeps a post from being repeated.
+    posts: list[tuple[int, str, str, str]] = field(default_factory=list)
+    new_ids: list[str] = field(default_factory=list)  # evidence ids this run has given out
 
     def apply(self, changes: ChangeSet) -> None:
         write_changes(self.root, changes)
@@ -383,6 +388,60 @@ def _probe(kind: str, output: dict | None) -> str | None:
     return None
 
 
+def _correct(job: "Job", state: RepoState, evidence_id: str, check: dict, model_mode: str, source=None):
+    """Write a correction of a checked evidence and queue its notices; None when it was not written, with why."""
+    summary = job.summary
+    try:
+        fix = correction(state, evidence_id, check, job.now, job.run, taken=job.new_ids, source=source)
+    except CorrectionRejected as exc:
+        return None, f"the correction does not pass the checks of supersede_evidence ({exc})"
+    new_id = fix.created["evidence_id"]
+    job.new_ids.append(new_id)
+    if model_mode == "live":
+        job.apply(fix)
+    else:
+        summary["model_preview"] += [{"path": path, "content": dump_yaml(data)} for path, data in fix.writes.items()]
+    summary["corrections"].append(evidence_id)
+    for number, body in notices(state, evidence_id, new_id, fix.writes.get(check_path(evidence_id), check)):
+        job.posts.append((number, "correction", evidence_id, body))
+    return new_id, None
+
+
+def _checked(job: "Job", state: RepoState, evidence_id: str, changes: ChangeSet, keep, model_mode: str) -> None:
+    """A checked evidence: its record, and for a discrepancy a correction when every rule holds (design 22.9.6)."""
+    summary = job.summary
+    check = changes.writes[check_path(evidence_id)]
+    if check["status"] != "discrepancy":
+        keep(changes, evidence_id)
+        return
+    ok, reason = may_correct(state, evidence_id, check, check.get("source"))
+    if ok and len(summary["corrections"]) >= MAX_CORRECTIONS:
+        summary["dropped"].append(f"{evidence_id}: the run's {MAX_CORRECTIONS} corrections are used; it is checked "
+                                  "again next run")
+        return
+    keep(changes, evidence_id)
+    if ok:
+        _, reason = _correct(job, state, evidence_id, check, model_mode)
+    if reason:
+        summary["discrepancies"].append(f"{evidence_id}: {reason}")
+
+
+def _post(job: "Job", gh, mode: str) -> None:
+    """The queued posts, after the push in live mode; in preview mode they are only described."""
+    for number, kind, target, body in job.posts:
+        if mode != "live":
+            job.summary["model_preview"].append({"path": f"post on #{number}", "content": body})
+            continue
+        try:
+            if gh is None:
+                raise RuntimeError("no GitHub client")
+            if not find_marked(gh.comments(number), kind, target):
+                gh.comment(number, body)
+                job.summary["posts"] += 1
+        except Exception as exc:  # a failed post is made next time; the records are already on main
+            job.summary["dropped"].append(f"post on #{number}: {type(exc).__name__}: {exc}")
+
+
 def _model(job: "Job", plan: dict, work: Path, mode: str, model_cap: str | None) -> None:
     """Write what the model part produced: program records, checked results, the probe and the month's usage."""
     model_mode = plan.get("model_mode", "off")
@@ -423,8 +482,9 @@ def _model(job: "Job", plan: dict, work: Path, mode: str, model_cap: str | None)
                 if evidence_id not in state.evidence:
                     summary["dropped"].append(f"{evidence_id}: the evidence is gone")
                     continue
-                keep(check_changes(state, evidence_id, output, work / task["id"], job.now, job.run,
-                                   plan.get("inputs") or {}), evidence_id)
+                changes = check_changes(state, evidence_id, output, work / task["id"], job.now, job.run,
+                                        plan.get("inputs") or {})
+                _checked(job, state, evidence_id, changes, keep, model_mode)
         except Exception as exc:  # one failed task must not stop the others
             summary["dropped"].append(f"{task.get('evidence', task['id'])}: {type(exc).__name__}: {exc}; {RETRY}")
     if probes:
@@ -448,7 +508,7 @@ def write(root, gh, git: Git, work, mode: str, run: int, now: datetime, prices: 
     summary = {"mode": mode, "notice": plan.get("notice"), "profile": None, "series": [], "closes": 0, "actions": 0,
                "fills": [], "settlements": [], "findings": [], "dropped": [], "commit": None, "preview": None,
                "model_mode": "off", "model_notice": plan.get("model_notice"), "checks": [], "waiting": [],
-               "probe": None, "model_preview": []}
+               "probe": None, "model_preview": [], "corrections": [], "discrepancies": [], "posts": 0}
     if mode == "off" or plan.get("notice"):
         return summary
     job = Job(root, prices, now, run, summary, input_commit=git.run("rev-parse", "HEAD"))
@@ -467,7 +527,9 @@ def write(root, gh, git: Git, work, mode: str, run: int, now: datetime, prices: 
             subject = f"melchior: {'; '.join(job.subjects) or 'record market data'}"[:SUBJECT_LIMIT]
             summary["commit"] = git.commit(subject, {"Magi-Actor": MELCHIOR, "Magi-Run": str(run)})
             git.push()
+        _post(job, gh, summary.get("model_mode", "off"))
     else:
         summary["preview"] = describe(root, git)
         git.discard()
+        _post(job, gh, "preview")
     return summary

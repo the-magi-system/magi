@@ -185,8 +185,8 @@ def _melchior_think(args) -> int:
 
 
 def _melchior_write(args) -> int:
-    summary = melchior_write(args.repo, None, Git(args.repo), args.work, args.mode, args.run_id, utc_now(),
-                             PriceRouter(), model_mode=args.model_mode)
+    summary = melchior_write(args.repo, GitHubClient.from_env(), Git(args.repo), args.work, args.mode, args.run_id,
+                             utc_now(), PriceRouter(), model_mode=args.model_mode)
     if summary["preview"] is not None or summary["model_preview"]:
         (Path(args.work) / "preview.md").write_text(preview_markdown(summary), encoding="utf-8")
     if summary["findings"]:

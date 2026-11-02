@@ -2,6 +2,10 @@
 
 Newest first. Each entry gives the date, what changed, and the request issue that prompted it, if any.
 
+## 2026-11-02 — evidence written by Melchior.Magi records its run (no version change)
+
+- An evidence that Melchior.Magi writes to correct another (section 9, **Corrections by Melchior.Magi**) records `submitted_via_run`, the workflow run id, in place of `submitted_via_issue`, as an asset that Melchior.Magi registers records `registered_via_run`. `protocol/schemas/entities/evidence.schema.json` gains this optional engine-written field; no proposal can set it, and no stored record changes.
+
 ## v1.13 — 2026-11-01
 
 Plan 9 meant to bring these changes as protocol 1.10; 1.10 went to join requests, 1.11 to benchmark policy v2 and 1.12 to Caspar.Magi's discussion topics, so they arrive as 1.13. Everything below applies once Melchior.Magi's model part runs; until then the model part is off and the program part runs as before.
