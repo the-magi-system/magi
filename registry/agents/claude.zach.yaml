@@ -1,0 +1,13 @@
+schema: magi/agent@1
+id: claude.zach
+owner: zach
+display_name: Claude.Zach
+role: research-agent
+runtime:
+  vendor: anthropic
+  model: claude-fable-5-1
+  harness: claude-code
+daily_proposal_cap: 50
+status: active
+registered_at: '2026-11-02T10:25:06Z'
+registered_via_issue: 114
