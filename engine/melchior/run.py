@@ -33,11 +33,12 @@ from ..prices import PriceProvider
 from ..repo import RepoState
 from ..returns import load_policies
 from ..sysagent import publish_system_profile
+from ..caspar.common import sanitize
 from ..timeutil import iso
 from ..yamlio import dump_yaml, load_yaml
 from ..caspar.work import take_turn
 from .common import MELCHIOR, SCOPES, SOURCE_DIR, resolve_mode, resolve_model_mode
-from . import assist, staleness
+from . import assist, referrals, staleness
 from .corrections import MAX_CORRECTIONS, CorrectionRejected, correction, find_marked, may_correct, notices
 from .evidence import check_changes, check_path, pending_checks, prepare_check, program_changes
 from .think import MODEL
@@ -103,7 +104,7 @@ def _head(root: Path) -> str | None:
 
 
 def _model_plan(root: Path, state: RepoState, out: Path, plan: dict, model_mode: str, event: str, turn: int,
-                now: datetime, monthly_usd) -> None:
+                now: datetime, monthly_usd, gh=None) -> None:
     requested = (model_mode or "").strip().lower() or "off"
     plan["model_mode"] = resolve_model_mode(model_mode, plan["mode"], event)
     if plan["model_mode"] == "off":
@@ -130,18 +131,23 @@ def _model_plan(root: Path, state: RepoState, out: Path, plan: dict, model_mode:
         stale = [item for item in staleness.due(state, now) if item["evidence"] not in chosen]
         picked = take_turn(stale, min(staleness.MAX_TASKS, room - len(chosen)), turn) if room > len(chosen) else []
         plan["fetch"] += [{"id": f"staleness-{number}", **item} for number, item in enumerate(picked, start=1)]
+    if "referrals" in parts and gh is not None:
+        left = room - len(plan["fetch"])
+        chosen = take_turn(referrals.pending(gh, state), min(referrals.MAX_REFERRALS, left), turn) if left > 0 else []
+        plan["fetch"] += [{"id": f"referral-{number}", "referral": item} for number, item in enumerate(chosen, start=1)]
         plan["inputs"] = {"input_commit": _head(root), "prompt_sha256": _prompt_sha256(root, "evidence-check"),
                           "model": MODEL}
 
 
 def prepare(root, out, scope: str, mode: str, now: datetime, model_mode: str = "", event: str = "schedule",
-            turn: int = 0, fetcher=None, monthly_usd=None) -> dict:
-    """`fetcher` fetches the sources at once (tests); the workflow does it in a step of its own (fetch_sources)."""
+            turn: int = 0, fetcher=None, monthly_usd=None, gh=None) -> dict:
+    """`fetcher` fetches the sources at once (tests); the workflow does it in a step of its own (fetch_sources).
+    `gh` reads Caspar's open referrals; without it there are no referral tasks."""
     root, out = Path(root), Path(out)
     plan = {"mode": resolve_mode(mode), "scope": scope, "notice": None,
             "work": {"series": [], "fills": [], "settlements": []},
             "model_mode": "off", "model_notice": None, "tasks": [], "fetch": [], "records": [], "pending_contact": [],
-            "inputs": None, "staleness_none": [], "staleness_unreadable": []}
+            "inputs": None, "staleness_none": [], "staleness_unreadable": [], "referrals_unreadable": []}
     state = RepoState.load(root)
     if plan["mode"] == "off":
         plan["notice"] = "MELCHIOR_MODE is off"
@@ -155,7 +161,7 @@ def prepare(root, out, scope: str, mode: str, now: datetime, model_mode: str = "
             {key: version[key] for key in ("idea", "actor", "version", "target_date", "asset")}
             for version in due_versions(root, ledger, now.date().isoformat())
             if ledger.settlement(version["idea"], version["actor"], version["version"]) is None]
-        _model_plan(root, state, out, plan, model_mode, event, turn, now, monthly_usd)
+        _model_plan(root, state, out, plan, model_mode, event, turn, now, monthly_usd, gh)
     _save(out / "plan.json", plan)
     if fetcher is not None:
         plan = fetch_sources(root, out, fetcher, now)
@@ -171,6 +177,14 @@ def fetch_sources(root, out, fetcher, now: datetime) -> dict:
     for item in plan.get("fetch", []):
         if "step" in item:
             _fetch_staleness(plan, state, item, fetcher, now, out)
+            continue
+        if "referral" in item:
+            found = referrals.prepare(state, item, fetcher, now, out / item["id"])
+            if "task" in found:
+                plan["tasks"].append({"id": item["id"], "kind": "referral", "evidence": item["referral"]["evidence"],
+                                      "referral": item["referral"]})
+            else:
+                plan.setdefault("referrals_unreadable", []).append({**item["referral"], "why": found["unreadable"]})
             continue
         found = prepare_check(state, item["evidence"], fetcher, now, out / item["id"])
         if "task" in found:
@@ -557,6 +571,70 @@ def _staleness(job: "Job", task: dict, output: dict, work: Path, keep, model_mod
                         assist_issue=number or record.get("assist_issue")), evidence_id)
 
 
+def _answer(job: "Job", item: dict, verdict_name: str, text: str, close: str) -> None:
+    job.posts.append((item["issue"], "fact-layer", item["evidence"], referrals.reply(item, verdict_name, text)))
+    job.closes.append((item["issue"], close))
+    job.summary["referrals"].append(f"#{item['issue']}: {verdict_name}")
+
+
+def _referral(job: "Job", item: dict, output: dict | None, work_dir: Path | None, keep, model_mode: str,
+              unreadable: str | None = None) -> None:
+    """Answer one of Caspar's referrals: a correction, a rejection, or an assist request (design 22.9.8)."""
+    summary, evidence_id = job.summary, item["evidence"]
+    state = RepoState.load(job.root)
+    if evidence_id not in state.evidence:
+        summary["dropped"].append(f"referral #{item['issue']}: the evidence is gone")
+        return
+    record = state.evidence_checks.get(evidence_id)
+    name = (output or {}).get("verdict", "needs_assist")
+    if name == "rejected":
+        _answer(job, item, "rejected", referrals.reason_text(output) or "The fetched sources do not support it.",
+                "not_planned")
+        return
+    if name == "upheld":
+        checked, part, why_not = referrals.upheld(state, evidence_id, output, work_dir)
+        if checked is not None:
+            check = {"evidence": evidence_id, "status": "discrepancy", "claims": [checked], "source": part,
+                     "source_date": None}
+            ok, reason = may_correct(state, evidence_id, check, part)
+            if ok and len(summary["corrections"]) >= MAX_CORRECTIONS:
+                summary["dropped"].append(f"referral #{item['issue']}: the run's {MAX_CORRECTIONS} corrections are "
+                                          "used; it is answered next run")
+                return
+            source = None
+            if ok and part["role"] == "cited":
+                if part.get("date"):
+                    source = staleness.new_source(state, evidence_id, part)
+                else:
+                    ok, reason = False, "the date of the cited source could not be confirmed"
+            fix = None
+            if ok:
+                fix, reason = _correction(job, state, evidence_id, check, source=source)
+            if fix is not None:
+                _write_correction(job, state, evidence_id, fix, check, model_mode)
+                new_id = fix.created["evidence_id"]
+                if record is not None:
+                    keep(assist.revised(state, evidence_id, job.now, job.run, superseded_by=new_id), evidence_id)
+                _answer(job, item, "upheld", f"I wrote `{new_id}`, which supersedes it. The fetched source says: "
+                                             f"\"{sanitize(checked['quote'])}\"", "completed")
+                return
+            why = f"Caspar.Magi's referral appears to hold, and the program cannot correct it: {reason}"
+            name = "upheld"
+        else:
+            why = f"Caspar.Magi referred it, and the program could not confirm the referral: {why_not}"
+            name = "needs_assist"
+    else:
+        detail = unreadable or referrals.reason_text(output or {}) or "the fetched sources do not settle it"
+        why = f"Caspar.Magi referred it, and the fetched sources do not settle it: {detail}"
+    summary["discrepancies"].append(f"{evidence_id}: {why}")
+    number = _assist(job, state, evidence_id, record or {}, why, model_mode)
+    if number and record is not None:
+        keep(assist.revised(state, evidence_id, job.now, job.run, assist_issue=number), evidence_id)
+    link = f"I opened #{number} to ask for a readable public source." if number else \
+        "I asked for a readable public source in an assist request."
+    _answer(job, item, name, f"{why[0].upper()}{why[1:]}. {link}", "completed")
+
+
 def _stale_unreadable(job: "Job", evidence_ids: list[str], keep, model_mode: str) -> None:
     for evidence_id in evidence_ids:
         state = RepoState.load(job.root)
@@ -654,6 +732,11 @@ def _model(job: "Job", plan: dict, work: Path, mode: str, model_cap: str | None)
             output, problem = _result(root, work, task)
             if task["kind"] in PROBES:
                 probes.append(_probe(task["kind"], output))
+            elif task["kind"] == "referral":
+                if output is None:
+                    summary["dropped"].append(f"referral #{task['referral']['issue']}: {problem}")
+                    continue
+                _referral(job, task["referral"], output, work / task["id"], keep, model_mode)
             elif task["kind"] in ("staleness-list", "staleness-search", "staleness"):
                 if output is None:
                     summary["dropped"].append(f"{task['evidence']}: {problem}")
@@ -675,6 +758,11 @@ def _model(job: "Job", plan: dict, work: Path, mode: str, model_cap: str | None)
                 done.add(evidence_id)
         except Exception as exc:  # one failed task must not stop the others
             summary["dropped"].append(f"{task.get('evidence', task['id'])}: {type(exc).__name__}: {exc}; {RETRY}")
+    for item in plan.get("referrals_unreadable", []):
+        try:
+            _referral(job, item, None, None, keep, model_mode, unreadable=item.get("why"))
+        except Exception as exc:  # answered next run
+            summary["dropped"].append(f"referral #{item.get('issue')}: {type(exc).__name__}: {exc}; {RETRY}")
     if "evidence" in SCOPES.get(plan.get("scope"), ()):
         try:
             _stale_unreadable(job, plan.get("staleness_unreadable", []), keep, model_mode)
@@ -702,7 +790,7 @@ def write(root, gh, git: Git, work, mode: str, run: int, now: datetime, prices: 
     summary = {"mode": mode, "notice": plan.get("notice"), "profile": None, "series": [], "closes": 0, "actions": 0,
                "fills": [], "settlements": [], "findings": [], "dropped": [], "commit": None, "preview": None,
                "model_mode": "off", "model_notice": plan.get("model_notice"), "checks": [], "waiting": [],
-               "probe": None, "model_preview": [], "corrections": [], "discrepancies": [], "assists": [], "staleness": [], "posts": 0}
+               "probe": None, "model_preview": [], "corrections": [], "discrepancies": [], "assists": [], "staleness": [], "referrals": [], "posts": 0}
     if mode == "off" or plan.get("notice"):
         return summary
     job = Job(root, prices, now, run, summary, input_commit=git.run("rev-parse", "HEAD"), gh=gh)

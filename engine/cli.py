@@ -158,9 +158,11 @@ def _caspar_write(args) -> int:
 
 
 def _melchior_prepare(args) -> int:
+    # Caspar's open referrals are read with the workflow's token; without one (a local run) there are none.
+    gh = GitHubClient.from_env() if os.environ.get("GITHUB_TOKEN") and os.environ.get("GITHUB_REPOSITORY") else None
     plan = melchior_prepare(args.repo, args.out, args.scope, args.mode, utc_now(), model_mode=args.model_mode,
                             event=args.event, turn=args.run_number,
-                            monthly_usd=os.environ.get("MELCHIOR_MONTHLY_USD"))
+                            monthly_usd=os.environ.get("MELCHIOR_MONTHLY_USD"), gh=gh)
     print(json.dumps(plan, indent=2, ensure_ascii=False))
     return 0
 

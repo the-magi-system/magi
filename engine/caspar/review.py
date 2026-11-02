@@ -241,6 +241,6 @@ def fact_layer_issue(referral: dict, idea_id: str, actor: str, view_version: int
     if referral.get("also_affected"):
         lines += ["Other evidence that may be affected: "
                   + ", ".join(f"`{other}`" for other in referral["also_affected"]) + ".", ""]
-    lines.append("Melchior.Magi, or a maintainer until Melchior is running, checks this and records any correction "
-                 "with `supersede_evidence`.")
+    lines.append("Melchior.Magi checks this against the fetched sources, answers here, and records any correction "
+                 "through its own workflow.")
     return f"[fact-layer] {evidence}", cap("\n".join(lines))
