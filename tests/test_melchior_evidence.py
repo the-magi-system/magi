@@ -344,3 +344,20 @@ def test_every_number_of_a_claim_is_reached_on_a_long_source():
     for number in ("34.9 million", "26.1 million", "12.2 million"):
         assert number in text, number
     assert not _overlaps(excerpts) and sum(len(item["text"]) for item in excerpts) <= 20_000
+
+
+def test_every_claims_numbers_come_before_any_claims_words():
+    # The first three claims have many words, each found all over a long source; the last claim's number is
+    # spelled exactly only late. Every number of every claim must be reached before the words spend the limit.
+    from engine.melchior.evidence import select_excerpts
+    words = ["harbor", "lantern", "meadow", "quarry", "saddle", "thimble", "walnut", "zephyr", "basket", "candle",
+             "dagger", "falcon", "garnet", "hollow", "insect", "jigsaw", "kettle", "ledger", "marble", "nickel",
+             "oyster", "pepper", "quiver", "rocket"]
+    blocks = "".join(f"Block {n} mentions {words[n % len(words)]} here. " + "x" * 3400 + "\n" for n in range(96))
+    source = blocks + "Late in the filing: total assets were 77.7 million at period end.\n" + "y" * 4000
+    claims = [{"text": " ".join(words[i:i + 8])} for i in (0, 8, 16)]
+    claims.append({"text": "Total assets were $77.7 million"})
+    excerpts = select_excerpts(claims, source, 20_000)
+    text = " ".join(item["text"] for item in excerpts)
+    assert "77.7 million" in text
+    assert not _overlaps(excerpts) and sum(len(item["text"]) for item in excerpts) <= 20_000
