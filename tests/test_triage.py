@@ -64,7 +64,7 @@ def test_cli_wires_intake_and_triage(monkeypatch, repo):
 
     monkeypatch.setattr(cli, "GitHubClient", StubClient)
     monkeypatch.setattr(cli, "run_intake", lambda root, gh, prices, git: calls.append(("intake", gh)) or [])
-    monkeypatch.setattr(cli, "run_triage", lambda root, gh: calls.append(("triage", gh)) or [])
+    monkeypatch.setattr(cli, "run_triage", lambda root, gh, event_issue=None: calls.append(("triage", gh)) or [])
     assert cli.main(["intake", "--repo", str(repo)]) == 0
     assert cli.main(["triage", "--repo", str(repo)]) == 0
     assert calls == [("intake", "client"), ("triage", "client")]
@@ -139,3 +139,30 @@ def test_request_titled_join_request_is_still_triaged(repo):
     n = gh.open_issue(ARTHUR_ID, "ThinkwChivalri", REQUEST, title="Join request: x")
     run_triage(repo, gh)
     assert gh.replies(n)[-1]["status"] == "received"
+
+
+# The event's own issue is read directly: the issue list can lag behind a new issue (sandbox run 41434477664) -------
+
+def test_an_issue_missing_from_the_list_but_passed_by_number_gets_one_reply(repo):
+    gh = FakeGitHub()
+    n = gh.open_issue(ARTHUR_ID, "ThinkwChivalri", REQUEST, title="request")
+    gh.open_issues = lambda: []  # the list does not include the new issue yet
+    run_triage(repo, gh, event_issue=n)
+    assert [reply["status"] for reply in gh.replies(n)] == ["received"]
+    run_triage(repo, gh, event_issue=n)
+    assert len(gh.replies(n)) == 1  # the same body is never answered twice
+
+
+def test_an_issue_both_listed_and_passed_by_number_gets_one_reply(repo):
+    gh = FakeGitHub()
+    n = gh.open_issue(ARTHUR_ID, "ThinkwChivalri", REQUEST, title="request")
+    run_triage(repo, gh, event_issue=n)
+    assert len(gh.replies(n)) == 1
+
+
+def test_a_closed_issue_passed_by_number_gets_no_reply(repo):
+    gh = FakeGitHub()
+    n = gh.open_issue(ARTHUR_ID, "ThinkwChivalri", REQUEST, title="request")
+    gh.close(n, "completed")
+    run_triage(repo, gh, event_issue=n)
+    assert gh.replies(n) == []

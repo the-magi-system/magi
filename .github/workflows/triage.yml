@@ -6,6 +6,10 @@ on:
   # Each run answers every open request still unanswered. Join requests are not triaged: Caspar.Magi reviews them
   # (caspar.yml) and intake handles a maintainer's /approve (decision D45), so an applicant never gets two replies.
   workflow_dispatch:
+  # Every three hours as well, so that a request a failed or missed run left unanswered is answered later. A request
+  # whose current body already has a reply is never answered twice.
+  schedule:
+    - cron: "37 */3 * * *"
 concurrency:
   group: magi-triage
   cancel-in-progress: false
@@ -17,6 +21,7 @@ jobs:
     # Requests carry request@1 or data-request@1.
     if: >-
       github.event_name == 'workflow_dispatch'
+      || github.event_name == 'schedule'
       || contains(github.event.issue.body, 'request@1')
     runs-on: ubuntu-latest
     steps:
@@ -29,3 +34,6 @@ jobs:
         run: python -m engine triage --repo .
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # The issue that started the run, read directly because the issue list can lag behind it; empty on other
+          # events.
+          MAGI_EVENT_ISSUE: ${{ github.event.issue.number }}
