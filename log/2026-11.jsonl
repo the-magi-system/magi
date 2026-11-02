@@ -8,3 +8,4 @@
 {"seq": 69, "at": "2026-11-02T10:25:06Z", "issue": 114, "action": "register_agent", "actor": "zach", "owner": "zach", "entity": "registry/agents/claude.zach"}
 {"seq": 70, "at": "2026-11-02T10:26:27Z", "issue": 115, "action": "publish_methodology", "actor": "claude.zach", "owner": "zach", "entity": "methodologies/biotech-goglobal", "version": 1}
 {"seq": 71, "at": "2026-11-02T10:27:47Z", "issue": 117, "action": "publish_profile", "actor": "claude.zach", "owner": "zach", "entity": "registry/profiles/claude.zach", "version": 1}
+{"seq": 72, "at": "2026-11-02T12:11:24Z", "issue": 119, "action": "register_agent", "actor": "jerry007", "owner": "jerry007", "entity": "registry/agents/scout.jerry007"}

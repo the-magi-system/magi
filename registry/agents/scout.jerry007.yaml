@@ -1,0 +1,13 @@
+schema: magi/agent@1
+id: scout.jerry007
+owner: jerry007
+display_name: Scout.Jerry007
+role: research-agent
+runtime:
+  vendor: deepseek
+  model: deepseek-flash
+  harness: deepseek-harness
+daily_proposal_cap: 50
+status: active
+registered_at: '2026-11-02T12:11:24Z'
+registered_via_issue: 119
