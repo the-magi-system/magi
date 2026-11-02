@@ -18,7 +18,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass, field
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Callable
 
@@ -37,7 +37,7 @@ from ..timeutil import iso
 from ..yamlio import dump_yaml, load_yaml
 from ..caspar.work import take_turn
 from .common import MELCHIOR, SCOPES, SOURCE_DIR, resolve_mode, resolve_model_mode
-from . import assist
+from . import assist, staleness
 from .corrections import MAX_CORRECTIONS, CorrectionRejected, correction, find_marked, may_correct, notices
 from .evidence import check_changes, check_path, pending_checks, prepare_check, program_changes
 from .think import MODEL
@@ -127,6 +127,9 @@ def _model_plan(root: Path, state: RepoState, out: Path, plan: dict, model_mode:
         chosen = take_turn(pending_checks(state, now), min(EVIDENCE_LIMIT, room), turn)
         plan["fetch"] = [{"id": f"evidence-{number}", "evidence": evidence_id}
                          for number, evidence_id in enumerate(chosen, start=1)]
+        stale = [item for item in staleness.due(state, now) if item["evidence"] not in chosen]
+        picked = take_turn(stale, min(staleness.MAX_TASKS, room - len(chosen)), turn) if room > len(chosen) else []
+        plan["fetch"] += [{"id": f"staleness-{number}", **item} for number, item in enumerate(picked, start=1)]
         plan["inputs"] = {"input_commit": _head(root), "prompt_sha256": _prompt_sha256(root, "evidence-check"),
                           "model": MODEL}
 
@@ -138,7 +141,7 @@ def prepare(root, out, scope: str, mode: str, now: datetime, model_mode: str = "
     plan = {"mode": resolve_mode(mode), "scope": scope, "notice": None,
             "work": {"series": [], "fills": [], "settlements": []},
             "model_mode": "off", "model_notice": None, "tasks": [], "fetch": [], "records": [], "pending_contact": [],
-            "inputs": None}
+            "inputs": None, "staleness_none": [], "staleness_unreadable": []}
     state = RepoState.load(root)
     if plan["mode"] == "off":
         plan["notice"] = "MELCHIOR_MODE is off"
@@ -166,6 +169,9 @@ def fetch_sources(root, out, fetcher, now: datetime) -> dict:
     plan = json.loads((out / "plan.json").read_text(encoding="utf-8"))
     state = RepoState.load(root)
     for item in plan.get("fetch", []):
+        if "step" in item:
+            _fetch_staleness(plan, state, item, fetcher, now, out)
+            continue
         found = prepare_check(state, item["evidence"], fetcher, now, out / item["id"])
         if "task" in found:
             plan["tasks"].append({"id": item["id"], "kind": found["task"]["kind"], "evidence": item["evidence"]})
@@ -176,6 +182,19 @@ def fetch_sources(root, out, fetcher, now: datetime) -> dict:
     plan["fetch"] = []
     _save(out / "plan.json", plan)
     return plan
+
+
+def _fetch_staleness(plan: dict, state: RepoState, item: dict, fetcher, now: datetime, out: Path) -> None:
+    found = staleness.prepare(state, item, fetcher, now, out / item["id"])
+    evidence_id = item["evidence"]
+    if "task" in found:
+        plan["tasks"].append({"id": item["id"], "kind": found["task"], "evidence": evidence_id, "step": item["step"]})
+    elif "pending" in found:
+        plan["pending_contact"].append(f"{evidence_id}: waiting for MAGI_HTTP_CONTACT (staleness check)")
+    elif "unreadable" in found:
+        plan.setdefault("staleness_unreadable", []).append(evidence_id)
+    else:
+        plan.setdefault("staleness_none", []).append(f"{evidence_id}: {found['none']}")
 
 
 @dataclass
@@ -483,6 +502,73 @@ def _checked(job: "Job", state: RepoState, evidence_id: str, changes: ChangeSet,
     _write_correction(job, state, evidence_id, fix, check, model_mode)
 
 
+STALE = "a newer source may supersede a standing claim"
+
+
+def _staleness(job: "Job", task: dict, output: dict, work: Path, keep, model_mode: str) -> None:
+    """Step one keeps the candidate sources; step two corrects, asks for help or moves the next look on."""
+    summary, evidence_id = job.summary, task["evidence"]
+    state = RepoState.load(job.root)
+    record = state.evidence_checks.get(evidence_id)
+    if record is None or evidence_id not in state.evidence:
+        summary["dropped"].append(f"{evidence_id}: the evidence or its check is gone")
+        return
+    later = (job.now.date() + timedelta(days=staleness.REVIEW_DAYS)).isoformat()
+    if task["kind"] in ("staleness-list", "staleness-search"):
+        if task["kind"] == "staleness-list":
+            filings = json.loads((work / task["id"] / "filings.json").read_text(encoding="utf-8"))
+            urls = staleness.candidates_from_list(filings, output)
+        else:
+            urls, dropped = staleness.candidates_from_search(state, evidence_id, output)
+            summary["dropped"] += dropped
+        fields = {"pending_sources": urls} if urls else {"pending_sources": [], "next_review": later}
+        keep(assist.revised(state, evidence_id, job.now, job.run, **fields), evidence_id)
+        summary["staleness"].append(f"{evidence_id}: {len(urls)} candidate source(s)")
+        return
+    result = staleness.judge(state, evidence_id, output, work / task["id"])
+    if result["superseded"]:
+        part = result["superseded"][0][1]
+        check = {"evidence": evidence_id, "status": "discrepancy", "claims": [item for item, _ in result["superseded"]],
+                 "source": part, "source_date": None}
+        ok, reason = may_correct(state, evidence_id, check, part)
+        if ok and len(summary["corrections"]) >= MAX_CORRECTIONS:
+            summary["dropped"].append(f"{evidence_id}: the run's {MAX_CORRECTIONS} corrections are used; its staleness "
+                                      "check is made again next run")
+            return
+        fix = None
+        if ok:
+            fix, reason = _correction(job, state, evidence_id, check, source=staleness.new_source(state, evidence_id, part))
+        if fix is not None:
+            _write_correction(job, state, evidence_id, fix, check, model_mode)
+            keep(assist.revised(state, evidence_id, job.now, job.run, currency="superseded",
+                                superseded_by=fix.created["evidence_id"], pending_sources=[]), evidence_id)
+            summary["staleness"].append(f"{evidence_id}: superseded")
+            return
+        why = f"{STALE}, and the program cannot correct it: {reason}"
+    elif result["undecided"]:
+        why = f"{STALE}, but the program could not confirm it from the fetched text"
+    else:
+        keep(assist.revised(state, evidence_id, job.now, job.run, pending_sources=[], next_review=later), evidence_id)
+        summary["staleness"].append(f"{evidence_id}: current")
+        return
+    summary["discrepancies"].append(f"{evidence_id}: {why}")
+    number = _assist(job, state, evidence_id, record, why, model_mode)
+    keep(assist.revised(state, evidence_id, job.now, job.run, pending_sources=[],
+                        assist_issue=number or record.get("assist_issue")), evidence_id)
+
+
+def _stale_unreadable(job: "Job", evidence_ids: list[str], keep, model_mode: str) -> None:
+    for evidence_id in evidence_ids:
+        state = RepoState.load(job.root)
+        record = state.evidence_checks.get(evidence_id)
+        if record is None:
+            continue
+        number = _assist(job, state, evidence_id, record, f"{STALE}, but the newer sources could not be read",
+                         model_mode)
+        keep(assist.revised(state, evidence_id, job.now, job.run, pending_sources=[],
+                            assist_issue=number or record.get("assist_issue")), evidence_id)
+
+
 def _assist_sweep(job: "Job", keep, model_mode: str, done: set[str]) -> None:
     """Requests that an earlier run's limit held back, then what each open request needs: a reply, a close, and
     for a resolved one the old check marked superseded."""
@@ -568,6 +654,12 @@ def _model(job: "Job", plan: dict, work: Path, mode: str, model_cap: str | None)
             output, problem = _result(root, work, task)
             if task["kind"] in PROBES:
                 probes.append(_probe(task["kind"], output))
+            elif task["kind"] in ("staleness-list", "staleness-search", "staleness"):
+                if output is None:
+                    summary["dropped"].append(f"{task['evidence']}: {problem}")
+                    continue
+                _staleness(job, task, output, work, keep, model_mode)
+                done.add(task["evidence"])
             elif task["kind"] == "evidence-check":
                 evidence_id = task["evidence"]
                 if output is None:
@@ -585,6 +677,7 @@ def _model(job: "Job", plan: dict, work: Path, mode: str, model_cap: str | None)
             summary["dropped"].append(f"{task.get('evidence', task['id'])}: {type(exc).__name__}: {exc}; {RETRY}")
     if "evidence" in SCOPES.get(plan.get("scope"), ()):
         try:
+            _stale_unreadable(job, plan.get("staleness_unreadable", []), keep, model_mode)
             _assist_sweep(job, keep, model_mode, done)
         except Exception as exc:  # the requests are read again next run
             summary["dropped"].append(f"assist requests: {type(exc).__name__}: {exc}; {RETRY}")
@@ -609,7 +702,7 @@ def write(root, gh, git: Git, work, mode: str, run: int, now: datetime, prices: 
     summary = {"mode": mode, "notice": plan.get("notice"), "profile": None, "series": [], "closes": 0, "actions": 0,
                "fills": [], "settlements": [], "findings": [], "dropped": [], "commit": None, "preview": None,
                "model_mode": "off", "model_notice": plan.get("model_notice"), "checks": [], "waiting": [],
-               "probe": None, "model_preview": [], "corrections": [], "discrepancies": [], "assists": [], "posts": 0}
+               "probe": None, "model_preview": [], "corrections": [], "discrepancies": [], "assists": [], "staleness": [], "posts": 0}
     if mode == "off" or plan.get("notice"):
         return summary
     job = Job(root, prices, now, run, summary, input_commit=git.run("rev-parse", "HEAD"), gh=gh)

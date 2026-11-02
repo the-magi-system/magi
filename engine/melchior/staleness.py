@@ -1,0 +1,236 @@
+"""Staleness checks in two steps (design 22.9.4; plan 9, Task 16 and items 4 and 12; protocol section 9).
+
+Only claims a check marked `standing` (guidance, deal terms, management, share counts) can go out of date. A
+source on SEC EDGAR is looked at when the company's filing list on data.sec.gov shows a newer filing of a kind that
+can update such claims; any other source every 90 days. In a first run the model picks at most three candidate
+sources: for SEC from the program's list of newer filings, with Read alone; for other sources with web search,
+whose output is links only, kept only on allowed hosts. The links go into the check record's `pending_sources`.
+In the next run the program fetches them, and the model, with Read alone, says for each standing claim whether it
+is still current or superseded, quoting the new source word for word; the quote and the figures pass the same
+program checks as an evidence check. A superseded claim leads to a correction from the new source when every rule
+of a correction holds, otherwise to an assist request; a current one moves the next look 90 days on.
+"""
+from __future__ import annotations
+
+import json
+import urllib.parse
+from datetime import datetime, timedelta
+from pathlib import Path
+
+from ..fetch import edgar_index_url, filing_date, is_sec_host
+from ..repo import RepoState
+from ..timeutil import parse_iso
+from .evidence import check_source_date
+from .quotes import quote_in, verdict
+
+MAX_TASKS = 2  # staleness tasks per run, both steps counted (design 22.13)
+MAX_SOURCES = 3
+MAX_LISTED = 20
+REVIEW_DAYS = 90
+PRIMARY_HOSTS = ("sec.gov", "dart.fss.or.kr", "kind.krx.co.kr")
+# Filing kinds that can change a standing claim: annual and quarterly reports, current reports, proxy and merger
+# documents.
+FORMS = ("10-K", "10-K/A", "10-Q", "10-Q/A", "8-K", "8-K/A", "DEF 14A", "DEFA14A", "DEFM14A", "PREM14A", "S-4",
+         "S-4/A", "425")
+
+
+def standing(record: dict) -> list[int]:
+    return [item["index"] for item in record.get("claims") or [] if item.get("timing") == "standing"]
+
+
+def is_sec_source(url: str | None) -> bool:
+    return bool(url) and is_sec_host(urllib.parse.urlsplit(url).hostname or "")
+
+
+def _source_url(state: RepoState, evidence_id: str) -> str | None:
+    return ((state.evidence.get(evidence_id) or {}).get("source") or {}).get("url")
+
+
+def due(state: RepoState, now: datetime) -> list[dict]:
+    """{"evidence", "step"} for every public evidence with a standing claim whose staleness check is due; `step` is
+    `judge` when candidate sources are waiting, else `list` (SEC) or `search` (any other source)."""
+    found = []
+    for evidence_id, record in state.evidence_checks.items():
+        evidence = state.evidence.get(evidence_id)
+        if evidence is None or evidence.get("access", "public") != "public" or not standing(record):
+            continue
+        if record.get("currency") == "superseded" or record.get("superseded_by"):
+            continue
+        if record.get("pending_sources"):
+            step = "judge"
+        elif is_sec_source(_source_url(state, evidence_id)):
+            step = "list"
+        else:
+            try:
+                checked = parse_iso(str(record.get("checked_at")))
+            except (TypeError, ValueError):
+                continue
+            if now - checked < timedelta(days=REVIEW_DAYS):
+                continue
+            step = "search"
+        found.append((str(record.get("checked_at", "")), evidence_id, step))
+    return [{"evidence": evidence_id, "step": step} for _, evidence_id, step in sorted(found)]
+
+
+def allowed_hosts(state: RepoState, evidence_id: str) -> list[str]:
+    """The primary-source hosts, and the hosts that public evidence on the same assets already cites."""
+    assets = set((state.evidence.get(evidence_id) or {}).get("assets") or [])
+    hosts = set(PRIMARY_HOSTS)
+    for evidence in state.evidence.values():
+        if evidence.get("access", "public") == "public" and assets & set(evidence.get("assets") or []):
+            host = urllib.parse.urlsplit(str((evidence.get("source") or {}).get("url") or "")).hostname
+            if host:
+                hosts.add(host.lower())
+    return sorted(hosts)
+
+
+def host_allowed(url, hosts) -> bool:
+    if not isinstance(url, str):
+        return False
+    parts = urllib.parse.urlsplit(url)
+    host = (parts.hostname or "").lower()
+    return parts.scheme == "https" and any(host == allowed or host.endswith("." + allowed) for allowed in hosts)
+
+
+def newer_filings(submissions: str, after: str) -> list[dict]:
+    """Filings of the kinds in FORMS filed after `after` (YYYY-MM-DD), newest first, from a data.sec.gov list."""
+    try:
+        data = json.loads(submissions)
+        recent = data["filings"]["recent"]
+        cik = int(data["cik"])
+    except (ValueError, KeyError, TypeError):
+        return []
+    found = []
+    for number, form in enumerate(recent.get("form") or []):
+        try:
+            filed, accession, document = (recent["filingDate"][number], recent["accessionNumber"][number],
+                                          recent["primaryDocument"][number])
+        except (KeyError, IndexError):
+            continue
+        if form in FORMS and filed > after and document:
+            url = f"https://www.sec.gov/Archives/edgar/data/{cik}/{accession.replace('-', '')}/{document}"
+            found.append({"accessionNumber": accession, "form": form, "filingDate": filed, "url": url})
+    found.sort(key=lambda item: item["filingDate"], reverse=True)
+    return found[:MAX_LISTED]
+
+
+def _claims(state: RepoState, evidence_id: str) -> list[dict]:
+    record = state.evidence_checks[evidence_id]
+    claims = state.evidence[evidence_id].get("claims") or []
+    return [{"index": index, "text": claims[index].get("text")} for index in standing(record) if index < len(claims)]
+
+
+def _write(out: Path, data: dict) -> None:
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "input.json").write_text(json.dumps(data, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
+
+
+def prepare(state: RepoState, item: dict, fetcher, now: datetime, out) -> dict:
+    """{"task": kind}, {"pending": "contact"}, {"none": why} or {"unreadable": True} for one due evidence."""
+    evidence_id, step, out = item["evidence"], item["step"], Path(out)
+    evidence, record = state.evidence[evidence_id], state.evidence_checks[evidence_id]
+    task_dir = f"work/{out.name}"
+    base = {"evidence": evidence, "standing_claims": _claims(state, evidence_id)}
+    if step == "search":
+        _write(out, {"task": "staleness-search", **base, "allowed_hosts": allowed_hosts(state, evidence_id)})
+        return {"task": "staleness-search"}
+    if step == "list":
+        url = _source_url(state, evidence_id)
+        cik = urllib.parse.urlsplit(url).path.split("/")[4] if "/edgar/data/" in url else None
+        if not cik or not cik.isdigit():
+            return {"none": "the SEC source names no company"}
+        if getattr(fetcher, "_contact", None) is None:
+            return {"pending": "contact"}
+        text = fetcher.page(f"https://data.sec.gov/submissions/CIK{int(cik):010d}.json")
+        if text is None:
+            return {"none": "the company's filing list could not be read"}
+        after = max(str((evidence.get("source") or {}).get("published_at") or ""), str(record.get("checked_at"))[:10])
+        filings = newer_filings(text, after)
+        if not filings:
+            return {"none": "no newer filing"}
+        _write(out, {"task": "staleness-list", **base, "filings": filings})
+        (out / "filings.json").write_text(json.dumps(filings), encoding="utf-8")
+        return {"task": "staleness-list"}
+    parts = []
+    for number, url in enumerate(record.get("pending_sources") or [], start=1):
+        fetched = fetcher.fetch(url, now)
+        if fetched.error or not fetched.text:
+            continue
+        filed = None
+        index = edgar_index_url(url)
+        if index:
+            html = fetcher.page(index)
+            filed = filing_date(html) if html else None
+        name = f"source-{number}.txt"
+        (out / name).parent.mkdir(parents=True, exist_ok=True)
+        (out / name).write_text(fetched.text, encoding="utf-8")
+        parts.append({"url": url, "final_url": fetched.final_url, "http_status": fetched.http_status,
+                      "content_type": fetched.content_type, "format": fetched.format, "parts": fetched.parts,
+                      "decoding": fetched.decoding, "fetched_at": fetched.fetched_at, "sha256": fetched.sha256,
+                      "chars": fetched.chars, "truncated": fetched.truncated, "file": name, "filing_date": filed})
+    if not parts:
+        return {"unreadable": True}
+    (out / "sources.json").write_text(json.dumps(parts), encoding="utf-8")
+    _write(out, {"task": "staleness", **base,
+                 "sources": [{"url": part["url"], "file": f"{task_dir}/{part['file']}"} for part in parts]})
+    return {"task": "staleness"}
+
+
+def candidates_from_list(filings: list[dict], output: dict) -> list[str]:
+    by_number = {item["accessionNumber"]: item["url"] for item in filings}
+    urls = []
+    for number in output.get("filings") or []:
+        if number in by_number and by_number[number] not in urls:
+            urls.append(by_number[number])
+    return urls[:MAX_SOURCES]
+
+
+def candidates_from_search(state: RepoState, evidence_id: str, output: dict) -> tuple[list[str], list[str]]:
+    hosts, urls, dropped = allowed_hosts(state, evidence_id), [], []
+    for url in output.get("sources") or []:
+        if not isinstance(url, str) or not url.startswith("https://"):
+            dropped.append(f"{evidence_id}: a candidate source is not an https link")
+        elif not host_allowed(url, hosts):
+            dropped.append(f"{evidence_id}: a candidate source is not on an allowed host")
+        elif url not in urls:
+            urls.append(url)
+    return urls[:MAX_SOURCES], dropped
+
+
+def judge(state: RepoState, evidence_id: str, output: dict, work_dir) -> dict:
+    """{"current": [index], "superseded": [(checked item, part)], "undecided": [index]} after the program checks.
+
+    A superseded claim counts only when its quote stands in one fetched source, its correct figures agree with the
+    quote, and that source's date is known: the filing date for SEC, otherwise a date the source writes and the
+    model copied word for word."""
+    work_dir = Path(work_dir)
+    parts = json.loads((work_dir / "sources.json").read_text(encoding="utf-8"))
+    texts = {part["file"]: (work_dir / part["file"]).read_text(encoding="utf-8") for part in parts}
+    claims = state.evidence[evidence_id].get("claims") or []
+    answers = {item.get("index"): item for item in output.get("claims") or [] if isinstance(item, dict)}
+    result = {"current": [], "superseded": [], "undecided": []}
+    for index in standing(state.evidence_checks[evidence_id]):
+        item = answers.get(index) or {}
+        if item.get("verdict") == "current":
+            result["current"].append(index)
+            continue
+        part = next((p for p in parts if quote_in(item.get("quote"), texts[p["file"]])), None)
+        if item.get("verdict") != "superseded" or part is None or index >= len(claims):
+            result["undecided"].append(index)
+            continue
+        checked = verdict(claims[index], {**item, "index": index, "verdict": "contradicted"}, texts[part["file"]])
+        found = check_source_date(output.get("source_date"), texts[part["file"]], part.get("filing_date"), None)
+        dated = part.get("filing_date") or (found or {}).get("date")
+        if checked["verdict"] != "contradicted" or not dated:
+            result["undecided"].append(index)
+            continue
+        result["superseded"].append((checked, {**part, "date": dated}))
+    return result
+
+
+def new_source(state: RepoState, evidence_id: str, part: dict) -> dict:
+    old = state.evidence[evidence_id].get("source") or {}
+    host = urllib.parse.urlsplit(part["url"]).hostname or ""
+    same = host == (urllib.parse.urlsplit(str(old.get("url") or "")).hostname or "")
+    return {"url": part["url"], "publisher": old.get("publisher") if same and old.get("publisher") else host,
+            "published_at": part["date"], "tier": "primary"}

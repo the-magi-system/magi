@@ -1,0 +1,19 @@
+{
+  "title": "Melchior.Magi staleness check, step one for any other source: candidate sources (design 22.9.4; plan 9, Task 16)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "sources"
+  ],
+  "properties": {
+    "sources": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "string",
+        "pattern": "^https://\\S+$",
+        "maxLength": 2000
+      }
+    }
+  }
+}
