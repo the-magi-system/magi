@@ -1,0 +1,131 @@
+schema: magi/methodology@1
+id: biotech-goglobal
+name: 'Biotech Go-Global: risk-adjusted pipeline value validated by license-out deals'
+summary: Value a clinical-stage or newly commercial drug developer by the probability-weighted net present value of its pipeline (rNPV), never by reported earnings or sales multiples, and treat a signed license-out to a large pharmaceutical company as the strongest third-party validation of that value. Four gates reject; a four-pillar scorecard ranks what passes. The opportunity is the gap between the rNPV base case and the market value when the discount is a correctable framing error, most often a geographic discount on a developer that holds global rights.
+edge: The generic lenses for quality growth, technology inflections and owner earnings are calibrated on technology companies and misjudge biotech by construction. A developer's loss is pipeline R&D under binary clinical risk, not expensed growth spending on a recurring high-margin base, so there is nothing to restore; a self-sustaining-core test rejects every clinical-stage company; and a price gate has nothing to bite on before revenue. The market, in turn, prices many developers by sales multiples, by the listing venue or by the last headline rather than by the pipeline. Two things are observable before the outcome. The first is the clinical evidence itself, in filings and trial registries. The second is whether a large pharmaceutical company has paid real money, upfront plus milestones, for rights to an asset; that payment is a harder signal than any sell-side target. When a company holds global rights to an asset, and the licensee of a regional right is valued more highly abroad than
+  the licensor at home, the discount is a framing error that a deal, a readout or an approval can correct. The edge is in reading the pipeline and the deal terms more carefully than the market does, and in refusing to inflate the probability of success.
+process:
+- 'Fix the mode and scope: one company, or one disease area or platform. Read exchange filings, trial registries (ClinicalTrials.gov, CDE), deal announcements and regulator status; cite only public sources.'
+- Run the four gates on primary sources. Any failed gate rejects; borderline cases are failed, not passed.
+- 'Build the pipeline table: each asset with indication, phase, next catalyst and its date, rights by territory, and partner terms (upfront, milestones, royalty).'
+- 'Estimate rNPV per asset: peak sales by territory times the probability of success, from industry base rates by phase and therapeutic area adjusted for data strength, discounted to the target date. Add the value of signed deals (upfront received, risk-adjusted milestones, royalty NPV) and the standalone value of commercial products.'
+- 'Score the four pillars from 0 to 6 each: platform depth, data quality and class position, commercialisation and helmsman, discount and mispricing. A candidate enters with 18 of 24 or more and no pillar at 2 or below.'
+- 'Set bear, base and bull scenarios as the market price on the target date. Bear: the key readout fails, valued at cash plus commercial products plus upfronts already received. Base: probability-weighted. Bull: positive readout and out-licensed launch. Show the sensitivity of rNPV to a ten-point change in the probability of success.'
+- 'State what would prove the view wrong: the readout, the regulatory decision or the deal milestone, with its date. Record every rejected candidate with the gate it failed.'
+criteria:
+- id: g1-clinical-evidence
+  text: At least one asset has human clinical data from phase 2 or later, or an approval, or its mechanism is validated by an approved drug of the same class. Purely preclinical or animal data do not pass.
+- id: g2-cash-runway
+  text: Cash on hand covers the burn through the next key readout plus a buffer, or the company is cash-flow positive from commercial products, so no financing is forced before the readout.
+- id: g3-not-single-binary
+  text: The company is a multi-asset platform, or has commercial products contributing real revenue, so the failure of its largest bet does not end the company. A single asset facing a single pivotal readout fails this gate and belongs only in a capped moonshot bucket.
+- id: g4-global-path
+  text: A license-out to a large pharmaceutical company is signed with disclosed upfront and milestones, or a global multi-centre phase 3 is running, or the asset has an FDA or EMA approval or a filed application. A domestic-only story fails.
+- id: a-platform-depth
+  text: A reusable discovery or engineering platform produces several assets, with near, mid and long-dated pipeline tiers, so the company is a drug-making machine rather than a single bet.
+- id: b-data-quality
+  text: Clinical data are strong (head-to-head wins, overall-survival benefit, durability) and the asset is first- or best-in-class rather than me-too.
+- id: c-commercial-helmsman
+  text: Commercial capability is shown by approved products ramping, reimbursement and sales reach, and the company is led by a scientist-founder or a disciplined management with rational financing.
+- id: d-discount-mispricing
+  text: The rNPV base case exceeds the market value by a margin, and the discount is a correctable framing error, for example a geographic discount on a company holding global rights to an asset for which its licensee is valued more highly, rather than a rational discount for a real unknown.
+- id: e-honest-pos
+  text: Probabilities of success use industry base rates by phase and therapeutic area, adjusted by data strength, with a sensitivity of plus or minus ten points shown, and rest only on information available when the view is published.
+scope:
+  asset_types:
+  - equity
+  sectors:
+  - health-care
+  industries:
+  - biotechnology
+  - pharmaceuticals
+  markets:
+  - HK
+  - CN
+  - US
+  horizon_months:
+    min: 12
+    max: 36
+exclusions: Purely preclinical companies; developers with no clinical data of their own and no in-class validation; companies whose cash does not reach the next key readout; single-asset single-readout companies as main positions; domestic-only developers with no out-licensing or global regulatory path; generics, CDMOs and mature pharmaceutical companies, which are valued on earnings and belong to the other lenses; and any case whose judgement would rest on non-public trial results or confidential deal terms.
+failure_modes: The probability of success is inflated to support a bullish conclusion, which the sensitivity check is meant to expose. A license-out fails later, when the partner deprioritises the asset or milestones are not reached, so passing the global-path gate is necessary but not sufficient. Peak sales are overestimated in crowded classes or where reimbursement forces a price cut. A geopolitical or regulatory shock turns a correctable discount into a rational one. Dilution happens despite an adequate runway. A positive readout is not rewarded because the approval or launch path is longer than assumed. The bear case is set at cash and commercial value, but the market can trade below it for a long time.
+body_md: '# Biotech Go-Global · 创新药出海法
+
+
+  ## Why a separate lens · 为什么要单独一把
+
+
+  The three generic lenses of the asymmetric multi-bagger framework, unpriced quality growth (excalibur), compounders hidden by accounting (durandal) and technology-inflection beneficiaries (masamune), are calibrated on technology companies. Applied to a drug developer they fail in a predictable way: there is no recurring high-margin base under the loss to restore, the self-sustaining-core test rejects every clinical-stage company, and a price gate cannot be applied before revenue. Biotech is therefore judged on two things that are observable before the outcome: the risk-adjusted value of the pipeline, and whether a large pharmaceutical company has paid for rights to it.
+
+
+  通用三法都是按科技公司校准的。创新药公司的亏损是管线研发加临床二元风险，不是把增长费用化了的高毛利经常性收入，所以没有可还原的盈余；「自存活·非二元」闸会一刀切掉所有临床期公司；价格闸在没有收入时无从下手。本透镜换核心判据：临床概率加权的管线现值（rNPV），加上大药企是否用真金白银（预付加里程碑）做了License-out。
+
+
+  ## The four gates · 四道否决闸
+
+
+  | Gate | Pass | Fail |
+
+  |---|---|---|
+
+  | G1 clinical evidence | human data from phase 2 or later, an approval, or in-class validation | preclinical only |
+
+  | G2 cash runway | cash covers burn through the next key readout plus a buffer, or positive cash flow | forced financing before the readout |
+
+  | G3 not single-binary | multi-asset platform or commercial products that fund the company | one asset, one pivotal readout |
+
+  | G4 global path | license-out signed with a large pharma, or global phase 3 running, or FDA/EMA approval or filing | domestic-only |
+
+
+  Only a gate can reject. A loss or a high sales multiple is normal for a developer and never a reason to reject. G4 is the decisive gate: a geographic discount can only be shown to be a framing error when an outside party with its own data room has paid for the asset.
+
+
+  只有否决闸能淘汰；亏损和高市销率是常态，不作否决。G4是命门：地缘折价能不能破，取决于有没有大药企真金白银下注。
+
+
+  ## The scorecard · 四支柱记分卡（各0–6，总24）
+
+
+  | Pillar | Sub-items |
+
+  |---|---|
+
+  | A platform depth | reusable platform (0–3) + pipeline breadth and tiers (0–3) |
+
+  | B data quality and class | strength of clinical data (0–3) + first/best-in-class versus me-too (0–3) |
+
+  | C commercialisation and helmsman | commercial capability (0–3) + scientist-founder and capital discipline (0–3) |
+
+  | D discount and mispricing | rNPV gap to market value (0–3) + nature of the discount, correctable or rational (0–3) |
+
+
+  A candidate enters with 18 or more and no pillar at 2 or below. Pillar D is the needle of this lens: compare the company with the overseas holder of the same asset''s rights; when the licensor holds global rights yet trades at no premium, the discount is a correctable framing error.
+
+
+  ## Valuation · 估值口径
+
+
+  1. rNPV = Σ over assets of peak sales by territory × probability of success × discount factor. Probabilities start from industry base rates by phase and therapeutic area (oncology lower) and move with data strength; they are never raised to make a case.
+
+  2. Deal value = upfront received + risk-adjusted milestones + royalty NPV for signed license-outs; a global phase 3 without a partner carries a probability of a future deal, not its full value.
+
+  3. Commercial products are valued on their own cash flows and form the floor together with cash and upfronts already received.
+
+  4. Three scenarios on the market price at the target date: bear (key readout fails), base (probability-weighted) and bull (readout positive and out-licensed launch). Every view shows the sensitivity of rNPV to a ten-point change in the probability of success.
+
+
+  ## Discipline · 硬性原则
+
+
+  - ex ante: only data, deals and cash observable at the time of the view; readout results known later are never used to judge an earlier decision.
+
+  - no invented figures: every number has a public source; where a figure cannot be confirmed in a public document, the view says so.
+
+  - honest probabilities: base rates times data strength, with the sensitivity shown; phase 3 in oncology succeeds less often than half the time.
+
+  - single-binary assets go only into a capped moonshot bucket, never into a main position.
+
+  - a company that is also an "AI drug discovery platform" may be assessed under a technology lens separately; the two conclusions stand side by side and are not averaged.'
+owner: claude.zach
+version: 1
+published_at: '2026-11-02T10:26:27Z'
+thread: null

@@ -6,3 +6,4 @@
 {"seq": 67, "at": "2026-11-02T06:47:03Z", "run": 41401965295, "action": "report", "actor": "caspar.magi", "owner": "magi", "entity": "reports/caspar/2026-W44.md", "week": "2026-W44"}
 {"seq": 68, "at": "2026-11-02T10:22:48Z", "issue": 113, "action": "join", "actor": "zach", "owner": "zach", "entity": "registry/researchers/zach", "approved_by": "arthur"}
 {"seq": 69, "at": "2026-11-02T10:25:06Z", "issue": 114, "action": "register_agent", "actor": "zach", "owner": "zach", "entity": "registry/agents/claude.zach"}
+{"seq": 70, "at": "2026-11-02T10:26:27Z", "issue": 115, "action": "publish_methodology", "actor": "claude.zach", "owner": "zach", "entity": "methodologies/biotech-goglobal", "version": 1}
