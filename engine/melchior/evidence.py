@@ -115,13 +115,13 @@ def _word_queue(word: str, lowered: str) -> list[int]:
     return found
 
 
-def _claim_queues(claim: dict, source: str, lowered: str, numbers_in_source: list[tuple[int, str]]) -> list[list[int]]:
-    """One queue per significant number of the claim, then one per longer word; empty queues are left out."""
+def _claim_queues(claim: dict, source: str, lowered: str,
+                  numbers_in_source: list[tuple[int, str]]) -> tuple[list[list[int]], list[list[int]]]:
+    """The claim's queues: one per significant number, and one per longer word; empty queues are left out."""
     text = str(claim.get("text", ""))
-    queues = [_number_queue(number, source, numbers_in_source) for number in dict.fromkeys(significant_numbers(text))]
-    words = dict.fromkeys(word.lower() for word in _WORD.findall(normalize(text)))
-    queues += [_word_queue(word, lowered) for word in words]
-    return [queue for queue in queues if queue]
+    numbers = [_number_queue(number, source, numbers_in_source) for number in dict.fromkeys(significant_numbers(text))]
+    words = [_word_queue(word, lowered) for word in dict.fromkeys(w.lower() for w in _WORD.findall(normalize(text)))]
+    return [queue for queue in numbers if queue], [queue for queue in words if queue]
 
 
 def _merge(spans: list[tuple[int, int]]) -> list[tuple[int, int]]:
@@ -145,14 +145,17 @@ def select_excerpts(claims: list[dict], source: str, limit: int = MAX_EXCERPTS) 
     A source that fits the limit is one passage. Otherwise every number and word of every claim gets a fair share:
     each claim has one queue per significant number (where its exact spelling stands alone first, then where its
     leading digits match) and one per longer word (at most 50 places), and passages are taken in rounds in which
-    every queue of every claim takes one passage, numbers before words within a claim. So a claim's late numbers
-    are reached before earlier ones take more. Overlapping passages are merged, so no text appears twice, and the
-    whole stays within the limit."""
+    every queue takes one passage. Within each round the number queues of all claims run before any word queue, so
+    the words of early claims never spend the limit before a later claim's numbers are reached, and a claim's late
+    numbers are reached before earlier ones take more. Overlapping passages are merged, so no text appears twice,
+    and the whole stays within the limit."""
     if len(source) <= limit:
         return [{"start": 0, "end": len(source), "text": source}] if source else []
     lowered = source.lower()
     in_source = [(match.start(), _digits(match.group(0))) for match in _SOURCE_NUMBER.finditer(source)]
-    queues = [queue for claim in claims for queue in _claim_queues(claim, source, lowered, in_source)]
+    per_claim = [_claim_queues(claim, source, lowered, in_source) for claim in claims]
+    queues = [queue for numbers, _ in per_claim for queue in numbers]
+    queues += [queue for _, words in per_claim for queue in words]
     spans: list[tuple[int, int]] = []
     total, progress = 0, True
     while progress:
