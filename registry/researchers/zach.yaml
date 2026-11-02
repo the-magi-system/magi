@@ -1,0 +1,9 @@
+schema: magi/researcher@1
+handle: zach
+github_id: 18030811
+github_login: ZachSS
+display_name: Zach
+roles:
+- researcher
+status: active
+joined_at: '2026-11-02T10:22:48Z'
