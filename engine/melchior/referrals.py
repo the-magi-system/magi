@@ -22,7 +22,7 @@ from ..fetch import edgar_index_url, filing_date
 from ..queue import BOT_LOGIN
 from ..repo import RepoState
 from .corrections import find_marked, marker
-from .evidence import check_source_date, superseded
+from .evidence import check_source_date, select_excerpts, superseded
 from .quotes import quote_in, verdict
 from .staleness import allowed_hosts, host_allowed
 
@@ -72,6 +72,8 @@ def prepare(state: RepoState, item: dict, fetcher, now: datetime, out) -> dict:
     cited = referral["source_url"]
     hosts = allowed_hosts(state, referral["evidence"]) + ([own_host] if own_host else [])
     parts = []
+    # Excerpts are chosen around the evidence's claims and the claim Caspar doubts (review of PR #122, item 13).
+    claims = list(evidence.get("claims") or []) + ([{"text": referral["claim"]}] if referral.get("claim") else [])
     for role, url in (("evidence", own), ("cited", cited)):
         if not url or (role == "cited" and not host_allowed(url, hosts)):
             continue
@@ -85,7 +87,9 @@ def prepare(state: RepoState, item: dict, fetcher, now: datetime, out) -> dict:
         name = f"source-{role}.txt"
         out.mkdir(parents=True, exist_ok=True)
         (out / name).write_text(fetched.text, encoding="utf-8")
-        parts.append({"role": role, "url": url, "final_url": fetched.final_url, "http_status": fetched.http_status,
+        (out / f"excerpts-{role}.json").write_text(json.dumps(select_excerpts(claims, fetched.text), ensure_ascii=False,
+                                                              indent=1), encoding="utf-8")
+        parts.append({"excerpts": f"excerpts-{role}.json", "role": role, "url": url, "final_url": fetched.final_url, "http_status": fetched.http_status,
                       "content_type": fetched.content_type, "format": fetched.format, "parts": fetched.parts,
                       "decoding": fetched.decoding, "fetched_at": fetched.fetched_at, "sha256": fetched.sha256,
                       "chars": fetched.chars, "truncated": fetched.truncated, "file": name,
@@ -95,8 +99,8 @@ def prepare(state: RepoState, item: dict, fetcher, now: datetime, out) -> dict:
     (out / "sources.json").write_text(json.dumps(parts), encoding="utf-8")
     data = {"task": "referral", "evidence": evidence,
             "referral": {key: referral[key] for key in ("claim", "reason", "source_url", "source_date")},
-            "sources": [{"role": part["role"], "url": part["url"], "file": f"work/{out.name}/{part['file']}"}
-                        for part in parts]}
+            "sources": [{"role": part["role"], "url": part["url"], "file": f"work/{out.name}/{part['file']}",
+                         "excerpts_file": f"work/{out.name}/{part['excerpts']}"} for part in parts]}
     (out / "input.json").write_text(json.dumps(data, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
     return {"task": "referral"}
 

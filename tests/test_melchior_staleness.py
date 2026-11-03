@@ -362,3 +362,29 @@ def test_a_new_source_keeps_the_old_tier_on_the_evidences_own_host(world):
     assert new_source(state, ev_id, {"url": NEW_PAGE, "date": "2026-10-15"})["tier"] == "secondary"
     sec = "https://www.sec.gov/Archives/edgar/data/1717115/000119312526400000/tem-8k.htm"
     assert new_source(state, ev_id, {"url": sec, "date": "2026-10-15"})["tier"] == "primary"
+
+
+def test_step_two_gives_excerpts_around_the_standing_claims(world, tmp_path, monkeypatch):
+    # Review of PR #122, item 13: each fetched source has an excerpts file chosen for the standing claims.
+    import json
+    from engine.fetch import Fetcher
+    from engine.melchior import staleness
+    from tests.test_fetch import Opener
+    from tests.test_melchior_evidence import CONTACT
+    from tests.util import REPO_ROOT
+    seen = []
+    real = staleness.select_excerpts
+    monkeypatch.setattr(staleness, "select_excerpts", lambda claims, text: seen.append(claims) or real(claims, text))
+    ev_id = _two_claims(world)
+    fetcher = Fetcher(CONTACT, opener=Opener({NEW_PAGE: page(NEW_HTML)}), clock=lambda: 0.0, sleep=lambda s: None)
+    out = tmp_path / "staleness-1"
+    assert staleness.prepare(RepoState.load(world["root"]), {"evidence": ev_id, "step": "judge"}, fetcher, NOW,
+                             out) == {"task": "staleness"}
+    assert seen == [[{"index": 0, "text": GUIDE}]], "the standing claims only"
+    data = json.loads((out / "input.json").read_text(encoding="utf-8"))
+    entry = data["sources"][0]
+    assert entry["excerpts_file"] == "work/staleness-1/excerpts-1.json"
+    excerpts = json.loads((out / "excerpts-1.json").read_text(encoding="utf-8"))
+    assert excerpts and NEWER in excerpts[0]["text"] and {"start", "end", "text"} <= set(excerpts[0])
+    text = (REPO_ROOT / "agents" / "melchior" / "prompts" / "staleness.md").read_text(encoding="utf-8")
+    assert "Read `excerpts_file` first" in text

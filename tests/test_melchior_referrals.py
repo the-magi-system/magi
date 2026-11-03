@@ -251,3 +251,26 @@ def test_an_upheld_referral_from_the_cited_source_that_leaves_a_claim_writes_no_
     assert "Revenue in the second quarter of 2026 was $390.0 million" in body and QUOTE in body and CITED in body
     assert "every claim" in body
     assert "upheld" in replies(world, number)[0]
+
+
+def test_each_referral_source_has_excerpts_for_the_claims_and_the_referral(world, monkeypatch):
+    # Review of PR #122, item 13.
+    from engine.melchior import referrals
+    from tests.util import REPO_ROOT
+    seen = []
+    real = referrals.select_excerpts
+    monkeypatch.setattr(referrals, "select_excerpts", lambda claims, text: seen.append(claims) or real(claims, text))
+    add(world, "ev-20261020-tem-q2", GOOD, "2026-10-20T00:00:00Z", claims=WRONG)
+    refer(world, "ev-20261020-tem-q2")
+    plan, _ = run(world)
+    task = next(t for t in plan["tasks"] if t["kind"] == "referral")
+    work = world["tmp"] / f"run-{world['runs']}" / task["id"]
+    data = json.loads((work / "input.json").read_text(encoding="utf-8"))
+    assert [s["excerpts_file"] for s in data["sources"]] == [f"work/{task['id']}/excerpts-evidence.json",
+                                                             f"work/{task['id']}/excerpts-cited.json"]
+    wanted = [*WRONG, {"text": "Revenue was $390.0 million"}]
+    assert seen == [wanted, wanted]
+    cited = json.loads((work / "excerpts-cited.json").read_text(encoding="utf-8"))
+    assert any("Issued on July 30, 2026" in item["text"] for item in cited)
+    text = (REPO_ROOT / "agents" / "melchior" / "prompts" / "referral.md").read_text(encoding="utf-8")
+    assert "Read `excerpts_file` first" in text

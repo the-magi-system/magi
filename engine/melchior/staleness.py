@@ -21,7 +21,7 @@ from pathlib import Path
 from ..fetch import edgar_index_url, filing_date, is_sec_host
 from ..repo import RepoState
 from ..timeutil import parse_iso
-from .evidence import check_source_date, superseded
+from .evidence import check_source_date, select_excerpts, superseded
 from .quotes import quote_in, verdict
 
 MAX_TASKS = 2  # staleness tasks per run, both steps counted (design 22.13)
@@ -182,7 +182,11 @@ def prepare(state: RepoState, item: dict, fetcher, now: datetime, out) -> dict:
         name = f"source-{number}.txt"
         (out / name).parent.mkdir(parents=True, exist_ok=True)
         (out / name).write_text(fetched.text, encoding="utf-8")
-        parts.append({"url": url, "final_url": fetched.final_url, "http_status": fetched.http_status,
+        # Passages around the standing claims, as for an evidence check; the quote checks still use the whole text
+        # (review of PR #122, item 13).
+        (out / f"excerpts-{number}.json").write_text(json.dumps(select_excerpts(base["standing_claims"], fetched.text),
+                                                                ensure_ascii=False, indent=1), encoding="utf-8")
+        parts.append({"excerpts": f"excerpts-{number}.json", "url": url, "final_url": fetched.final_url, "http_status": fetched.http_status,
                       "content_type": fetched.content_type, "format": fetched.format, "parts": fetched.parts,
                       "decoding": fetched.decoding, "fetched_at": fetched.fetched_at, "sha256": fetched.sha256,
                       "chars": fetched.chars, "truncated": fetched.truncated, "file": name, "filing_date": filed})
@@ -190,7 +194,8 @@ def prepare(state: RepoState, item: dict, fetcher, now: datetime, out) -> dict:
         return {"unreadable": True}
     (out / "sources.json").write_text(json.dumps(parts), encoding="utf-8")
     _write(out, {"task": "staleness", **base,
-                 "sources": [{"url": part["url"], "file": f"{task_dir}/{part['file']}"} for part in parts]})
+                 "sources": [{"url": part["url"], "file": f"{task_dir}/{part['file']}",
+                              "excerpts_file": f"{task_dir}/{part['excerpts']}"} for part in parts]})
     return {"task": "staleness"}
 
 
