@@ -11,7 +11,7 @@ corrections, Melchior writes no further correction in that chain.
 from __future__ import annotations
 
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from ..caspar.common import cap, sanitize
 from ..changes import ChangeSet
@@ -21,7 +21,7 @@ from ..repo import RepoState
 from ..schemas import validate_payload
 from ..semantic import check_semantics
 from ..sysagent import system_log_entry
-from ..timeutil import iso
+from ..timeutil import iso, parse_iso
 from .common import MELCHIOR
 from .evidence import check_path, superseded
 from ..fetch import normalize
@@ -237,16 +237,54 @@ def notices(state: RepoState, evidence_id: str, new_id: str, check: dict,
              f"I checked `{evidence_id}` against {which} {_kind(new_source)} and wrote `{new_id}`, which supersedes "
              "it.", ""]
     for item in _contradicted(check):
-        lines += [f"- Claim {item['index']}: {sanitize(str(claims[item['index']].get('text', '')))}",
-                  f"  - The source says: \"{sanitize(str(item.get('quote', '')))}\"",
-                  f"  - Corrected to: {sanitize(str(item['correct']['text']))}"]
+        lines.append(f"- Claim {item['index']}: {sanitize(str(claims[item['index']].get('text', '')))}")
+        if item.get("quote"):
+            lines.append(f"  - The source says: \"{sanitize(str(item['quote']))}\"")
+        lines.append(f"  - Corrected to: {sanitize(str(item['correct']['text']))}")
     right_date = _right_date(check)
     if right_date:
         lines.append(f"- Date of the source: {right_date}, not "
                      f"{(evidence.get('source') or {}).get('published_at')} as recorded")
-    lines += ["", f"Source: {source.get('final_url') or source.get('url')}, fetched {source.get('fetched_at')}.", "",
+    fetched = f", fetched {source['fetched_at']}" if source.get("fetched_at") else ""
+    lines += ["", f"Source: {source.get('final_url') or source.get('url')}{fetched}.", "",
               f"If you disagree, submit `supersede_evidence` against `{new_id}` with a source, or open a `request@1` "
               f"that names `{new_id}`. Once your evidence supersedes a correction of mine, I write no further "
               "correction in this chain and leave any later discrepancy to the maintainers."]
     body = cap("\n".join(lines))
     return [(number, body) for number in targets]
+
+
+NOTICE_DAYS = 7  # a lost correction notice is posted by any run within this many days (review of PR #122, item 14)
+
+
+def recent_notices(state: RepoState, now: datetime, skip=()) -> list[tuple[int, str, str, str]]:
+    """(issue, kind, target, body) for the notices of Melchior's corrections of the last NOTICE_DAYS days, derived
+    again from the records, so that a notice whose post failed after the push is made by a later run; the post
+    step skips any already made (find_marked). The quote is the one in the old check record when it holds one."""
+    posts = []
+    for new_id, new in sorted(state.evidence.items()):
+        old_id = new.get("supersedes")
+        if new.get("submitted_by") != MELCHIOR or old_id not in state.evidence or old_id in skip:
+            continue
+        try:
+            if now - parse_iso(str(new.get("submitted_at"))) > timedelta(days=NOTICE_DAYS):
+                continue
+        except (TypeError, ValueError):
+            continue
+        old, record = state.evidence[old_id], state.evidence_checks.get(old_id) or {}
+        recorded = {item.get("index"): item for item in _contradicted(record)}
+        old_claims, new_claims = old.get("claims") or [], new.get("claims") or []
+        items = [{"index": index, "verdict": "contradicted", "quote": (recorded.get(index) or {}).get("quote"),
+                  "correct": {"text": claim.get("text", "")}}
+                 for index, claim in enumerate(new_claims)
+                 if index < len(old_claims) and claim.get("text") != old_claims[index].get("text")]
+        old_source, new_source = old.get("source") or {}, new.get("source") or {}
+        same = new_source.get("url") == old_source.get("url")
+        changed_date = new_source.get("published_at") != old_source.get("published_at")
+        check = {"claims": items,
+                 "source_date": {"matches": False, "date": str(new_source.get("published_at")), "filing_date": None}
+                 if same and changed_date else None,
+                 "source": record.get("source") if same and record.get("source") else {"url": new_source.get("url")}}
+        posts += [(number, "correction", old_id, body)
+                  for number, body in notices(state, old_id, new_id, check, new_source)]
+    return posts

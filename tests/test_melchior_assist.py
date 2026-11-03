@@ -216,3 +216,25 @@ def test_a_verified_reply_must_share_an_asset_with_the_old_evidence(world):
     run(world)
     assert world["gh"].issues[number]["state"] == "open"
     assert RepoState.load(world["root"]).evidence_checks["ev-20261020-pdf-old"]["superseded_by"] is None
+
+
+def test_a_lost_correction_notice_is_posted_by_a_later_run(world, monkeypatch):
+    # Review of PR #122, item 14: notices are re-derived for Melchior's corrections of the last 7 days.
+    from datetime import timedelta
+    submission = add(world, "ev-20261020-tem-q2", GOOD, "2026-10-20T00:00:00Z")
+    gh, real = world["gh"], world["gh"].comment
+
+    def failing(number, body):
+        raise RuntimeError("simulated outage")
+
+    monkeypatch.setattr(gh, "comment", failing)
+    summary = run(world, outputs={"ev-20261020-tem-q2": contradicted()})
+    assert summary["corrections"] == ["ev-20261020-tem-q2"]
+    monkeypatch.setattr(gh, "comment", real)
+    marked = "<!-- magi:melchior correction ev-20261020-tem-q2 -->"
+    assert not any(marked in c["body"] for c in gh.comments(submission))
+    run(world, now=NOW + timedelta(days=1))
+    notes = [c["body"] for c in gh.comments(submission) if marked in c["body"]]
+    assert len(notes) == 1 and "-corrected" in notes[0] and "$382.5 million" in notes[0]
+    run(world, now=NOW + timedelta(days=2))
+    assert len([c for c in gh.comments(submission) if marked in c["body"]]) == 1

@@ -274,3 +274,20 @@ def test_each_referral_source_has_excerpts_for_the_claims_and_the_referral(world
     assert any("Issued on July 30, 2026" in item["text"] for item in cited)
     text = (REPO_ROOT / "agents" / "melchior" / "prompts" / "referral.md").read_text(encoding="utf-8")
     assert "Read `excerpts_file` first" in text
+
+
+def test_an_answered_referral_still_open_is_closed(world):
+    # Review of PR #122, item 14: the answer was posted but the close did not happen.
+    add(world, "ev-20261020-tem-q2", GOOD, "2026-10-20T00:00:00Z", claims=WRONG)
+    number = refer(world, "ev-20261020-tem-q2")
+    run(world, {"ev-20261020-tem-q2": verdict("rejected")})
+    world["gh"].issues[number].update(state="open", state_reason=None)
+    run(world)
+    issue = world["gh"].issues[number]
+    assert (issue["state"], issue["state_reason"]) == ("closed", "not_planned") and len(replies(world, number)) == 1
+    # A non-public referral is answered but left open for the maintainers.
+    add(world, "ev-20261021-contact", GOOD, "2026-10-21T00:00:00Z", access="non-public")
+    other = refer(world, "ev-20261021-contact")
+    run(world)
+    run(world)
+    assert world["gh"].issues[other]["state"] == "open"

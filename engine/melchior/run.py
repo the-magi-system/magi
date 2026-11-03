@@ -39,7 +39,8 @@ from ..yamlio import dump_yaml, load_yaml
 from ..caspar.work import take_turn
 from .common import MELCHIOR, SCOPES, SOURCE_DIR, resolve_mode, resolve_model_mode
 from . import assist, referrals, staleness
-from .corrections import MAX_CORRECTIONS, PARTIAL, CorrectionRejected, correction, find_marked, may_correct, notices
+from .corrections import (MAX_CORRECTIONS, PARTIAL, CorrectionRejected, correction, find_marked, may_correct,
+                          notices, recent_notices)
 from .evidence import check_changes, check_path, pending_checks, prepare_check, program_changes, superseded
 from .think import MODEL
 from .fills import fill_changes, pending_fills
@@ -880,6 +881,16 @@ def _model(job: "Job", plan: dict, work: Path, mode: str, model_cap: str | None)
             _referral(job, item, None, None, keep, model_mode, unreadable=item.get("why"))
         except Exception as exc:  # answered next run
             summary["dropped"].append(f"referral #{item.get('issue')}: {type(exc).__name__}: {exc}; {RETRY}")
+    if model_mode == "live" and job.gh is not None:
+        # What an earlier run left undone after its push: lost correction notices, and answered referrals still
+        # open (review of PR #122, item 14). The post step skips a notice already made.
+        try:
+            job.posts += recent_notices(RepoState.load(root), job.now, skip=set(summary["corrections"]))
+            answered = {number for number, _ in job.closes}
+            job.closes += [(number, reason) for number, reason in referrals.answered_open(job.gh, RepoState.load(root))
+                           if number not in answered]
+        except Exception as exc:  # tried again next run
+            summary["dropped"].append(f"earlier posts: {type(exc).__name__}: {exc}; {RETRY}")
     if "evidence" in SCOPES.get(plan.get("scope"), ()):
         try:
             _stale_unreadable(job, plan.get("staleness_unreadable", []), keep, model_mode)

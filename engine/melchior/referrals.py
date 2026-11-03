@@ -140,3 +140,26 @@ def reply(item: dict, verdict_name: str, text: str) -> str:
 def reason_text(output: dict) -> str:
     text = output.get("reason") if isinstance(output.get("reason"), str) else ""
     return " ".join(sanitize(text).split())[:MAX_REASON]
+
+
+_ANSWER = re.compile(r"Referral of `ev-[^`]+`: \*\*([^*]+)\*\*")
+CLOSE_AS = {"upheld": "completed", "needs_assist": "completed", "rejected": "not_planned",
+            "already superseded": "not_planned"}
+
+
+def answered_open(gh, state: RepoState) -> list[tuple[int, str]]:
+    """(issue, state reason) for Caspar's referrals that Melchior answered but that are still open, for example
+    because the close failed after the reply (review of PR #122, item 14). A non-public referral stays open."""
+    found = []
+    for issue in sorted(gh.labelled_issues(LABEL), key=lambda i: i["number"]):
+        body = issue.get("body") or ""
+        if issue.get("state", "open") != "open" or (issue.get("user") or {}).get("login") != BOT_LOGIN:
+            continue
+        mark = _CASPAR.search(body)
+        if mark is None:
+            continue
+        reply = find_marked(gh.comments(issue["number"]), "fact-layer", mark.group(1))
+        answer = _ANSWER.search((reply or {}).get("body") or "")
+        if answer and answer.group(1) in CLOSE_AS:
+            found.append((issue["number"], CLOSE_AS[answer.group(1)]))
+    return found
