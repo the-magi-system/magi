@@ -10,7 +10,9 @@ split-like jumps are checked as usual (plan 9, Naver corporate actions).
 
 An asset with an open `magi:ruling` issue that Melchior opened opens no new check: it goes to the second step, the
 ruling draft (Task 21). Once a ruling is written for an asset, only what happened after it opens another check, so
-a ruled condition does not open a check in every run.
+a ruled condition does not open a check in every run. An asset whose answered asset-status task of the last 7 days
+opened no ruling issue gets no new search until those 7 days have passed (rulings.searched_recently; review of
+PR #125, change 3).
 """
 from __future__ import annotations
 

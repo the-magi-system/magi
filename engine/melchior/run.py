@@ -148,7 +148,7 @@ def _model_plan(root: Path, state: RepoState, out: Path, plan: dict, model_mode:
         try:
             found = status.checks(root, now.date().isoformat(), gh)
             plan["status_checks"], plan["rulings_open"] = found["status"], found["ruling"]
-            _ruling_plan(root, state, out, plan, gh, room - len(plan["fetch"]) - len(plan["tasks"]), turn)
+            _ruling_plan(root, state, out, plan, gh, room - len(plan["fetch"]) - len(plan["tasks"]), turn, now)
         except Exception as exc:
             plan["status_failures"] = [f"asset-status checks: {type(exc).__name__}: {exc}; {RETRY}"]
     # What every model task of this run is based on, whichever kinds it schedules (review of PR #122, item 2).
@@ -156,9 +156,11 @@ def _model_plan(root: Path, state: RepoState, out: Path, plan: dict, model_mode:
                       "model": MODEL}
 
 
-def _ruling_plan(root: Path, state: RepoState, out: Path, plan: dict, gh, left: int, turn: int) -> None:
+def _ruling_plan(root: Path, state: RepoState, out: Path, plan: dict, gh, left: int, turn: int, now: datetime) -> None:
     """At most MAX_RULINGS asset-status checks and ruling drafts (design 22.7; plan 9, Task 21): first the drafts of
-    open ruling issues and of challenges that bring new sources, then new checks. The rest wait for the next run."""
+    open ruling issues and of challenges that bring new sources, then new checks. The rest wait for the next run. An
+    asset whose answered asset-status task of the last 7 days opened no ruling issue gets no new check until those 7
+    days have passed (review of PR #125, change 3); a failed or missing task is tried again next run."""
     open_issues = status.open_rulings(gh)
     ledger = effective_ledger(root)
     written: dict[int, list[str]] = {}
@@ -187,16 +189,22 @@ def _ruling_plan(root: Path, state: RepoState, out: Path, plan: dict, gh, left: 
     budget = max(0, min(rulings.MAX_RULINGS, left))
     chosen = drafts[:budget]
     plan["fetch"] += [{"id": f"ruling-{number}", "ruling": item} for number, item in enumerate(chosen, start=1)]
-    checks = take_turn(plan["status_checks"], budget - len(chosen), turn) if budget > len(chosen) else []
-    failures = status._usage_lines(root)[-status.FAILED_RUNS:]
-    for number, item in enumerate(checks, start=1):
-        task_id = f"asset-status-{number}"
+    usage = status._usage_lines(root)
+    paused = rulings.searched_recently(usage, gh, now)
+    plan["rulings_waiting"] = [f"{item['asset']}: searched on {paused[item['asset']]} with no ruling issue; the next "
+                               f"asset-status check is {rulings.SEARCH_PAUSE_DAYS} days after that"
+                               for item in plan["status_checks"] if item["asset"] in paused]
+    ready = [item for item in plan["status_checks"] if item["asset"] not in paused]
+    checks = take_turn(ready, budget - len(chosen), turn) if budget > len(chosen) else []
+    failures = usage[-status.FAILED_RUNS:]
+    for item in checks:
+        task_id = rulings.status_task_id(item["asset"])
         rulings.step_one_input(state, item, out / task_id,
                                sum(1 for line in failures if item["asset"] in line["price_failures"]))
         plan["tasks"].append({"id": task_id, "kind": "asset-status", "asset": item["asset"], "status": item})
-    plan["rulings_waiting"] = [f"{item['asset']}: the ruling draft waits for the next run" for item in drafts[budget:]]
+    plan["rulings_waiting"] += [f"{item['asset']}: the ruling draft waits for the next run" for item in drafts[budget:]]
     plan["rulings_waiting"] += [f"{item['asset']}: the asset-status check waits for the next run"
-                                for item in plan["status_checks"] if item not in checks]
+                                for item in ready if item not in checks]
 
 
 def prepare(root, out, scope: str, mode: str, now: datetime, model_mode: str = "", event: str = "schedule",

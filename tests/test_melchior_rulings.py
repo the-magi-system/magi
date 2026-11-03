@@ -299,3 +299,10 @@ def test_candidates_still_unreadable_after_seven_days_give_an_unresolved_ruling(
     assert (record["decision"], record["status"]) == ("unresolved", "provisional")
     issue = world["gh"].issues[record["issue"]]
     assert issue["state"] == "open" and issue["assignees"] == ["ThinkwChivalri"]
+
+
+def test_no_event_found_is_not_searched_again_the_next_day(world):
+    # Review of PR #125, change 3.
+    run(world, {"asset-status": {"found": False}})
+    plan, _ = run(world, {"asset-status": {"found": False}}, now=LATER)
+    assert [t for t in plan["tasks"] if t["kind"] == "asset-status"] == [], "searched again one day later"

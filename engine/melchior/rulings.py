@@ -9,22 +9,24 @@ draft and writes `magi/ruling@1`. The program decides the effect: an immediate k
 or code the decision rests on stands word for word in a checked quote and in the fetched text; otherwise provisional.
 Without any checked source the ruling is `decision: unresolved` and provisional. When no candidate can be read, they
 are fetched again in later runs and listed with the waiting work; the unresolved ruling is written only when they
-still cannot be read 7 days after the ruling issue was opened (review of PR #125, change 2). The ruling is announced in its issue
-and in the threads of the ideas it affects. An immediate ruling closes its issue; a provisional one leaves it open
-and assigned to the active maintainers until it is final, overturned or superseded, and nothing is drafted again in it
-meanwhile (review of PR #125, change 1).
+still cannot be read 7 days after the ruling issue was opened (review of PR #125, change 2). The ruling is announced
+in its issue and in the threads of the ideas it affects. An immediate ruling closes its issue; a provisional one
+leaves it open and assigned to the active maintainers until it is final, overturned or superseded, and nothing is
+drafted again in it meanwhile (review of PR #125, change 1).
 
 A `request@1` that names a ruling id is a challenge: the next run links it in the ruling issue, once. A challenge
 that brings https links on allowed hosts that the ruling does not cite is drafted again from them; the new ruling
 supersedes the old one only when one of its sources checks out. At most 2 asset-status checks and drafts per run;
-the others wait for the next run.
+the others wait for the next run. An answered step one that opens no ruling issue (no event found, or no candidate
+on an allowed host) gives the asset no new step one for 7 days; the task id `asset-status-<asset>` in the usage lines
+records it (review of PR #125, change 3).
 """
 from __future__ import annotations
 
 import json
 import re
 import urllib.parse
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 
@@ -36,7 +38,7 @@ from ..market import read_closes
 from ..queue import BOT_LOGIN
 from ..repo import RepoState
 from ..sysagent import system_log_entry
-from ..timeutil import iso, stamp
+from ..timeutil import iso, parse_iso, stamp
 from ..triage import parse_request
 from .common import MELCHIOR
 from .corrections import find_marked, marker
@@ -47,6 +49,7 @@ from .status import LABEL, marker as ruling_marker
 
 MAX_RULINGS = 2  # asset-status checks and ruling drafts per run (design 22.13)
 MAX_SOURCES = 3
+SEARCH_PAUSE_DAYS = 7  # an answered asset-status task that opens no ruling issue pauses the asset (PR #125 review)
 UNREADABLE_DAYS = 7  # candidates that cannot be read are fetched again until the issue is this old (PR #125 review)
 RECENT_CLOSES = 30
 MAX_REASONING = 2000
@@ -115,6 +118,39 @@ def _rulings_of(state: RepoState, asset_id: str) -> list[dict]:
 def _write(out: Path, data: dict) -> None:
     out.mkdir(parents=True, exist_ok=True)
     (out / "input.json").write_text(json.dumps(data, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
+
+
+def status_task_id(asset_id: str) -> str:
+    """The id of an asset's step-one task, which its usage line keeps (review of PR #125, change 3)."""
+    return f"asset-status-{asset_id}"
+
+
+def searched_recently(usage: list[dict], gh, now: datetime) -> dict[str, str]:
+    """{asset: date} for the assets whose answered asset-status task of the last SEARCH_PAUSE_DAYS days opened no
+    ruling issue: they get no new step one until those days have passed. A failed or missing task does not count,
+    so it is tried again next run. A ruling issue that Melchior opened for the asset at or after the run counts as
+    opened by it, whatever its state now."""
+    since = now - timedelta(days=SEARCH_PAUSE_DAYS)
+    found: dict[str, str] = {}
+    for line in usage:
+        try:
+            at = parse_iso(str(line.get("at")))
+        except (TypeError, ValueError):
+            continue
+        if at <= since:
+            continue
+        for task in line.get("tasks") or []:
+            task_id = str(task.get("id") or "")
+            if task.get("kind") == "asset-status" and task.get("status") == "answered" \
+                    and task_id.startswith("asset-status-"):
+                found[task_id[len("asset-status-"):]] = str(line["at"])
+    if found and gh is not None:
+        for issue in gh.labelled_issues(LABEL):
+            match = re.search(r"<!-- magi:melchior ruling ([a-z0-9][a-z0-9-]*) -->", issue.get("body") or "")
+            if match and is_bot_issue(issue) and match.group(1) in found \
+                    and str(issue.get("created_at") or "") >= found[match.group(1)]:
+                found.pop(match.group(1))
+    return {asset_id: at[:10] for asset_id, at in found.items()}
 
 
 def step_one_input(state: RepoState, item: dict, out, failures: int) -> None:
