@@ -286,3 +286,16 @@ def test_pending_sources_stay_when_no_new_assist_request_is_left(world):
     run_staleness(world, ev_id, undecided)
     record = RepoState.load(world["root"]).evidence_checks[ev_id]
     assert record["pending_sources"] == [] and record["assist_issue"]
+
+
+def test_step_two_waits_while_the_contact_is_not_set(world, tmp_path):
+    # Review of PR #122, item 8: an SEC candidate is not dropped while the contact is not set.
+    from engine.fetch import Fetcher
+    from engine.melchior.staleness import prepare
+    from tests.test_fetch import Opener
+    sec = "https://www.sec.gov/Archives/edgar/data/1717115/000119312526400000/tem-8k.htm"
+    ev_id = guidance(world, pending=[sec, NEW_PAGE])
+    fetcher = Fetcher(None, opener=Opener({NEW_PAGE: page(NEW_HTML)}), clock=lambda: 0.0, sleep=lambda s: None)
+    found = prepare(RepoState.load(world["root"]), {"evidence": ev_id, "step": "judge"}, fetcher, NOW,
+                    tmp_path / "staleness-1")
+    assert found == {"pending": "contact"}

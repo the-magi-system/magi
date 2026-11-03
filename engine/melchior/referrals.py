@@ -53,7 +53,8 @@ def pending(gh, state: RepoState) -> list[dict]:
             continue
         also = _ALSO.search(body)
         newer = superseded(state).get(evidence_id)
-        found.append({"superseded_by": newer, "issue": issue["number"], "evidence": evidence_id, "source_url": source.group(2),
+        non_public = state.evidence[evidence_id].get("access", "public") != "public"
+        found.append({"superseded_by": newer, "non_public": non_public, "issue": issue["number"], "evidence": evidence_id, "source_url": source.group(2),
                       "source_date": source.group(1),
                       "claim": (_CLAIM.search(body) or [None, ""])[1], "reason": (_WHY.search(body) or [None, ""])[1],
                       "also_affected": [other for other in _ID.findall(also.group(1)) if other != evidence_id]
@@ -62,7 +63,8 @@ def pending(gh, state: RepoState) -> list[dict]:
 
 
 def prepare(state: RepoState, item: dict, fetcher, now: datetime, out) -> dict:
-    """{"task": "referral"}, or {"unreadable": why} when no source could be read."""
+    """{"task": "referral"}, {"pending": "contact"} while an SEC source waits for the contact (review of PR #122,
+    item 8), or {"unreadable": why} when no source could be read."""
     out = Path(out)
     referral, evidence = item["referral"], state.evidence[item["referral"]["evidence"]]
     own = (evidence.get("source") or {}).get("url") if evidence.get("access", "public") == "public" else None
@@ -74,6 +76,8 @@ def prepare(state: RepoState, item: dict, fetcher, now: datetime, out) -> dict:
         if not url or (role == "cited" and not host_allowed(url, hosts)):
             continue
         fetched = fetcher.fetch(url, now)
+        if fetched.error == "pending_contact":
+            return {"pending": "contact"}
         if fetched.error or not fetched.text:
             continue
         index = edgar_index_url(url)

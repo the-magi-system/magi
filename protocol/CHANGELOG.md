@@ -10,6 +10,7 @@ Newest first. Each entry gives the date, what changed, and the request issue tha
 - A correction of a claim with a `value` takes the new value from exactly one checked figure of the correct text: a percentage counts only for a claim whose `unit` is %, and the claim's multiplier divides an amount only when the figure names a unit. With no such figure or more than one, no correction is written and an assist request asks for help.
 - An assist request is resolved only by a named public evidence that shares an asset with the old evidence and checks out. A reply that names only non-public evidence gets one note but no longer keeps the request open: it is closed as not planned 90 days after it was opened.
 - When a run's 3 new assist requests are used, a fact-layer referral that needs one is left unanswered until the next run, and a staleness check keeps its `pending_sources` to be judged again next run. A referral whose evidence had an assist request that is now closed is answered without opening a new one, and the reply says so.
+- A fact-layer referral of non-public evidence gets no model task and no assist request: Melchior.Magi replies once that the program cannot check or correct it, assigns the active maintainers and leaves the issue open. While `MAGI_HTTP_CONTACT` is not set, a referral or a staleness step that needs an SEC source waits and is listed with the waiting work.
 
 ## v1.13 — 2026-11-01
 

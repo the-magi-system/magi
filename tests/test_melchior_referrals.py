@@ -202,3 +202,31 @@ def test_a_referral_reply_does_not_claim_a_request_when_an_earlier_one_is_closed
     body = replies(world, number)[0]
     assert "I opened" not in body and "I asked" not in body and f"#{old}" in body and "closed" in body
     assert list(requests(world)) == [old], "no new request"
+
+
+def test_a_referral_on_non_public_evidence_goes_to_the_maintainers(world):
+    # Review of PR #122, item 8: no model task and no assist request; the issue stays open for the maintainers.
+    add(world, "ev-20261020-contact", GOOD, "2026-10-20T00:00:00Z", access="non-public")
+    number = refer(world, "ev-20261020-contact")
+    plan, summary = run(world)
+    assert [t for t in plan["tasks"] if t["kind"] == "referral"] == [] and plan["fetch"] == []
+    assert len(requests(world)) == 0
+    body = replies(world, number)[0]
+    assert "non-public" in body and "cannot check or correct" in body
+    issue = world["gh"].issues[number]
+    assert issue["state"] == "open" and issue["assignees"] == ["ThinkwChivalri"]
+    run(world)
+    assert len(replies(world, number)) == 1 and world["gh"].issues[number]["assignees"] == ["ThinkwChivalri"]
+
+
+def test_a_referral_waits_while_the_contact_is_not_set(world):
+    from engine.fetch import Fetcher
+    from engine.melchior.run import prepare
+    from tests.test_melchior_assist import SEC
+    add(world, "ev-20261020-tem-q2", SEC, "2026-10-20T00:00:00Z", claims=WRONG)
+    number = refer(world, "ev-20261020-tem-q2")
+    fetcher = Fetcher(None, opener=Opener({CITED: page(CITED_HTML)}), clock=lambda: 0.0, sleep=lambda s: None)
+    plan = prepare(world["root"], world["tmp"] / "no-contact", "referrals", "live", NOW, model_mode="live",
+                   event="workflow_dispatch", fetcher=fetcher, turn=1, gh=world["gh"])
+    assert plan["tasks"] == [] and plan["referrals_unreadable"] == []
+    assert plan["pending_contact"] == [f"referral #{number}: waiting for MAGI_HTTP_CONTACT"]

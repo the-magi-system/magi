@@ -167,6 +167,8 @@ def prepare(state: RepoState, item: dict, fetcher, now: datetime, out) -> dict:
     parts = []
     for number, url in enumerate(record.get("pending_sources") or [], start=1):
         fetched = fetcher.fetch(url, now)
+        if fetched.error == "pending_contact":
+            return {"pending": "contact"}  # the candidates wait for the contact (review of PR #122, item 8)
         if fetched.error or not fetched.text:
             continue
         filed = None

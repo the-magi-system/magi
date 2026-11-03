@@ -135,8 +135,12 @@ def _model_plan(root: Path, state: RepoState, out: Path, plan: dict, model_mode:
         left = room - len(plan["fetch"])
         chosen = take_turn(referrals.pending(gh, state), min(referrals.MAX_REFERRALS, left), turn) if left > 0 else []
         plan["fetch"] += [{"id": f"referral-{number}", "referral": item} for number, item in enumerate(chosen, start=1)
-                          if not item.get("superseded_by")]
+                          if not item.get("superseded_by") and not item.get("non_public")]
         plan["referrals_superseded"] = [item for item in chosen if item.get("superseded_by")]
+        # Non-public evidence cannot be checked against a source: no model task and no assist request; the
+        # maintainers are asked instead (review of PR #122, item 8).
+        plan["referrals_nonpublic"] = [item for item in chosen
+                                       if item.get("non_public") and not item.get("superseded_by")]
     # What every model task of this run is based on, whichever kinds it schedules (review of PR #122, item 2).
     plan["inputs"] = {"input_commit": _head(root), "prompt_sha256": _prompt_sha256(root, "evidence-check"),
                       "model": MODEL}
@@ -150,7 +154,8 @@ def prepare(root, out, scope: str, mode: str, now: datetime, model_mode: str = "
     plan = {"mode": resolve_mode(mode), "scope": scope, "notice": None,
             "work": {"series": [], "fills": [], "settlements": []},
             "model_mode": "off", "model_notice": None, "tasks": [], "fetch": [], "records": [], "pending_contact": [],
-            "inputs": None, "staleness_none": [], "staleness_unreadable": [], "referrals_unreadable": [], "fetch_failures": []}
+            "inputs": None, "staleness_none": [], "staleness_unreadable": [], "referrals_unreadable": [],
+            "referrals_nonpublic": [], "fetch_failures": []}
     state = RepoState.load(root)
     if plan["mode"] == "off":
         plan["notice"] = "MELCHIOR_MODE is off"
@@ -197,6 +202,8 @@ def _fetch_one(plan: dict, state: RepoState, item: dict, fetcher, now: datetime,
         if "task" in found:
             plan["tasks"].append({"id": item["id"], "kind": "referral", "evidence": item["referral"]["evidence"],
                                   "referral": item["referral"]})
+        elif "pending" in found:
+            plan["pending_contact"].append(f"referral #{item['referral']['issue']}: waiting for MAGI_HTTP_CONTACT")
         else:
             plan.setdefault("referrals_unreadable", []).append({**item["referral"], "why": found["unreadable"]})
         return
@@ -238,6 +245,7 @@ class Job:
     posts: list[tuple[int, str, str, str]] = field(default_factory=list)
     new_ids: list[str] = field(default_factory=list)  # evidence ids this run has given out
     closes: list[tuple[int, str]] = field(default_factory=list)  # (issue, state reason), after the posts
+    assigns: list[tuple[int, list[str]]] = field(default_factory=list)  # (issue, logins), after the posts
     gh: object = None
     open_assist: dict | None = None  # open assist requests by evidence id, read once per run
     assists_new: int = 0
@@ -609,6 +617,19 @@ def _answer(job: "Job", item: dict, verdict_name: str, text: str, close: str) ->
     job.summary["referrals"].append(f"#{item['issue']}: {verdict_name}")
 
 
+def _nonpublic_referral(job: "Job", item: dict) -> None:
+    """A referral of non-public evidence: answered once, assigned to the active maintainers and left open."""
+    text = (f"`{item['evidence']}` is non-public, so the program cannot check or correct it against a source. I leave "
+            "this referral open for the maintainers.")
+    job.posts.append((item["issue"], "fact-layer", item["evidence"], referrals.reply(item, "non-public", text)))
+    state = RepoState.load(job.root)
+    logins = sorted(r["github_login"] for r in state.researchers.values()
+                    if "maintainer" in r.get("roles", []) and r.get("status") == "active" and r.get("github_login"))
+    if logins:
+        job.assigns.append((item["issue"], logins))
+    job.summary["referrals"].append(f"#{item['issue']}: non-public, left to the maintainers")
+
+
 def _referral(job: "Job", item: dict, output: dict | None, work_dir: Path | None, keep, model_mode: str,
               unreadable: str | None = None) -> None:
     """Answer one of Caspar's referrals: a correction, a rejection, or an assist request (design 22.9.8)."""
@@ -735,6 +756,14 @@ def _post(job: "Job", gh, mode: str) -> None:
                 job.summary["posts"] += 1
         except Exception as exc:  # a failed post is made next time; the records are already on main
             job.summary["dropped"].append(f"post on #{number}: {type(exc).__name__}: {exc}")
+    for number, logins in job.assigns:
+        if mode != "live" or gh is None:
+            job.summary["model_preview"].append({"path": f"assign #{number}", "content": ", ".join(logins)})
+            continue
+        try:
+            gh.assign(number, logins)
+        except Exception as exc:  # the reply is posted; the assignment is left to a maintainer
+            job.summary["dropped"].append(f"assign #{number}: {type(exc).__name__}: {exc}")
     for number, reason in job.closes:
         if mode != "live" or gh is None:
             job.summary["model_preview"].append({"path": f"close #{number}", "content": f"closed as {reason}"})
@@ -811,6 +840,8 @@ def _model(job: "Job", plan: dict, work: Path, mode: str, model_cap: str | None)
         _answer(job, item, "already superseded",
                 f"`{item['superseded_by']}` already supersedes `{item['evidence']}`, so there is nothing left to correct "
                 "in it; the newer evidence gets its own ordinary checks.", "not_planned")
+    for item in plan.get("referrals_nonpublic", []):
+        _nonpublic_referral(job, item)
     for item in plan.get("referrals_unreadable", []):
         try:
             _referral(job, item, None, None, keep, model_mode, unreadable=item.get("why"))
