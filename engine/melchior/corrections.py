@@ -165,7 +165,9 @@ def _corrected_claims(evidence: dict, check: dict) -> list[dict]:
     claims = [dict(claim) for claim in evidence.get("claims") or []]
     for item in _contradicted(check):
         index = item["index"]
-        claim = {**claims[index], "text": item["correct"]["text"]}
+        # Cleaned here, so a correction from a staleness check or a referral is cleaned too (review of PR #122,
+        # item 12).
+        claim = {**claims[index], "text": " ".join(sanitize(str(item["correct"]["text"])).split())}
         if "value" in claim:
             found = value_candidates(claims[index], item["correct"].get("figures") or [])
             if len(found) != 1:

@@ -388,3 +388,17 @@ def test_chinese_compounds_of_absence_are_recognised(root):
                          "correct": {"text": "公司于2026年10月20日公布回购计划", "figures": []}}]}
     ok, reason = may_correct(RepoState.load(root), "ev-20261020-cn-absent", check, {"sha256": "a" * 64})
     assert not ok and reason == "the claim is about something absent, which no quote can state"
+
+
+def test_the_correct_text_is_sanitised_on_every_path(root):
+    # Review of PR #122, item 12: a staleness or referral correction does not pass through the evidence check's
+    # own clean-up, so correction() cleans the text itself.
+    from engine.melchior.corrections import correction
+    put_evidence(root, "ev-20261020-tem-text", PAGE, claims=[{"text": "Revenue was $390.0 million"}])
+    raw = "Revenue  was $382.5 million, as @cfo-example said in [the call](javascript:alert(1))"
+    check = {"evidence": "ev-20261020-tem-text", "status": "discrepancy", "source_date": None,
+             "claims": [{"index": 0, "verdict": "contradicted", "quote": raw,
+                         "correct": {"text": raw, "figures": []}}]}
+    fix = correction(RepoState.load(root), "ev-20261020-tem-text", check, CHECKED, 7)
+    text = fix.writes[f"evidence/{fix.created['evidence_id']}.yaml"]["claims"][0]["text"]
+    assert "@" not in text and "javascript" not in text and "  " not in text and "$382.5 million" in text
