@@ -8,6 +8,7 @@ Newest first. Each entry gives the date, what changed, and the request issue tha
 - An evidence that another evidence supersedes is no longer checked, corrected, looked at for staleness or given an assist request; its chain goes on from the newer record. A fact-layer referral on such an evidence is answered by program and closed, with no model task.
 - Evidence check records may hold `filings_read_on` (a date or null): the day step one of a staleness check last read the company's SEC filing list. Step one lists filings after the source's `published_at` the first time and from that day on afterwards, no longer from the later of `published_at` and `checked_at`; only step one moves it, and other checks carry it forward. A new record version that only records `assist_issue` or `superseded_by` keeps `checked_at` and `checked_via_run`.
 - A correction of a claim with a `value` takes the new value from exactly one checked figure of the correct text: a percentage counts only for a claim whose `unit` is %, and the claim's multiplier divides an amount only when the figure names a unit. With no such figure or more than one, no correction is written and an assist request asks for help.
+- An assist request is resolved only by a named public evidence that shares an asset with the old evidence and checks out. A reply that names only non-public evidence gets one note but no longer keeps the request open: it is closed as not planned 90 days after it was opened.
 
 ## v1.13 — 2026-11-01
 

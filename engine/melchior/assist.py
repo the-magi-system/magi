@@ -147,7 +147,10 @@ def lifecycle(state: RepoState, gh, now: datetime) -> list[dict]:
     for evidence_id, issue in sorted(open_requests(gh).items()):
         comments = gh.comments(issue["number"])
         named = named_evidence(state, comments, evidence_id)
+        # A named evidence counts only when it is about the same asset as the old one (review of PR #122, item 6).
+        assets = set((state.evidence.get(evidence_id) or {}).get("assets") or [])
         verified = [other for other in named if (state.evidence[other].get("access", "public") == "public"
+                    and assets & set(state.evidence[other].get("assets") or [])
                     and (state.evidence_checks.get(other) or {}).get("status") == "verified")]
         if verified:
             body = (f"**Melchior.Magi** · assist request resolved\n{marker('assist-result', evidence_id)}\n\n"
@@ -156,23 +159,23 @@ def lifecycle(state: RepoState, gh, now: datetime) -> list[dict]:
             actions.append({"evidence": evidence_id, "issue": issue["number"], "post": ("assist-result", body),
                             "close": "completed", "superseded_by": verified[0]})
             continue
-        non_public = [other for other in named if state.evidence[other].get("access") == "non-public"]
-        if non_public and len(non_public) == len(named):
-            if not find_marked(comments, "assist-nonpublic", evidence_id):
-                body = (f"**Melchior.Magi** · assist request\n{marker('assist-nonpublic', evidence_id)}\n\n"
-                        f"Thank you. `{non_public[0]}` is non-public, so nobody can check it against a public source; "
-                        "this request stays open for a public one.")
-                actions.append({"evidence": evidence_id, "issue": issue["number"],
-                                "post": ("assist-nonpublic", body), "close": None, "superseded_by": None})
-            continue
         try:
-            opened = parse_iso(issue["created_at"])
+            expired = now - parse_iso(issue["created_at"]) >= CLOSE_AFTER
         except (KeyError, TypeError, ValueError):
-            continue
-        if now - opened >= CLOSE_AFTER:
+            expired = False
+        if expired:
+            # A non-public reply does not keep a request open past 90 days (review of PR #122, item 6).
             body = (f"**Melchior.Magi** · assist request closed\n{marker('assist-closed', evidence_id)}\n\n"
                     f"No public source for `{evidence_id}` arrived within 90 days, so I close this request as not "
                     "planned. The evidence stays unverified.")
             actions.append({"evidence": evidence_id, "issue": issue["number"], "post": ("assist-closed", body),
                             "close": "not_planned", "superseded_by": None})
+            continue
+        non_public = [other for other in named if state.evidence[other].get("access") == "non-public"]
+        if non_public and len(non_public) == len(named) and not find_marked(comments, "assist-nonpublic", evidence_id):
+            body = (f"**Melchior.Magi** · assist request\n{marker('assist-nonpublic', evidence_id)}\n\n"
+                    f"Thank you. `{non_public[0]}` is non-public, so nobody can check it against a public source; "
+                    "this request stays open for a public one until 90 days after it was opened.")
+            actions.append({"evidence": evidence_id, "issue": issue["number"],
+                            "post": ("assist-nonpublic", body), "close": None, "superseded_by": None})
     return actions

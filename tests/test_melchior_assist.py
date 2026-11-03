@@ -188,3 +188,31 @@ def test_no_assist_request_for_a_superseded_evidence(world):
     run(world, outputs={"ev-20261024-tem-good": contradicted(quote="Not in the page at all, for sure")})
     titles = {issue["title"] for issue in requests(world).values()}
     assert f"Melchior.Magi assist: {waiting}" not in titles
+
+
+def test_a_non_public_reply_does_not_stop_the_close_after_ninety_days(world):
+    # Review of PR #122, item 6 (a).
+    from datetime import timedelta
+    number = _opened(world)
+    add(world, "ev-20261021-contact", GOOD, "2026-10-21T00:00:00Z", access="non-public")
+    world["gh"].add_user_comment(number, JOHN_ID, "john-example", "I added ev-20261021-contact")
+    run(world)
+    assert world["gh"].issues[number]["state"] == "open"
+    run(world, now=NOW + timedelta(days=91))
+    issue = world["gh"].issues[number]
+    assert (issue["state"], issue["state_reason"]) == ("closed", "not_planned")
+
+
+def test_a_verified_reply_must_share_an_asset_with_the_old_evidence(world):
+    # Review of PR #122, item 6 (b).
+    number = _opened(world)
+    add(world, "ev-20261021-tem-good", GOOD, "2026-10-21T00:00:00Z", claims=[{"text": c} for c in (
+        "Revenue in the second quarter of 2026 was $382.5 million", "Gross profit in the second quarter was $235.1 million")])
+    path = world["root"] / "evidence" / "ev-20261021-tem-good.yaml"
+    write_yaml(path, {**load_yaml(path), "assets": ["msft"]})
+    Git(world["root"]).commit("other asset", {})
+    world["gh"].add_user_comment(number, JOHN_ID, "john-example", "Here it is: ev-20261021-tem-good")
+    run(world)
+    run(world)
+    assert world["gh"].issues[number]["state"] == "open"
+    assert RepoState.load(world["root"]).evidence_checks["ev-20261020-pdf-old"]["superseded_by"] is None
