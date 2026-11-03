@@ -164,12 +164,17 @@ def test_a_verdict_posted_by_anyone_but_the_bot_does_not_count(world):
 
 
 def _agents_up_to_the_cap(world, recent):
-    """arthur has arthur.val and arthur.macro active; three more reach the cap of 5."""
+    """arthur has arthur.val and arthur.macro active; three more reach the cap of 5. All were registered long ago, so
+    an agent without an accepted proposal in the last 90 days counts as idle."""
     root = world["root"]
+    long_ago = "2026-01-05T00:00:00Z"
+    for name in ("val", "macro"):
+        path = root / "registry" / "agents" / f"arthur.{name}.yaml"
+        write_yaml(path, {**load_yaml(path), "registered_at": long_ago})
     for name in ("one", "two", "three"):
         write_yaml(root / "registry" / "agents" / f"arthur.{name}.yaml", {
             "schema": "magi/agent@1", "id": f"arthur.{name}", "owner": "arthur", "display_name": name,
-            "role": "research-agent", "daily_proposal_cap": 50, "status": "active", "registered_at": T0,
+            "role": "research-agent", "daily_proposal_cap": 50, "status": "active", "registered_at": long_ago,
             "registered_via_issue": 1})
     entries = []
     for agent in ("arthur.val", "arthur.macro", "arthur.one", "arthur.two", "arthur.three"):
@@ -269,3 +274,65 @@ def test_the_workflows_dispatch_and_run_the_approval_scope():
     assert "approval" in caspar_flow[True]["workflow_dispatch"]["inputs"]["scope"]["options"]
     snapshot = next(step for step in caspar_flow["jobs"]["write"]["steps"] if step.get("name") == "Publish the snapshot")
     assert "inputs.scope != 'approval'" in snapshot["if"]
+
+
+# Review of PR #124 -----------------------------------------------------------------------------------------------
+
+def test_daily_limit_counts_reviews_of_proposals_already_decided(world, monkeypatch):
+    import engine.caspar.approval as approval
+    monkeypatch.setattr(approval, "MAX_STRATEGY_TASKS_PER_DAY", 1)
+    gh = world["gh"]
+    first = propose(world)
+    caspar(world, {first: OK})
+    assert [v["verdict"] for v in verdicts_on(world, first)] == ["ok"]
+    gh.add_user_comment(first, *ARTHUR, "/reject not needed")
+    intake(world)
+    assert gh.replies(first)[-1]["status"] == "rejected"
+    propose(world, {"parent": "special-sit", "sub": {"id": "carve-out", "name": "Carve-out",
+                                                     "definition": "A unit sold by its parent company"}})
+    plan, _ = caspar(world, mode="preview")
+    assert strategy_tasks(plan) == []  # today's one model review was used on the rejected proposal
+
+
+def test_an_agent_registered_ten_days_ago_is_not_idle(world):
+    root = world["root"]
+    recent = (NOW - timedelta(days=10)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    for name, registered in (("one", T0), ("two", T0), ("three", recent)):
+        write_yaml(root / "registry" / "agents" / f"arthur.{name}.yaml", {
+            "schema": "magi/agent@1", "id": f"arthur.{name}", "owner": "arthur", "display_name": name,
+            "role": "research-agent", "daily_proposal_cap": 50, "status": "active",
+            "registered_at": registered, "registered_via_issue": 1})
+    at = (NOW - timedelta(days=5)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    append(root, [{"at": at, "issue": 3, "action": "add_evidence", "actor": agent, "owner": "arthur",
+                   "entity": "evidence/ev-x"} for agent in ("arthur.val", "arthur.macro", "arthur.one", "arthur.two")])
+    Git(root).commit("agents up to the cap", {})
+    payload = {"name": "six", "suffix": "arthur", "display_name": "Six", "role": "research-agent"}
+    n = propose(world, payload, action="register_agent", actor="arthur")
+    caspar(world)
+    assert verdicts_on(world, n)[-1]["verdict"] == "ok"
+    text = verdict_text(world, n)
+    assert "`retire_agent`" not in text and "`arthur.three`: none yet" in text
+
+
+def test_a_note_that_repeats_the_proposed_text_is_withheld(world):
+    definition = SPIN_OFF["sub"]["definition"]
+    n = propose(world)
+    caspar(world, {n: {**OK, "reason": f"The entry says: {definition}."}})
+    text = verdict_text(world, n).split("```json")[0]
+    assert definition not in text and "not shown" in text
+    other = propose(world, {"parent": "special-sit", "sub": {"id": "carve-out", "name": "Carve-out",
+                                                             "definition": "A unit sold by its parent company"}})
+    caspar(world, {other: {**OK, "is_strategy": False, "reason": "A unit sold by its parent company is not a trade."}})
+    assert "A unit sold by its parent company" not in verdict_text(world, other).split("```json")[0]
+
+
+def test_a_note_in_its_own_words_is_shown(world):
+    n = propose(world)
+    caspar(world, {n: OK})
+    assert f"Caspar.Magi's note: {OK['reason']}" in verdict_text(world, n)
+
+
+def test_every_action_that_needs_approval_has_a_review_path():
+    from engine.caspar.approval import ACTIONS
+    rules = yaml.safe_load((REPO_ROOT / "protocol" / "capabilities.yaml").read_text(encoding="utf-8"))["approval_required"]
+    assert {rule["action"] for rule in rules} <= set(ACTIONS)

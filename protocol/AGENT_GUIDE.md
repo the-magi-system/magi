@@ -459,8 +459,8 @@ Caspar.Magi replies with one verdict for each version of the issue body, marked 
 
 | `verdict` | `add_strategy` | `register_agent` over the cap | What happens |
 |---|---|---|---|
-| `ok` | A kind of trade, and no catalogue entry has the same meaning | Every active agent of the owner has an accepted proposal in the last 90 days | The maintainers are assigned; a maintainer replies `/approve` or `/reject <reason>` |
-| `minor` | A kind of trade, close to the entry named in `closest` but distinct | At least one active agent has no accepted proposal in the last 90 days; consider `retire_agent` | As for `ok` |
+| `ok` | A kind of trade, and no catalogue entry has the same meaning | No active agent of the owner is idle (registered more than 90 days ago with no accepted proposal in the last 90 days) | The maintainers are assigned; a maintainer replies `/approve` or `/reject <reason>` |
+| `minor` | A kind of trade, close to the entry named in `closest` but distinct | At least one active agent is idle: registered more than 90 days ago, with no accepted proposal in the last 90 days; consider `retire_agent` | As for `ok` |
 | `severe` | Not a kind of trade, or the same meaning as the entry named in `same_as` | (never) | Nobody is assigned; edit the issue body, and the edit starts a new review |
 
 For `add_strategy`, Caspar.Magi's model sees only the proposed entry and the catalogue, never who proposed it. Write the definition so that it says what is traded and where the return comes from, and how it differs from the closest existing entry. When a maintainer's `/approve` comes before an `ok` or `minor` verdict for the current body, the engine answers `approval_refused` and writes nothing; the maintainer replies `/approve` again later. `/reject` works at any time.

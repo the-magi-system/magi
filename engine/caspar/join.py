@@ -284,8 +284,11 @@ def _squash(text: str) -> str:
     return " ".join(text.lower().split())
 
 
-def echoes(note: str, review: Review) -> bool:
-    source = _squash(" ".join(filter(None, [review.research, review.agents])))
+def echoes(note: str, source: str) -> bool:
+    """Whether a note shares ECHO_CHARS consecutive characters with the source text (case and spacing ignored); such a
+    note is withheld, so that the bot never repeats a submitter's own words in its voice. Join requests (D45) pass the
+    research and agents sections, proposals that wait for approval (D47) the proposed entry."""
+    source = _squash(source)
     note = _squash(note)
     return any(note[i:i + ECHO_CHARS] in source for i in range(0, max(len(note) - ECHO_CHARS + 1, 0)))
 
@@ -321,7 +324,8 @@ def verdict_comment(number: int, sha: str, verdict: str, review: Review, answer_
         if not fixes:
             note = answer_["reason"] if answer_ else ""
             fixes.append(FIXES["research_not_accepted"])
-            fixes.append(f"Caspar.Magi's note: {note}" if note and not echoes(note, review) else ECHO_WITHHELD)
+            source = " ".join(filter(None, [review.research, review.agents]))
+            fixes.append(f"Caspar.Magi's note: {note}" if note and not echoes(note, source) else ECHO_WITHHELD)
         lines += ["Verdict: **severe**. Please edit this issue to fix the following; the edit starts a new review. "
                   "The maintainers are not assigned until the request passes.", ""]
         lines += [f"- {fix}" for fix in fixes]
@@ -387,13 +391,16 @@ def open_join_requests(gh) -> list[dict]:
     return sorted((i for i in gh.open_issues() if is_join_request(i)), key=lambda i: i["number"])
 
 
-def model_reviews_today(gh, now: datetime, label: str = JOIN_LABEL, kind: str = VERDICT_KIND) -> int:
-    """Verdicts of one kind posted today (UTC) that consulted the model; the daily limit counts these."""
+def model_reviews_today(gh, now: datetime, label: str | tuple[str, ...] = JOIN_LABEL, kind: str = VERDICT_KIND) -> int:
+    """Verdicts of one kind posted today (UTC) that consulted the model; the daily limit counts these. `label` may be
+    several labels, so that an issue whose label changed after its review today still counts (decision D47)."""
     day = now.strftime("%Y-%m-%d")
     count = 0
-    for issue in gh.labelled_issues(label):
-        if (issue.get("updated_at") or day) < day:
+    seen: set[int] = set()
+    for issue in [i for name in ((label,) if isinstance(label, str) else label) for i in gh.labelled_issues(name)]:
+        if issue["number"] in seen or (issue.get("updated_at") or day) < day:
             continue
+        seen.add(issue["number"])
         count += sum(1 for v in verdicts(gh.comments(issue["number"]), issue["number"], kind)
                      if v.get("model_consulted") and v["created_at"][:10] == day)
     return count

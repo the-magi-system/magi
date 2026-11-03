@@ -25,10 +25,16 @@ from ..proposal import has_marker, parse_proposal
 from ..queue import REFUSED, body_sha, engine_replies
 from ..repo import RepoState
 from .common import marker
-from .join import MAX_REASON, _english, flatten, maintainer_logins, model_reviews_today, names, verdict_due, verdicts
+from .join import (
+    MAX_REASON, _english, echoes, flatten, maintainer_logins, model_reviews_today, names, verdict_due, verdicts,
+)
 from .work import take_turn
 
 APPROVAL_LABEL = "magi:needs-approval"
+# Every label intake gives a proposal: a reviewed proposal keeps counting toward the daily limit after it is
+# approved, rejected or edited and rejected, whatever its label is now.
+INTAKE_LABELS = ("magi:needs-approval", "magi:accepted", "magi:rejected")
+ECHO_WITHHELD = "(Caspar.Magi's note is not shown because it repeats text from the proposal.)"
 VERDICT_KIND = "approval"
 TASK_KIND = "strategy"
 MAX_STRATEGY_TASKS = 5
@@ -107,7 +113,7 @@ def approval_work(state: RepoState, gh, now: datetime, turn: int = 0) -> dict:
         (needs_model if proposal.action == "add_strategy" else program_only).append((item, proposal))
     room = 0
     if needs_model:
-        used = model_reviews_today(gh, now, APPROVAL_LABEL, VERDICT_KIND)
+        used = model_reviews_today(gh, now, INTAKE_LABELS, VERDICT_KIND)
         room = max(0, min(MAX_STRATEGY_TASKS, MAX_STRATEGY_TASKS_PER_DAY - used))
     chosen = take_turn(needs_model, room, turn) if room else []
     for item, _ in chosen:
@@ -150,7 +156,10 @@ def strategy_verdict(answer: dict) -> str:
 
 
 def agent_activity(root, state: RepoState, owner: str, now: datetime) -> list[dict]:
-    """Each active agent of the owner with the date of its last accepted proposal (an event log line with an issue)."""
+    """Each active agent of the owner with the date of its last accepted proposal (an event log line with an issue).
+
+    An agent is idle only when it was registered more than ACTIVE_DAYS ago and has no accepted proposal in the last
+    ACTIVE_DAYS days, so a newly registered agent is never called idle."""
     last: dict[str, str] = {}
     for entry in read_log(root):
         if "issue" in entry and entry.get("at"):
@@ -159,7 +168,7 @@ def agent_activity(root, state: RepoState, owner: str, now: datetime) -> list[di
                 last[actor] = entry["at"]
     since = (now - timedelta(days=ACTIVE_DAYS)).strftime("%Y-%m-%dT%H:%M:%SZ")
     return [{"agent": agent_id, "last_accepted": last[agent_id][:10] if agent_id in last else None,
-             "active": agent_id in last and last[agent_id] >= since}
+             "active": (agent_id in last and last[agent_id] >= since) or str(agent.get("registered_at") or "") > since}
             for agent_id, agent in sorted(state.agents.items())
             if agent.get("owner") == owner and agent.get("status") == "active"]
 
@@ -172,9 +181,19 @@ def verdict_comment(number: int, sha: str, verdict: str, action: str, lines: lis
     return "\n".join(head + lines + tail) + "\n"
 
 
-def strategy_comment(number: int, sha: str, entry_id: str, answer: dict) -> tuple[str, str]:
+def proposed_text(entry: dict) -> str:
+    """The proposer's own words in the entry: id, name, definition, and each new sub's name and definition."""
+    parts = [entry["id"], entry["name"], entry["definition"]]
+    for sub in entry.get("subs", []):
+        parts += [sub["name"], sub["definition"]]
+    return " ".join(parts)
+
+
+def strategy_comment(number: int, sha: str, entry: dict, answer: dict) -> tuple[str, str]:
     verdict = strategy_verdict(answer)
-    note = f"Caspar.Magi's note: {answer['reason']}"
+    entry_id = entry["id"]
+    shown = not echoes(answer["reason"], proposed_text(entry))
+    note = f"Caspar.Magi's note: {answer['reason']}" if shown else ECHO_WITHHELD
     if verdict == "severe" and answer["same_as"]:
         lines = [f"Verdict: **severe**. The proposed strategy `{entry_id}` has the same meaning as the existing entry "
                  f"`{answer['same_as']}`. Use `{answer['same_as']}` in your views instead, or edit the definition to "
@@ -245,7 +264,7 @@ def write_approvals(root, gh, sink, plan: dict, result_of, summary: dict, now: d
                 if answer is None:
                     summary["dropped"].append(f"approval #{number}: no verdict, {problem}; reviewed next run")
                     continue
-                verdict, text = strategy_comment(number, sha, proposed_entry(proposal.payload)["id"], answer)
+                verdict, text = strategy_comment(number, sha, proposed_entry(proposal.payload), answer)
             else:
                 owner = proposal.actor
                 verdict, text = agent_comment(number, sha, owner, agent_activity(root, state, owner, now))
