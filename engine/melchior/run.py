@@ -150,7 +150,7 @@ def prepare(root, out, scope: str, mode: str, now: datetime, model_mode: str = "
     plan = {"mode": resolve_mode(mode), "scope": scope, "notice": None,
             "work": {"series": [], "fills": [], "settlements": []},
             "model_mode": "off", "model_notice": None, "tasks": [], "fetch": [], "records": [], "pending_contact": [],
-            "inputs": None, "staleness_none": [], "staleness_unreadable": [], "referrals_unreadable": []}
+            "inputs": None, "staleness_none": [], "staleness_unreadable": [], "referrals_unreadable": [], "fetch_failures": []}
     state = RepoState.load(root)
     if plan["mode"] == "off":
         plan["notice"] = "MELCHIOR_MODE is off"
@@ -178,27 +178,35 @@ def fetch_sources(root, out, fetcher, now: datetime) -> dict:
     plan = json.loads((out / "plan.json").read_text(encoding="utf-8"))
     state = RepoState.load(root)
     for item in plan.get("fetch", []):
-        if "step" in item:
-            _fetch_staleness(plan, state, item, fetcher, now, out)
-            continue
-        if "referral" in item:
-            found = referrals.prepare(state, item, fetcher, now, out / item["id"])
-            if "task" in found:
-                plan["tasks"].append({"id": item["id"], "kind": "referral", "evidence": item["referral"]["evidence"],
-                                      "referral": item["referral"]})
-            else:
-                plan.setdefault("referrals_unreadable", []).append({**item["referral"], "why": found["unreadable"]})
-            continue
-        found = prepare_check(state, item["evidence"], fetcher, now, out / item["id"])
-        if "task" in found:
-            plan["tasks"].append({"id": item["id"], "kind": found["task"]["kind"], "evidence": item["evidence"]})
-        elif "record" in found:
-            plan["records"].append(found["record"])
-        else:
-            plan["pending_contact"].append(found["line"])
+        try:
+            _fetch_one(plan, state, item, fetcher, now, out)
+        except Exception as exc:  # one failing item is recorded and the others go on (review of PR #122, item 3)
+            evidence_id = item.get("evidence") or (item.get("referral") or {}).get("evidence") or item.get("id")
+            plan.setdefault("fetch_failures", []).append(f"{evidence_id}: {type(exc).__name__}: {exc}; {RETRY}")
     plan["fetch"] = []
     _save(out / "plan.json", plan)
     return plan
+
+
+def _fetch_one(plan: dict, state: RepoState, item: dict, fetcher, now: datetime, out: Path) -> None:
+    if "step" in item:
+        _fetch_staleness(plan, state, item, fetcher, now, out)
+        return
+    if "referral" in item:
+        found = referrals.prepare(state, item, fetcher, now, out / item["id"])
+        if "task" in found:
+            plan["tasks"].append({"id": item["id"], "kind": "referral", "evidence": item["referral"]["evidence"],
+                                  "referral": item["referral"]})
+        else:
+            plan.setdefault("referrals_unreadable", []).append({**item["referral"], "why": found["unreadable"]})
+        return
+    found = prepare_check(state, item["evidence"], fetcher, now, out / item["id"])
+    if "task" in found:
+        plan["tasks"].append({"id": item["id"], "kind": found["task"]["kind"], "evidence": item["evidence"]})
+    elif "record" in found:
+        plan["records"].append(found["record"])
+    else:
+        plan["pending_contact"].append(found["line"])
 
 
 def _fetch_staleness(plan: dict, state: RepoState, item: dict, fetcher, now: datetime, out: Path) -> None:
@@ -713,6 +721,7 @@ def _model(job: "Job", plan: dict, work: Path, mode: str, model_cap: str | None)
     root, summary = job.root, job.summary
     summary["model_mode"] = model_mode
     summary["waiting"] = list(plan.get("pending_contact", []))
+    summary["dropped"] += plan.get("fetch_failures", [])
 
     def keep(changes: ChangeSet, evidence_id: str) -> None:
         if model_mode == "live":

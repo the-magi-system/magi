@@ -13,6 +13,7 @@ of a correction holds, otherwise to an assist request; a current one moves the n
 from __future__ import annotations
 
 import json
+import re
 import urllib.parse
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -27,6 +28,7 @@ MAX_TASKS = 2  # staleness tasks per run, both steps counted (design 22.13)
 MAX_SOURCES = 3
 MAX_LISTED = 20
 REVIEW_DAYS = 90
+_CIK = re.compile(r"/edgar/data/(\d+)/")
 PRIMARY_HOSTS = ("sec.gov", "dart.fss.or.kr", "kind.krx.co.kr")
 # Filing kinds that can change a standing claim: annual and quarterly reports, current reports, proxy and merger
 # documents.
@@ -139,9 +141,12 @@ def prepare(state: RepoState, item: dict, fetcher, now: datetime, out) -> dict:
         return {"task": "staleness-search"}
     if step == "list":
         url = _source_url(state, evidence_id)
-        cik = urllib.parse.urlsplit(url).path.split("/")[4] if "/edgar/data/" in url else None
-        if not cik or not cik.isdigit():
+        # The CIK from anywhere in the address, so an inline-viewer link (`/ix?doc=/Archives/edgar/data/...`) gives
+        # its company too (review of PR #122, item 3).
+        match = _CIK.search(url or "")
+        if match is None:
             return {"none": "the SEC source names no company"}
+        cik = match.group(1)
         if getattr(fetcher, "_contact", None) is None:
             return {"pending": "contact"}
         text = fetcher.page(f"https://data.sec.gov/submissions/CIK{int(cik):010d}.json")

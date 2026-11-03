@@ -154,3 +154,46 @@ def test_a_superseded_evidence_is_not_due_for_staleness(world):
     write_yaml(path, {**load_yaml(path), "supersedes": ev_id})
     found = {item["evidence"] for item in due(RepoState.load(world["root"]), NOW + timedelta(days=400))}
     assert ev_id not in found
+
+
+IX = "https://www.sec.gov/ix?doc=/Archives/edgar/data/1717115/000119312526326090/tem-20260630.htm"
+
+
+def test_an_inline_viewer_address_gives_its_company(world, tmp_path):
+    # Review of PR #122, item 3: the CIK is read from the whole address, so an ix?doc= link does not raise.
+    from engine.fetch import Fetcher
+    from engine.melchior.staleness import prepare
+    from tests.test_fetch import Opener
+    from tests.test_melchior_evidence import CONTACT
+    add(world, "ev-20261020-tem-10q", IX, "2026-10-20T00:00:00Z", claims=[{"text": GUIDE}])
+    put_check(world["root"], "ev-20261020-tem-10q", url=IX)
+    routes = {"https://data.sec.gov/submissions/CIK0001717115.json": fixture("sec-tem-submissions")}
+    fetcher = Fetcher(CONTACT, opener=Opener(routes), clock=lambda: 0.0, sleep=lambda s: None)
+    found = prepare(RepoState.load(world["root"]), {"evidence": "ev-20261020-tem-10q", "step": "list"}, fetcher, NOW,
+                    tmp_path / "staleness-1")
+    assert found == {"task": "staleness-list"}
+
+
+def test_one_failing_fetch_item_does_not_stop_the_others(world, monkeypatch):
+    import json
+    from engine.fetch import Fetcher
+    from engine.melchior import run as run_module
+    from tests.test_fetch import Opener
+    from tests.test_melchior_evidence import CONTACT
+    guidance(world)
+    add(world, "ev-20261021-tem-other", OLD_PAGE, "2026-10-21T00:00:00Z", claims=[{"text": GUIDE}])
+    out = world["tmp"] / "fetch-work"
+    out.mkdir()
+    (out / "plan.json").write_text(json.dumps({
+        "fetch": [{"id": "staleness-1", "evidence": "ev-20261020-tem-guide", "step": "search"},
+                  {"id": "evidence-1", "evidence": "ev-20261021-tem-other"}],
+        "tasks": [], "records": [], "pending_contact": []}), encoding="utf-8")
+
+    def broken(*args, **kwargs):
+        raise RuntimeError("simulated failure")
+
+    monkeypatch.setattr(run_module.staleness, "prepare", broken)
+    fetcher = Fetcher(CONTACT, opener=Opener(default=page(NEW_HTML)), clock=lambda: 0.0, sleep=lambda s: None)
+    plan = run_module.fetch_sources(world["root"], out, fetcher, NOW)
+    assert [task["evidence"] for task in plan["tasks"]] == ["ev-20261021-tem-other"]
+    assert plan["fetch_failures"] == ["ev-20261020-tem-guide: RuntimeError: simulated failure; it is tried again next run"]
