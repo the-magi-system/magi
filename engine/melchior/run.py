@@ -34,7 +34,7 @@ from ..repo import RepoState
 from ..returns import load_policies
 from ..sysagent import publish_system_profile
 from ..caspar.common import sanitize
-from ..timeutil import iso
+from ..timeutil import iso, parse_iso
 from ..yamlio import dump_yaml, load_yaml
 from ..caspar.work import take_turn
 from .common import MELCHIOR, SCOPES, SOURCE_DIR, resolve_mode, resolve_model_mode
@@ -177,7 +177,8 @@ def _ruling_plan(root: Path, state: RepoState, out: Path, plan: dict, gh, left: 
         if kind is None or not urls:
             plan["status_failures"].append(f"ruling issue #{item['issue']}: it names no event or candidate source")
             continue
-        drafts.append({**item, "kind": kind, "sources": urls, "supersedes": None})
+        drafts.append({**item, "kind": kind, "sources": urls, "supersedes": None,
+                       "opened_at": open_issues[item["asset"]].get("created_at")})
     for item in rulings.challenges(gh, state):
         if item["sources"]:
             drafts.append({**item, "triggers": [], "supersedes": item["ruling"]})
@@ -261,6 +262,12 @@ def _fetch_one(plan: dict, state: RepoState, item: dict, fetcher, now: datetime,
                 f"{item['ruling']['asset']}: candidate source {line}" for line in found["failures"])
         elif "pending" in found:
             plan["pending_contact"].append(f"{item['ruling']['asset']}: waiting for MAGI_HTTP_CONTACT (ruling)")
+        elif not item["ruling"].get("challenge") and not _unreadable_long_enough(item["ruling"], now):
+            # Fetched again next run; the ruling is unresolved only when the candidates still cannot be read 7 days
+            # after the issue was opened (review of PR #125, change 2).
+            plan.setdefault("rulings_waiting", []).append(
+                f"{item['ruling']['asset']}: no candidate source could be read ({found['unreadable']}); they are "
+                "fetched again next run")
         else:
             plan.setdefault("rulings_unreadable", []).append({**item["ruling"], "why": found["unreadable"]})
         return
@@ -281,6 +288,14 @@ def _fetch_one(plan: dict, state: RepoState, item: dict, fetcher, now: datetime,
         plan["records"].append(found["record"])
     else:
         plan["pending_contact"].append(found["line"])
+
+
+def _unreadable_long_enough(item: dict, now: datetime) -> bool:
+    """True when the ruling issue was opened at least UNREADABLE_DAYS ago; an issue whose time cannot be read waits."""
+    try:
+        return now - parse_iso(str(item.get("opened_at"))) >= timedelta(days=rulings.UNREADABLE_DAYS)
+    except (TypeError, ValueError):
+        return False
 
 
 def _fetch_staleness(plan: dict, state: RepoState, item: dict, fetcher, now: datetime, out: Path) -> None:

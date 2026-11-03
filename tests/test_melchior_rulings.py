@@ -74,6 +74,7 @@ def run(world, outputs=None, now=NOW):
     from engine.fetch import Fetcher
     from engine.melchior.run import prepare, write
     world["runs"] += 1
+    world["gh"]._ts = lambda: now.strftime("%Y-%m-%dT%H:%M:%SZ")  # issues opened in a run carry that run's time
     work = world["tmp"] / f"run-{world['runs']}"
     fetcher = Fetcher(CONTACT, opener=Opener(ROUTES), clock=lambda: 0.0, sleep=lambda s: None)
     plan = prepare(world["root"], work, "rulings", "live", now, model_mode="live", event="workflow_dispatch",
@@ -278,3 +279,23 @@ def test_the_issue_of_a_provisional_ruling_closes_once_a_maintainer_confirms_it(
     run(world, now=datetime(2026, 11, 1, 23, 47, 30, tzinfo=timezone.utc))
     issue = world["gh"].issues[record["issue"]]
     assert (issue["state"], issue["state_reason"]) == ("closed", "completed") and len(rulings(world)) == 1
+
+
+def test_a_candidate_source_that_fails_once_is_fetched_again(world):
+    # Review of PR #125, change 2.
+    run(world, {"asset-status": found(sources=[f"{IR}/not-yet-published.htm"])})
+    run(world, now=LATER)
+    assert rulings(world) == [], f"an unresolved ruling after one failed fetch: {rulings(world)}"
+    assert next(iter(ruling_issues(world).values()))["state"] == "open"
+
+
+def test_candidates_still_unreadable_after_seven_days_give_an_unresolved_ruling(world):
+    from datetime import timedelta
+    run(world, {"asset-status": found(sources=[f"{IR}/not-yet-published.htm"])})
+    _, summary = run(world, now=NOW + timedelta(days=6))
+    assert rulings(world) == [] and any("fetched again" in line for line in summary["waiting"]), summary["waiting"]
+    run(world, now=NOW + timedelta(days=7, minutes=1))
+    [record] = rulings(world)
+    assert (record["decision"], record["status"]) == ("unresolved", "provisional")
+    issue = world["gh"].issues[record["issue"]]
+    assert issue["state"] == "open" and issue["assignees"] == ["ThinkwChivalri"]

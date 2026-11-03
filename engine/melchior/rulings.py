@@ -7,7 +7,9 @@ candidates, Melchior.Magi opens one `magi:ruling` issue for the asset, with the 
 candidates, the model drafts the decision, the sources with their quotes and the reasoning, and the program checks the
 draft and writes `magi/ruling@1`. The program decides the effect: an immediate kind is immediate only when the figure
 or code the decision rests on stands word for word in a checked quote and in the fetched text; otherwise provisional.
-Without any checked source the ruling is `decision: unresolved` and provisional. The ruling is announced in its issue
+Without any checked source the ruling is `decision: unresolved` and provisional. When no candidate can be read, they
+are fetched again in later runs and listed with the waiting work; the unresolved ruling is written only when they
+still cannot be read 7 days after the ruling issue was opened (review of PR #125, change 2). The ruling is announced in its issue
 and in the threads of the ideas it affects. An immediate ruling closes its issue; a provisional one leaves it open
 and assigned to the active maintainers until it is final, overturned or superseded, and nothing is drafted again in it
 meanwhile (review of PR #125, change 1).
@@ -45,6 +47,7 @@ from .status import LABEL, marker as ruling_marker
 
 MAX_RULINGS = 2  # asset-status checks and ruling drafts per run (design 22.13)
 MAX_SOURCES = 3
+UNREADABLE_DAYS = 7  # candidates that cannot be read are fetched again until the issue is this old (PR #125 review)
 RECENT_CLOSES = 30
 MAX_REASONING = 2000
 ACTION = "record_ruling"
