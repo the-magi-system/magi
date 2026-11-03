@@ -100,8 +100,9 @@ def host_allowed(url, hosts) -> bool:
     return parts.scheme == "https" and any(host == allowed or host.endswith("." + allowed) for allowed in hosts)
 
 
-def newer_filings(submissions: str, after: str) -> list[dict]:
-    """Filings of the kinds in FORMS filed after `after` (YYYY-MM-DD), newest first, from a data.sec.gov list."""
+def newer_filings(submissions: str, after: str, skip=()) -> list[dict]:
+    """Filings of the kinds in FORMS filed after `after` (YYYY-MM-DD), newest first, from a data.sec.gov list;
+    accession numbers in `skip` (already shown) are left out before the list is cut to MAX_LISTED."""
     try:
         data = json.loads(submissions)
         recent = data["filings"]["recent"]
@@ -115,7 +116,7 @@ def newer_filings(submissions: str, after: str) -> list[dict]:
                                           recent["primaryDocument"][number])
         except (KeyError, IndexError):
             continue
-        if form in FORMS and filed > after and document:
+        if form in FORMS and filed > after and document and accession not in skip:
             url = f"https://www.sec.gov/Archives/edgar/data/{cik}/{accession.replace('-', '')}/{document}"
             found.append({"accessionNumber": accession, "form": form, "filingDate": filed, "url": url})
     found.sort(key=lambda item: item["filingDate"], reverse=True)
@@ -157,11 +158,12 @@ def prepare(state: RepoState, item: dict, fetcher, now: datetime, out) -> dict:
             return {"none": "the company's filing list could not be read"}
         # From the evidence's publication date the first time, then from the day the list was last read, that day
         # included, so a filing of that day made after the read is not missed (review of PR #122, item 4). The
-        # check's own date does not count: a check made after a filing says nothing about that filing.
+        # filings already shown from that day on (`filings_listed`) are left out, so none goes to the model twice
+        # (second round). The check's own date does not count: a check made after a filing says nothing about it.
         read_on = record.get("filings_read_on")
         after = ((parse_iso(f"{read_on}T00:00:00Z") - timedelta(days=1)).date().isoformat() if read_on
                  else str((evidence.get("source") or {}).get("published_at") or ""))
-        filings = newer_filings(text, after)
+        filings = newer_filings(text, after, skip=set(record.get("filings_listed") or []) if read_on else set())
         if not filings:
             return {"none": "no newer filing"}
         _write(out, {"task": "staleness-list", **base, "filings": filings})
@@ -197,6 +199,17 @@ def prepare(state: RepoState, item: dict, fetcher, now: datetime, out) -> dict:
                  "sources": [{"url": part["url"], "file": f"{task_dir}/{part['file']}",
                               "excerpts_file": f"{task_dir}/{part['excerpts']}"} for part in parts]})
     return {"task": "staleness"}
+
+
+def listed(record: dict, filings: list[dict], today: str) -> list[str]:
+    """The accession numbers to keep in `filings_listed` once step one has shown `filings` on `today`: those filed
+    on that day or later, which the next list would show again, with those kept from an earlier read on the same
+    day."""
+    kept = list(record.get("filings_listed") or []) if str(record.get("filings_read_on")) == today else []
+    for item in filings:
+        if item["filingDate"] >= today and item["accessionNumber"] not in kept:
+            kept.append(item["accessionNumber"])
+    return kept
 
 
 def candidates_from_list(filings: list[dict], output: dict) -> list[str]:

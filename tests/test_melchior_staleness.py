@@ -245,7 +245,11 @@ def test_the_date_the_list_was_read_is_kept_and_moved_only_by_step_one(world, tm
     assert summary["staleness"] == [f"{ev_id}: 0 candidate source(s)"], summary["dropped"]
     record = RepoState.load(world["root"]).evidence_checks[ev_id]
     assert str(record["filings_read_on"]) == NOW.date().isoformat()
-    # Step one now lists from that date on (the read day included), not from the publication date.
+    # The filings shown are not shown again (second round of review) ...
+    assert record["filings_listed"] and list_dates(world, ev_id, tmp_path) == []
+    # ... and step one now lists from that date on (the read day included), not from the publication date.
+    path = world["root"] / "evidence" / "checks" / f"{ev_id}.yaml"
+    write_yaml(path, {**load_yaml(path), "filings_listed": []})
     dates = list_dates(world, ev_id, tmp_path)
     assert min(dates) == NOW.date().isoformat() and "2026-09-15" not in dates
     # An ordinary evidence check carries the date forward and does not move it.
@@ -418,3 +422,18 @@ def test_claims_superseded_by_two_sources_get_no_correction(world):
     assert not [e for e in state.evidence.values() if e.get("supersedes") == ev_id], "one source is cited for both claims"
     assert state.evidence_checks[ev_id]["currency"] == "superseded"
     assert requests(world)
+
+
+def test_a_filing_listed_once_is_not_listed_again_the_next_day(world):
+    # Review of PR #122, second round, change 2.
+    from tests import test_melchior_assist as harness
+    route = "https://data.sec.gov/submissions/CIK0001717115.json"
+    ev_id = sec_guidance(world)
+    harness.ROUTES[route] = fixture("sec-tem-submissions")
+    try:
+        first = harness.run(world, outputs={ev_id: {"filings": []}})
+        second = harness.run(world, outputs={ev_id: {"filings": []}}, now=NOW + timedelta(days=1))
+    finally:
+        harness.ROUTES.pop(route, None)
+    assert first["staleness"] == [f"{ev_id}: 0 candidate source(s)"], first["dropped"]
+    assert second["staleness"] == [], f"the same filings were listed again: {second['staleness']}"
