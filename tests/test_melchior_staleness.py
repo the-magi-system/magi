@@ -336,3 +336,29 @@ def test_a_confirmed_superseded_claim_is_marked_even_when_no_correction_is_writt
     summary = run_staleness(world, ev_id, judged("superseded"))
     record = RepoState.load(world["root"]).evidence_checks[ev_id]
     assert summary["corrections"] == [] and record["currency"] == "superseded" and record["assist_issue"]
+
+
+def test_only_public_primary_evidence_adds_an_allowed_host(world):
+    # Review of PR #122, item 10.
+    from engine.melchior.staleness import allowed_hosts
+    ev_id = guidance(world)
+    for name, url, tier, access in (("ev-20261022-tem-blog", "https://blog.example.net/tem.htm", "secondary", "public"),
+                                    ("ev-20261023-tem-ir", "https://ir.example.com/tem.htm", "primary", "public")):
+        add(world, name, url, "2026-10-22T00:00:00Z", access=access)
+        path = world["root"] / "evidence" / f"{name}.yaml"
+        data = load_yaml(path)
+        write_yaml(path, {**data, "source": {**data["source"], "tier": tier}})
+    hosts = allowed_hosts(RepoState.load(world["root"]), ev_id)
+    assert "ir.example.com" in hosts and "blog.example.net" not in hosts
+
+
+def test_a_new_source_keeps_the_old_tier_on_the_evidences_own_host(world):
+    from engine.melchior.staleness import new_source
+    ev_id = guidance(world)
+    path = world["root"] / "evidence" / f"{ev_id}.yaml"
+    data = load_yaml(path)
+    write_yaml(path, {**data, "source": {**data["source"], "tier": "secondary"}})
+    state = RepoState.load(world["root"])
+    assert new_source(state, ev_id, {"url": NEW_PAGE, "date": "2026-10-15"})["tier"] == "secondary"
+    sec = "https://www.sec.gov/Archives/edgar/data/1717115/000119312526400000/tem-8k.htm"
+    assert new_source(state, ev_id, {"url": sec, "date": "2026-10-15"})["tier"] == "primary"

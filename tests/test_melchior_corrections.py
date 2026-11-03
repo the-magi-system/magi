@@ -355,3 +355,21 @@ def test_the_value_of_a_corrected_claim_comes_from_its_one_matching_figure(root)
     none = _value_check("ev-20261020-tem-two", "Revenue grew 12.5% in the quarter", [_figure("12.5%", 12.5)])
     ok, reason = may_correct(state, "ev-20261020-tem-two", none, fetched)
     assert not ok and reason == "the correct text has no figure that could be the claim's value"
+
+
+def test_primary_source_is_said_only_for_a_primary_tier(root, tmp_path):
+    # Review of PR #122, item 10.
+    from engine.melchior.corrections import correction, notices
+    for tier in ("primary", "secondary"):
+        ev_id = f"ev-20261020-tem-{tier}"
+        put_evidence(root, ev_id, PAGE, claims=WRONG)
+        path = root / "evidence" / f"{ev_id}.yaml"
+        data = load_yaml(path)
+        write_yaml(path, {**data, "source": {**data["source"], "tier": tier}, "submitted_via_issue": 5})
+        _, check = record(root, tmp_path, ev_id, contradicted())
+        state = RepoState.load(root)
+        fix = correction(state, ev_id, check, CHECKED, 7)
+        new = fix.writes[f"evidence/{fix.created['evidence_id']}.yaml"]
+        body = notices(state, ev_id, fix.created["evidence_id"], check, new["source"])[0][1]
+        assert ("primary source" in new["body_md"]) == (tier == "primary"), new["body_md"]
+        assert ("primary source" in body) == (tier == "primary"), body

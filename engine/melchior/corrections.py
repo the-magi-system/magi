@@ -187,7 +187,8 @@ def correction(state: RepoState, evidence_id: str, check: dict, now: datetime, r
         record_source["published_at"] = right_date
     payload = {"slug": new_id[12:], **{key: evidence[key] for key in PAYLOAD_KEYS if key in evidence},
                "source": record_source, "claims": _corrected_claims(evidence, check),
-               "body_md": f"Correction by Melchior.Magi of `{evidence_id}`: the fetched primary source contradicts it "
+               "body_md": f"Correction by Melchior.Magi of `{evidence_id}`: the fetched {_kind(record_source)} "
+                          "contradicts it "
                           f"(evidence check `{check_path(evidence_id)}`).",
                "supersedes": evidence_id}
     errors = validate_payload(state.root, ACTION, payload)
@@ -206,9 +207,19 @@ def correction(state: RepoState, evidence_id: str, check: dict, now: datetime, r
     return changes
 
 
-def notices(state: RepoState, evidence_id: str, new_id: str, check: dict) -> list[tuple[int, str]]:
-    """One post on the submission issue and one in the thread of every idea the evidence names."""
+def _kind(source: dict) -> str:
+    """"primary source" only for a source of `tier: primary` (review of PR #122, item 10)."""
+    return "primary source" if source.get("tier") == "primary" else "source"
+
+
+def notices(state: RepoState, evidence_id: str, new_id: str, check: dict,
+            new_source: dict | None = None) -> list[tuple[int, str]]:
+    """One post on the submission issue and one in the thread of every idea the evidence names. `new_source` is the
+    source of the new evidence; without it the old evidence's source is meant."""
     evidence = state.evidence[evidence_id]
+    old_source = evidence.get("source") or {}
+    new_source = new_source or old_source
+    which = "its" if new_source.get("url") == old_source.get("url") else "a newer"
     targets = []
     if isinstance(evidence.get("submitted_via_issue"), int) and evidence["submitted_via_issue"] > 0:
         targets.append(evidence["submitted_via_issue"])
@@ -219,7 +230,8 @@ def notices(state: RepoState, evidence_id: str, new_id: str, check: dict) -> lis
     source = check.get("source") or {}
     claims = evidence.get("claims") or []
     lines = ["**Melchior.Magi** · correction", marker("correction", evidence_id), "",
-             f"I checked `{evidence_id}` against its primary source and wrote `{new_id}`, which supersedes it.", ""]
+             f"I checked `{evidence_id}` against {which} {_kind(new_source)} and wrote `{new_id}`, which supersedes "
+             "it.", ""]
     for item in _contradicted(check):
         lines += [f"- Claim {item['index']}: {sanitize(str(claims[item['index']].get('text', '')))}",
                   f"  - The source says: \"{sanitize(str(item.get('quote', '')))}\"",

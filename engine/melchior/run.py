@@ -469,7 +469,8 @@ def _write_correction(job: "Job", state: RepoState, evidence_id: str, fix: Chang
         summary["model_preview"] += [{"path": path, "content": dump_yaml(data)} for path, data in fix.writes.items()]
     summary["corrections"].append(evidence_id)
     new_id = fix.created["evidence_id"]
-    for number, body in notices(state, evidence_id, new_id, fix.writes.get(check_path(evidence_id), check)):
+    source = (fix.writes.get(f"evidence/{new_id}.yaml") or {}).get("source")
+    for number, body in notices(state, evidence_id, new_id, fix.writes.get(check_path(evidence_id), check), source):
         job.posts.append((number, "correction", evidence_id, body))
 
 

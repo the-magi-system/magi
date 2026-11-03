@@ -78,11 +78,14 @@ def due(state: RepoState, now: datetime) -> list[dict]:
 
 
 def allowed_hosts(state: RepoState, evidence_id: str) -> list[str]:
-    """The primary-source hosts, and the hosts that public evidence on the same assets already cites."""
+    """The primary-source hosts, and the hosts that public evidence on the same assets already cites as a primary
+    source (`tier: primary`; review of PR #122, item 10)."""
     assets = set((state.evidence.get(evidence_id) or {}).get("assets") or [])
     hosts = set(PRIMARY_HOSTS)
     for evidence in state.evidence.values():
-        if evidence.get("access", "public") == "public" and assets & set(evidence.get("assets") or []):
+        source = evidence.get("source") or {}
+        if (evidence.get("access", "public") == "public" and source.get("tier") == "primary"
+                and assets & set(evidence.get("assets") or [])):
             host = urllib.parse.urlsplit(str((evidence.get("source") or {}).get("url") or "")).hostname
             if host:
                 hosts.add(host.lower())
@@ -247,5 +250,7 @@ def new_source(state: RepoState, evidence_id: str, part: dict) -> dict:
     old = state.evidence[evidence_id].get("source") or {}
     host = urllib.parse.urlsplit(part["url"]).hostname or ""
     same = host == (urllib.parse.urlsplit(str(old.get("url") or "")).hostname or "")
+    # On the evidence's own host the old tier stays; any other allowed host is a primary-source host, or one that
+    # public primary evidence on the same asset cites (review of PR #122, item 10).
     return {"url": part["url"], "publisher": old.get("publisher") if same and old.get("publisher") else host,
-            "published_at": part["date"], "tier": "primary"}
+            "published_at": part["date"], "tier": (old.get("tier") or "primary") if same else "primary"}
