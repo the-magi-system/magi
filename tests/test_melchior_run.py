@@ -132,6 +132,11 @@ def test_the_profile_source_lists_the_duties_of_this_version():
     assert system_errors(REPO_ROOT, "profile", source) == []
     assert source["identity"].startswith("我的名字是 Melchior")
     assert source["identity_en"].startswith("My name is Melchior")
-    assert len(source["duties"]) == 4  # duty 5 of design 22.14 comes with plan 9c, duty 4 with 9d (plan 9, item 17)
+    # Exactly five, in the order of design 22.14; duty 6 comes with Balthasar's plan (plan 9, items 17 and 22).
+    assert len(source["duties"]) == 5
     assert source["duties"][0].startswith("Keep an objective record")
-    assert source["duties"][3].startswith("Check evidence against its sources")
+    assert source["duties"][1].startswith("Settle every view version")
+    assert source["duties"][2].startswith("Record each actor's research process")
+    assert source["duties"][3] == ("Apply corporate actions by program, and draft rulings with their rule basis and "
+                                   "sources for the cases that need judgement")
+    assert source["duties"][4].startswith("Check evidence against its sources")

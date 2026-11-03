@@ -251,9 +251,16 @@ def _check_record(r: Runner, evidence_id: str) -> dict:
     return parse_yaml(r.gh.get_file(f"evidence/checks/{evidence_id}.yaml") or "{}") or {}
 
 
-def _evidence_checks(r: Runner, edgar_id: str, secret_id: str, example_id: str) -> None:
-    """Melchior.Magi's evidence checks (design 22.15, steps 3 and 4; plan 9, Task 12). The assist request for the
-    example.com evidence comes with PR 9c and is checked from PR 9d (plan 9, item 21)."""
+def _assist_requests(r: Runner, evidence_id: str) -> list[dict]:
+    mark = f"<!-- magi:melchior assist {evidence_id} -->"
+    return [issue for issue in r.gh.labelled_issues("magi:assist")
+            if issue["state"] == "open" and mark in (issue.get("body") or "")]
+
+
+def _evidence_checks(r: Runner, edgar_id: str, secret_id: str, example_id: str) -> int:
+    """Melchior.Magi's evidence checks (design 22.15, steps 3 and 4; plan 9, Tasks 12 and 22). The assist request
+    for the example.com evidence came with PR 9c and is checked from PR 9d (plan 9, item 21); its number is returned
+    so that the last step closes it."""
     deadline = time.time() + EVIDENCE_CHECK_TIMEOUT
     while time.time() < deadline and not _check_record(r, edgar_id):
         time.sleep(POLL_SECONDS)
@@ -269,11 +276,14 @@ def _evidence_checks(r: Runner, edgar_id: str, secret_id: str, example_id: str) 
     r.check("the example.com evidence is unverified",
             example.get("status") == "unverified" and example.get("reason") in ("not_found", "source_unreachable"),
             str({key: example.get(key) for key in ("status", "reason")}))
+    r.eventually("the example.com evidence has an assist request", lambda: bool(_assist_requests(r, example_id)))
+    assist = _assist_requests(r, example_id)[0]["number"]
 
     def valid_snapshot() -> bool:
         data = r.snapshot_json("evidence_checks.json")
         return data is not None and not r.schema_errors("evidence_checks.json", data) and edgar_id in data["checks"]
     r.eventually("evidence_checks.json is present and valid", valid_snapshot)
+    return assist
 
 
 def scenario(r: Runner) -> None:
@@ -471,7 +481,7 @@ def scenario(r: Runner) -> None:
 
     melchior = r.run_workflow("melchior.yml", {"scope": "all"})
     r.check("melchior workflow succeeded", melchior["conclusion"] == "success", melchior["html_url"])
-    _evidence_checks(r, edgar_id, secret_id, evidence_id)
+    assist = _evidence_checks(r, edgar_id, secret_id, evidence_id)
     missing = [series for series in SERIES if r.gh.get_file(f"registry/assets/{series}.yaml") is None]
     r.check("benchmark and market-state series registered", missing == [], f"missing: {missing}")
     r.eventually("snapshot carries the closes of the series",
@@ -521,6 +531,7 @@ def scenario(r: Runner) -> None:
     open_audits = [i for i in r.gh.labelled_issues("magi:audit")
                    if i["state"] == "open" and i["title"] == "Consistency check found problems"]
     r.check("consistency check is clean", open_audits == [], str([i["number"] for i in open_audits]))
+    r.gh.close(assist, "completed")  # clean up the example.com evidence's assist request as the maintainer would
 
 
 def main(argv: list[str] | None = None) -> int:
