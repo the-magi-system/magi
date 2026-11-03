@@ -38,7 +38,7 @@ from ..timeutil import iso
 from ..yamlio import dump_yaml, load_yaml
 from ..caspar.work import take_turn
 from .common import MELCHIOR, SCOPES, SOURCE_DIR, resolve_mode, resolve_model_mode
-from . import assist, referrals, staleness
+from . import assist, referrals, staleness, status
 from .corrections import (MAX_CORRECTIONS, PARTIAL, CorrectionRejected, correction, find_marked, may_correct,
                           notices, recent_notices)
 from .evidence import check_changes, check_path, pending_checks, prepare_check, program_changes, superseded
@@ -142,6 +142,14 @@ def _model_plan(root: Path, state: RepoState, out: Path, plan: dict, model_mode:
         # maintainers are asked instead (review of PR #122, item 8).
         plan["referrals_nonpublic"] = [item for item in chosen
                                        if item.get("non_public") and not item.get("superseded_by")]
+    if "rulings" in parts and gh is not None:
+        # The assets whose asset-status check opens now, and those with an open ruling issue (design 22.7; plan 9,
+        # Task 20). A failure here is recorded and stops nothing else.
+        try:
+            found = status.checks(root, now.date().isoformat(), gh)
+            plan["status_checks"], plan["rulings_open"] = found["status"], found["ruling"]
+        except Exception as exc:
+            plan["status_failures"] = [f"asset-status checks: {type(exc).__name__}: {exc}; {RETRY}"]
     # What every model task of this run is based on, whichever kinds it schedules (review of PR #122, item 2).
     plan["inputs"] = {"input_commit": _head(root), "prompt_sha256": _prompt_sha256(root, "evidence-check"),
                       "model": MODEL}
@@ -156,7 +164,8 @@ def prepare(root, out, scope: str, mode: str, now: datetime, model_mode: str = "
             "work": {"series": [], "fills": [], "settlements": []},
             "model_mode": "off", "model_notice": None, "tasks": [], "fetch": [], "records": [], "pending_contact": [],
             "inputs": None, "staleness_none": [], "staleness_unreadable": [], "referrals_unreadable": [],
-            "referrals_nonpublic": [], "fetch_failures": []}
+            "referrals_nonpublic": [], "fetch_failures": [],
+            "status_checks": [], "rulings_open": [], "status_failures": []}
     state = RepoState.load(root)
     if plan["mode"] == "off":
         plan["notice"] = "MELCHIOR_MODE is off"
@@ -833,7 +842,9 @@ def _model(job: "Job", plan: dict, work: Path, mode: str, model_cap: str | None)
     root, summary = job.root, job.summary
     summary["model_mode"] = model_mode
     summary["waiting"] = list(plan.get("pending_contact", []))
-    summary["dropped"] += plan.get("fetch_failures", [])
+    summary["dropped"] += plan.get("fetch_failures", []) + plan.get("status_failures", [])
+    summary["status_checks"] = [f"{item['asset']}: {', '.join(t['kind'] for t in item['triggers'])}"
+                                for item in plan.get("status_checks", [])]
 
     def keep(changes: ChangeSet, evidence_id: str) -> None:
         if model_mode == "live":
@@ -932,7 +943,8 @@ def write(root, gh, git: Git, work, mode: str, run: int, now: datetime, prices: 
     summary = {"mode": mode, "notice": plan.get("notice"), "profile": None, "series": [], "closes": 0, "actions": 0,
                "fills": [], "settlements": [], "findings": [], "dropped": [], "commit": None, "preview": None,
                "model_mode": "off", "model_notice": plan.get("model_notice"), "checks": [], "waiting": [],
-               "probe": None, "model_preview": [], "corrections": [], "discrepancies": [], "assists": [], "staleness": [], "referrals": [], "posts": 0}
+               "probe": None, "model_preview": [], "corrections": [], "discrepancies": [], "assists": [], "staleness": [], "referrals": [], "posts": 0,
+               "status_checks": []}
     if mode == "off" or plan.get("notice"):
         return summary
     job = Job(root, prices, now, run, summary, input_commit=git.run("rev-parse", "HEAD"), gh=gh)
