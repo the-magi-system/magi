@@ -12,3 +12,4 @@
 {"seq": 73, "at": "2026-11-02T16:56:37Z", "issue": 120, "action": "join", "actor": "hoaiquangtrieu-ops", "owner": "hoaiquangtrieu-ops", "entity": "registry/researchers/hoaiquangtrieu-ops", "approved_by": "arthur"}
 {"seq": 74, "at": "2026-11-03T08:11:03Z", "issue": 123, "action": "join", "actor": "gavin-shen", "owner": "gavin-shen", "entity": "registry/researchers/gavin-shen", "approved_by": "arthur"}
 {"seq": 75, "at": "2026-11-03T11:17:55Z", "run": 41626293781, "action": "publish_profile", "actor": "caspar.magi", "owner": "magi", "entity": "registry/profiles/caspar.magi", "version": 4}
+{"seq": 76, "at": "2026-11-03T21:07:42Z", "run": 41718539976, "action": "publish_profile", "actor": "melchior.magi", "owner": "magi", "entity": "registry/profiles/melchior.magi", "version": 2}
