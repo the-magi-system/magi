@@ -2,14 +2,14 @@
 
 When an evidence cannot be checked, because its source cannot be read, is in a format this version does not read or
 does not contain a claim, or when a discrepancy cannot be corrected by program, Melchior.Magi asks for help in an
-issue labelled `magi:assist`. The issue is assigned to the evidence's owner and linked from the evidence's own
-submission issue, so the owner is told without a mention. There is at most one open request per evidence and at most
+issue labelled `magi:assist`. The issue is assigned to the evidence's owner where GitHub allows it and linked from
+the evidence's own submission issue; that link is what tells the owner, without a mention. There is at most one open request per evidence and at most
 three new ones per run; none for non-public evidence or while the SEC contact is not set (no record is written then).
 
 Each run reads the open requests. Only replies whose author's numeric GitHub id belongs to an active researcher are
-read; the evidence ids they name are checked as usual. A named public evidence that checks out as verified closes the
-request as completed and marks the old check `superseded_by`; one that is only non-public gets a note and the request
-stays open; a request still open 90 days after it was opened is closed as not planned.
+read; the evidence ids they name are checked as usual. A named public evidence on an asset of the old one that checks out as
+verified closes the request as completed and marks the old check `superseded_by`; one that is only non-public gets a
+note; a request still open 90 days after it was opened is closed as not planned, whatever the replies named.
 """
 from __future__ import annotations
 

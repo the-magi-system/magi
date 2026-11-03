@@ -14,6 +14,7 @@ Newest first. Each entry gives the date, what changed, and the request issue tha
 - A correction that takes a new source (from a staleness check, or the source a fact-layer referral cites) is written only when it supersedes every claim of the old evidence. Otherwise no correction is written: once the program has confirmed the quote, the old check record gets `currency: superseded` and `pending_sources: []`, and an assist request names the claim, the quote and the new source. Whenever the program confirms a superseded claim but writes no correction, the record gets `currency: superseded` (the maintainer's decision; design 22.9.6, note of 2026-11-03).
 - Allowed hosts for candidate sources are SEC, DART and KIND and the hosts that public evidence of `tier: primary` on the same asset cites; secondary evidence adds no host. A correction's new source keeps the old evidence's tier on the evidence's own host and is `primary` on another allowed host. Correction notices and `body_md` say "primary source" only for a source of `tier: primary`.
 - Each live run derives again the correction notices of Melchior's corrections of the last 7 days and posts any that are missing (a post is never repeated), and closes fact-layer referrals it answered that are still open, except a non-public referral, which stays open for the maintainers.
+- An assist request is assigned to the evidence's owner where GitHub allows it; the link on the submission issue is what notifies the owner, and a refused assignment does not stop the request.
 
 ## v1.13 — 2026-11-01
 

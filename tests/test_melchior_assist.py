@@ -238,3 +238,24 @@ def test_a_lost_correction_notice_is_posted_by_a_later_run(world, monkeypatch):
     assert len(notes) == 1 and "-corrected" in notes[0] and "$382.5 million" in notes[0]
     run(world, now=NOW + timedelta(days=2))
     assert len([c for c in gh.comments(submission) if marked in c["body"]]) == 1
+
+
+def test_a_refused_assignment_still_opens_the_request_and_notifies_the_owner(world, monkeypatch):
+    # Review of PR #122, item 15: the request is assigned where GitHub allows it; the link on the submission issue
+    # is what notifies the owner.
+    submission = add(world, "ev-20261020-krx-valueup", REFUSED, "2026-10-20T00:00:00Z")
+
+    def refused(number, logins):
+        raise RuntimeError("HTTP 422: the user cannot be assigned")
+
+    monkeypatch.setattr(world["gh"], "assign", refused)
+    summary = run(world)
+    opened = requests(world)
+    assert len(opened) == 1 and next(iter(opened.values()))["assignees"] == []
+    number = next(iter(opened))
+    assert RepoState.load(world["root"]).evidence_checks["ev-20261020-krx-valueup"]["assist_issue"] == number
+    assert any(f"#{number}" in c["body"] for c in world["gh"].comments(submission))
+    assert any(line.startswith(f"assign #{number}:") for line in summary["dropped"])
+    text = (REPO_ROOT / "protocol" / "PROTOCOL.md").read_text(encoding="utf-8")
+    assert "assigns the issue to the evidence's owner where GitHub allows it" in text
+    assert "the link on the submission issue is what notifies the owner" in text

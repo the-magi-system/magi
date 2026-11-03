@@ -515,7 +515,12 @@ def _assist(job: "Job", state: RepoState, evidence_id: str, record: dict, reason
     found[evidence_id] = {"number": number}
     login = assist.owner_login(state, evidence_id)
     if login:
-        job.gh.assign(number, [login])
+        # Assigned where GitHub allows it; the link on the submission issue is what notifies the owner (review of
+        # PR #122, item 15).
+        try:
+            job.gh.assign(number, [login])
+        except Exception as exc:
+            summary["dropped"].append(f"assign #{number}: {type(exc).__name__}: {exc}")
     submission = (state.evidence.get(evidence_id) or {}).get("submitted_via_issue")
     if isinstance(submission, int) and submission > 0:
         job.posts.append((submission, "assist-notice", evidence_id, assist.notice_body(evidence_id, number, reason)))
