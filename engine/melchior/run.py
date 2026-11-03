@@ -39,7 +39,7 @@ from ..yamlio import dump_yaml, load_yaml
 from ..caspar.work import take_turn
 from .common import MELCHIOR, SCOPES, SOURCE_DIR, resolve_mode, resolve_model_mode
 from . import assist, referrals, staleness
-from .corrections import MAX_CORRECTIONS, CorrectionRejected, correction, find_marked, may_correct, notices
+from .corrections import MAX_CORRECTIONS, PARTIAL, CorrectionRejected, correction, find_marked, may_correct, notices
 from .evidence import check_changes, check_path, pending_checks, prepare_check, program_changes, superseded
 from .think import MODEL
 from .fills import fill_changes, pending_fills
@@ -576,11 +576,12 @@ def _staleness(job: "Job", task: dict, output: dict, work: Path, keep, model_mod
         summary["staleness"].append(f"{evidence_id}: {len(urls)} candidate source(s)")
         return
     result = staleness.judge(state, evidence_id, output, work / task["id"])
+    confirmed = False
     if result["superseded"]:
         part = result["superseded"][0][1]
         check = {"evidence": evidence_id, "status": "discrepancy", "claims": [item for item, _ in result["superseded"]],
                  "source": part, "source_date": None}
-        ok, reason = may_correct(state, evidence_id, check, part)
+        ok, reason = may_correct(state, evidence_id, check, part, new_source=True)
         if ok and len(summary["corrections"]) >= MAX_CORRECTIONS:
             summary["dropped"].append(f"{evidence_id}: the run's {MAX_CORRECTIONS} corrections are used; its staleness "
                                       "check is made again next run")
@@ -594,7 +595,11 @@ def _staleness(job: "Job", task: dict, output: dict, work: Path, keep, model_mod
                                 superseded_by=fix.created["evidence_id"], pending_sources=[]), evidence_id)
             summary["staleness"].append(f"{evidence_id}: superseded")
             return
-        why = f"{STALE}, and the program cannot correct it: {reason}"
+        # The program confirmed a superseded claim, so the record says so whether or not a correction is written
+        # (review of PR #122, item 9).
+        confirmed = True
+        why = (_superseded_why(state, evidence_id, result["superseded"]) if reason == PARTIAL
+               else f"{STALE}, and the program cannot correct it: {reason}")
     elif result["undecided"]:
         why = f"{STALE}, but the program could not confirm it from the fetched text"
     else:
@@ -607,8 +612,26 @@ def _staleness(job: "Job", task: dict, output: dict, work: Path, keep, model_mod
         return
     summary["discrepancies"].append(f"{evidence_id}: {why}")
     number = _assist(job, state, evidence_id, record, why, model_mode)
+    fields = {"currency": "superseded"} if confirmed else {}
     keep(assist.revised(state, evidence_id, job.now, job.run, pending_sources=[],
-                        assist_issue=number or record.get("assist_issue")), evidence_id)
+                        assist_issue=number or record.get("assist_issue"), **fields), evidence_id)
+    if confirmed:
+        summary["staleness"].append(f"{evidence_id}: superseded, not corrected")
+
+
+def _superseded_why(state: RepoState, evidence_id: str, pairs) -> str:
+    """The reason of an assist request when a new source supersedes some claims but not every one: the claims, the
+    quotes and the sources (review of PR #122, item 9)."""
+    claims = (state.evidence.get(evidence_id) or {}).get("claims") or []
+
+    def text(index: int) -> str:
+        return sanitize(str((claims[index] if index < len(claims) else {}).get("text", "")))
+
+    named = "; ".join(f"claim {item['index']} (\"{text(item['index'])}\") is superseded by {part['url']}, which says "
+                      f"\"{sanitize(str(item.get('quote') or ''))}\"" for item, part in pairs)
+    return (f"{named}. A correction from a new source must supersede every claim of the evidence, and the other "
+            "claims still rest on the old source, so the program writes none; supersede the evidence with the new "
+            "source for the claims it updates")
 
 
 def _answer(job: "Job", item: dict, verdict_name: str, text: str, close: str) -> None:
@@ -640,6 +663,7 @@ def _referral(job: "Job", item: dict, output: dict | None, work_dir: Path | None
         return
     record = state.evidence_checks.get(evidence_id)
     name = (output or {}).get("verdict", "needs_assist")
+    confirmed = False
     if name == "rejected":
         _answer(job, item, "rejected", referrals.reason_text(output) or "The fetched sources do not support it.",
                 "not_planned")
@@ -649,7 +673,8 @@ def _referral(job: "Job", item: dict, output: dict | None, work_dir: Path | None
         if checked is not None:
             check = {"evidence": evidence_id, "status": "discrepancy", "claims": [checked], "source": part,
                      "source_date": None}
-            ok, reason = may_correct(state, evidence_id, check, part)
+            cited = part["role"] == "cited"
+            ok, reason = may_correct(state, evidence_id, check, part, new_source=cited)
             if ok and len(summary["corrections"]) >= MAX_CORRECTIONS:
                 summary["dropped"].append(f"referral #{item['issue']}: the run's {MAX_CORRECTIONS} corrections are "
                                           "used; it is answered next run")
@@ -671,7 +696,11 @@ def _referral(job: "Job", item: dict, output: dict | None, work_dir: Path | None
                 _answer(job, item, "upheld", f"I wrote `{new_id}`, which supersedes it. The fetched source says: "
                                              f"\"{sanitize(checked['quote'])}\"", "completed")
                 return
-            why = f"Caspar.Magi's referral appears to hold, and the program cannot correct it: {reason}"
+            # The quote stands in the cited source: the claim is superseded whether or not a correction is
+            # written (review of PR #122, item 9).
+            confirmed = cited
+            why = (_superseded_why(state, evidence_id, [(checked, part)]) if reason == PARTIAL else
+                   f"Caspar.Magi's referral appears to hold, and the program cannot correct it: {reason}")
             name = "upheld"
         else:
             why = f"Caspar.Magi referred it, and the program could not confirm the referral: {why_not}"
@@ -686,8 +715,11 @@ def _referral(job: "Job", item: dict, output: dict | None, work_dir: Path | None
         return
     summary["discrepancies"].append(f"{evidence_id}: {why}")
     number = _assist(job, state, evidence_id, record or {}, why, model_mode)
-    if number and record is not None and room == "new":
-        keep(assist.revised(state, evidence_id, job.now, job.run, assist_issue=number), evidence_id)
+    fields = {"assist_issue": number} if number and room == "new" else {}
+    if confirmed:
+        fields.update(currency="superseded", pending_sources=[])
+    if fields and record is not None:
+        keep(assist.revised(state, evidence_id, job.now, job.run, **fields), evidence_id)
     if room == "closed":
         link = (f"An earlier assist request for it, #{(record or {}).get('assist_issue')}, is closed, so no new one is "
                 "opened and the evidence stays as it is.")

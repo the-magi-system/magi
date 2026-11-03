@@ -299,3 +299,40 @@ def test_step_two_waits_while_the_contact_is_not_set(world, tmp_path):
     found = prepare(RepoState.load(world["root"]), {"evidence": ev_id, "step": "judge"}, fetcher, NOW,
                     tmp_path / "staleness-1")
     assert found == {"pending": "contact"}
+
+
+def _two_claims(world, ev_id="ev-20261020-tem-guide", claims=None):
+    from engine.gitops import Git
+    add(world, ev_id, OLD_PAGE, "2026-10-20T00:00:00Z",
+        claims=claims or [{"text": GUIDE}, {"text": "Revenue in the second quarter was $314.0 million"}])
+    put_check(world["root"], ev_id, pending=[NEW_PAGE])
+    path = world["root"] / "evidence" / "checks" / f"{ev_id}.yaml"
+    data = load_yaml(path)
+    second = {**data["claims"][0], "index": 1, "timing": "historical", "quote": "Revenue in the second quarter",
+              "figures": []}
+    write_yaml(path, {**data, "claims": data["claims"] + [second]})
+    Git(world["root"]).commit(f"check {ev_id}", {})
+    return ev_id
+
+
+def test_a_new_source_that_leaves_a_claim_writes_no_correction(world):
+    # Review of PR #122, item 9 (the maintainer's decision).
+    ev_id = _two_claims(world)
+    summary = run_staleness(world, ev_id, judged("superseded"))
+    state = RepoState.load(world["root"])
+    assert summary["corrections"] == [] and not any(e.endswith("-corrected") for e in state.evidence)
+    record = state.evidence_checks[ev_id]
+    assert record["currency"] == "superseded" and record["pending_sources"] == [] and record["assist_issue"]
+    body = world["gh"].issues[record["assist_issue"]]["body"]
+    assert GUIDE in body and NEWER in body and NEW_PAGE in body and "every claim" in body
+
+
+def test_a_confirmed_superseded_claim_is_marked_even_when_no_correction_is_written(world):
+    from engine.gitops import Git
+    ev_id = "ev-20261020-tem-guide"
+    add(world, ev_id, OLD_PAGE, "2026-10-20T00:00:00Z", claims=[{"text": GUIDE, "value": 1.26, "unit": "%"}])
+    put_check(world["root"], ev_id, pending=[NEW_PAGE])
+    Git(world["root"]).commit(f"check {ev_id}", {})
+    summary = run_staleness(world, ev_id, judged("superseded"))
+    record = RepoState.load(world["root"]).evidence_checks[ev_id]
+    assert summary["corrections"] == [] and record["currency"] == "superseded" and record["assist_issue"]

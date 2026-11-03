@@ -38,6 +38,11 @@ PAYLOAD_KEYS = ("title", "kind", "assets", "ideas", "access", "source", "claims"
 _ABSENCE = re.compile(r"\b(?:no|not|none|never|without|absent|absence|nothing)\b|没有|尚未|并无|없|않", re.IGNORECASE)
 
 
+# A correction from a new source leaves the claims it does not name resting on a source it does not cite, so it is
+# written only when it supersedes every claim (review of PR #122, item 9; the maintainer's decision).
+PARTIAL = "a correction from a new source must supersede every claim of the evidence, and this one does not"
+
+
 class CorrectionRejected(Exception):
     """The new evidence would not pass the checks of a `supersede_evidence` proposal; nothing is written."""
 
@@ -83,8 +88,10 @@ def chain_blocked(state: RepoState, evidence_id: str) -> bool:
     return False
 
 
-def may_correct(state: RepoState, evidence_id: str, check: dict, fetched: dict | None) -> tuple[bool, str]:
-    """Every rule of design 22.9.6 and protocol section 9; the first that fails is the reason."""
+def may_correct(state: RepoState, evidence_id: str, check: dict, fetched: dict | None,
+                new_source: bool = False) -> tuple[bool, str]:
+    """Every rule of design 22.9.6 and protocol section 9; the first that fails is the reason. `new_source` is a
+    correction that takes another source than the evidence's own: it must supersede every claim (PARTIAL)."""
     evidence = state.evidence.get(evidence_id)
     if evidence is None:
         return False, "the evidence is gone"
@@ -110,6 +117,8 @@ def may_correct(state: RepoState, evidence_id: str, check: dict, fetched: dict |
                 return False, "the correct text has more than one figure that could be the claim's value"
         if _ABSENCE.search(str(claims[index].get("text", ""))):
             return False, "the claim is about something absent, which no quote can state"
+    if new_source and {item.get("index") for item in wrong} != set(range(len(claims))):
+        return False, PARTIAL
     if chain_blocked(state, evidence_id):
         return False, "the owner superseded an earlier correction"
     return True, ""

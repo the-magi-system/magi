@@ -97,7 +97,8 @@ def test_both_sources_are_fetched_and_given_as_text(world):
 
 
 def test_upheld_writes_a_correction_and_closes_completed(world):
-    add(world, "ev-20261020-tem-q2", OWN, "2026-10-20T00:00:00Z", claims=WRONG)
+    # One claim: the cited source's correction supersedes every claim of the evidence (review of PR #122, item 9).
+    add(world, "ev-20261020-tem-q2", OWN, "2026-10-20T00:00:00Z", claims=WRONG[:1])
     number = refer(world, "ev-20261020-tem-q2")
     _, summary = run(world, {"ev-20261020-tem-q2": upheld()})
     assert summary["corrections"] == ["ev-20261020-tem-q2"], summary["dropped"] + summary["discrepancies"]
@@ -230,3 +231,23 @@ def test_a_referral_waits_while_the_contact_is_not_set(world):
                    event="workflow_dispatch", fetcher=fetcher, turn=1, gh=world["gh"])
     assert plan["tasks"] == [] and plan["referrals_unreadable"] == []
     assert plan["pending_contact"] == [f"referral #{number}: waiting for MAGI_HTTP_CONTACT"]
+
+
+def test_an_upheld_referral_from_the_cited_source_that_leaves_a_claim_writes_no_correction(world):
+    # Review of PR #122, item 9 (the maintainer's decision): a correction from a new source must supersede every
+    # claim of the old evidence; otherwise the record is marked superseded and an assist request names the claim,
+    # the quote and the new source.
+    add(world, "ev-20261020-tem-q2", OWN, "2026-10-20T00:00:00Z", claims=WRONG)
+    put_check(world["root"], "ev-20261020-tem-q2", timing="historical", url=OWN)
+    Git(world["root"]).commit("check", {})
+    number = refer(world, "ev-20261020-tem-q2")
+    _, summary = run(world, {"ev-20261020-tem-q2": upheld()})
+    assert summary["corrections"] == []
+    state = RepoState.load(world["root"])
+    assert not any(e.endswith("-corrected") for e in state.evidence)
+    record = state.evidence_checks["ev-20261020-tem-q2"]
+    assert record["currency"] == "superseded" and record["pending_sources"] == [] and record["assist_issue"]
+    body = world["gh"].issues[record["assist_issue"]]["body"]
+    assert "Revenue in the second quarter of 2026 was $390.0 million" in body and QUOTE in body and CITED in body
+    assert "every claim" in body
+    assert "upheld" in replies(world, number)[0]
