@@ -13,6 +13,8 @@ concurrency:
 permissions:
   contents: write
   issues: write
+  # Intake starts Caspar.Magi's review (caspar.yml, scope approval) when it labels a proposal for approval (D47).
+  actions: write
 jobs:
   intake:
     if: >-

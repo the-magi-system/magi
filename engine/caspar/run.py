@@ -8,6 +8,8 @@ posts and commits; in preview mode it only describes what it would have done.
 A run with the scope `join` (the workflow's `issues` trigger) does join work only: it posts verdicts on join
 requests and the notes on older ones, and never publishes the profile, welcomes, reviews or reports. It does no topic
 work either: cross-idea topics in GitHub Discussions (decision D46) belong to the scopes all, regular and topics.
+A run with the scope `approval` (started by intake when it labels a proposal `magi:needs-approval`) reviews the
+proposals that wait for maintainer approval and nothing else (decision D47); all and regular review them too.
 
 Each task is handled on its own: a bad result or an unexpected error affects that task only. A review is
 written in the order comment, referral issues, review file, so a run that stops part way leaves the view on
@@ -39,15 +41,18 @@ from .weekly import (
     suggestion_posts, week_window, weekly_material,
 )
 from .join import join_work, write_joins
+from .approval import approval_work, write_approvals
 from .topics import COMMENT_MUTATION, CREATE_MUTATION, declined_groups, topic_work, write_topics
 from .welcome import welcome_body
 from .work import pending_reviews, pending_welcomes, review_bundle, take_turn
 
 MODEL = "claude-opus-5-5"
 MODES = ("preview", "live", "off")
-SCOPES = {"all": ("reviews", "welcome", "weekly", "join", "topics"), "regular": ("reviews", "welcome", "join", "topics"),
+SCOPES = {"all": ("reviews", "welcome", "weekly", "join", "approval", "topics"),
+          "regular": ("reviews", "welcome", "join", "approval", "topics"),
           "reviews": ("reviews",), "welcome": ("welcome",), "weekly": ("weekly",), "probe": ("probe",),
-          "join": ("join",), "topics": ("topics",)}
+          "join": ("join",), "approval": ("approval",), "topics": ("topics",)}
+QUICK = {"join", "approval"}  # a run that does only these never publishes the profile, welcomes, reviews or reports
 MAX_WEEKLY = 2
 DECOY_PATH = "/tmp/caspar-decoy/secret.txt"  # written by the think job, outside the work directory
 TOOLS = ("Read", "Grep", "Glob", "WebSearch", "WebFetch")
@@ -77,7 +82,8 @@ def prepare(root, gh, out, scope: str, mode: str, now: datetime, turn: int = 0) 
     """`turn` is the workflow's run number; it moves the starting point of a long review queue."""
     root, out = Path(root), Path(out)
     plan = {"mode": resolve_mode(mode), "scope": scope, "tasks": [], "welcomes": [], "quiet_weeks": [], "notice": None,
-            "joins": [], "join_notes": [], "join_waiting": [], "topic_maintain": False, "topic_waiting": [],
+            "joins": [], "join_notes": [], "join_waiting": [], "approvals": [], "approval_waiting": [],
+            "topic_maintain": False, "topic_waiting": [],
             "topic_problem": None}
     state = RepoState.load(root)
     agent = state.agents.get(CASPAR)
@@ -106,6 +112,12 @@ def prepare(root, gh, out, scope: str, mode: str, now: datetime, turn: int = 0) 
             for task_id, data in found["inputs"].items():
                 _save(out / task_id / "input.json", data)
                 plan["tasks"].append({"id": task_id, "kind": "join", "issue": int(task_id.split("-", 1)[1])})
+        if "approval" in parts:
+            found = approval_work(state, gh, now, turn)
+            plan.update(approvals=found["items"], approval_waiting=found["waiting"])
+            for task_id, data in found["inputs"].items():
+                _save(out / task_id / "input.json", data)
+                plan["tasks"].append({"id": task_id, "kind": "strategy", "issue": int(task_id.split("-", 1)[1])})
         if "welcome" in parts:
             plan["welcomes"] = pending_welcomes(state, gh)
         if "weekly" in parts:
@@ -395,13 +407,14 @@ def write(root, gh, git: Git, work, mode: str, run: int, now: datetime) -> dict:
     mode = resolve_mode(mode)
     plan = json.loads((work / "plan.json").read_text(encoding="utf-8"))
     summary = {"mode": mode, "notice": plan.get("notice"), "welcomes": 0, "reviews": [], "reports": [], "probe": None,
-               "joins": [], "topics": [], "dropped": [], "commit": None}
+               "joins": [], "approvals": [], "topics": [], "dropped": [], "commit": None}
     if mode == "off" or plan.get("notice"):
         return summary
     sink = LiveSink(root, gh, git) if mode == "live" else PreviewSink(gh.repo)
-    join_only = set(SCOPES.get(plan.get("scope"), ())) == {"join"}
+    quick = set(SCOPES.get(plan.get("scope"), ())) <= QUICK
     write_joins(root, gh, sink, plan, lambda task: _result(root, work, task), summary)
-    if join_only:
+    write_approvals(root, gh, sink, plan, lambda task: _result(root, work, task), summary, now)
+    if quick:
         return _finish_preview(sink, summary)
     profile = publish_system_profile(RepoState.load(root), CASPAR, load_yaml(root / SOURCE_DIR / "profile.yaml"), now, run)
     if profile is not None:
@@ -415,7 +428,7 @@ def write(root, gh, git: Git, work, mode: str, run: int, now: datetime) -> dict:
             summary["dropped"].append(f"welcome on #{item['issue']}: {type(exc).__name__}: {exc}")
     budget = [MAX_FACT_LAYER_ISSUES]
     for task in plan["tasks"]:
-        if task["kind"] in ("join", "topic"):  # posted by write_joins above and write_topics below
+        if task["kind"] in ("join", "strategy", "topic"):  # posted by write_joins, write_approvals, write_topics
             continue
         try:
             output, problem = _result(root, work, task)

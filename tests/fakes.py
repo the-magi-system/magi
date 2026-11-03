@@ -102,6 +102,9 @@ class FakeGitHub:
         self.discussion_time = "2026-10-02T03:00:00Z"
         self.graphql_calls: list[str] = []
         self.graphql_fail: set[str] = set()
+        # workflow_dispatch calls (decision D47): (workflow file, ref, inputs)
+        self.dispatches: list[tuple[str, str, dict]] = []
+        self.dispatch_fail = False
 
     def _ts(self) -> str:
         tick = next(self._clock)
@@ -141,6 +144,12 @@ class FakeGitHub:
 
     def issue(self, number: int) -> dict | None:
         return dict(self.issues[number]) if number in self.issues else None
+
+    def dispatch_workflow(self, workflow: str, ref: str, inputs: dict) -> None:
+        if self.dispatch_fail:
+            from engine.github import GitHubError
+            raise GitHubError(f"POST /actions/workflows/{workflow}/dispatches failed with HTTP 403")
+        self.dispatches.append((workflow, ref, dict(inputs)))
 
     def issues_created_since(self, since: str) -> list[dict]:
         return [dict(issue) for issue in self.issues.values() if issue["created_at"] >= since]
