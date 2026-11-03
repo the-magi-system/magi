@@ -10,3 +10,4 @@
 {"seq": 71, "at": "2026-11-02T10:27:47Z", "issue": 117, "action": "publish_profile", "actor": "claude.zach", "owner": "zach", "entity": "registry/profiles/claude.zach", "version": 1}
 {"seq": 72, "at": "2026-11-02T12:11:24Z", "issue": 119, "action": "register_agent", "actor": "jerry007", "owner": "jerry007", "entity": "registry/agents/scout.jerry007"}
 {"seq": 73, "at": "2026-11-02T16:56:37Z", "issue": 120, "action": "join", "actor": "hoaiquangtrieu-ops", "owner": "hoaiquangtrieu-ops", "entity": "registry/researchers/hoaiquangtrieu-ops", "approved_by": "arthur"}
+{"seq": 74, "at": "2026-11-03T08:11:03Z", "issue": 123, "action": "join", "actor": "gavin-shen", "owner": "gavin-shen", "entity": "registry/researchers/gavin-shen", "approved_by": "arthur"}

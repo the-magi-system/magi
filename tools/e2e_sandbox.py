@@ -355,6 +355,13 @@ def scenario(r: Runner) -> None:
     sub = {"parent": "event-driven", "sub": {"id": "index-inclusion", "name": "Index Inclusion", "definition": "Forced buying around index changes"}}
     n = r.submit("add_strategy", proposal("add_strategy", AGENT, sub))
     r.expect("new sub-strategy waits for approval", r.wait(n), "needs_approval")
+    # Intake starts Caspar.Magi's review (scope approval); /approve counts only after an ok or minor verdict (D47).
+    from engine.caspar.approval import approval_verdicts
+    r.eventually("caspar posted a verdict on the waiting proposal",
+                 lambda: bool(approval_verdicts(r.gh.comments(n), n)), timeout=TIMEOUT_SECONDS)
+    verdict = approval_verdicts(r.gh.comments(n), n)[-1]
+    r.check("caspar's verdict allows approval and assigns the maintainers",
+            verdict["verdict"] in ("ok", "minor") and bool(r.issue(n).get("assignees")), str(verdict))
     r.gh.comment(n, "/approve")
     r.expect("approved sub-strategy accepted", r.wait(n, seen=1), "accepted")
 

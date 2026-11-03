@@ -2,7 +2,7 @@
 
 Newest first. Each entry gives the date, what changed, and the request issue that prompted it, if any.
 
-## 2026-11-02 — corrections, assist requests, staleness checks and referrals: rules settled in review (no version change)
+## 2026-11-03 — corrections, assist requests, staleness checks and referrals: rules settled in review (no version change)
 
 - An evidence that Melchior.Magi writes to correct another (section 9, **Corrections by Melchior.Magi**) records `submitted_via_run`, the workflow run id, in place of `submitted_via_issue`, as an asset that Melchior.Magi registers records `registered_via_run`. `protocol/schemas/entities/evidence.schema.json` gains this optional engine-written field; no proposal can set it, and no stored record changes.
 - An evidence that another evidence supersedes is no longer checked, corrected, looked at for staleness or given an assist request; its chain goes on from the newer record. A fact-layer referral on such an evidence is answered by program and closed, with no model task.
@@ -15,6 +15,13 @@ Newest first. Each entry gives the date, what changed, and the request issue tha
 - Allowed hosts for candidate sources are SEC, DART and KIND and the hosts that public evidence of `tier: primary` on the same asset cites; secondary evidence adds no host. A correction's new source keeps the old evidence's tier on the evidence's own host and is `primary` on another allowed host. Correction notices and `body_md` say "primary source" only for a source of `tier: primary`.
 - Each live run derives again the correction notices of Melchior's corrections of the last 7 days and posts any that are missing (a post is never repeated), and closes fact-layer referrals it answered that are still open, except a non-public referral, which stays open for the maintainers.
 - An assist request is assigned to the evidence's owner where GitHub allows it; the link on the submission issue is what notifies the owner, and a refused assignment does not stop the request.
+
+## v1.14 — 2026-11-03
+
+- Caspar.Magi reviews proposals that wait for maintainer approval and then reminds the maintainers, as it does for join requests (design decision D47, decided by the maintainer on 2026-11-03). The engine's `needs_approval` reply no longer mentions the maintainers; it says that Caspar.Magi reviews the proposal first and assigns the maintainers if it passes. Intake starts `caspar.yml` with the new scope `approval` (`workflow_dispatch`, so intake gains `actions: write`) as soon as it labels a proposal `magi:needs-approval`; a failed start does not fail intake, and Caspar's scheduled runs and the scopes `all` and `regular` pick up any waiting proposal without a verdict for its current body.
+- One verdict per version of the body, `ok`, `minor` or `severe`, marked `<!-- magi:caspar approval <issue>/<body_sha> -->` and decided by the program. `add_strategy`: a new model task kind `strategy` with the Read tool alone, at most 5 per run and 20 per UTC day, which sees only the proposed entry and the catalogue and answers `is_strategy`, `same_as`, `closest` and a reason of at most 300 characters of English; `severe` when it is not a kind of trade or has the same meaning as an existing entry, `minor` when a distinct entry is close. `register_agent` over the cap: no model; the verdict lists the owner's active agents with their last accepted proposals, `minor` with a suggestion of `retire_agent` when one was registered more than 90 days ago and has no accepted proposal in the last 90 days; a newly registered agent is never idle.
+- On `ok` or `minor` Caspar.Magi assigns the active maintainers; on `severe` it assigns nobody and says what to change. `/approve` takes effect only after an `ok` or `minor` verdict posted by the bot account for the current body, and only when it comes after that verdict; otherwise the engine replies with the new status `approval_refused` and writes nothing. `/reject` works at any time, and the re-check at approval stays.
+- `AGENT_GUIDE.md` gains section 14, on proposals that wait for approval; Caspar.Magi's profile gains the duty.
 
 ## v1.13 — 2026-11-01
 

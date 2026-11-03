@@ -85,7 +85,7 @@ ECHO_WITHHELD = "(Caspar.Magi's note is not shown because it repeats text from t
 _SECTION_RE = re.compile(r"^###[ \t]+(.+?)[ \t]*$", re.MULTILINE)
 _BOX_RE = re.compile(r"^[ \t]*[-*][ \t]+\[([ xX])\][ \t]+(.+?)[ \t]*$", re.MULTILINE)
 _KNOWN_SECTIONS = (HANDLE_SECTION, NAME_SECTION, AGREEMENT_SECTION)
-_VERDICT_RE = re.compile(r"<!-- magi:caspar join (\d+)/([0-9a-f]{16}) -->")
+_VERDICT_RES: dict[str, re.Pattern] = {}
 _JSON_RE = re.compile(r"```json\n(.*?)\n```", re.DOTALL)
 _UNSAFE = re.compile(r"[`<>*_~|#\[\]\\]")
 _SPACES = re.compile(r"[\s_]")
@@ -284,8 +284,11 @@ def _squash(text: str) -> str:
     return " ".join(text.lower().split())
 
 
-def echoes(note: str, review: Review) -> bool:
-    source = _squash(" ".join(filter(None, [review.research, review.agents])))
+def echoes(note: str, source: str) -> bool:
+    """Whether a note shares ECHO_CHARS consecutive characters with the source text (case and spacing ignored); such a
+    note is withheld, so that the bot never repeats a submitter's own words in its voice. Join requests (D45) pass the
+    research and agents sections, proposals that wait for approval (D47) the proposed entry."""
+    source = _squash(source)
     note = _squash(note)
     return any(note[i:i + ECHO_CHARS] in source for i in range(0, max(len(note) - ECHO_CHARS + 1, 0)))
 
@@ -321,7 +324,8 @@ def verdict_comment(number: int, sha: str, verdict: str, review: Review, answer_
         if not fixes:
             note = answer_["reason"] if answer_ else ""
             fixes.append(FIXES["research_not_accepted"])
-            fixes.append(f"Caspar.Magi's note: {note}" if note and not echoes(note, review) else ECHO_WITHHELD)
+            source = " ".join(filter(None, [review.research, review.agents]))
+            fixes.append(f"Caspar.Magi's note: {note}" if note and not echoes(note, source) else ECHO_WITHHELD)
         lines += ["Verdict: **severe**. Please edit this issue to fix the following; the edit starts a new review. "
                   "The maintainers are not assigned until the request passes.", ""]
         lines += [f"- {fix}" for fix in fixes]
@@ -338,14 +342,22 @@ def older_note(newest: int) -> str:
             "stays open for the maintainers.\n")
 
 
-def verdicts(comments: list[dict], number: int) -> list[dict]:
-    """The verdicts on an issue, oldest first. Only comments by the bot account count; any other is ignored."""
+def _verdict_re(kind: str) -> re.Pattern:
+    if kind not in _VERDICT_RES:
+        _VERDICT_RES[kind] = re.compile(r"<!-- magi:caspar " + re.escape(kind) + r" (\d+)/([0-9a-f]{16}) -->")
+    return _VERDICT_RES[kind]
+
+
+def verdicts(comments: list[dict], number: int, kind: str = VERDICT_KIND) -> list[dict]:
+    """The verdicts of one kind on an issue, oldest first: `join` for join requests (decision D45), `approval` for
+    proposals that wait for approval (decision D47). Only comments by the bot account count; any other is ignored."""
     found = []
+    pattern = _verdict_re(kind)
     for comment in comments:
         text = comment.get("body") or ""
         if comment["user"]["login"] != BOT_LOGIN:
             continue
-        mark, data = _VERDICT_RE.search(text), _JSON_RE.search(text)
+        mark, data = pattern.search(text), _JSON_RE.search(text)
         if mark is None or data is None or int(mark.group(1)) != number:
             continue
         try:
@@ -355,16 +367,16 @@ def verdicts(comments: list[dict], number: int) -> list[dict]:
         if (not isinstance(parsed, dict) or parsed.get("verdict") not in VERDICTS
                 or parsed.get("body_sha") != mark.group(2) or parsed.get("issue") != number):
             continue
-        found.append({**parsed, "comment_id": comment["id"], "created_at": comment["created_at"]})
+        found.append({**parsed, "comment_id": comment.get("id", 0), "created_at": comment["created_at"]})
     return found
 
 
-def verdict_due(comments: list[dict], number: int, sha: str) -> bool:
+def verdict_due(comments: list[dict], number: int, sha: str, kind: str = VERDICT_KIND) -> bool:
     """A new verdict is due when there is none, or when the newest verdict is for another version of the body.
 
     Only the newest verdict counts, as for `/approve`: a body edited back to an earlier version, which had a
     verdict of its own, needs a fresh one, because the verdict in between now stands."""
-    found = verdicts(comments, number)
+    found = verdicts(comments, number, kind)
     return not found or found[-1]["body_sha"] != sha
 
 
@@ -379,14 +391,17 @@ def open_join_requests(gh) -> list[dict]:
     return sorted((i for i in gh.open_issues() if is_join_request(i)), key=lambda i: i["number"])
 
 
-def model_reviews_today(gh, now: datetime) -> int:
-    """Verdicts posted today (UTC) that consulted the model; the daily limit counts these."""
+def model_reviews_today(gh, now: datetime, label: str | tuple[str, ...] = JOIN_LABEL, kind: str = VERDICT_KIND) -> int:
+    """Verdicts of one kind posted today (UTC) that consulted the model; the daily limit counts these. `label` may be
+    several labels, so that an issue whose label changed after its review today still counts (decision D47)."""
     day = now.strftime("%Y-%m-%d")
     count = 0
-    for issue in gh.labelled_issues(JOIN_LABEL):
-        if (issue.get("updated_at") or day) < day:
+    seen: set[int] = set()
+    for issue in [i for name in ((label,) if isinstance(label, str) else label) for i in gh.labelled_issues(name)]:
+        if issue["number"] in seen or (issue.get("updated_at") or day) < day:
             continue
-        count += sum(1 for v in verdicts(gh.comments(issue["number"]), issue["number"])
+        seen.add(issue["number"])
+        count += sum(1 for v in verdicts(gh.comments(issue["number"]), issue["number"], kind)
                      if v.get("model_consulted") and v["created_at"][:10] == day)
     return count
 
@@ -520,8 +535,9 @@ def _refused(issue: dict, comment: dict, sha: str, reason: str) -> CommandOutcom
     return CommandOutcome(issue["number"], result, f"Not done: {reason} Nothing was written.")
 
 
-def _later(comment: dict, verdict: dict) -> bool:
-    return (comment["created_at"], comment["id"]) > (verdict["created_at"], verdict["comment_id"])
+def later(comment: dict, verdict: dict) -> bool:
+    """Whether a command comes after a verdict; shared with the approval of proposals (decision D47)."""
+    return (comment["created_at"], comment.get("id", 0)) > (verdict["created_at"], verdict["comment_id"])
 
 
 def researcher_record(issue: dict, handle: str, review: Review, now: datetime) -> dict:
@@ -550,7 +566,7 @@ def _approve(root: Path, git, issue: dict, comments: list[dict], comment: dict, 
     if verdict["verdict"] == "severe":
         return _refused(issue, comment, sha, "Caspar.Magi's latest verdict is `severe`; the applicant must edit "
                                              "the issue first.")
-    if not _later(comment, verdict):
+    if not later(comment, verdict):
         return _refused(issue, comment, sha, "this `/approve` was posted before Caspar.Magi's latest verdict; reply "
                                              "`/approve` again.")
     handle = verdict.get("handle")

@@ -14,7 +14,7 @@ from .errors import E_FORBIDDEN, E_INTERNAL, MagiError
 from .gitops import Git
 from .prices import PriceProvider
 from .proposal import Proposal, has_marker, parse_proposal
-from .queue import Decision, body_sha, decide
+from .queue import REFUSED, Decision, body_sha, decide
 from .reply import render
 from .repo import RepoState
 from .threads import ensure_threads
@@ -22,6 +22,7 @@ from .timeutil import utc_now
 from .validate import validate
 
 LABELS = ("magi:accepted", "magi:rejected", "magi:needs-approval")
+CASPAR_WORKFLOW = "caspar.yml"
 
 
 @dataclass
@@ -78,6 +79,9 @@ def _proposals_today(issue: dict, today: list[dict]) -> int:
 def _process(root: Path, issue: dict, decision: Decision, today: list[dict], prices: PriceProvider, git: Git,
              now: datetime) -> Outcome:
     state = RepoState.load(root)
+    if decision.kind == "refuse":  # an /approve without Caspar.Magi's ok or minor verdict (decision D47)
+        result = _result(issue, REFUSED, _parsed(issue), command=decision.command, reason=decision.reason)
+        return Outcome(issue["number"], result, "magi:needs-approval")
     if decision.kind == "reject":
         return _rejected(issue, _parsed(issue), [MagiError(E_FORBIDDEN, "", f"rejected by maintainer: {decision.note}")])
     text = issue.get("body") or ""
@@ -86,9 +90,10 @@ def _process(root: Path, issue: dict, decision: Decision, today: list[dict], pri
         return _rejected(issue, checked.proposal, checked.errors, checked.notes)
     cc = [m["github_login"] for m in _maintainers(state)]
     if checked.status == "needs_approval" and decision.kind != "approve":
+        # No mention: Caspar.Magi reviews the proposal and assigns the maintainers if it passes (decision D47).
         result = _result(issue, "needs_approval", checked.proposal, notes=checked.notes,
                          approval_reasons=checked.approval_reasons)
-        return Outcome(issue["number"], result, "magi:needs-approval", cc=cc)
+        return Outcome(issue["number"], result, "magi:needs-approval")
     owner = state.researcher_by_github_id(issue["user"]["id"])["handle"]
     try:
         changes = apply_proposal(state, checked.proposal, issue=issue["number"], owner=owner, now=now, prices=prices,
@@ -122,6 +127,17 @@ def _publish(gh, outcome: Outcome) -> None:
         gh.close(outcome.number, outcome.close)
     if outcome.lock:
         gh.lock(outcome.number)
+
+
+def _start_review(gh, outcomes: list) -> None:
+    """Start Caspar.Magi's review of the proposals labelled for approval in this run (decision D47). A failed
+    dispatch never fails intake: Caspar's scheduled runs pick up every waiting proposal without a verdict."""
+    if not any(o.result.get("status") == "needs_approval" for o in outcomes):
+        return
+    try:
+        gh.dispatch_workflow(CASPAR_WORKFLOW, "main", {"scope": "approval"})
+    except Exception as exc:
+        print(f"warning: Caspar.Magi's review was not started: {type(exc).__name__}: {exc}")
 
 
 def _link_threads(root: Path, gh, git: Git) -> None:
@@ -169,6 +185,7 @@ def run_intake(root: Path, gh, prices: PriceProvider, git: Git,
         git.push()
     for outcome in outcomes:
         _publish(gh, outcome)
+    _start_review(gh, outcomes)
     for join in joins:
         try:
             publish_command(gh, join)

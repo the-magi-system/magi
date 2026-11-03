@@ -86,11 +86,22 @@ def test_non_retryable_rejection_closes(world):
     assert (gh.issues[n]["state"], gh.issues[n]["state_reason"]) == ("closed", "not_planned")
 
 
+def caspar_verdict(gh, n, verdict="ok", user=None):
+    """Caspar.Magi's verdict for the current body (decision D47), as the bot posts it; `user` forges one."""
+    import json
+    sha = body_sha(gh.issues[n]["body"])
+    data = {"verdict": verdict, "issue": n, "body_sha": sha, "action": "add_strategy", "model_consulted": True}
+    text = (f"**Caspar.Magi** · approval review\n<!-- magi:caspar approval {n}/{sha} -->\n\n"
+            f"```json\n{json.dumps(data)}\n```\n")
+    return gh.add_user_comment(n, *user, text) if user else gh.comment(n, text)
+
+
 def test_needs_approval_then_approve(world):
     gh = world["gh"]
     n = submit(world, ARTHUR, "add_strategy", "arthur.val", SPIN_OFF)
     run(world)
     assert gh.replies(n)[-1]["status"] == "needs_approval" and gh.issues[n]["labels"] == ["magi:needs-approval"]
+    caspar_verdict(gh, n, "ok")
     gh.add_user_comment(n, *JOHN, "/approve")
     run(world)
     assert len(gh.replies(n)) == 1
@@ -210,3 +221,95 @@ def test_threads_linked_after_create_idea(world):
     number = load_yaml(world["root"] / "ideas" / "msft-copilot-2027" / "idea.yaml")["thread"]
     assert gh.issues[number]["title"] == "[thread] idea: msft-copilot-2027" and "magi:thread" in gh.issues[number]["labels"]
     assert "chore: link discussion threads" in remote_log(world["bare"])
+
+
+# Caspar.Magi reviews proposals that wait for approval (decision D47) --------------------------------------------
+
+def test_a_waiting_proposal_names_caspar_mentions_nobody_and_starts_its_review(world):
+    gh = world["gh"]
+    n = submit(world, ARTHUR, "add_strategy", "arthur.val", SPIN_OFF)
+    run(world)
+    reply = gh.comments_by_issue[n][-1]["body"]
+    assert "Caspar.Magi reviews it first" in reply and "cc @" not in reply and "@ThinkwChivalri" not in reply
+    assert gh.issues[n]["assignees"] == []
+    assert gh.dispatches == [("caspar.yml", "main", {"scope": "approval"})]
+    run(world)  # nothing new to label, so no second dispatch
+    assert len(gh.dispatches) == 1
+
+
+def test_a_failed_dispatch_does_not_fail_intake(world):
+    gh = world["gh"]
+    gh.dispatch_fail = True
+    n = submit(world, ARTHUR, "add_strategy", "arthur.val", SPIN_OFF)
+    assert [o.result["status"] for o in run(world)] == ["needs_approval"]
+    assert gh.issues[n]["labels"] == ["magi:needs-approval"]
+
+
+def test_approve_without_a_verdict_is_refused_and_writes_nothing(world):
+    gh = world["gh"]
+    n = submit(world, ARTHUR, "add_strategy", "arthur.val", SPIN_OFF)
+    run(world)
+    head = Git(world["root"]).run("rev-parse", "HEAD")
+    gh.add_user_comment(n, *ARTHUR, "/approve")
+    run(world)
+    refused = gh.replies(n)[-1]
+    assert refused["status"] == "approval_refused" and "not posted a verdict" in refused["reason"]
+    assert Git(world["root"]).run("rev-parse", "HEAD") == head and gh.issues[n]["state"] == "open"
+    assert gh.issues[n]["labels"] == ["magi:needs-approval"]
+    run(world)
+    assert len(gh.replies(n)) == 2  # the same /approve is answered once
+    caspar_verdict(gh, n, "minor")
+    gh.add_user_comment(n, *ARTHUR, "/approve")
+    run(world)
+    assert gh.replies(n)[-1]["status"] == "accepted"
+
+
+def test_approve_after_a_severe_verdict_or_a_forged_one_is_refused(world):
+    gh = world["gh"]
+    n = submit(world, ARTHUR, "add_strategy", "arthur.val", SPIN_OFF)
+    run(world)
+    caspar_verdict(gh, n, "ok", user=JOHN)
+    gh.add_user_comment(n, *ARTHUR, "/approve")
+    run(world)
+    assert gh.replies(n)[-1]["status"] == "approval_refused"
+    caspar_verdict(gh, n, "severe")
+    gh.add_user_comment(n, *ARTHUR, "/approve")
+    run(world)
+    refused = gh.replies(n)[-1]
+    assert refused["status"] == "approval_refused" and "`severe`" in refused["reason"]
+    assert "spin-off" not in load_yaml(world["root"] / "registry" / "strategies.yaml")["strategies"]["special-sit"].get(
+        "subs", {})
+
+
+def test_an_edited_waiting_proposal_needs_a_new_verdict(world):
+    gh = world["gh"]
+    n = submit(world, ARTHUR, "add_strategy", "arthur.val", SPIN_OFF)
+    run(world)
+    caspar_verdict(gh, n, "ok")
+    edited = {**SPIN_OFF, "sub": {**SPIN_OFF["sub"], "definition": "A new listed company carved out of a parent"}}
+    gh.edit_issue_body(n, body("add_strategy", "arthur.val", edited))
+    run(world)
+    assert gh.replies(n)[-1]["status"] == "needs_approval" and len(gh.dispatches) == 2
+    gh.add_user_comment(n, *ARTHUR, "/approve")
+    run(world)
+    refused = gh.replies(n)[-1]
+    assert refused["status"] == "approval_refused" and "edited" in refused["reason"]
+
+
+def test_reject_works_without_a_verdict(world):
+    gh = world["gh"]
+    n = submit(world, ARTHUR, "add_strategy", "arthur.val", SPIN_OFF)
+    run(world)
+    gh.add_user_comment(n, *ARTHUR, "/reject not needed")
+    run(world)
+    assert gh.replies(n)[-1]["status"] == "rejected" and gh.issues[n]["state_reason"] == "not_planned"
+
+
+def test_proposals_without_approval_are_unaffected(world):
+    gh = world["gh"]
+    idea = submit(world, ARTHUR, "create_idea", "arthur.val", IDEA)
+    agent = submit(world, JOHN, "register_agent", "john", {"name": "scout", "suffix": "john",
+                                                          "display_name": "Scout.John", "role": "research-agent"})
+    run(world)
+    assert gh.replies(idea)[-1]["status"] == "accepted" and gh.replies(agent)[-1]["status"] == "accepted"
+    assert gh.dispatches == []

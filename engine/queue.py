@@ -40,6 +40,29 @@ class Decision:
     kind: str
     reason: str
     note: str = ""
+    command: int | None = None  # the comment a `refuse` decision answers
+
+
+REFUSED = "approval_refused"  # the engine's answer to an `/approve` it cannot honour (decision D47)
+
+
+def approval_refusal(comments: list[dict], number: int, sha: str, command: dict) -> str | None:
+    """Why an `/approve` on a proposal that waits for approval cannot take effect, or None when it can.
+
+    It takes effect only when Caspar.Magi's newest approval verdict, posted by the bot account for the current body,
+    is `ok` or `minor`, and the `/approve` comes after it (decision D47; the same rule as for join requests, D45)."""
+    from .caspar.join import later, verdicts  # the join helpers; imported here because they import this module
+    found = verdicts(comments, number, "approval")
+    if not found:
+        return "Caspar.Magi has not posted a verdict on this proposal yet; it reviews it in its next run."
+    verdict = found[-1]
+    if verdict["body_sha"] != sha:
+        return "the issue was edited after Caspar.Magi's latest verdict; wait for the review of the current version."
+    if verdict["verdict"] == "severe":
+        return "Caspar.Magi's latest verdict is `severe`; the proposal must be edited first."
+    if not later(command, verdict):
+        return "this `/approve` was posted before Caspar.Magi's latest verdict; reply `/approve` again."
+    return None
 
 
 def _has_price_error(reply: dict) -> bool:
@@ -48,7 +71,9 @@ def _has_price_error(reply: dict) -> bool:
 
 def decide(issue: dict, comments: list[dict], maintainer_ids: set[int]) -> Decision:
     sha = body_sha(issue.get("body"))
-    replies = engine_replies(comments)
+    every = engine_replies(comments)
+    refused = {reply.get("command") for reply in every if reply.get("status") == REFUSED}
+    replies = [reply for reply in every if reply.get("status") != REFUSED]
     if not replies:
         return Decision("process", "new proposal")
     last = replies[-1]
@@ -61,6 +86,11 @@ def decide(issue: dict, comments: list[dict], maintainer_ids: set[int]) -> Decis
             if comment["user"]["id"] not in maintainer_ids:
                 continue
             if text.startswith("/approve"):
+                if comment.get("id") in refused:
+                    continue  # already answered
+                reason = approval_refusal(comments, issue["number"], sha, comment)
+                if reason is not None:
+                    return Decision("refuse", reason, comment["user"]["login"], comment.get("id"))
                 return Decision("approve", "approved by a maintainer", comment["user"]["login"])
             if text.startswith("/reject"):
                 return Decision("reject", "rejected by a maintainer", text[len("/reject"):].strip() or "no reason given")

@@ -215,11 +215,18 @@ def test_protocol_describes_evidence_checks_and_the_model_mode():
 
 
 def test_changelog_records_the_model_part():
-    import re
     changelog = (REPO_ROOT / "protocol" / "CHANGELOG.md").read_text(encoding="utf-8")
-    latest = changelog[changelog.index("\n## v"):]
-    latest = latest[:latest.index("\n## ", 1)]
-    version = tuple(int(part) for part in re.match(r"\n## v(\d+(?:\.\d+)*)", latest).group(1).split("."))
-    assert version > (1, 11)
+    section = changelog[changelog.index("\n## v1.13 "):]  # plan 9's version; later versions come before it
+    section = section[:section.index("\n## ", 1)]
     for needle in ["MELCHIOR_MODEL_MODE", "evidence/checks/", "usage/", "magi:assist"]:
-        assert needle in latest, needle
+        assert needle in section, needle
+
+
+def test_changelog_records_the_approval_review():
+    changelog = (REPO_ROOT / "protocol" / "CHANGELOG.md").read_text(encoding="utf-8")
+    section = changelog[changelog.index("\n## v1.14 "):]
+    section = section[:section.index("\n## ", 1)]
+    for needle in ["D47", "approval", "`approval_refused`", "`strategy`", "actions: write", "<!-- magi:caspar approval"]:
+        assert needle in section, needle
+    text = (REPO_ROOT / "protocol" / "PROTOCOL.md").read_text(encoding="utf-8")
+    assert "`approval_refused`" in text and "<!-- magi:caspar approval <issue>/<body_sha> -->" in text
