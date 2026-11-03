@@ -51,6 +51,7 @@
     "same_source_as": {"type": "array", "items": {"$ref": "#/$defs/evidence_id"}, "uniqueItems": true},
     "pending_sources": {"type": "array", "maxItems": 3, "items": {"type": "string", "pattern": "^https://"}},
     "assist_issue": {"type": ["integer", "null"], "minimum": 1},
+    "filings_read_on": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/date"}]},
     "next_review": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/date"}]},
     "input_commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
     "prompt_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},

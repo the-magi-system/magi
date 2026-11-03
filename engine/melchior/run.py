@@ -547,6 +547,8 @@ def _staleness(job: "Job", task: dict, output: dict, work: Path, keep, model_mod
             urls, dropped = staleness.candidates_from_search(state, evidence_id, output)
             summary["dropped"] += dropped
         fields = {"pending_sources": urls} if urls else {"pending_sources": [], "next_review": later}
+        if task["kind"] == "staleness-list":
+            fields["filings_read_on"] = job.now.date().isoformat()
         keep(assist.revised(state, evidence_id, job.now, job.run, **fields), evidence_id)
         summary["staleness"].append(f"{evidence_id}: {len(urls)} candidate source(s)")
         return

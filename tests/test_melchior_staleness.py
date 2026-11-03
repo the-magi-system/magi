@@ -197,3 +197,76 @@ def test_one_failing_fetch_item_does_not_stop_the_others(world, monkeypatch):
     plan = run_module.fetch_sources(world["root"], out, fetcher, NOW)
     assert [task["evidence"] for task in plan["tasks"]] == ["ev-20261021-tem-other"]
     assert plan["fetch_failures"] == ["ev-20261020-tem-guide: RuntimeError: simulated failure; it is tried again next run"]
+
+
+def sec_guidance(world, published="2026-05-01", checked="2026-09-01T00:00:00Z"):
+    from engine.gitops import Git
+    ev_id = "ev-20261020-tem-10q"
+    add(world, ev_id, IX, "2026-10-20T00:00:00Z", claims=[{"text": GUIDE}])
+    path = world["root"] / "evidence" / f"{ev_id}.yaml"
+    data = load_yaml(path)
+    write_yaml(path, {**data, "source": {**data["source"], "published_at": published}})
+    put_check(world["root"], ev_id, url=IX, checked=checked)
+    Git(world["root"]).commit(f"check {ev_id}", {})
+    return ev_id
+
+
+def list_dates(world, ev_id, tmp_path):
+    import json
+    from engine.fetch import Fetcher
+    from engine.melchior.staleness import prepare
+    from tests.test_fetch import Opener
+    from tests.test_melchior_evidence import CONTACT
+    routes = {"https://data.sec.gov/submissions/CIK0001717115.json": fixture("sec-tem-submissions")}
+    fetcher = Fetcher(CONTACT, opener=Opener(routes), clock=lambda: 0.0, sleep=lambda s: None)
+    out = tmp_path / f"staleness-{len(list(tmp_path.iterdir()))}"
+    found = prepare(RepoState.load(world["root"]), {"evidence": ev_id, "step": "list"}, fetcher, NOW, out)
+    if "task" not in found:
+        return []
+    return [item["filingDate"] for item in json.loads((out / "filings.json").read_text(encoding="utf-8"))]
+
+
+def test_step_one_starts_from_the_publication_date_not_the_last_check(world, tmp_path):
+    # Review of PR #122, item 4: a check on 2026-09-01 must not hide the filings of July.
+    ev_id = sec_guidance(world)
+    dates = list_dates(world, ev_id, tmp_path)
+    assert "2026-07-30" in dates and "2026-05-05" in dates and min(dates) > "2026-05-01"
+
+
+def test_the_date_the_list_was_read_is_kept_and_moved_only_by_step_one(world, tmp_path):
+    from tests import test_melchior_assist as harness
+    ev_id = sec_guidance(world)
+    route = "https://data.sec.gov/submissions/CIK0001717115.json"
+    harness.ROUTES[route] = fixture("sec-tem-submissions")
+    try:
+        summary = harness.run(world, outputs={ev_id: {"filings": []}})
+    finally:
+        harness.ROUTES.pop(route, None)
+    assert summary["staleness"] == [f"{ev_id}: 0 candidate source(s)"], summary["dropped"]
+    record = RepoState.load(world["root"]).evidence_checks[ev_id]
+    assert str(record["filings_read_on"]) == NOW.date().isoformat()
+    # Step one now lists from that date on (the read day included), not from the publication date.
+    dates = list_dates(world, ev_id, tmp_path)
+    assert min(dates) == NOW.date().isoformat() and "2026-09-15" not in dates
+    # An ordinary evidence check carries the date forward and does not move it.
+    from engine.melchior.evidence import _finish
+    state = RepoState.load(world["root"])
+    base = {"evidence": ev_id, "status": "verified", "reason": None, "source_date": None,
+            "claims": record["claims"], "source": record["source"]}
+    later = NOW + timedelta(days=30)
+    changes = _finish(state, base, later, 99, None)
+    assert str(next(iter(changes.writes.values()))["filings_read_on"]) == NOW.date().isoformat()
+
+
+def test_recording_an_assist_issue_or_a_successor_does_not_move_checked_at(world):
+    from engine.melchior.assist import revised
+    ev_id = guidance(world)
+    state = RepoState.load(world["root"])
+    later = NOW + timedelta(days=3)
+    for fields in ({"assist_issue": 7}, {"superseded_by": "ev-20261101-tem-guide-new"},
+                   {"assist_issue": 7, "superseded_by": "ev-20261101-tem-guide-new"}):
+        record = next(iter(revised(state, ev_id, later, 9, **fields).writes.values()))
+        assert record["checked_at"] == "2026-09-01T00:00:00Z" and record["checked_via_run"] == 1
+        assert record["version"] == 2
+    record = next(iter(revised(state, ev_id, later, 9, pending_sources=[]).writes.values()))
+    assert record["checked_at"] != "2026-09-01T00:00:00Z" and record["checked_via_run"] == 9

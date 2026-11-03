@@ -269,6 +269,8 @@ def _finish(state: RepoState, base: dict, now: datetime, run: int, inputs: dict 
         "same_source_as": same_source(state, evidence_id),
         "pending_sources": list((previous or {}).get("pending_sources") or []),
         "assist_issue": (previous or {}).get("assist_issue"),
+        # Moved only by step one of a staleness check (review of PR #122, item 4).
+        "filings_read_on": (previous or {}).get("filings_read_on"),
         "next_review": None if non_public else (now.date() + timedelta(
             days=UNREACHABLE_REVIEW_DAYS if base["reason"] == "source_unreachable" else REVIEW_DAYS)).isoformat(),
         "input_commit": (inputs or {}).get("input_commit"), "prompt_sha256": (inputs or {}).get("prompt_sha256"),

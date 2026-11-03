@@ -152,7 +152,12 @@ def prepare(state: RepoState, item: dict, fetcher, now: datetime, out) -> dict:
         text = fetcher.page(f"https://data.sec.gov/submissions/CIK{int(cik):010d}.json")
         if text is None:
             return {"none": "the company's filing list could not be read"}
-        after = max(str((evidence.get("source") or {}).get("published_at") or ""), str(record.get("checked_at"))[:10])
+        # From the evidence's publication date the first time, then from the day the list was last read, that day
+        # included, so a filing of that day made after the read is not missed (review of PR #122, item 4). The
+        # check's own date does not count: a check made after a filing says nothing about that filing.
+        read_on = record.get("filings_read_on")
+        after = ((parse_iso(f"{read_on}T00:00:00Z") - timedelta(days=1)).date().isoformat() if read_on
+                 else str((evidence.get("source") or {}).get("published_at") or ""))
         filings = newer_filings(text, after)
         if not filings:
             return {"none": "no newer filing"}

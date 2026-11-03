@@ -109,11 +109,17 @@ def notice_body(evidence_id: str, number: int, reason: str) -> str:
             f"I could not check `{evidence_id}`: {reason}. I opened #{number} to ask for a readable public source.")
 
 
+_BOOKKEEPING = {"assist_issue", "superseded_by"}
+
+
 def revised(state: RepoState, evidence_id: str, now: datetime, run: int, **fields) -> ChangeSet:
     """A new version of a check record with some fields changed, and its event log line."""
     previous = state.evidence_checks[evidence_id]
     record = {**previous, **fields, "version": int(previous.get("version", 0)) + 1, "checked_at": iso(now),
               "checked_via_run": run}
+    if set(fields) <= _BOOKKEEPING:
+        # Recording a request or a successor checks nothing, so the check's date stays (review of PR #122, item 4).
+        record["checked_at"], record["checked_via_run"] = previous["checked_at"], previous["checked_via_run"]
     path = check_path(evidence_id)
     changes = ChangeSet(f"evidence check: {evidence_id} ({record['status']})", writes={path: record})
     changes.log.append(system_log_entry(now, run, ACTION, MELCHIOR, path, version=record["version"],

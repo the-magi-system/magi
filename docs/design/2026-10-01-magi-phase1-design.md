@@ -2448,6 +2448,7 @@ superseded_by: null                # 取代它的证据编号
 same_source_as: []                 # 登记了同一来源的其他证据（程序）
 pending_sources: []                # 过时检查找到、待下次运行抓取的候选来源
 assist_issue: null
+filings_read_on: null              # 过时检查第一步上次读 SEC 申报列表的日期（可省略）
 next_review: 2027-02-08
 input_commit: …
 prompt_sha256: …
@@ -2475,6 +2476,8 @@ checked_via_run: …
 - **结果**：已被取代的，Melchior 写一条取代旧证据的新证据（第 22.9.6 节），来源是新的一手来源，旧证据的核查记录改为 `currency: superseded`；没有被取代的，`next_review` 顺延 90 天。抓不到新来源的，开协助请求。
 
 （2026-11-01 修订，维护者确认计划 9（`docs/plans/2026-11-01-impl-9-melchior-model.md`）第 4、12 处：第一步对 SEC 来源只给 Read，模型从程序读出的申报列表里挑选；对其他来源另有 WebSearch，候选来源只收允许的主机。）
+
+（2026-11-03 修订，PR #122 审阅第 4 项：申报列表第一次从证据的 `source.published_at` 之后读起，不再取它与 `checked_at` 中较晚的一个，因为核查日期说明不了那之前的申报；之后从上次读列表的那一天（含当天）读起。这个日期记在核查记录的可选字段 `filings_read_on`，只有第一步改它，其他核查原样带过去。只记下协助请求编号（`assist_issue`）或取代它的证据（`superseded_by`）的新版本不改 `checked_at`。）
 
 #### 22.9.5 程序检查
 
