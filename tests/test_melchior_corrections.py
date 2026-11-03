@@ -373,3 +373,18 @@ def test_primary_source_is_said_only_for_a_primary_tier(root, tmp_path):
         body = notices(state, ev_id, fix.created["evidence_id"], check, new["source"])[0][1]
         assert ("primary source" in new["body_md"]) == (tier == "primary"), new["body_md"]
         assert ("primary source" in body) == (tier == "primary"), body
+
+
+def test_chinese_compounds_of_absence_are_recognised(root):
+    # Review of PR #122, item 11: 未 and 无 alone stay out, so 未来 and 无形资产 are not read as absence.
+    from engine.melchior.corrections import _ABSENCE, may_correct
+    for word in ("不存在", "未披露", "未提及", "未提供", "未公布", "未发布", "未包含", "未见", "无此", "并未", "不含"):
+        assert _ABSENCE.search(f"公司{word}相关协议"), word
+    for text in ("公司未来三年的资本开支为120亿元", "无形资产为35亿元", "Revenue was $382.5 million"):
+        assert not _ABSENCE.search(text), text
+    put_evidence(root, "ev-20261020-cn-absent", PAGE, claims=[{"text": "截至2026年10月31日公司未披露回购计划"}])
+    check = {"evidence": "ev-20261020-cn-absent", "status": "discrepancy", "source_date": None,
+             "claims": [{"index": 0, "verdict": "contradicted", "quote": "公司于2026年10月20日公布回购计划",
+                         "correct": {"text": "公司于2026年10月20日公布回购计划", "figures": []}}]}
+    ok, reason = may_correct(RepoState.load(root), "ev-20261020-cn-absent", check, {"sha256": "a" * 64})
+    assert not ok and reason == "the claim is about something absent, which no quote can state"

@@ -35,7 +35,9 @@ PAYLOAD_KEYS = ("title", "kind", "assets", "ideas", "access", "source", "claims"
 # Words that say something is absent. Such a claim cannot be corrected from a quote; the program errs towards
 # asking for help, never towards writing.
 # 未 and 无 alone are left out: they also occur in ordinary words such as 未来 (future) and 无形资产 (intangible assets).
-_ABSENCE = re.compile(r"\b(?:no|not|none|never|without|absent|absence|nothing)\b|没有|尚未|并无|없|않", re.IGNORECASE)
+# The Chinese compounds were added in review of PR #122, item 11.
+_ABSENCE = re.compile(r"\b(?:no|not|none|never|without|absent|absence|nothing)\b|没有|尚未|并无|并未|不存在|不含|无此|"
+                      r"未披露|未提及|未提供|未公布|未发布|未包含|未见|없|않", re.IGNORECASE)
 
 
 # A correction from a new source leaves the claims it does not name resting on a source it does not cite, so it is
