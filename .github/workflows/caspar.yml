@@ -7,6 +7,9 @@ name: caspar
 # current body. Every run's write job is in the magi-writer group, so its posts never overlap intake's.
 # Scheduled runs also open cross-idea topics in GitHub Discussions (decision D46): prepare reads Discussions and write
 # posts there, so they hold discussions: read and discussions: write; a join-only run does no topic work.
+# Intake starts a run with the scope approval (workflow_dispatch) as soon as it labels a proposal magi:needs-approval,
+# and scheduled runs also review any waiting proposal with no verdict for its current body (decision D47). Proposals
+# are not picked up from issues events: their titles are free text, and intake must check a proposal first.
 on:
   schedule:
     - cron: "41 */3 * * *"
@@ -17,7 +20,7 @@ on:
       scope:
         description: "Which work to do (probe checks the model's tool and file limits)"
         type: choice
-        options: [all, regular, reviews, welcome, weekly, probe, join, topics]
+        options: [all, regular, reviews, welcome, weekly, probe, join, approval, topics]
         default: all
 permissions: {}
 jobs:
@@ -154,8 +157,8 @@ jobs:
         if: always()
         run: if [ -f work/preview.md ]; then cat work/preview.md >> "$GITHUB_STEP_SUMMARY"; fi
       - name: Publish the snapshot
-        # A join-only run writes nothing to main, so it has no snapshot to publish.
-        if: vars.CASPAR_MODE == 'live' && github.event_name != 'issues' && inputs.scope != 'join'
+        # A join-only or approval-only run writes nothing to main, so it has no snapshot to publish.
+        if: vars.CASPAR_MODE == 'live' && github.event_name != 'issues' && inputs.scope != 'join' && inputs.scope != 'approval'
         run: python -m engine snapshot --repo . --publish
       - name: Audit this job's own push
         run: python -m engine audit --repo . --before "$MAGI_BEFORE" --after "$(git rev-parse HEAD)" --pusher "github-actions[bot]"

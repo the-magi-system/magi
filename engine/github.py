@@ -90,6 +90,11 @@ class GitHubClient:
     def labelled_issues(self, label: str) -> list[dict]:
         return self._issues({"state": "all", "labels": label})
 
+    def dispatch_workflow(self, workflow: str, ref: str, inputs: dict) -> None:
+        """Start a workflow by workflow_dispatch: intake starts Caspar.Magi's review this way (decision D47)."""
+        self.request("POST", f"/repos/{self.repo}/actions/workflows/{workflow}/dispatches",
+                     {"ref": ref, "inputs": inputs})
+
     def comments(self, number: int) -> list[dict]:
         return self._pages(f"{self._issue_path(number)}/comments", {})
 

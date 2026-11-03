@@ -1,0 +1,12 @@
+{
+  "title": "Caspar.Magi review of a proposed strategy: the structured output the model returns (design decision D47)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["is_strategy", "same_as", "closest", "reason"],
+  "properties": {
+    "is_strategy": {"type": "boolean"},
+    "same_as": {"type": ["string", "null"]},
+    "closest": {"type": ["string", "null"]},
+    "reason": {"type": "string", "minLength": 1, "maxLength": 300}
+  }
+}

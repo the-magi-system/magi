@@ -20,8 +20,11 @@ def _summary(result: dict, cc: list[str]) -> str:
         return "\n".join(lines)
     if status == "needs_approval":
         reasons = ", ".join(result.get("approval_reasons", []))
-        text = f"This proposal needs maintainer approval ({reasons}). A maintainer replies `/approve` or `/reject <reason>`."
-        return f"{text} cc {mention}" if mention else text
+        return (f"This proposal needs maintainer approval ({reasons}). Caspar.Magi reviews it first and posts a "
+                "verdict here; if the proposal passes, the maintainers are assigned, and a maintainer replies "
+                "`/approve` or `/reject <reason>`. Editing the issue body starts a new review.")
+    if status == "approval_refused":
+        return f"Not done: {result.get('reason', '')} Nothing was written."
     if status == "received" and result.get("provider"):
         return (f"Received. The data provider `{result['provider']}` is assigned and reviews every request in person. "
                 "Approved facts arrive as evidence and approved operating knowledge as documentation; "
