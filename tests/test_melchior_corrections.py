@@ -304,3 +304,12 @@ def test_a_superseded_evidence_is_not_corrected(root, tmp_path):
     _superseded_by(root, "ev-20261021-tem-q3", "ev-20261104-tem-q3-owner")
     ok, reason = may_correct(RepoState.load(root), "ev-20261021-tem-q3", check, check["source"])
     assert not ok and reason == "the evidence is already superseded"
+
+
+def test_check_records_name_the_model_and_prompt_without_a_github_client(world):
+    # Review of PR #122, item 2: the inputs belong to every model run, not only to one that reads referrals.
+    run(world)
+    record = RepoState.load(world["root"]).evidence_checks["ev-20261021-tem-q2"]
+    assert record["model"] == "claude-opus-5-5"
+    assert isinstance(record["prompt_sha256"], str) and len(record["prompt_sha256"]) == 64
+    assert isinstance(record["input_commit"], str) and len(record["input_commit"]) == 40

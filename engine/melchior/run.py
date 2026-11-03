@@ -137,8 +137,9 @@ def _model_plan(root: Path, state: RepoState, out: Path, plan: dict, model_mode:
         plan["fetch"] += [{"id": f"referral-{number}", "referral": item} for number, item in enumerate(chosen, start=1)
                           if not item.get("superseded_by")]
         plan["referrals_superseded"] = [item for item in chosen if item.get("superseded_by")]
-        plan["inputs"] = {"input_commit": _head(root), "prompt_sha256": _prompt_sha256(root, "evidence-check"),
-                          "model": MODEL}
+    # What every model task of this run is based on, whichever kinds it schedules (review of PR #122, item 2).
+    plan["inputs"] = {"input_commit": _head(root), "prompt_sha256": _prompt_sha256(root, "evidence-check"),
+                      "model": MODEL}
 
 
 def prepare(root, out, scope: str, mode: str, now: datetime, model_mode: str = "", event: str = "schedule",
