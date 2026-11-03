@@ -455,3 +455,24 @@ def test_a_check_of_missing_evidence_or_without_a_log_line_is_reported(repo):
     problems = by_path[f"evidence/checks/{good}.yaml"]
     assert any("version 2 of this check has no line in the event log" in p for p in problems)
     assert any("ev-20261003-nvda-never" in p for p in problems)
+
+
+def test_settlements_and_rulings_must_reference_existing_records(repo):
+    # Plan 9, Task 21 (plan 8, item 11): a settlement names a published version; a ruling names existing picks, views
+    # and asset; its issue is a positive number (the schema).
+    from tests.test_record_formats import RULING, SETTLED
+    write_yaml(repo / "ledger/settlements/2027/11/20271123T234730Z-st-000001.yaml",
+               {**SETTLED, "idea": "nvda-ai-capex-2026", "actor": "john.research"})
+    write_yaml(repo / "ledger/rulings/2027/08/20270831T234730Z-rl-000001.yaml", {
+        **RULING, "asset": "nvda", "subjects": {"picks": ["pk-000001", "pk-000007"], "views": [
+            {"idea": "nvda-ai-capex-2026", "actor": "john.research", "version": 3}]}})
+    write_yaml(repo / "ledger/rulings/2027/09/20270901T234730Z-rl-000002.yaml", {
+        **RULING, "id": "rl-000002", "asset": "tsla", "subjects": {"picks": [], "views": []},
+        "at": "2027-09-01T23:47:30Z"})
+    problems = sorted((f.path, f.problem) for f in check_repository(repo))
+    assert len(problems) == 4, problems
+    settlement = [p for path, p in problems if "st-000001" in path]
+    assert len(settlement) == 1 and "nvda-ai-capex-2026/john.research/v1" in settlement[0]
+    first = " ".join(p for path, p in problems if "rl-000001" in path)
+    assert "pk-000007" in first and "nvda-ai-capex-2026/john.research/v3" in first and "pk-000001" not in first
+    assert any("tsla" in p for path, p in problems if "rl-000002" in path)

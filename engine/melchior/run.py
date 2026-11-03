@@ -38,7 +38,7 @@ from ..timeutil import iso
 from ..yamlio import dump_yaml, load_yaml
 from ..caspar.work import take_turn
 from .common import MELCHIOR, SCOPES, SOURCE_DIR, resolve_mode, resolve_model_mode
-from . import assist, referrals, staleness, status
+from . import assist, referrals, rulings, staleness, status
 from .corrections import (MAX_CORRECTIONS, PARTIAL, CorrectionRejected, correction, find_marked, may_correct,
                           notices, recent_notices)
 from .evidence import check_changes, check_path, pending_checks, prepare_check, program_changes, superseded
@@ -148,11 +148,47 @@ def _model_plan(root: Path, state: RepoState, out: Path, plan: dict, model_mode:
         try:
             found = status.checks(root, now.date().isoformat(), gh)
             plan["status_checks"], plan["rulings_open"] = found["status"], found["ruling"]
+            _ruling_plan(root, state, out, plan, gh, room - len(plan["fetch"]) - len(plan["tasks"]), turn)
         except Exception as exc:
             plan["status_failures"] = [f"asset-status checks: {type(exc).__name__}: {exc}; {RETRY}"]
     # What every model task of this run is based on, whichever kinds it schedules (review of PR #122, item 2).
     plan["inputs"] = {"input_commit": _head(root), "prompt_sha256": _prompt_sha256(root, "evidence-check"),
                       "model": MODEL}
+
+
+def _ruling_plan(root: Path, state: RepoState, out: Path, plan: dict, gh, left: int, turn: int) -> None:
+    """At most MAX_RULINGS asset-status checks and ruling drafts (design 22.7; plan 9, Task 21): first the drafts of
+    open ruling issues and of challenges that bring new sources, then new checks. The rest wait for the next run."""
+    open_issues = status.open_rulings(gh)
+    written = {entry.record.get("issue") for entry in effective_ledger(root).records.values() if entry.kind == "ruling"}
+    drafts = []
+    for item in plan["rulings_open"]:
+        if item["issue"] in written:
+            plan["rulings_written_open"].append(item["issue"])  # its ruling is written: the issue is closed
+            continue
+        kind, urls = rulings.parse_issue(open_issues[item["asset"]].get("body") or "")
+        if kind is None or not urls:
+            plan["status_failures"].append(f"ruling issue #{item['issue']}: it names no event or candidate source")
+            continue
+        drafts.append({**item, "kind": kind, "sources": urls, "supersedes": None})
+    for item in rulings.challenges(gh, state):
+        if item["sources"]:
+            drafts.append({**item, "triggers": [], "supersedes": item["ruling"]})
+        else:
+            plan["challenge_links"].append(item)
+    budget = max(0, min(rulings.MAX_RULINGS, left))
+    chosen = drafts[:budget]
+    plan["fetch"] += [{"id": f"ruling-{number}", "ruling": item} for number, item in enumerate(chosen, start=1)]
+    checks = take_turn(plan["status_checks"], budget - len(chosen), turn) if budget > len(chosen) else []
+    failures = status._usage_lines(root)[-status.FAILED_RUNS:]
+    for number, item in enumerate(checks, start=1):
+        task_id = f"asset-status-{number}"
+        rulings.step_one_input(state, item, out / task_id,
+                               sum(1 for line in failures if item["asset"] in line["price_failures"]))
+        plan["tasks"].append({"id": task_id, "kind": "asset-status", "asset": item["asset"], "status": item})
+    plan["rulings_waiting"] = [f"{item['asset']}: the ruling draft waits for the next run" for item in drafts[budget:]]
+    plan["rulings_waiting"] += [f"{item['asset']}: the asset-status check waits for the next run"
+                                for item in plan["status_checks"] if item not in checks]
 
 
 def prepare(root, out, scope: str, mode: str, now: datetime, model_mode: str = "", event: str = "schedule",
@@ -165,7 +201,8 @@ def prepare(root, out, scope: str, mode: str, now: datetime, model_mode: str = "
             "model_mode": "off", "model_notice": None, "tasks": [], "fetch": [], "records": [], "pending_contact": [],
             "inputs": None, "staleness_none": [], "staleness_unreadable": [], "referrals_unreadable": [],
             "referrals_nonpublic": [], "fetch_failures": [],
-            "status_checks": [], "rulings_open": [], "status_failures": []}
+            "status_checks": [], "rulings_open": [], "status_failures": [], "rulings_written_open": [],
+            "challenge_links": [], "rulings_waiting": [], "rulings_unreadable": []}
     state = RepoState.load(root)
     if plan["mode"] == "off":
         plan["notice"] = "MELCHIOR_MODE is off"
@@ -196,7 +233,8 @@ def fetch_sources(root, out, fetcher, now: datetime) -> dict:
         try:
             _fetch_one(plan, state, item, fetcher, now, out)
         except Exception as exc:  # one failing item is recorded and the others go on (review of PR #122, item 3)
-            evidence_id = item.get("evidence") or (item.get("referral") or {}).get("evidence") or item.get("id")
+            evidence_id = (item.get("evidence") or (item.get("referral") or {}).get("evidence")
+                           or (item.get("ruling") or {}).get("asset") or item.get("id"))
             plan.setdefault("fetch_failures", []).append(f"{evidence_id}: {type(exc).__name__}: {exc}; {RETRY}")
     plan["fetch"] = []
     _save(out / "plan.json", plan)
@@ -206,6 +244,18 @@ def fetch_sources(root, out, fetcher, now: datetime) -> dict:
 def _fetch_one(plan: dict, state: RepoState, item: dict, fetcher, now: datetime, out: Path) -> None:
     if "step" in item:
         _fetch_staleness(plan, state, item, fetcher, now, out)
+        return
+    if "ruling" in item:
+        found = rulings.prepare(state, item["ruling"], fetcher, now, out / item["id"])
+        if "task" in found:
+            plan["tasks"].append({"id": item["id"], "kind": "ruling", "asset": item["ruling"]["asset"],
+                                  "ruling": item["ruling"]})
+            plan.setdefault("fetch_failures", []).extend(
+                f"{item['ruling']['asset']}: candidate source {line}" for line in found["failures"])
+        elif "pending" in found:
+            plan["pending_contact"].append(f"{item['ruling']['asset']}: waiting for MAGI_HTTP_CONTACT (ruling)")
+        else:
+            plan.setdefault("rulings_unreadable", []).append({**item["ruling"], "why": found["unreadable"]})
         return
     if "referral" in item:
         found = referrals.prepare(state, item, fetcher, now, out / item["id"])
@@ -659,6 +709,85 @@ def _superseded_why(state: RepoState, evidence_id: str, pairs) -> str:
             "the evidence yourself, citing the source that holds each new fact")
 
 
+def _ruling_inputs(job: "Job", plan: dict) -> dict:
+    commit = (plan.get("inputs") or {}).get("input_commit") or job.input_commit
+    return {"input_commit": commit, "prompt_sha256": _prompt_sha256(job.root, "ruling"), "model": MODEL}
+
+
+def _asset_status(job: "Job", task: dict, output: dict, model_mode: str) -> None:
+    """Step one: with candidate sources on allowed hosts, open the asset's ruling issue (design 22.7)."""
+    summary, asset_id = job.summary, task["asset"]
+    if not output.get("found"):
+        summary["rulings"].append(f"{asset_id}: no event found")
+        return
+    state = RepoState.load(job.root)
+    urls, dropped = rulings.candidates(state, asset_id, output.get("sources"))
+    summary["dropped"] += dropped
+    if not urls:
+        summary["rulings"].append(f"{asset_id}: no candidate source on an allowed host")
+        return
+    body = rulings.issue_body(asset_id, task["status"]["triggers"], output["kind"], urls)
+    if model_mode != "live" or job.gh is None:
+        summary["model_preview"].append({"path": f"new issue: {rulings.title(asset_id)} ({status.LABEL})",
+                                         "content": body})
+        summary["rulings"].append(f"{asset_id}: a ruling issue would be opened")
+        return
+    if asset_id in status.open_rulings(job.gh):
+        summary["rulings"].append(f"{asset_id}: a ruling issue is already open")
+        return
+    number = rulings.open_issue(job.gh, asset_id, body)
+    summary["rulings"].append(f"{asset_id}: ruling issue #{number} opened with {len(urls)} candidate source(s)")
+
+
+def _ruling(job: "Job", plan: dict, item: dict, output: dict | None, work_dir: Path | None, model_mode: str) -> None:
+    """Step two: write the ruling after the program checks, announce it and close its issue; for a challenge, link
+    the challenge with what came of it."""
+    summary = job.summary
+    state = RepoState.load(job.root)
+    changes, why = rulings.draft(state, item, output, work_dir, job.now, job.run, _ruling_inputs(job, plan),
+                                 taken=job.new_ids)
+    if changes is None:
+        if item.get("challenge"):
+            job.posts.append(rulings.challenge_link(item, f"Its new sources were fetched, but {why}."))
+            summary["rulings"].append(f"{item['asset']}: challenge #{item['challenge']}: {why}")
+        else:
+            summary["dropped"].append(f"{item['asset']}: {why}; {RETRY}")
+        return
+    ruling_id = changes.created["ruling_id"]
+    job.new_ids.append(ruling_id)
+    if model_mode == "live":
+        job.apply(changes)
+    else:
+        summary["model_preview"] += [{"path": path, "content": dump_yaml(data)} for path, data in changes.writes.items()]
+    record = next(iter(changes.writes.values()))
+    job.posts += rulings.notices(state, record)
+    if item.get("challenge"):
+        job.posts.append(rulings.challenge_link(item, f"I drafted `{ruling_id}` from its new source, which supersedes "
+                                                      f"`{item['ruling']}`."))
+    else:
+        job.closes.append((item["issue"], "completed"))
+    summary["rulings"].append(f"{item['asset']}: {ruling_id} ({record['kind']}, {record['effect']})")
+
+
+def _ruling_program(job: "Job", plan: dict, model_mode: str) -> None:
+    """What needs no model answer: drafts whose sources could not be read, challenges without a new source, and
+    ruling issues whose ruling is written but that are still open."""
+    for item in plan.get("rulings_unreadable", []):
+        try:
+            if item.get("challenge"):
+                job.posts.append(rulings.challenge_link(
+                    item, f"None of its new sources could be read ({item['why']}), so the ruling stands."))
+            else:
+                _ruling(job, plan, item, None, None, model_mode)
+        except Exception as exc:  # tried again next run
+            job.summary["dropped"].append(f"{item.get('asset')}: {type(exc).__name__}: {exc}; {RETRY}")
+    for item in plan.get("challenge_links", []):
+        job.posts.append(rulings.challenge_link(
+            item, "It brings no new source on an allowed host, so the ruling stands; the maintainers handle the "
+                  "challenge, and can confirm, overturn or rewrite the ruling."))
+    job.closes += [(number, "completed") for number in plan.get("rulings_written_open", [])]
+
+
 def _answer(job: "Job", item: dict, verdict_name: str, text: str, close: str) -> None:
     job.posts.append((item["issue"], "fact-layer", item["evidence"], referrals.reply(item, verdict_name, text)))
     job.closes.append((item["issue"], close))
@@ -845,6 +974,7 @@ def _model(job: "Job", plan: dict, work: Path, mode: str, model_cap: str | None)
     summary["dropped"] += plan.get("fetch_failures", []) + plan.get("status_failures", [])
     summary["status_checks"] = [f"{item['asset']}: {', '.join(t['kind'] for t in item['triggers'])}"
                                 for item in plan.get("status_checks", [])]
+    summary["waiting"] += plan.get("rulings_waiting", [])
 
     def keep(changes: ChangeSet, evidence_id: str) -> None:
         if model_mode == "live":
@@ -874,6 +1004,16 @@ def _model(job: "Job", plan: dict, work: Path, mode: str, model_cap: str | None)
                     summary["dropped"].append(f"referral #{task['referral']['issue']}: {problem}")
                     continue
                 _referral(job, task["referral"], output, work / task["id"], keep, model_mode)
+            elif task["kind"] == "asset-status":
+                if output is None:
+                    summary["dropped"].append(f"{task['asset']}: {problem}")
+                    continue
+                _asset_status(job, task, output, model_mode)
+            elif task["kind"] == "ruling":
+                if output is None:
+                    summary["dropped"].append(f"{task['asset']}: {problem}")
+                    continue
+                _ruling(job, plan, task["ruling"], output, work / task["id"], model_mode)
             elif task["kind"] in ("staleness-list", "staleness-search", "staleness"):
                 if output is None:
                     summary["dropped"].append(f"{task['evidence']}: {problem}")
@@ -895,6 +1035,7 @@ def _model(job: "Job", plan: dict, work: Path, mode: str, model_cap: str | None)
                 done.add(evidence_id)
         except Exception as exc:  # one failed task must not stop the others
             summary["dropped"].append(f"{task.get('evidence', task['id'])}: {type(exc).__name__}: {exc}; {RETRY}")
+    _ruling_program(job, plan, model_mode)
     for item in plan.get("referrals_superseded", []):
         _answer(job, item, "already superseded",
                 f"`{item['superseded_by']}` already supersedes `{item['evidence']}`, so there is nothing left to correct "
@@ -944,7 +1085,7 @@ def write(root, gh, git: Git, work, mode: str, run: int, now: datetime, prices: 
                "fills": [], "settlements": [], "findings": [], "dropped": [], "commit": None, "preview": None,
                "model_mode": "off", "model_notice": plan.get("model_notice"), "checks": [], "waiting": [],
                "probe": None, "model_preview": [], "corrections": [], "discrepancies": [], "assists": [], "staleness": [], "referrals": [], "posts": 0,
-               "status_checks": []}
+               "status_checks": [], "rulings": []}
     if mode == "off" or plan.get("notice"):
         return summary
     job = Job(root, prices, now, run, summary, input_commit=git.run("rev-parse", "HEAD"), gh=gh)

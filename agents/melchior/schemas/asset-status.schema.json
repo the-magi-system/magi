@@ -1,0 +1,75 @@
+{
+  "title": "Melchior.Magi asset-status check, step one: whether an event happened, its kind and candidate sources (design 22.7; plan 9, Task 21)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "found"
+  ],
+  "properties": {
+    "found": {
+      "type": "boolean"
+    },
+    "kind": {
+      "enum": [
+        "cash-takeover",
+        "zero-equity",
+        "symbol-change",
+        "delisted-no-quote",
+        "split-data",
+        "stock-takeover",
+        "halt-after-window",
+        "spin-off",
+        "currency-change",
+        "price-data",
+        "other"
+      ]
+    },
+    "sources": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "string",
+        "pattern": "^https://\\S+$",
+        "maxLength": 2000
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "found": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "kind",
+          "sources"
+        ],
+        "properties": {
+          "sources": {
+            "minItems": 1
+          }
+        }
+      },
+      "else": {
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "kind"
+              ]
+            },
+            {
+              "required": [
+                "sources"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
