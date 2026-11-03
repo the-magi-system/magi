@@ -158,9 +158,11 @@ def _caspar_write(args) -> int:
 
 
 def _melchior_prepare(args) -> int:
+    # Caspar's open referrals are read with the workflow's token; without one (a local run) there are none.
+    gh = GitHubClient.from_env() if os.environ.get("GITHUB_TOKEN") and os.environ.get("GITHUB_REPOSITORY") else None
     plan = melchior_prepare(args.repo, args.out, args.scope, args.mode, utc_now(), model_mode=args.model_mode,
                             event=args.event, turn=args.run_number,
-                            monthly_usd=os.environ.get("MELCHIOR_MONTHLY_USD"))
+                            monthly_usd=os.environ.get("MELCHIOR_MONTHLY_USD"), gh=gh)
     print(json.dumps(plan, indent=2, ensure_ascii=False))
     return 0
 
@@ -185,8 +187,8 @@ def _melchior_think(args) -> int:
 
 
 def _melchior_write(args) -> int:
-    summary = melchior_write(args.repo, None, Git(args.repo), args.work, args.mode, args.run_id, utc_now(),
-                             PriceRouter(), model_mode=args.model_mode)
+    summary = melchior_write(args.repo, GitHubClient.from_env(), Git(args.repo), args.work, args.mode, args.run_id,
+                             utc_now(), PriceRouter(), model_mode=args.model_mode)
     if summary["preview"] is not None or summary["model_preview"]:
         (Path(args.work) / "preview.md").write_text(preview_markdown(summary), encoding="utf-8")
     if summary["findings"]:

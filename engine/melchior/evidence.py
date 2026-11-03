@@ -47,11 +47,26 @@ def check_path(evidence_id: str) -> str:
     return f"evidence/checks/{evidence_id}.yaml"
 
 
+def superseded(state: RepoState) -> dict[str, str]:
+    """Evidence that another evidence supersedes, with the id of the one that does. Such evidence is neither checked
+    nor corrected again: its chain goes on from the newer record (review of PR #122, item 1)."""
+    found: dict[str, str] = {}
+    for evidence_id, evidence in sorted(state.evidence.items()):
+        older = evidence.get("supersedes")
+        if older:
+            found.setdefault(older, evidence_id)
+    return found
+
+
 def pending_checks(state: RepoState, now: datetime) -> list[str]:
-    """Evidence without a check record, or whose `next_review` has come, by submission time."""
+    """Evidence without a check record, or whose `next_review` has come, by submission time; an evidence that
+    another evidence supersedes is not pending."""
     today = now.date().isoformat()
     found = []
+    newer = superseded(state)
     for evidence_id, evidence in state.evidence.items():
+        if evidence_id in newer:
+            continue
         record = state.evidence_checks.get(evidence_id)
         due = record is None or (record.get("next_review") is not None and str(record["next_review"]) <= today)
         if due:
@@ -254,6 +269,9 @@ def _finish(state: RepoState, base: dict, now: datetime, run: int, inputs: dict 
         "same_source_as": same_source(state, evidence_id),
         "pending_sources": list((previous or {}).get("pending_sources") or []),
         "assist_issue": (previous or {}).get("assist_issue"),
+        # Moved only by step one of a staleness check (review of PR #122, item 4).
+        "filings_read_on": (previous or {}).get("filings_read_on"),
+        "filings_listed": list((previous or {}).get("filings_listed") or []),
         "next_review": None if non_public else (now.date() + timedelta(
             days=UNREACHABLE_REVIEW_DAYS if base["reason"] == "source_unreachable" else REVIEW_DAYS)).isoformat(),
         "input_commit": (inputs or {}).get("input_commit"), "prompt_sha256": (inputs or {}).get("prompt_sha256"),
