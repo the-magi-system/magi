@@ -40,7 +40,7 @@ from ..caspar.work import take_turn
 from .common import MELCHIOR, SCOPES, SOURCE_DIR, resolve_mode, resolve_model_mode
 from . import assist, referrals, staleness
 from .corrections import MAX_CORRECTIONS, CorrectionRejected, correction, find_marked, may_correct, notices
-from .evidence import check_changes, check_path, pending_checks, prepare_check, program_changes
+from .evidence import check_changes, check_path, pending_checks, prepare_check, program_changes, superseded
 from .think import MODEL
 from .fills import fill_changes, pending_fills
 from .settle import due_versions, settlement_changes
@@ -134,7 +134,9 @@ def _model_plan(root: Path, state: RepoState, out: Path, plan: dict, model_mode:
     if "referrals" in parts and gh is not None:
         left = room - len(plan["fetch"])
         chosen = take_turn(referrals.pending(gh, state), min(referrals.MAX_REFERRALS, left), turn) if left > 0 else []
-        plan["fetch"] += [{"id": f"referral-{number}", "referral": item} for number, item in enumerate(chosen, start=1)]
+        plan["fetch"] += [{"id": f"referral-{number}", "referral": item} for number, item in enumerate(chosen, start=1)
+                          if not item.get("superseded_by")]
+        plan["referrals_superseded"] = [item for item in chosen if item.get("superseded_by")]
         plan["inputs"] = {"input_commit": _head(root), "prompt_sha256": _prompt_sha256(root, "evidence-check"),
                           "model": MODEL}
 
@@ -654,6 +656,8 @@ def _assist_sweep(job: "Job", keep, model_mode: str, done: set[str]) -> None:
     for evidence_id, record in sorted(state.evidence_checks.items()):
         if evidence_id in done or record.get("assist_issue") or evidence_id not in state.evidence:
             continue
+        if evidence_id in superseded(state):
+            continue
         reason = assist.why(record)
         if reason is None or evidence_id in job.assist_requests():
             continue
@@ -758,6 +762,10 @@ def _model(job: "Job", plan: dict, work: Path, mode: str, model_cap: str | None)
                 done.add(evidence_id)
         except Exception as exc:  # one failed task must not stop the others
             summary["dropped"].append(f"{task.get('evidence', task['id'])}: {type(exc).__name__}: {exc}; {RETRY}")
+    for item in plan.get("referrals_superseded", []):
+        _answer(job, item, "already superseded",
+                f"`{item['superseded_by']}` already supersedes `{item['evidence']}`, so there is nothing left to correct "
+                "in it; the newer evidence gets its own ordinary checks.", "not_planned")
     for item in plan.get("referrals_unreadable", []):
         try:
             _referral(job, item, None, None, keep, model_mode, unreadable=item.get("why"))

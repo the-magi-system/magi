@@ -267,3 +267,40 @@ def test_a_correction_is_logged_with_run_and_committed_with_trailers(world):
     assert "Magi-Actor: melchior.magi" in message and "Magi-Run: 51" in message and summary["commit"]
     assert yaml.safe_load((root / "evidence" / "ev-20261002-tem-q2-corrected.yaml").read_text())["supersedes"] in (
         "ev-20261021-tem-q2", "ev-20261022-tem-q2")
+
+
+# Review of PR #122, item 1: an evidence that another evidence supersedes is neither checked nor corrected again.
+
+def _superseded_by(root, old, new, by="arthur.val"):
+    put_evidence(root, new, PAGE, claims=[{"text": QUOTE}, {"text": GROSS}])
+    path = root / "evidence" / f"{new}.yaml"
+    write_yaml(path, {**load_yaml(path), "supersedes": old, "submitted_by": by})
+
+
+def test_a_superseded_evidence_is_not_checked_again(root, tmp_path):
+    from datetime import timedelta
+    from engine.melchior.evidence import pending_checks
+    put_evidence(root, "ev-20261020-tem-q2", PAGE, claims=WRONG)
+    changes, _ = record(root, tmp_path, "ev-20261020-tem-q2", contradicted())
+    write_changes(root, changes)
+    _superseded_by(root, "ev-20261020-tem-q2", "ev-20261110-tem-q2-corrected", by="melchior.magi")
+    later = CHECKED + timedelta(days=200)  # well past the old record's next_review
+    found = pending_checks(RepoState.load(root), later)
+    assert "ev-20261020-tem-q2" not in found and "ev-20261110-tem-q2-corrected" in found
+
+
+def test_a_superseded_evidence_is_not_corrected(root, tmp_path):
+    from engine.melchior.corrections import may_correct
+    put_evidence(root, "ev-20261020-tem-q2", PAGE, claims=WRONG)
+    _, check = record(root, tmp_path, "ev-20261020-tem-q2", contradicted())
+    # A -> C (Melchior) -> D (owner): checking A again must not fork the chain.
+    _superseded_by(root, "ev-20261020-tem-q2", "ev-20261102-tem-q2-corrected", by="melchior.magi")
+    _superseded_by(root, "ev-20261102-tem-q2-corrected", "ev-20261103-tem-q2-owner")
+    ok, reason = may_correct(RepoState.load(root), "ev-20261020-tem-q2", check, check["source"])
+    assert not ok and reason == "the evidence is already superseded"
+    # The owner superseded it directly.
+    put_evidence(root, "ev-20261021-tem-q3", PAGE, claims=WRONG)
+    _, check = record(root, tmp_path, "ev-20261021-tem-q3", contradicted())
+    _superseded_by(root, "ev-20261021-tem-q3", "ev-20261104-tem-q3-owner")
+    ok, reason = may_correct(RepoState.load(root), "ev-20261021-tem-q3", check, check["source"])
+    assert not ok and reason == "the evidence is already superseded"

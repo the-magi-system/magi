@@ -23,7 +23,7 @@ from ..semantic import check_semantics
 from ..sysagent import system_log_entry
 from ..timeutil import iso
 from .common import MELCHIOR
-from .evidence import check_path
+from .evidence import check_path, superseded
 from .quotes import _multiplier
 
 MAX_CORRECTIONS = 2  # per run (design 22.13)
@@ -87,6 +87,8 @@ def may_correct(state: RepoState, evidence_id: str, check: dict, fetched: dict |
     evidence = state.evidence.get(evidence_id)
     if evidence is None:
         return False, "the evidence is gone"
+    if evidence_id in superseded(state):
+        return False, "the evidence is already superseded"
     if evidence.get("access", "public") != "public":
         return False, "the evidence is not public"
     wrong = _contradicted(check)

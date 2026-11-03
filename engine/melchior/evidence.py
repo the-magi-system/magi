@@ -47,11 +47,26 @@ def check_path(evidence_id: str) -> str:
     return f"evidence/checks/{evidence_id}.yaml"
 
 
+def superseded(state: RepoState) -> dict[str, str]:
+    """Evidence that another evidence supersedes, with the id of the one that does. Such evidence is neither checked
+    nor corrected again: its chain goes on from the newer record (review of PR #122, item 1)."""
+    found: dict[str, str] = {}
+    for evidence_id, evidence in sorted(state.evidence.items()):
+        older = evidence.get("supersedes")
+        if older:
+            found.setdefault(older, evidence_id)
+    return found
+
+
 def pending_checks(state: RepoState, now: datetime) -> list[str]:
-    """Evidence without a check record, or whose `next_review` has come, by submission time."""
+    """Evidence without a check record, or whose `next_review` has come, by submission time; an evidence that
+    another evidence supersedes is not pending."""
     today = now.date().isoformat()
     found = []
+    newer = superseded(state)
     for evidence_id, evidence in state.evidence.items():
+        if evidence_id in newer:
+            continue
         record = state.evidence_checks.get(evidence_id)
         due = record is None or (record.get("next_review") is not None and str(record["next_review"]) <= today)
         if due:

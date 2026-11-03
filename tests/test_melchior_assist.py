@@ -171,3 +171,20 @@ def test_assist_posts_have_no_mentions_and_one_marker(world):
     for body in bodies:
         assert body.count(ALL) == 1, body
         assert not re.search(r"(?<![\w`])@[A-Za-z0-9]", body), body
+
+
+def test_no_assist_request_for_a_superseded_evidence(world):
+    add(world, "ev-20261020-pdf-old", PDF, "2026-10-20T00:00:00Z")
+    add(world, "ev-20261021-pdf-old", PDF, "2026-10-21T00:00:00Z")
+    add(world, "ev-20261022-pdf-old", PDF, "2026-10-22T00:00:00Z")
+    add(world, "ev-20261023-pdf-old", PDF, "2026-10-23T00:00:00Z")
+    run(world)  # three requests; the fourth waits for the sweep
+    waiting = next(f"ev-2026102{n}-pdf-old" for n in range(4)
+                   if not RepoState.load(world["root"]).evidence_checks[f"ev-2026102{n}-pdf-old"]["assist_issue"])
+    add(world, "ev-20261024-tem-good", GOOD, "2026-10-24T00:00:00Z")
+    path = world["root"] / "evidence" / "ev-20261024-tem-good.yaml"
+    write_yaml(path, {**load_yaml(path), "supersedes": waiting})
+    Git(world["root"]).commit("supersede", {})
+    run(world, outputs={"ev-20261024-tem-good": contradicted(quote="Not in the page at all, for sure")})
+    titles = {issue["title"] for issue in requests(world).values()}
+    assert f"Melchior.Magi assist: {waiting}" not in titles

@@ -155,3 +155,18 @@ def test_the_reply_is_posted_once(world):
     world["gh"].issues[number]["state"] = "open"  # reopened by hand: the answer is not posted again
     plan, _ = run(world, {"ev-20261020-tem-q2": verdict("rejected")})
     assert plan["tasks"] == [] and len(replies(world, number)) == 1
+
+
+def test_a_referral_on_a_superseded_evidence_is_answered_by_program(world):
+    from engine.yamlio import load_yaml, write_yaml
+    add(world, "ev-20261020-tem-q2", GOOD, "2026-10-20T00:00:00Z", claims=WRONG)
+    add(world, "ev-20261021-tem-q2-owner", GOOD, "2026-10-21T00:00:00Z")
+    path = world["root"] / "evidence" / "ev-20261021-tem-q2-owner.yaml"
+    write_yaml(path, {**load_yaml(path), "supersedes": "ev-20261020-tem-q2"})
+    Git(world["root"]).commit("supersede", {})
+    number = refer(world, "ev-20261020-tem-q2")
+    plan, _ = run(world)
+    assert [t for t in plan["tasks"] if t["kind"] == "referral"] == [], "no model task"
+    body = replies(world, number)[0]
+    assert "already superseded" in body and "`ev-20261021-tem-q2-owner`" in body
+    assert world["gh"].issues[number]["state"] == "closed"

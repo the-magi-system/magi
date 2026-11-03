@@ -20,7 +20,7 @@ from pathlib import Path
 from ..fetch import edgar_index_url, filing_date, is_sec_host
 from ..repo import RepoState
 from ..timeutil import parse_iso
-from .evidence import check_source_date
+from .evidence import check_source_date, superseded
 from .quotes import quote_in, verdict
 
 MAX_TASKS = 2  # staleness tasks per run, both steps counted (design 22.13)
@@ -50,8 +50,11 @@ def due(state: RepoState, now: datetime) -> list[dict]:
     """{"evidence", "step"} for every public evidence with a standing claim whose staleness check is due; `step` is
     `judge` when candidate sources are waiting, else `list` (SEC) or `search` (any other source)."""
     found = []
+    newer = superseded(state)
     for evidence_id, record in state.evidence_checks.items():
         evidence = state.evidence.get(evidence_id)
+        if evidence_id in newer:
+            continue
         if evidence is None or evidence.get("access", "public") != "public" or not standing(record):
             continue
         if record.get("currency") == "superseded" or record.get("superseded_by"):

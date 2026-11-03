@@ -2,9 +2,10 @@
 
 Newest first. Each entry gives the date, what changed, and the request issue that prompted it, if any.
 
-## 2026-11-02 — evidence written by Melchior.Magi records its run (no version change)
+## 2026-11-02 — corrections, assist requests, staleness checks and referrals: rules settled in review (no version change)
 
 - An evidence that Melchior.Magi writes to correct another (section 9, **Corrections by Melchior.Magi**) records `submitted_via_run`, the workflow run id, in place of `submitted_via_issue`, as an asset that Melchior.Magi registers records `registered_via_run`. `protocol/schemas/entities/evidence.schema.json` gains this optional engine-written field; no proposal can set it, and no stored record changes.
+- An evidence that another evidence supersedes is no longer checked, corrected, looked at for staleness or given an assist request; its chain goes on from the newer record. A fact-layer referral on such an evidence is answered by program and closed, with no model task.
 
 ## v1.13 — 2026-11-01
 

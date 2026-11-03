@@ -2,7 +2,7 @@
 from datetime import timedelta
 
 from engine.repo import RepoState
-from engine.yamlio import write_yaml
+from engine.yamlio import load_yaml, write_yaml
 from tests.fakes import NOW
 from tests.test_fetch import fixture
 from tests.test_melchior_assist import add, requests, world  # noqa: F401  (the world fixture)
@@ -144,3 +144,13 @@ def test_only_the_search_step_has_web_search():
     for kind in ("staleness-list", "staleness-search", "staleness"):
         opts = options(REPO_ROOT, kind)
         assert "WebFetch" in opts["disallowed_tools"] and "Grep" in opts["disallowed_tools"]
+
+
+def test_a_superseded_evidence_is_not_due_for_staleness(world):
+    from engine.melchior.staleness import due
+    ev_id = guidance(world)
+    add(world, "ev-20261101-tem-guide-new", OLD_PAGE, "2026-11-01T00:00:00Z", claims=[{"text": NEWER}])
+    path = world["root"] / "evidence" / "ev-20261101-tem-guide-new.yaml"
+    write_yaml(path, {**load_yaml(path), "supersedes": ev_id})
+    found = {item["evidence"] for item in due(RepoState.load(world["root"]), NOW + timedelta(days=400))}
+    assert ev_id not in found

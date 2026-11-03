@@ -22,7 +22,7 @@ from ..fetch import edgar_index_url, filing_date
 from ..queue import BOT_LOGIN
 from ..repo import RepoState
 from .corrections import find_marked, marker
-from .evidence import check_source_date
+from .evidence import check_source_date, superseded
 from .quotes import quote_in, verdict
 from .staleness import allowed_hosts, host_allowed
 
@@ -52,7 +52,8 @@ def pending(gh, state: RepoState) -> list[dict]:
         if find_marked(gh.comments(issue["number"]), "fact-layer", evidence_id):
             continue
         also = _ALSO.search(body)
-        found.append({"issue": issue["number"], "evidence": evidence_id, "source_url": source.group(2),
+        newer = superseded(state).get(evidence_id)
+        found.append({"superseded_by": newer, "issue": issue["number"], "evidence": evidence_id, "source_url": source.group(2),
                       "source_date": source.group(1),
                       "claim": (_CLAIM.search(body) or [None, ""])[1], "reason": (_WHY.search(body) or [None, ""])[1],
                       "also_affected": [other for other in _ID.findall(also.group(1)) if other != evidence_id]
