@@ -313,3 +313,45 @@ def test_check_records_name_the_model_and_prompt_without_a_github_client(world):
     assert record["model"] == "claude-opus-5-5"
     assert isinstance(record["prompt_sha256"], str) and len(record["prompt_sha256"]) == 64
     assert isinstance(record["input_commit"], str) and len(record["input_commit"]) == 40
+
+
+def _value_check(ev_id, correct_text, figures):
+    return {"evidence": ev_id, "status": "discrepancy", "source_date": None,
+            "claims": [{"index": 0, "verdict": "contradicted", "timing": "historical", "quote": correct_text,
+                        "figures": [], "correct": {"text": correct_text, "figures": figures}, "note": None}]}
+
+
+def _figure(fragment, value):
+    return {"claim": fragment, "source": fragment, "unit": None, "claim_value": value, "source_value": value}
+
+
+def test_the_value_of_a_corrected_claim_comes_from_its_one_matching_figure(root):
+    # Review of PR #122, item 5: not figures[0]; percentages only for a % claim; the multiplier only when the
+    # fragment names a unit; anything but exactly one candidate is refused.
+    from engine.melchior.corrections import correction, may_correct
+    fetched = {"sha256": "a" * 64}
+    cases = [
+        ("USD million", 390.0, "Revenue grew 12.5% to $382.5 million",
+         [_figure("12.5%", 12.5), _figure("$382.5 million", 382500000)], 382.5),
+        ("%", 13.0, "The margin was 12.5% on revenue of $382.5 million",
+         [_figure("$382.5 million", 382500000), _figure("12.5%", 12.5)], 12.5),
+        ("USD million", 390.0, "Revenue (USD million): 382.5", [_figure("382.5", 382.5)], 382.5),
+    ]
+    for number, (unit, value, text, figures, want) in enumerate(cases):
+        ev_id = f"ev-20261020-tem-value-{number}"
+        put_evidence(root, ev_id, PAGE, claims=[{"text": "Revenue was 390.0", "value": value, "unit": unit}])
+        state = RepoState.load(root)
+        check = _value_check(ev_id, text, figures)
+        assert may_correct(state, ev_id, check, fetched) == (True, ""), (unit, text)
+        new = next(iter(correction(state, ev_id, check, CHECKED, 7).writes.values()))
+        assert new["claims"][0]["value"] == want, (unit, text)
+    put_evidence(root, "ev-20261020-tem-two", PAGE, claims=[{"text": "Revenue was 390.0", "value": 390.0,
+                                                              "unit": "USD million"}])
+    state = RepoState.load(root)
+    two = _value_check("ev-20261020-tem-two", "Revenue of $382.5 million and gross profit of $235.1 million",
+                       [_figure("$382.5 million", 382500000), _figure("$235.1 million", 235100000)])
+    ok, reason = may_correct(state, "ev-20261020-tem-two", two, fetched)
+    assert not ok and reason == "the correct text has more than one figure that could be the claim's value"
+    none = _value_check("ev-20261020-tem-two", "Revenue grew 12.5% in the quarter", [_figure("12.5%", 12.5)])
+    ok, reason = may_correct(state, "ev-20261020-tem-two", none, fetched)
+    assert not ok and reason == "the correct text has no figure that could be the claim's value"

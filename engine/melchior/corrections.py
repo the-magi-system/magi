@@ -24,7 +24,8 @@ from ..sysagent import system_log_entry
 from ..timeutil import iso
 from .common import MELCHIOR
 from .evidence import check_path, superseded
-from .quotes import _multiplier
+from ..fetch import normalize
+from .quotes import _NUMBER, _multiplier
 
 MAX_CORRECTIONS = 2  # per run (design 22.13)
 ACTION = "supersede_evidence"
@@ -101,8 +102,12 @@ def may_correct(state: RepoState, evidence_id: str, check: dict, fetched: dict |
         index = item.get("index")
         if not isinstance(index, int) or not 0 <= index < len(claims) or not item.get("quote"):
             return False, "a contradicted claim has no quote"
-        if "value" in claims[index] and not (item["correct"].get("figures") or []):
-            return False, "the correct figure of a claim with a value is missing"
+        if "value" in claims[index]:
+            found = value_candidates(claims[index], item["correct"].get("figures") or [])
+            if not found:
+                return False, "the correct text has no figure that could be the claim's value"
+            if len(found) > 1:
+                return False, "the correct text has more than one figure that could be the claim's value"
         if _ABSENCE.search(str(claims[index].get("text", ""))):
             return False, "the claim is about something absent, which no quote can state"
     if chain_blocked(state, evidence_id):
@@ -121,15 +126,40 @@ def _new_id(state: RepoState, old_id: str, now: datetime, taken) -> str:
     raise CorrectionRejected(f"no free evidence id for a correction of {old_id}")
 
 
+def value_candidates(claim: dict, figures: list[dict]) -> list[int | float]:
+    """The distinct values, in the claim's unit, that the checked figures of a correct text could give the claim
+    (review of PR #122, item 5). A percentage counts only for a claim whose unit is %, and the other way round. The
+    claim's multiplier (`USD million`) divides an amount only when the fragment names a unit (`$382.5 million`); a
+    bare number (`382.5`) is already in the claim's unit."""
+    unit = str(claim.get("unit") or "")
+    wants_percent = "%" in unit
+    found = []
+    for figure in figures:
+        fragment = normalize(str(figure.get("claim") or ""))
+        numbers = _NUMBER.findall(fragment)
+        rest = fragment.replace(numbers[0], " ", 1) if numbers else fragment
+        if ("%" in rest) != wants_percent or not isinstance(figure.get("claim_value"), (int, float)):
+            continue
+        divisor = (_multiplier(unit) or 1) if _multiplier(rest) is not None else 1
+        amount = round(float(figure["claim_value"]) / divisor, 6)
+        value = int(amount) if amount.is_integer() and isinstance(claim.get("value"), int) else amount
+        if value not in found:
+            found.append(value)
+    return found
+
+
 def _corrected_claims(evidence: dict, check: dict) -> list[dict]:
+    """The claims with each contradicted one replaced by its correct text; a claim with a value takes the one
+    value `may_correct` found for it."""
     claims = [dict(claim) for claim in evidence.get("claims") or []]
     for item in _contradicted(check):
         index = item["index"]
         claim = {**claims[index], "text": item["correct"]["text"]}
-        figures = item["correct"].get("figures") or []
-        if "value" in claim and figures:
-            amount = round(float(figures[0]["claim_value"]) / (_multiplier(str(claim.get("unit") or "")) or 1), 6)
-            claim["value"] = int(amount) if amount.is_integer() and isinstance(claims[index]["value"], int) else amount
+        if "value" in claim:
+            found = value_candidates(claims[index], item["correct"].get("figures") or [])
+            if len(found) != 1:
+                raise CorrectionRejected("the claim's new value is not one figure of the correct text")
+            claim["value"] = found[0]
         claims[index] = claim
     return claims
 
