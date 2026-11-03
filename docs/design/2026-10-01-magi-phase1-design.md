@@ -2356,6 +2356,11 @@ run: …
 
 （2026-11-01 修订，维护者确认计划 9（`docs/plans/2026-11-01-impl-9-melchior-model.md`）第 12、15 处：第一步的候选来源只收允许的主机（`sec.gov`、`dart.fss.or.kr`、`kind.krx.co.kr`、该标的的公开证据引用过的主机与 `price_source` 对应的交易所主机）；「取价来源连续 3 次运行报错」按 Melchior 每次 `live` 运行记在 `usage/` 的 `price_failures` 计数。）
 
+（2026-11-03 修订，PR #125（计划 9d）审阅：
+1. 暂定裁决（包括 `decision: unresolved`）写下之后，它的 `magi:ruling` issue 保持打开，并指派给在任的维护者；公告写明维护者已被指派，以及他们提交什么（对裁决文件的 `ledger_correction`：`status: final` 确认，`status: overturned` 推翻，`decision` 加 `status: final` 改写）。这份裁决仍为暂定时，之后的运行不关闭这个 issue，也不再起草；裁决确认、推翻或被取代之后才关闭。立即生效的裁决照旧关闭它的 issue。issue 打开期间，该标的照旧不开新的标的状态检查。
+2. 第二步一个候选来源也抓不到时，不在同一次运行写 `decision: unresolved`：之后的运行再抓，并列在等待的工作里；裁决 issue 打开（`created_at`）7 天之后仍抓不到，才写这份未决的暂定裁决，然后按第 1 条处理。异议带来的新来源抓不到时照旧处理。
+3. 第一步得到回答、却没有开裁决 issue（没有找到事件，或没有允许主机上的候选来源）时，该标的 7 天内不再做第一步。不改协议：`usage/melchior/` 一行里任务的 `id` 是自由文字，第一步的任务记为 `asset-status-<标的>`，程序找最近 7 天里已回答的这一任务。失败或缺失的任务照旧在下一次运行重试。）
+
 ### 22.8 更正：有效台账（决策 D40，MC14）
 
 **问题。** 现在 `ledger_correction` 只追加一条记录；`load_book()` 忽略它，收益、未平仓 pick 的列表与快照都不变（协议第 10 节已写明）。

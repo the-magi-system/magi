@@ -7,6 +7,7 @@ import json
 from jsonschema import Draft202012Validator
 
 from engine.consistency import check_repository
+from engine.eventlog import append
 from engine.yamlio import write_yaml
 from tests.util import REPO_ROOT
 
@@ -105,13 +106,27 @@ def test_the_ruling_examples_match_their_schema():
 
 
 def test_the_consistency_check_reads_settlement_and_ruling_files(repo):
-    write_yaml(repo / "ledger/settlements/2027/11/20271123T234730Z-st-000001.yaml", SETTLED)
+    # Plan 9, Task 21: the records reference a version, a pick and an asset that exist in the fixture repository.
+    append(repo, [{"at": "2026-11-20T15:00:00Z", "issue": 61, "action": "update_view", "actor": "arthur.val",
+                   "owner": "arthur", "entity": "ideas/nvda-ai-capex-2026/views/arthur.val.yaml", "version": 1,
+                   "target_date": "2027-11-20"}])
+    settled = {**SETTLED, "idea": "nvda-ai-capex-2026", "actor": "arthur.val"}
+    write_yaml(repo / "ledger/settlements/2027/11/20271123T234730Z-st-000001.yaml", settled)
+    present = {**RULING, "asset": "nvda", "subjects": {
+        "picks": ["pk-000001"], "views": [{"idea": "nvda-ai-capex-2026", "actor": "arthur.val", "version": 1}]}}
     ruling = repo / "ledger/rulings/2027/08/20270831T234730Z-rl-000001.yaml"
-    write_yaml(ruling, RULING)
+    write_yaml(ruling, present)
     assert check_repository(repo) == []
-    write_yaml(ruling, {**RULING, "effect": "soon"})
+    write_yaml(ruling, {**present, "effect": "soon"})
     found = check_repository(repo)
     assert len(found) == 1 and found[0].path == "ledger/rulings/2027/08/20270831T234730Z-rl-000001.yaml"
+    write_yaml(ruling, present)
+    absent = repo / "ledger/rulings/2027/09/20270901T234730Z-rl-000002.yaml"
+    write_yaml(absent, {**present, "id": "rl-000002", "subjects": {"picks": ["pk-000009"], "views": []},
+                        "at": "2027-09-01T23:47:30Z"})
+    found = check_repository(repo)
+    assert len(found) == 1 and found[0].path == "ledger/rulings/2027/09/20270901T234730Z-rl-000002.yaml"
+    assert "pk-000009" in found[0].problem
 
 
 # Evidence checks, protocol 1.13 (design 22.9.2; plan 9, Task 6) ----------------------------------------------------

@@ -428,6 +428,43 @@ def _settlements(root: Path, state: RepoState, ledger, today: str) -> list[Findi
     return found
 
 
+def _ledger_references(root: Path, state: RepoState, ledger) -> list[Finding]:
+    """What settlement records and rulings name must exist (plan 9, Task 21; plan 8, item 11): a settlement's version
+    of a known idea, and its ruling; a ruling's asset, picks and view versions. A ruling's `issue` is a positive
+    number by its schema; that it is a magi:ruling issue is not checked here."""
+    from .melchior.settle import view_versions
+    found: list[Finding] = []
+    versions = {(v["idea"], v["actor"], v["version"]) for v in view_versions(root, state)}
+    picks = {entry.record["pick_id"] for entry in ledger.records.values() if entry.kind == "pick_opened"}
+    rulings = {entry.record.get("id") for entry in ledger.records.values() if entry.kind == "ruling"}
+    for entry in ledger.records.values():
+        record = entry.record
+        if entry.kind == "settlement":
+            key = (record.get("idea"), record.get("actor"), record.get("view_version"))
+            if record.get("idea") not in state.ideas:
+                found.append(Finding(entry.path, f"names the idea {key[0]}, which does not exist"))
+            elif key not in versions:
+                found.append(Finding(entry.path, f"names {key[0]}/{key[1]}/v{key[2]}, which is not a published "
+                                                 "version"))
+            if record.get("ruling") is not None and record["ruling"] not in rulings:
+                found.append(Finding(entry.path, f"names the ruling {record['ruling']}, which does not exist"))
+        elif entry.kind == "ruling":
+            if record.get("asset") not in state.assets:
+                found.append(Finding(entry.path, f"names the asset {record.get('asset')}, which is not registered"))
+            subjects = record.get("subjects") or {}
+            for pick in subjects.get("picks") or []:
+                if pick not in picks:
+                    found.append(Finding(entry.path, f"names the pick {pick}, which does not exist"))
+            for view in subjects.get("views") or []:
+                key = (view.get("idea"), view.get("actor"), view.get("version"))
+                if key not in versions:
+                    found.append(Finding(entry.path, f"names {key[0]}/{key[1]}/v{key[2]}, which is not a published "
+                                                     "version"))
+            if record.get("supersedes") is not None and record["supersedes"] not in rulings:
+                found.append(Finding(entry.path, f"supersedes {record['supersedes']}, which does not exist"))
+    return found
+
+
 def _market(root: Path, state: RepoState, ledger, today: str) -> list[Finding]:
     """Split-like jumps in the closes that enter a computation, and conflicting corporate-action lines."""
     from .market import ACTIONS_DIR, MARKET_DIR, read_actions, read_closes
@@ -503,4 +540,4 @@ def check_repository(root: Path, now: datetime | None = None) -> list[Finding]:
     return _references(state) + _reviews_logged(root, state) + _evidence_checks(root, state) + _reports_logged(root) + \
         _ledger(root) + \
         _corrections(root) + _log(root) + _fills(root, state, ledger) + _settlements(root, state, ledger, today) + \
-        _market(root, state, ledger, today)
+        _ledger_references(root, state, ledger) + _market(root, state, ledger, today)
