@@ -388,3 +388,33 @@ def test_step_two_gives_excerpts_around_the_standing_claims(world, tmp_path, mon
     assert excerpts and NEWER in excerpts[0]["text"] and {"start", "end", "text"} <= set(excerpts[0])
     text = (REPO_ROOT / "agents" / "melchior" / "prompts" / "staleness.md").read_text(encoding="utf-8")
     assert "Read `excerpts_file` first" in text
+
+
+def test_claims_superseded_by_two_sources_get_no_correction(world):
+    # Review of PR #122, second round, change 1: every claim must rest on one new source.
+    from engine.gitops import Git
+    from tests import test_melchior_assist as harness
+    other_page = "https://investors.example.org/q3-other.htm"
+    second = "Tempus AI now expects full-year 2026 gross margin of about 62.5%"
+    ev_id = "ev-20261020-tem-two"
+    add(world, ev_id, OLD_PAGE, "2026-10-20T00:00:00Z", claims=[{"text": GUIDE}, {"text": "Gross margin guidance 61.0%"}])
+    put_check(world["root"], ev_id, pending=(NEW_PAGE, other_page))
+    path = world["root"] / "evidence" / "checks" / f"{ev_id}.yaml"
+    record = load_yaml(path)
+    record["claims"].append({**record["claims"][0], "index": 1, "figures": []})
+    write_yaml(path, record)
+    Git(world["root"]).commit("check", {})
+    output = judged("superseded")
+    output["claims"].append({"index": 1, "verdict": "superseded", "quote": second, "figures": [], "note": None,
+                             "correct": {"text": second, "figures": [{"claim": "62.5%", "source": "62.5%", "unit": None}]}})
+    harness.ROUTES[NEW_PAGE] = page(NEW_HTML)
+    harness.ROUTES[other_page] = page(f"<html><body><p>Released on October 15, 2026.</p><p>{second}.</p></body></html>")
+    try:
+        harness.run(world, outputs={ev_id: output})
+    finally:
+        harness.ROUTES.pop(NEW_PAGE, None)
+        harness.ROUTES.pop(other_page, None)
+    state = RepoState.load(world["root"])
+    assert not [e for e in state.evidence.values() if e.get("supersedes") == ev_id], "one source is cited for both claims"
+    assert state.evidence_checks[ev_id]["currency"] == "superseded"
+    assert requests(world)

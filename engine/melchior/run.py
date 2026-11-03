@@ -589,6 +589,9 @@ def _staleness(job: "Job", task: dict, output: dict, work: Path, keep, model_mod
         check = {"evidence": evidence_id, "status": "discrepancy", "claims": [item for item, _ in result["superseded"]],
                  "source": part, "source_date": None}
         ok, reason = may_correct(state, evidence_id, check, part, new_source=True)
+        if ok and len({source["url"] for _, source in result["superseded"]}) > 1:
+            # Every claim must rest on that one new source, not on several (review of PR #122, second round).
+            ok, reason = False, ONE_SOURCE
         if ok and len(summary["corrections"]) >= MAX_CORRECTIONS:
             summary["dropped"].append(f"{evidence_id}: the run's {MAX_CORRECTIONS} corrections are used; its staleness "
                                       "check is made again next run")
@@ -605,7 +608,7 @@ def _staleness(job: "Job", task: dict, output: dict, work: Path, keep, model_mod
         # The program confirmed a superseded claim, so the record says so whether or not a correction is written
         # (review of PR #122, item 9).
         confirmed = True
-        why = (_superseded_why(state, evidence_id, result["superseded"]) if reason == PARTIAL
+        why = (_superseded_why(state, evidence_id, result["superseded"]) if reason in (PARTIAL, ONE_SOURCE)
                else f"{STALE}, and the program cannot correct it: {reason}")
     elif result["undecided"]:
         why = f"{STALE}, but the program could not confirm it from the fetched text"
@@ -626,9 +629,14 @@ def _staleness(job: "Job", task: dict, output: dict, work: Path, keep, model_mod
         summary["staleness"].append(f"{evidence_id}: superseded, not corrected")
 
 
+ONE_SOURCE = ("a correction from a new source must rest every claim on that one source, and these claims come from "
+              "several")
+
+
 def _superseded_why(state: RepoState, evidence_id: str, pairs) -> str:
-    """The reason of an assist request when a new source supersedes some claims but not every one: the claims, the
-    quotes and the sources (review of PR #122, item 9)."""
+    """The reason of an assist request when new sources supersede claims but no one source supersedes every claim
+    (some claims are left, or the claims come from several sources): each claim, its quote and its source (review of
+    PR #122, item 9 and second round)."""
     claims = (state.evidence.get(evidence_id) or {}).get("claims") or []
 
     def text(index: int) -> str:
@@ -636,9 +644,9 @@ def _superseded_why(state: RepoState, evidence_id: str, pairs) -> str:
 
     named = "; ".join(f"claim {item['index']} (\"{text(item['index'])}\") is superseded by {part['url']}, which says "
                       f"\"{sanitize(str(item.get('quote') or ''))}\"" for item, part in pairs)
-    return (f"{named}. A correction from a new source must supersede every claim of the evidence, and the other "
-            "claims still rest on the old source, so the program writes none; supersede the evidence with the new "
-            "source for the claims it updates")
+    return (f"{named}. A correction from a new source is written only when every claim of the evidence is "
+            "superseded, all from that one source, and that does not hold here, so the program writes none; supersede "
+            "the evidence yourself, citing the source that holds each new fact")
 
 
 def _answer(job: "Job", item: dict, verdict_name: str, text: str, close: str) -> None:
