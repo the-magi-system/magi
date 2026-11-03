@@ -160,11 +160,18 @@ def _ruling_plan(root: Path, state: RepoState, out: Path, plan: dict, gh, left: 
     """At most MAX_RULINGS asset-status checks and ruling drafts (design 22.7; plan 9, Task 21): first the drafts of
     open ruling issues and of challenges that bring new sources, then new checks. The rest wait for the next run."""
     open_issues = status.open_rulings(gh)
-    written = {entry.record.get("issue") for entry in effective_ledger(root).records.values() if entry.kind == "ruling"}
+    ledger = effective_ledger(root)
+    written: dict[int, list[str]] = {}
+    for entry in ledger.records.values():
+        if entry.kind == "ruling":
+            written.setdefault(entry.record.get("issue"), []).append(ledger.ruling_state(entry.record["id"]))
     drafts = []
     for item in plan["rulings_open"]:
         if item["issue"] in written:
-            plan["rulings_written_open"].append(item["issue"])  # its ruling is written: the issue is closed
+            # A provisional ruling keeps its issue open and assigned to the maintainers; once it is final, overturned
+            # or superseded the issue is closed. Either way nothing is drafted again (review of PR #125, change 1).
+            if "provisional" not in written[item["issue"]]:
+                plan["rulings_written_open"].append(item["issue"])
             continue
         kind, urls = rulings.parse_issue(open_issues[item["asset"]].get("body") or "")
         if kind is None or not urls:
@@ -740,8 +747,9 @@ def _asset_status(job: "Job", task: dict, output: dict, model_mode: str) -> None
 
 
 def _ruling(job: "Job", plan: dict, item: dict, output: dict | None, work_dir: Path | None, model_mode: str) -> None:
-    """Step two: write the ruling after the program checks, announce it and close its issue; for a challenge, link
-    the challenge with what came of it."""
+    """Step two: write the ruling after the program checks and announce it. An immediate ruling closes its issue; a
+    provisional one leaves it open and assigns the active maintainers. For a challenge, link the challenge with what
+    came of it."""
     summary = job.summary
     state = RepoState.load(job.root)
     changes, why = rulings.draft(state, item, output, work_dir, job.now, job.run, _ruling_inputs(job, plan),
@@ -764,6 +772,12 @@ def _ruling(job: "Job", plan: dict, item: dict, output: dict | None, work_dir: P
     if item.get("challenge"):
         job.posts.append(rulings.challenge_link(item, f"I drafted `{ruling_id}` from its new source, which supersedes "
                                                       f"`{item['ruling']}`."))
+    elif record["status"] == "provisional":
+        # It counts in no score until a maintainer confirms it, so its issue stays open as the maintainers' reminder
+        # (protocol section 8; review of PR #125, change 1).
+        logins = _maintainers(state)
+        if logins:
+            job.assigns.append((item["issue"], logins))
     else:
         job.closes.append((item["issue"], "completed"))
     summary["rulings"].append(f"{item['asset']}: {ruling_id} ({record['kind']}, {record['effect']})")
@@ -771,7 +785,7 @@ def _ruling(job: "Job", plan: dict, item: dict, output: dict | None, work_dir: P
 
 def _ruling_program(job: "Job", plan: dict, model_mode: str) -> None:
     """What needs no model answer: drafts whose sources could not be read, challenges without a new source, and
-    ruling issues whose ruling is written but that are still open."""
+    ruling issues still open whose ruling is no longer provisional (final, overturned or superseded)."""
     for item in plan.get("rulings_unreadable", []):
         try:
             if item.get("challenge"):
@@ -794,14 +808,17 @@ def _answer(job: "Job", item: dict, verdict_name: str, text: str, close: str) ->
     job.summary["referrals"].append(f"#{item['issue']}: {verdict_name}")
 
 
+def _maintainers(state: RepoState) -> list[str]:
+    return sorted(r["github_login"] for r in state.researchers.values()
+                  if "maintainer" in r.get("roles", []) and r.get("status") == "active" and r.get("github_login"))
+
+
 def _nonpublic_referral(job: "Job", item: dict) -> None:
     """A referral of non-public evidence: answered once, assigned to the active maintainers and left open."""
     text = (f"`{item['evidence']}` is non-public, so the program cannot check or correct it against a source. I leave "
             "this referral open for the maintainers.")
     job.posts.append((item["issue"], "fact-layer", item["evidence"], referrals.reply(item, "non-public", text)))
-    state = RepoState.load(job.root)
-    logins = sorted(r["github_login"] for r in state.researchers.values()
-                    if "maintainer" in r.get("roles", []) and r.get("status") == "active" and r.get("github_login"))
+    logins = _maintainers(RepoState.load(job.root))
     if logins:
         job.assigns.append((item["issue"], logins))
     job.summary["referrals"].append(f"#{item['issue']}: non-public, left to the maintainers")

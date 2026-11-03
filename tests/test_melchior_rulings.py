@@ -250,3 +250,31 @@ def test_settlements_and_track_records_follow_the_ruling(tmp_path):
     track = compile_records(root)["track.json"]
     pick = track["picks"]["pk-000001"]
     assert pick["state"] == "exited" and pick["terminal"]["ruling"] == "rl-000001"
+
+
+def test_a_provisional_ruling_keeps_its_issue_open_and_assigned_to_the_maintainers(world):
+    # Review of PR #125, change 1.
+    _two_steps(world, drafted(key="$50.00 per share, paid in cash"))
+    [record] = rulings(world)
+    assert record["status"] == "provisional"
+    issue = world["gh"].issues[record["issue"]]
+    assert issue["state"] == "open", "the issue is closed, and nobody is told that the ruling waits for a maintainer"
+    assert issue["assignees"] == ["ThinkwChivalri"], issue["assignees"]
+    run(world, now=LATER)
+    assert world["gh"].issues[record["issue"]]["state"] == "open", "a later run closes it before a maintainer acts"
+    assert len(rulings(world)) == 1
+
+
+def test_the_issue_of_a_provisional_ruling_closes_once_a_maintainer_confirms_it(world):
+    from tests.util import correction
+    _two_steps(world, drafted(key="$50.00 per share, paid in cash"))
+    [record] = rulings(world)
+    notice = next(b for b in bodies(world, record["issue"]) if "ruling-notice rl-000001" in b)
+    assert "maintainers are assigned" in notice and "status: final" in notice and "ledger_correction" in notice
+    ruling_path = next((world["root"] / "ledger" / "rulings").rglob("*.yaml")).relative_to(world["root"]).as_posix()
+    path, fix = correction(ruling_path, {"status": "final"}, "2026-11-01T10:00:00Z", 77)
+    write_yaml(world["root"] / path, fix)
+    commit_all(world["root"], "ledger_correction: confirm rl-000001")
+    run(world, now=datetime(2026, 11, 1, 23, 47, 30, tzinfo=timezone.utc))
+    issue = world["gh"].issues[record["issue"]]
+    assert (issue["state"], issue["state_reason"]) == ("closed", "completed") and len(rulings(world)) == 1

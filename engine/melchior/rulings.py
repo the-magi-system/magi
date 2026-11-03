@@ -8,7 +8,9 @@ candidates, the model drafts the decision, the sources with their quotes and the
 draft and writes `magi/ruling@1`. The program decides the effect: an immediate kind is immediate only when the figure
 or code the decision rests on stands word for word in a checked quote and in the fetched text; otherwise provisional.
 Without any checked source the ruling is `decision: unresolved` and provisional. The ruling is announced in its issue
-and in the threads of the ideas it affects, and the issue is closed.
+and in the threads of the ideas it affects. An immediate ruling closes its issue; a provisional one leaves it open
+and assigned to the active maintainers until it is final, overturned or superseded, and nothing is drafted again in it
+meanwhile (review of PR #125, change 1).
 
 A `request@1` that names a ruling id is a challenge: the next run links it in the ruling issue, once. A challenge
 that brings https links on allowed hosts that the ruling does not cite is drafted again from them; the new ruling
@@ -324,6 +326,12 @@ def notices(state: RepoState, record: dict) -> list[tuple[int, str, str, str]]:
         lines.append(f"- Supersedes: `{record['supersedes']}`")
     for source in record["sources"]:
         lines.append(f"- Source: {source['url']} ({source['date']}): \"{sanitize(source['quote'])}\"")
+    if record["status"] == "provisional":
+        lines += ["", "The active maintainers are assigned to this issue, which stays open until the ruling is "
+                      "decided. A maintainer submits a `ledger_correction` against the ruling file: `fields: {status: "
+                      "final}` confirms it, `fields: {status: overturned}` with a `reason` overturns it, and `fields: "
+                      "{decision: {...}, status: final}` rewrites the decision. The issue is closed once the ruling "
+                      "is final, overturned or superseded."]
     lines += ["", f"Reasoning: {sanitize(record['reasoning'])}", "",
               f"To challenge it, open a `request@1` that names `{ruling_id}`; a new source in it can lead to a ruling "
               "that supersedes this one. Maintainers confirm, overturn or rewrite a ruling with a `ledger_correction`."]

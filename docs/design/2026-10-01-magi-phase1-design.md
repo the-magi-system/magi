@@ -2356,6 +2356,9 @@ run: …
 
 （2026-11-01 修订，维护者确认计划 9（`docs/plans/2026-11-01-impl-9-melchior-model.md`）第 12、15 处：第一步的候选来源只收允许的主机（`sec.gov`、`dart.fss.or.kr`、`kind.krx.co.kr`、该标的的公开证据引用过的主机与 `price_source` 对应的交易所主机）；「取价来源连续 3 次运行报错」按 Melchior 每次 `live` 运行记在 `usage/` 的 `price_failures` 计数。）
 
+（2026-11-03 修订，PR #125（计划 9d）审阅：
+1. 暂定裁决（包括 `decision: unresolved`）写下之后，它的 `magi:ruling` issue 保持打开，并指派给在任的维护者；公告写明维护者已被指派，以及他们提交什么（对裁决文件的 `ledger_correction`：`status: final` 确认，`status: overturned` 推翻，`decision` 加 `status: final` 改写）。这份裁决仍为暂定时，之后的运行不关闭这个 issue，也不再起草；裁决确认、推翻或被取代之后才关闭。立即生效的裁决照旧关闭它的 issue。issue 打开期间，该标的照旧不开新的标的状态检查。）
+
 ### 22.8 更正：有效台账（决策 D40，MC14）
 
 **问题。** 现在 `ledger_correction` 只追加一条记录；`load_book()` 忽略它，收益、未平仓 pick 的列表与快照都不变（协议第 10 节已写明）。
