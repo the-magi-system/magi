@@ -9,6 +9,7 @@ Newest first. Each entry gives the date, what changed, and the request issue tha
 - Evidence check records may hold `filings_read_on` (a date or null): the day step one of a staleness check last read the company's SEC filing list. Step one lists filings after the source's `published_at` the first time and from that day on afterwards, no longer from the later of `published_at` and `checked_at`; only step one moves it, and other checks carry it forward. A new record version that only records `assist_issue` or `superseded_by` keeps `checked_at` and `checked_via_run`.
 - A correction of a claim with a `value` takes the new value from exactly one checked figure of the correct text: a percentage counts only for a claim whose `unit` is %, and the claim's multiplier divides an amount only when the figure names a unit. With no such figure or more than one, no correction is written and an assist request asks for help.
 - An assist request is resolved only by a named public evidence that shares an asset with the old evidence and checks out. A reply that names only non-public evidence gets one note but no longer keeps the request open: it is closed as not planned 90 days after it was opened.
+- When a run's 3 new assist requests are used, a fact-layer referral that needs one is left unanswered until the next run, and a staleness check keeps its `pending_sources` to be judged again next run. A referral whose evidence had an assist request that is now closed is answered without opening a new one, and the reply says so.
 
 ## v1.13 — 2026-11-01
 

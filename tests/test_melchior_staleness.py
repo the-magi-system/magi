@@ -270,3 +270,19 @@ def test_recording_an_assist_issue_or_a_successor_does_not_move_checked_at(world
         assert record["version"] == 2
     record = next(iter(revised(state, ev_id, later, 9, pending_sources=[]).writes.values()))
     assert record["checked_at"] != "2026-09-01T00:00:00Z" and record["checked_via_run"] == 9
+
+
+def test_pending_sources_stay_when_no_new_assist_request_is_left(world):
+    # Review of PR #122, item 7: the candidates are judged again next run instead of being dropped.
+    from tests.test_melchior_assist import PDF
+    for n in range(3):
+        add(world, f"ev-2026101{n}-pdf-old", PDF, f"2026-10-1{n}T00:00:00Z")
+    ev_id = guidance(world, pending=[NEW_PAGE])
+    undecided = judged("superseded", quote="Revenue will be much higher next year")
+    summary = run_staleness(world, ev_id, undecided)
+    record = RepoState.load(world["root"]).evidence_checks[ev_id]
+    assert record["pending_sources"] == [NEW_PAGE] and record["version"] == 1
+    assert len(requests(world)) == 3 and ev_id not in summary["assists"]
+    run_staleness(world, ev_id, undecided)
+    record = RepoState.load(world["root"]).evidence_checks[ev_id]
+    assert record["pending_sources"] == [] and record["assist_issue"]

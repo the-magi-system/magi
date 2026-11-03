@@ -170,3 +170,35 @@ def test_a_referral_on_a_superseded_evidence_is_answered_by_program(world):
     body = replies(world, number)[0]
     assert "already superseded" in body and "`ev-20261021-tem-q2-owner`" in body
     assert world["gh"].issues[number]["state"] == "closed"
+
+
+def test_a_referral_waits_when_no_new_assist_request_is_left(world, monkeypatch):
+    # Review of PR #122, item 7: the run's new requests are used, so the referral is answered next run.
+    from engine.melchior import assist
+    add(world, "ev-20261020-tem-q2", GOOD, "2026-10-20T00:00:00Z", claims=WRONG)
+    number = refer(world, "ev-20261020-tem-q2")
+    monkeypatch.setattr(assist, "MAX_NEW", 0)
+    _, summary = run(world, {"ev-20261020-tem-q2": verdict("needs_assist", reason="Neither source settles it.")})
+    assert len(requests(world)) == 0 and replies(world, number) == []
+    assert world["gh"].issues[number]["state"] == "open"
+    assert any(line.startswith(f"referral #{number}:") and "next run" in line for line in summary["dropped"])
+    monkeypatch.setattr(assist, "MAX_NEW", 3)
+    run(world, {"ev-20261020-tem-q2": verdict("needs_assist", reason="Neither source settles it.")})
+    assert len(requests(world)) == 1 and len(replies(world, number)) == 1
+    assert world["gh"].issues[number]["state"] == "closed"
+
+
+def test_a_referral_reply_does_not_claim_a_request_when_an_earlier_one_is_closed(world):
+    from engine.yamlio import load_yaml, write_yaml
+    add(world, "ev-20261020-tem-q2", GOOD, "2026-10-20T00:00:00Z", claims=WRONG)
+    put_check(world["root"], "ev-20261020-tem-q2", timing="historical", url=GOOD)
+    old = world["gh"].create_issue("Melchior.Magi assist: ev-20261020-tem-q2", "old request", ["magi:assist"])["number"]
+    world["gh"].close(old, "not_planned")
+    path = world["root"] / "evidence" / "checks" / "ev-20261020-tem-q2.yaml"
+    write_yaml(path, {**load_yaml(path), "assist_issue": old})
+    Git(world["root"]).commit("closed request", {})
+    number = refer(world, "ev-20261020-tem-q2")
+    run(world, {"ev-20261020-tem-q2": verdict("needs_assist", reason="Neither source settles it.")})
+    body = replies(world, number)[0]
+    assert "I opened" not in body and "I asked" not in body and f"#{old}" in body and "closed" in body
+    assert list(requests(world)) == [old], "no new request"

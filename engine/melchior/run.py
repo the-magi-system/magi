@@ -465,17 +465,32 @@ def _write_correction(job: "Job", state: RepoState, evidence_id: str, fix: Chang
         job.posts.append((number, "correction", evidence_id, body))
 
 
+def _assist_room(job: "Job", evidence_id: str, record: dict) -> str:
+    """"open" when the evidence has an open assist request, "closed" when one was opened before and is closed,
+    "full" when this run's new requests are used, else "new" (review of PR #122, item 7)."""
+    if evidence_id in job.assist_requests():
+        return "open"
+    if record.get("assist_issue"):
+        return "closed"
+    return "full" if job.assists_new >= assist.MAX_NEW else "new"
+
+
+def _no_room(job: "Job", what: str, then: str) -> None:
+    job.summary["dropped"].append(f"{what}: this run's {assist.MAX_NEW} new assist requests are used; {then}")
+
+
 def _assist(job: "Job", state: RepoState, evidence_id: str, record: dict, reason: str | None,
             model_mode: str) -> int | None:
     """Open the assist request of an evidence, or find its open one (design 22.9.7); returns its number."""
     if reason is None:
         return None
     summary, found = job.summary, job.assist_requests()
-    if evidence_id in found:
+    room = _assist_room(job, evidence_id, record)
+    if room == "open":
         return found[evidence_id]["number"]
-    if record.get("assist_issue"):
+    if room == "closed":
         return None  # a request was opened before and is closed: the evidence stays as it is
-    if job.assists_new >= assist.MAX_NEW:
+    if room == "full":
         summary["dropped"].append(f"{evidence_id}: this run's {assist.MAX_NEW} new assist requests are used; "
                                   "it is asked next run")
         return None
@@ -578,6 +593,10 @@ def _staleness(job: "Job", task: dict, output: dict, work: Path, keep, model_mod
         keep(assist.revised(state, evidence_id, job.now, job.run, pending_sources=[], next_review=later), evidence_id)
         summary["staleness"].append(f"{evidence_id}: current")
         return
+    if _assist_room(job, evidence_id, record) == "full":
+        # The candidates stay, and are judged again next run (review of PR #122, item 7).
+        _no_room(job, evidence_id, "its staleness check is made again next run")
+        return
     summary["discrepancies"].append(f"{evidence_id}: {why}")
     number = _assist(job, state, evidence_id, record, why, model_mode)
     keep(assist.revised(state, evidence_id, job.now, job.run, pending_sources=[],
@@ -639,13 +658,24 @@ def _referral(job: "Job", item: dict, output: dict | None, work_dir: Path | None
     else:
         detail = unreadable or referrals.reason_text(output or {}) or "the fetched sources do not settle it"
         why = f"Caspar.Magi referred it, and the fetched sources do not settle it: {detail}"
+    room = _assist_room(job, evidence_id, record or {})
+    if room == "full":
+        # Answered next run, when a request can be opened (review of PR #122, item 7).
+        _no_room(job, f"referral #{item['issue']}", "it is answered next run")
+        return
     summary["discrepancies"].append(f"{evidence_id}: {why}")
     number = _assist(job, state, evidence_id, record or {}, why, model_mode)
-    if number and record is not None:
+    if number and record is not None and room == "new":
         keep(assist.revised(state, evidence_id, job.now, job.run, assist_issue=number), evidence_id)
-    link = f"I opened #{number} to ask for a readable public source." if number else \
-        "I asked for a readable public source in an assist request."
-    _answer(job, item, name, f"{why[0].upper()}{why[1:]}. {link}", "completed")
+    if room == "closed":
+        link = (f"An earlier assist request for it, #{(record or {}).get('assist_issue')}, is closed, so no new one is "
+                "opened and the evidence stays as it is.")
+    elif number:
+        link = (f"I opened #{number} to ask for a readable public source." if room == "new" else
+                f"The open assist request #{number} asks for a readable public source.")
+    else:
+        link = "In a live run an assist request asks for a readable public source."
+    _answer(job, item, name, f"{why[0].upper()}{why[1:].rstrip('.')}. {link}", "completed")
 
 
 def _stale_unreadable(job: "Job", evidence_ids: list[str], keep, model_mode: str) -> None:
@@ -653,6 +683,9 @@ def _stale_unreadable(job: "Job", evidence_ids: list[str], keep, model_mode: str
         state = RepoState.load(job.root)
         record = state.evidence_checks.get(evidence_id)
         if record is None:
+            continue
+        if _assist_room(job, evidence_id, record) == "full":
+            _no_room(job, evidence_id, "its staleness check is made again next run")
             continue
         number = _assist(job, state, evidence_id, record, f"{STALE}, but the newer sources could not be read",
                          model_mode)
