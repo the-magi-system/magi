@@ -1,3 +1,5 @@
+import pytest
+
 from engine.errors import E_SEMANTIC
 from engine.proposal import Proposal
 from engine.repo import RepoState
@@ -162,3 +164,46 @@ def test_ledger_correction_target_must_exist(state):
 
 def test_thread_is_a_system_field():
     assert paths(system_field_errors("create_idea", {"thread": 3})) == {"/payload/thread"}
+
+
+# Protocol 1.15 (maintainer decision 2026-11-04): a claim's `value` is a number written in the claim's own text.
+
+VALUE_CASES = [
+    ("Revenue was $599.6 million", 599.6, "USD million", True),
+    ("Revenue was $1.2 billion", 1200, "USD million", True),
+    ("Operating loss was minus $86 million", -86, "USD million", True),
+    ("Guidance of $80 million to $100 million", 90, "USD million", False),
+    ("175,390,967 Class A shares and 5,043,789 Class B shares", 180434756, "shares", False),
+    ("175,390,967 Class A shares and 5,043,789 Class B shares", 175390967, "shares", True),
+]
+VALUE_MESSAGE = "value {} is not a number written in the claim's text; give a figure the source states, or leave value out"
+
+
+@pytest.mark.parametrize("text, value, unit, accepted", VALUE_CASES)
+def test_a_claim_value_must_be_a_number_written_in_the_claim(state, text, value, unit, accepted):
+    claims = [{"text": "FY27 capex guided up 15% year over year", "value": 15, "unit": "% yoy"},
+              {"text": text, "value": value, "unit": unit}]
+    errors, _ = check_semantics(state, Proposal("add_evidence", "john.research", evidence_payload(claims=claims)))
+    if accepted:
+        assert errors == []
+    else:
+        assert [(e.code, e.path, e.message) for e in errors] == [
+            (E_SEMANTIC, "/payload/claims/1/value", VALUE_MESSAGE.format(value))]
+
+
+def test_supersede_evidence_with_a_value_not_in_the_text_is_rejected(state):
+    payload = evidence_payload(supersedes="ev-20261001-msft-fy27-capex", claims=[
+        {"text": "Guidance of $250 million to $300 million", "value": 275, "unit": "USD million"}])
+    errors, _ = check_semantics(state, Proposal("supersede_evidence", "john.research", payload))
+    assert [(e.path, e.message) for e in errors] == [("/payload/claims/0/value", VALUE_MESSAGE.format(275))]
+
+
+def test_evidence_accepted_before_1_15_is_not_rechecked_by_consistency(repo):
+    from engine.consistency import check_repository
+    from engine.yamlio import load_yaml
+    path = repo / "evidence" / "ev-20261001-msft-fy27-capex.yaml"
+    record = load_yaml(path)
+    write_yaml(path, {**record, "claims": [
+        {"text": "Guidance of $80 million to $100 million", "value": 90, "unit": "USD million"},
+        {"text": "175,390,967 Class A shares and 5,043,789 Class B shares", "value": 180434756, "unit": "shares"}]})
+    assert check_repository(repo) == []

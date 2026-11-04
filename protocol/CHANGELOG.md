@@ -2,6 +2,11 @@
 
 Newest first. Each entry gives the date, what changed, and the request issue that prompted it, if any.
 
+## v1.15 — 2026-11-04
+
+- `add_evidence` and `supersede_evidence` reject a claim whose `value` is not a number written in the claim's own text (maintainer decision 2026-11-04; section 9). A value is accepted when its absolute value equals a number of the text read as written (thousands separators, a leading minus, brackets or the word "minus" aside), or the amount that the number and the multiplier directly after it give, divided by the multiplier of the claim's `unit` (1 when the unit names none): `$599.6 million` gives 599.6 and `$1.2 billion` gives 1200 in `USD million`. Otherwise the proposal is rejected at `/payload/claims/<i>/value` with `E_SEMANTIC`: "value <v> is not a number written in the claim's text; give a figure the source states, or leave value out". Production run 41775470287 found claims whose `value` was the midpoint of a range or the sum of two share counts; Melchior.Magi's figure check requires `value` to equal a checked figure, so such a claim could never be supported, and its owner learnt it only from an assist request weeks later. The rule uses the figure check's own readers.
+- Evidence accepted before 1.15 is not affected: the consistency check validates stored evidence against its schema and does not apply this rule. The JSON schemas do not change.
+
 ## 2026-11-04 — the figure check reads percent headers and Korean multipliers without 원 (no version change)
 
 - A Melchior.Magi preview run on production (run 41718539976, `ev-20261031-jvm-2026-valueup-returns`) found two figures the program refused although they agree. A unit taken from a table header that names a percentage, such as `(%)` in `배당성향(%)`, now reads as a percentage with the factor 1. The Korean multipliers 조, 억, 천만, 백만, 만 and 천 written without 원, as in `0.5조` or `1,234억`, now read as multipliers, but only directly after the number and not followed by another Hangul syllable, so that a word such as 만기 is never read as 만; the forms with 원 still come first. The significant numbers a figure must cover follow the same rule. Whatever the program cannot read is still `not_found`.

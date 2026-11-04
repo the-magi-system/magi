@@ -3,15 +3,18 @@ from __future__ import annotations
 
 import json
 from datetime import datetime
+from decimal import Decimal, InvalidOperation
 from typing import Callable
 
 from jsonschema import Draft202012Validator
 
 from .distribution import check_distribution
 from .errors import E_SEMANTIC, MagiError
+from .fetch import normalize
 from .holding import holding_error
 from .ids import RESERVED_SUFFIX, agent_suffix, compose_agent_id
 from .ledger import CORRECTABLE, effective_ledger, record_kind
+from .melchior.quotes import _NUMBER, _UNIT_AFTER, _multiplier, parse_amount
 from .methodology import check_publish, check_view_methodology
 from .profiles import check_publish_profile, check_view_profile
 from .proposal import Proposal
@@ -104,8 +107,33 @@ def _create_idea(state: RepoState, actor: str, payload: dict) -> Result:
     return errors, []
 
 
+def _value_written(claim: dict) -> bool:
+    """Whether |value| is a number written in the claim's text (protocol 1.15): as written, thousands separators,
+    a sign, brackets or the word "minus" aside, or as the amount the number and the multiplier directly after it give,
+    divided by the multiplier of the claim's `unit` (1 when it names none). The readers are the figure check's own."""
+    try:
+        wanted = abs(Decimal(str(claim["value"])))
+    except (InvalidOperation, ValueError):
+        return False
+    text = normalize(str(claim.get("text") or ""))
+    divisor = Decimal(_multiplier(normalize(str(claim.get("unit") or ""))) or 1)
+    for match in _NUMBER.finditer(text):
+        if Decimal(match.group(0).replace(",", "")) == wanted:
+            return True
+        after = _UNIT_AFTER.match(text, match.end())
+        amount = parse_amount(match.group(0) + after.group(0)) if after else None
+        if amount is not None and amount[0] / divisor == wanted:
+            return True
+    return False
+
+
 def _evidence(state: RepoState, actor: str, payload: dict) -> Result:
     errors = []
+    for i, claim in enumerate(payload.get("claims") or []):
+        if isinstance(claim, dict) and "value" in claim and not _value_written(claim):
+            errors.append(_error(f"/payload/claims/{i}/value", f"value {claim['value']} is not a number written in the "
+                                                               "claim's text; give a figure the source states, or leave "
+                                                               "value out"))
     for i, asset in enumerate(payload["assets"]):
         if asset not in state.assets:
             errors.append(_error(f"/payload/assets/{i}", f"asset '{asset}' is not registered"))
