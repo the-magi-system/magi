@@ -1,0 +1,177 @@
+schema: magi/evidence-check@1
+evidence: ev-20261020-tem-personalis-merger-terms
+status: unverified
+reason: not_found
+source_date:
+  quote: October 2, 2026
+  date: '2026-10-02'
+  filing_date: '2026-10-02'
+  matches: true
+claims:
+- index: 0
+  verdict: supported
+  timing: standing
+  quote: '“Exchange Ratio,” which will be: (a) 0.3356, if the Tempus Stock Price is equal to or less than $48.42 (the “Floor Price”); or (b) the quotient of $16.25 divided by the Tempus Stock Price, if the Tempus Stock Price'
+  figures:
+  - claim: $16.25
+    source: $16.25
+    unit: null
+    claim_value: 16.25
+    source_value: 16.25
+  - claim: '0.3356'
+    source: '0.3356'
+    unit: null
+    claim_value: 0.3356
+    source_value: 0.3356
+  - claim: $48.42
+    source: $48.42
+    unit: null
+    claim_value: 48.42
+    source_value: 48.42
+  correct: null
+  note: The summary of the merger consideration states the exchange ratio of 0.3356 at or below the $48.42 floor price, and $16.25 divided by the Tempus stock price above it, paid in Tempus Class A Common Stock.
+- index: 1
+  verdict: supported
+  timing: standing
+  quote: Cash Election”) to pay cash for up to 50% of the aggregate number of outstanding shares of Personalis Common Stock (subject to potential reduction to preserve the intended tax treatment of the Mergers).
+  figures:
+  - claim: 50%
+    source: 50%
+    unit: null
+    claim_value: 50
+    source_value: 50
+  correct: null
+  note: The 50% cash election cap is in the merger consideration summary. The Financing of the Mergers section says Tempus has not yet determined whether to exercise the election and expects to fund it through cash on hand, borrowing under existing or newly arranged credit facilities and/or offerings of equity or equity-linked securities.
+- index: 2
+  verdict: supported
+  timing: standing
+  quote: by Personalis, if the Tempus Stock Price, as finally determined at Closing, is less than $46.00 (the “Lower
+  figures:
+  - claim: $46.00
+    source: $46.00
+    unit: null
+    claim_value: 46
+    source_value: 46
+  correct: null
+  note: The termination provisions give Personalis a right to terminate if the Tempus stock price as finally determined at closing is below the $46.00 Lower Floor Price.
+- index: 3
+  verdict: not_found
+  timing: standing
+  quote: null
+  figures: []
+  correct: null
+  note: null
+- index: 4
+  verdict: supported
+  timing: historical
+  quote: 'Revenue
+
+    79
+
+    115
+
+    172'
+  figures:
+  - claim: $115 million
+    source: '115'
+    unit: (dollars in millions)
+    claim_value: 115000000
+    source_value: 115000000
+  correct: null
+  note: The table of the Tempus Projections for Personalis (dollars in millions) shows revenue of 115 for 2027E, the second column after 79 for 2026E.
+- index: 5
+  verdict: supported
+  timing: historical
+  quote: 'Adj. EBITDA(1)
+
+    (95
+
+    )
+
+    (86
+
+    )
+
+    (73
+
+    )
+
+    (28
+
+    )
+
+    0
+
+    25
+
+    68
+
+    137
+
+    243
+
+    400
+
+    561
+
+    764
+
+    1,008
+
+    1,287
+
+    1,591
+
+    Unlevered Free Cash Flow(2)
+
+    (112
+
+    )
+
+    (113
+
+    )'
+  figures:
+  - claim: minus $86 million
+    source: '(86
+
+      )'
+    unit: (dollars in millions)
+    claim_value: 86000000
+    source_value: 86000000
+  - claim: minus $113 million
+    source: '(113
+
+      )'
+    unit: (dollars in millions)
+    claim_value: 113000000
+    source_value: 113000000
+  correct: null
+  note: The Tempus Projections for Personalis table (dollars in millions) shows Adj. EBITDA of (86) for 2027E and 0 for 2030E, and Unlevered Free Cash Flow of (113) for 2027E.
+source:
+  url: https://www.sec.gov/Archives/edgar/data/1717115/000119312526412289/d864810ds4a.htm
+  final_url: https://www.sec.gov/Archives/edgar/data/1717115/000119312526412289/d864810ds4a.htm
+  http_status: 200
+  content_type: text/html
+  format: html
+  parts: 1
+  decoding: detected
+  fetched_at: '2026-11-04T04:49:19Z'
+  sha256: 671c56cc52f8f5f8c18fb775154c35f7c1222d99fb2fdd28f19071481f34f5bd
+  chars: 1000000
+  truncated: true
+link: ok
+currency: current
+superseded_by: null
+same_source_as: []
+pending_sources: []
+assist_issue: 128
+filings_read_on: null
+filings_listed: []
+next_review: '2027-02-02'
+input_commit: dc3f3ee20de3b649c8b79193d8ea6befbe38c8c9
+prompt_sha256: c4a7fd588a3661762d0f8435ff02b0f2db248013b11483706ef47693511892d7
+model: claude-opus-5-5
+version: 1
+checked_at: '2026-11-04T04:51:45Z'
+checked_via_run: 41775470287

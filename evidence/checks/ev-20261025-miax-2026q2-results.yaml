@@ -1,0 +1,161 @@
+schema: magi/evidence-check@1
+evidence: ev-20261025-miax-2026q2-results
+status: unverified
+reason: not_found
+source_date:
+  quote: August 5, 2026
+  date: '2026-08-05'
+  filing_date: '2026-08-05'
+  matches: true
+claims:
+- index: 0
+  verdict: supported
+  timing: historical
+  quote: Net revenue, defined as revenues less cost of revenues, grew 35%, or $36.5 million, to a record $141.1 million, compared to $104.7 million in the prior-year period.
+  figures:
+  - claim: $141.1 million
+    source: $141.1 million
+    unit: null
+    claim_value: 141100000
+    source_value: 141100000
+  - claim: 35%
+    source: 35%
+    unit: null
+    claim_value: 35
+    source_value: 35
+  - claim: $104.7 million
+    source: $104.7 million
+    unit: null
+    claim_value: 104700000
+    source_value: 104700000
+  correct: null
+  note: The second-quarter highlights state net revenue of $141.1 million, up 35% from $104.7 million.
+- index: 1
+  verdict: supported
+  timing: historical
+  quote: Adjusted EBITDA increased 57% to $76.8 million, compared to $49.1 million in the prior-year period, driven primarily by strong growth in net revenues. • Adjusted EBITDA margin expanded to 54% from 47% in the prior-year period.
+  figures:
+  - claim: $76.8 million
+    source: $76.8 million
+    unit: null
+    claim_value: 76800000
+    source_value: 76800000
+  - claim: 57%
+    source: 57%
+    unit: null
+    claim_value: 57
+    source_value: 57
+  - claim: 54%
+    source: 54%
+    unit: null
+    claim_value: 54
+    source_value: 54
+  - claim: 47%
+    source: 47%
+    unit: null
+    claim_value: 47
+    source_value: 47
+  correct: null
+  note: The highlights give adjusted EBITDA of $76.8 million, up 57%, and a margin of 54% against 47%.
+- index: 2
+  verdict: supported
+  timing: historical
+  quote: Adjusted diluted EPS* $ 0.48 $ 0.48 — %
+  figures:
+  - claim: $0.48
+    source: '0.48'
+    unit: null
+    claim_value: 0.48
+    source_value: 0.48
+  correct: null
+  note: The summary table shows adjusted diluted EPS of $0.48 in both 2Q26 and 2Q25.
+- index: 3
+  verdict: supported
+  timing: historical
+  quote: MIH ADV – Equity and ETF (in thousands)(1) .................... 10,989 8,767 2,222 25.3 % 10,927 8,676 2,251 25.9 % MIH market share ............................................................................ 16.5 % 16.7 %
+  figures:
+  - claim: 10,989 thousand contracts
+    source: 10,989
+    unit: (in thousands)
+    claim_value: 10989000
+    source_value: 10989000
+  - claim: 25.3%
+    source: 25.3 %
+    unit: null
+    claim_value: 25.3
+    source_value: 25.3
+  - claim: 16.5%
+    source: 16.5 %
+    unit: null
+    claim_value: 16.5
+    source_value: 16.5
+  - claim: 16.7%
+    source: 16.7 %
+    unit: null
+    claim_value: 16.7
+    source_value: 16.7
+  correct: null
+  note: The key business metrics table shows MIH options ADV of 10,989 thousand, up 25.3%, and market share of 16.5% against 16.7%.
+- index: 4
+  verdict: supported
+  timing: historical
+  quote: Total Options revenue per contract (“RPC”)(2) .............................. $0.124 $0.117 $0.007 6.0 %
+  figures:
+  - claim: $0.124
+    source: $0.124
+    unit: null
+    claim_value: 0.124
+    source_value: 0.124
+  - claim: $0.117
+    source: $0.117
+    unit: null
+    claim_value: 0.117
+    source_value: 0.117
+  correct: null
+  note: The metrics table shows options RPC of $0.124 against $0.117; the footnote defines RPC as net transaction fees per contract.
+- index: 5
+  verdict: supported
+  timing: historical
+  quote: The company's options business benefited from elevated market volatility during the quarter, which led to a 25% year-over-year increase in average daily volume to 11.0 million contracts.
+  figures:
+  - claim: 25%
+    source: 25%
+    unit: null
+    claim_value: 25
+    source_value: 25
+  correct: null
+  note: The release says this in so many words.
+- index: 6
+  verdict: not_found
+  timing: standing
+  quote: Adjusted operating expenses, which exclude share-based compensation, depreciation and amortization, and litigation expenses, in a range between $260 million and $270 million, down from previous guidance of between $265 million and $275 million; • Share-based compensation expense in a range between $29 million and $32 million, up from previous guidance of between $27 million and $30 million; • Capital expenditures, including capitalization of internally developed software, in a range between $40 million and $45 million, unchanged from previous guidance;
+  figures: []
+  correct: null
+  note: a figure could not be checked
+source:
+  url: https://www.sec.gov/Archives/edgar/data/1438472/000143847226000040/miaxq22026earningsreleas.htm
+  final_url: https://www.sec.gov/Archives/edgar/data/1438472/000143847226000040/miaxq22026earningsreleas.htm
+  http_status: 200
+  content_type: text/html
+  format: html
+  parts: 1
+  decoding: detected
+  fetched_at: '2026-11-04T04:49:19Z'
+  sha256: b755194b384c7c37acb0f1a0cd55ce7b2c55e06ffe152e7e2cdcac4ce173b2a5
+  chars: 49841
+  truncated: false
+link: ok
+currency: current
+superseded_by: null
+same_source_as: []
+pending_sources: []
+assist_issue: null
+filings_read_on: null
+filings_listed: []
+next_review: '2027-02-02'
+input_commit: dc3f3ee20de3b649c8b79193d8ea6befbe38c8c9
+prompt_sha256: c4a7fd588a3661762d0f8435ff02b0f2db248013b11483706ef47693511892d7
+model: claude-opus-5-5
+version: 1
+checked_at: '2026-11-04T04:51:45Z'
+checked_via_run: 41775470287
