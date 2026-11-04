@@ -24,8 +24,14 @@ _WORDS = [("trillion", 10**12), ("billion", 10**9), ("million", 10**6), ("thousa
           ("원", 1), ("十亿", 10**9), ("千万", 10**7), ("百万", 10**6), ("亿", 10**8), ("万", 10**4)]
 _NUMBER = re.compile(r"\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?")
 _DATES = re.compile(r"\d{4}-\d{1,2}-\d{1,2}|\d{4}年\d{1,2}月(?:\d{1,2}日)?|\d{4}[./]\d{1,2}[./]\d{1,2}")
-_UNIT_AFTER = re.compile(r"\s*(%|trillion|billion|million|thousand|조원|억원|백만원|천만원|만원|천원|원|十亿|千万|百万|亿|万)",
-                         re.IGNORECASE)
+# Korean multipliers written without 원 (0.5조, 1,234억): read only directly after the number and not followed by
+# another Hangul syllable, so that a word such as 만기 or 천연 is never read as 만 or 천. The 원 forms come first.
+_KOREAN = {"조원": 10**12, "억원": 10**8, "천만원": 10**7, "백만원": 10**6, "만원": 10**4, "천원": 10**3,
+           "조": 10**12, "억": 10**8, "천만": 10**7, "백만": 10**6, "만": 10**4, "천": 10**3}
+_KOREAN_AFTER = re.compile(r"(조원|억원|천만원|백만원|만원|천원)|(천만|백만|조|억|만|천)(?![가-힣])")
+_UNIT_AFTER = re.compile(r"\s*(%|trillion|billion|million|thousand|조원|억원|백만원|천만원|만원|천원|원|十亿|千万|百万|亿|万)"
+                         r"|(천만|백만|조|억|만|천)(?![가-힣])", re.IGNORECASE)
+_PERCENT = re.compile(r"%|percent|퍼센트|百分比")
 
 
 def quote_in(quote: str | None, source_text: str) -> bool:
@@ -44,15 +50,17 @@ def _multiplier(text: str) -> int | None:
 
 
 def parse_amount(fragment: str | None, unit: str | None = None) -> tuple[Decimal, Decimal] | None:
-    """(amount, precision) of a fragment such as `$382.5 million`, `(7,486,679,200)` or `7.486679十亿韩元`; None when
-    it holds no single number or cannot be read. The precision is half a unit of the fragment's last digit. `unit`,
-    for example a table header `(단위 : 천원)` or a claim's `USD million`, applies when the fragment names no unit."""
+    """(amount, precision) of a fragment such as `$382.5 million`, `(7,486,679,200)`, `7.486679十亿韩元` or `0.5조`;
+    None when it holds no single number or cannot be read. The precision is half a unit of the fragment's last digit.
+    `unit`, for example a table header `(단위 : 천원)`, a row header `배당성향(%)` or a claim's `USD million`, applies
+    when the fragment names no unit; a unit that names a percentage reads with the factor 1."""
     if not isinstance(fragment, str):
         return None
     text = normalize(fragment).replace("−", "-")
-    numbers = _NUMBER.findall(text)
-    if len(numbers) != 1:
+    matches = list(_NUMBER.finditer(text))
+    if len(matches) != 1:
         return None
+    numbers = [matches[0].group(0)]
     digits = numbers[0].replace(",", "")
     try:
         amount = Decimal(digits)
@@ -60,9 +68,13 @@ def parse_amount(fragment: str | None, unit: str | None = None) -> tuple[Decimal
         return None
     decimals = len(digits.split(".")[1]) if "." in digits else 0
     rest = text.replace(numbers[0], " ", 1)
-    factor = _multiplier(rest)
+    korean = _KOREAN_AFTER.match(text, matches[0].end())
+    factor = _KOREAN[korean.group(0)] if korean else _multiplier(rest)
     if factor is None and "%" not in rest and unit:
-        factor = _multiplier(normalize(unit))
+        unit_text = normalize(unit)
+        factor = _multiplier(unit_text)
+        if factor is None and _PERCENT.search(unit_text.lower()):
+            factor = 1  # a header such as 배당성향(%): the number is a percentage
         if factor is None:
             return None  # a unit that cannot be read
     factor = factor or 1
