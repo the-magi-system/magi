@@ -121,3 +121,40 @@ def test_a_contradicted_claim_needs_the_correct_figure_in_its_quote():
     item["correct"]["figures"] = [{"claim": "7.486679十亿韩元", "source": "(7,486,679,201)", "unit": UNIT}]
     result = verdict(claim, item, text)
     assert result["verdict"] == "not_found" and result["correct"] is None
+
+
+# Production preview run 41718539976 (ev-20261031-jvm-2026-valueup-returns, a KRX page) ---------------------------
+
+def test_a_percent_unit_from_a_table_header_is_read():
+    from engine.melchior.quotes import parse_amount
+    assert parse_amount("26.4", "(%)") == (Decimal("26.4"), Decimal("0.05"))
+    assert parse_amount("26.4", "배당성향(%)") == (Decimal("26.4"), Decimal("0.05"))
+
+
+def test_korean_multipliers_without_won_directly_after_the_number():
+    from engine.melchior.quotes import parse_amount, significant_numbers
+    assert parse_amount("0.5조")[0] == Decimal("5E11") and parse_amount("0.5조")[1] == Decimal("5E10")
+    assert parse_amount("1,234억")[0] == Decimal("1.234E11")
+    assert parse_amount("3천만")[0] == Decimal("3E7") and parse_amount("12백만")[0] == Decimal("1.2E7")
+    assert parse_amount("7만")[0] == Decimal("7E4") and parse_amount("8천")[0] == Decimal("8E3")
+    assert parse_amount("0.5조원")[0] == Decimal("5E11") and parse_amount("7,487백만원")[0] == Decimal("7.487E9")
+    assert significant_numbers("국내 0.16조, 해외 7억") == ["0.16", "7"]
+
+
+def test_man_or_cheon_not_directly_after_the_number_keeps_its_result():
+    from engine.melchior.quotes import parse_amount, significant_numbers
+    assert parse_amount("3년 만기") == (Decimal("3"), Decimal("0.5"))
+    assert parse_amount("100 천") == (Decimal("100"), Decimal("0.5"))
+    assert parse_amount("100만기") == (Decimal("100"), Decimal("0.5"))
+    assert parse_amount("5년 천연가스") == (Decimal("5"), Decimal("0.5"))
+    assert significant_numbers("3년 만기") == [] and significant_numbers("5만기") == []
+
+
+def test_the_valueup_figures_agree():
+    from engine.melchior.quotes import check_figures
+    payout = [{"claim": "26.4%", "source": "26.4", "unit": "(%)"}]
+    assert check_figures("净利润派息比26.4%。", "배당성향(%)\n26.4", "배당성향(%)\n26.4", payout)[0] is True
+    target = [{"claim": "5,000亿韩元", "source": "0.5조", "unit": None}]
+    assert check_figures("2030年收入目标为5,000亿韩元", "30년 0.5조", "30년 0.5조", target)[0] is True
+    wrong = [{"claim": "5,000亿韩元", "source": "0.6조", "unit": None}]
+    assert check_figures("2030年收入目标为5,000亿韩元", "30년 0.6조", "30년 0.6조", wrong)[0] is False
