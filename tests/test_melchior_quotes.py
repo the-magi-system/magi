@@ -158,3 +158,53 @@ def test_the_valueup_figures_agree():
     assert check_figures("2030年收入目标为5,000亿韩元", "30년 0.5조", "30년 0.5조", target)[0] is True
     wrong = [{"claim": "5,000亿韩元", "source": "0.6조", "unit": None}]
     assert check_figures("2030年收入目标为5,000亿韩元", "30년 0.6조", "30년 0.6조", wrong)[0] is False
+
+
+# Review of #126 at 45422e6: counters and currencies after the multiplier, 십만 to 천억, and article numbers ---------
+
+def test_a_counter_or_currency_after_the_multiplier_does_not_block_it():
+    from engine.melchior.quotes import parse_amount
+    assert parse_amount("10만주")[0] == Decimal("1E5")
+    assert parse_amount("5억달러")[0] == Decimal("5E8")
+    assert parse_amount("3천명")[0] == Decimal("3E3")
+    assert parse_amount("1만대")[0] == Decimal("1E4")
+    for fragment, expected in (("2조엔", "2E12"), ("3억위안", "3E8"), ("4억유로", "4E8"), ("5천개", "5E3"),
+                               ("6천건", "6E3"), ("7만톤", "7E4")):
+        assert parse_amount(fragment)[0] == Decimal(expected), fragment
+    assert parse_amount("100만기") == (Decimal("100"), Decimal("0.5"))  # any other Hangul still blocks it
+
+
+def test_sip_man_to_cheon_eok_are_read():
+    from engine.melchior.quotes import parse_amount
+    for fragment in ("5천억원", "5천억", "5 천억원"):
+        assert parse_amount(fragment)[0] == Decimal("5E11"), fragment
+    assert parse_amount("3백억원")[0] == Decimal("3E10")
+    assert parse_amount("2십억")[0] == Decimal("2E9")
+    assert parse_amount("5십만")[0] == Decimal("5E5")
+    assert parse_amount("1조2천억원") is None  # two digit groups stay unread
+
+
+def test_an_article_number_is_not_an_amount():
+    from engine.melchior.quotes import parse_amount, significant_numbers
+    assert parse_amount("제3조") == (Decimal("3"), Decimal("0.5"))
+    assert significant_numbers("제3조") == []
+    assert parse_amount("제104조의27") is None
+
+
+def test_significant_numbers_follow_the_same_rules():
+    from engine.melchior.quotes import significant_numbers
+    assert significant_numbers("자기주식 10만주 취득") == ["10"]
+    assert significant_numbers("매출 5억달러, 설치 3천대") == ["5", "3"]
+    assert significant_numbers("5천억원") == ["5"] and significant_numbers("7만기") == []
+
+
+def test_counter_currency_and_large_multiplier_figures_agree():
+    from engine.melchior.quotes import check_figures
+    shares = [{"claim": "10万股", "source": "10만주", "unit": None}]
+    assert check_figures("回购10万股", "자기주식 10만주 취득", "자기주식 10만주 취득", shares)[0] is True
+    dollars = [{"claim": "5亿美元", "source": "5억달러", "unit": None}]
+    assert check_figures("收入5亿美元", "매출 5억달러", "매출 5억달러", dollars)[0] is True
+    won = [{"claim": "5,000亿韩元", "source": "5천억원", "unit": None}]
+    assert check_figures("5,000亿韩元", "매출 목표 5천억원", "매출 목표 5천억원", won)[0] is True
+    smaller = [{"claim": "500亿韩元", "source": "5천억원", "unit": None}]
+    assert check_figures("500亿韩元", "매출 목표 5천억원", "매출 목표 5천억원", smaller)[0] is False

@@ -2,6 +2,10 @@
 
 Newest first. Each entry gives the date, what changed, and the request issue that prompted it, if any.
 
+## 2026-11-04 — the figure check reads Korean counters, currencies and 십만 to 천억 (no version change)
+
+- Melchior.Magi's figure check reads a Korean multiplier directly after the number when the next Hangul syllable is 원 or one of 달러, 엔, 위안, 유로, 주, 명, 개, 건, 톤 and 대, as in `10만주`, `5억달러` or `1만대`; any other syllable still blocks it, so `100만기` is unchanged. It also reads 십만, 십억, 백억 and 천억, with or without 원, so `5천억원` is 5×10^11. A number directly after 제, such as the article `제3조`, takes no Korean multiplier. A number with two digit groups, such as `1조2천억원`, stays unread. The significant numbers a figure must cover follow the same rules, and whatever the program cannot read is still `not_found`.
+
 ## 2026-11-04 — the figure check reads percent headers and Korean multipliers without 원 (no version change)
 
 - A Melchior.Magi preview run on production (run 41718539976, `ev-20261031-jvm-2026-valueup-returns`) found two figures the program refused although they agree. A unit taken from a table header that names a percentage, such as `(%)` in `배당성향(%)`, now reads as a percentage with the factor 1. The Korean multipliers 조, 억, 천만, 백만, 만 and 천 written without 원, as in `0.5조` or `1,234억`, now read as multipliers, but only directly after the number and not followed by another Hangul syllable, so that a word such as 만기 is never read as 만; the forms with 원 still come first. The significant numbers a figure must cover follow the same rule. Whatever the program cannot read is still `not_found`.
