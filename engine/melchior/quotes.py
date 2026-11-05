@@ -20,17 +20,24 @@ UNCHECKED = "a figure could not be checked"
 
 # Multipliers, longest first so that 十亿 is not read as 亿 and 백만원 not as 원.
 _WORDS = [("trillion", 10**12), ("billion", 10**9), ("million", 10**6), ("thousand", 10**3),
+          ("천억원", 10**11), ("백억원", 10**10), ("십억원", 10**9), ("십만원", 10**5),
           ("조원", 10**12), ("억원", 10**8), ("백만원", 10**6), ("천만원", 10**7), ("만원", 10**4), ("천원", 10**3),
           ("원", 1), ("十亿", 10**9), ("千万", 10**7), ("百万", 10**6), ("亿", 10**8), ("万", 10**4)]
 _NUMBER = re.compile(r"\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?")
 _DATES = re.compile(r"\d{4}-\d{1,2}-\d{1,2}|\d{4}年\d{1,2}月(?:\d{1,2}日)?|\d{4}[./]\d{1,2}[./]\d{1,2}")
-# Korean multipliers written without 원 (0.5조, 1,234억): read only directly after the number and not followed by
-# another Hangul syllable, so that a word such as 만기 or 천연 is never read as 만 or 천. The 원 forms come first.
-_KOREAN = {"조원": 10**12, "억원": 10**8, "천만원": 10**7, "백만원": 10**6, "만원": 10**4, "천원": 10**3,
-           "조": 10**12, "억": 10**8, "천만": 10**7, "백만": 10**6, "만": 10**4, "천": 10**3}
-_KOREAN_AFTER = re.compile(r"(조원|억원|천만원|백만원|만원|천원)|(천만|백만|조|억|만|천)(?![가-힣])")
-_UNIT_AFTER = re.compile(r"\s*(%|trillion|billion|million|thousand|조원|억원|백만원|천만원|만원|천원|원|十亿|千万|百万|亿|万)"
-                         r"|(천만|백만|조|억|만|천)(?![가-힣])", re.IGNORECASE)
+# Korean multipliers directly after the number (0.5조, 1,234억, 10만주, 5억달러, 5천억원), longest first. The next
+# Hangul syllable may only be 원 or a currency or counter word from a closed list; any other one blocks the
+# multiplier, so that a word such as 만기 or 천연 is never read as 만 or 천. After 제 (제3조, an article) no Korean
+# multiplier is read. A number with two digit groups, such as 1조2천억원, holds two numbers and stays unread.
+_KOREAN = {"천억": 10**11, "백억": 10**10, "십억": 10**9, "십만": 10**5, "천만": 10**7, "백만": 10**6,
+           "조": 10**12, "억": 10**8, "만": 10**4, "천": 10**3}
+_KOREAN_NEXT = ("원", "달러", "엔", "위안", "유로", "주", "명", "개", "건", "톤", "대")
+_KOREAN_ALTERNATIVES = "|".join(sorted(_KOREAN, key=len, reverse=True))
+_KOREAN_GUARD = "(?=" + "|".join(_KOREAN_NEXT) + "|[^가-힣]|$)"
+_KOREAN_AFTER = re.compile(f"({_KOREAN_ALTERNATIVES}){_KOREAN_GUARD}")
+_UNIT_AFTER = re.compile(r"\s*(%|trillion|billion|million|thousand|천억원|백억원|십억원|십만원|조원|억원|백만원|천만원|만원|천원"
+                         r"|원|十亿|千万|百万|亿|万)", re.IGNORECASE)
+ARTICLE = "제"  # 제3조: an article of a law or of the articles of incorporation, not an amount
 _PERCENT = re.compile(r"%|percent|퍼센트|百分比")
 
 
@@ -68,8 +75,9 @@ def parse_amount(fragment: str | None, unit: str | None = None) -> tuple[Decimal
         return None
     decimals = len(digits.split(".")[1]) if "." in digits else 0
     rest = text.replace(numbers[0], " ", 1)
-    korean = _KOREAN_AFTER.match(text, matches[0].end())
-    factor = _KOREAN[korean.group(0)] if korean else _multiplier(rest)
+    article = matches[0].start() > 0 and text[matches[0].start() - 1] == ARTICLE
+    korean = None if article else _KOREAN_AFTER.match(text, matches[0].end())
+    factor = _KOREAN[korean.group(1)] if korean else _multiplier(rest)
     if factor is None and "%" not in rest and unit:
         unit_text = normalize(unit)
         factor = _multiplier(unit_text)
@@ -94,7 +102,7 @@ def significant_numbers(claim_text: str) -> list[str]:
         if (before.isascii() and before.isalpha()) or (after.isascii() and after.isalpha()):
             continue
         plain = token.replace(",", "")
-        unit = _UNIT_AFTER.match(text, end)
+        unit = None if before == ARTICLE else (_UNIT_AFTER.match(text, end) or _KOREAN_AFTER.match(text, end))
         if "." in plain or unit or len(plain) >= 3:
             if "." not in plain and "," not in token and len(plain) == 4 and 1900 <= int(plain) <= 2100 and not unit:
                 continue
