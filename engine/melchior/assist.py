@@ -1,8 +1,9 @@
 """Assist requests `magi:assist` (design 22.9.7; plan 9, Task 15 and item 11; protocol section 9).
 
 When an evidence cannot be checked, because its source cannot be read, is in a format this version does not read or
-does not contain a claim, or when a discrepancy cannot be corrected by program, Melchior.Magi asks for help in an
-issue labelled `magi:assist`. The issue is assigned to the evidence's owner where GitHub allows it and linked from
+does not confirm every claim, or when a discrepancy cannot be corrected by program, Melchior.Magi asks for help in an
+issue labelled `magi:assist`. Each claim the source does not confirm says why, from its check record's note, so the
+owner can tell what to fix; a request already open is never edited. The issue is assigned to the evidence's owner where GitHub allows it and linked from
 the evidence's own submission issue; that link is what tells the owner, without a mention. There is at most one open request per evidence and at most
 three new ones per run; none for non-public evidence or while the SEC contact is not set (no record is written then).
 
@@ -25,11 +26,26 @@ from ..timeutil import iso, parse_iso
 from .common import MELCHIOR
 from .corrections import find_marked, marker
 from .evidence import ACTION, check_path
+from .quotes import NOT_IN_SOURCE, UNCHECKED
 
 LABEL = "magi:assist"
 MAX_NEW = 3  # new requests per run (design 22.9.7)
 CLOSE_AFTER = timedelta(days=90)
 _EVIDENCE_ID = re.compile(r"\bev-\d{8}-[a-z0-9][a-z0-9-]{2,49}\b")
+# Why a claim the source does not confirm could not be checked, from the note its check record keeps. check_changes
+# keeps only the program's two notes for a not_found claim and drops the model's own, so these three cover every case.
+NOT_CONFIRMED = {
+    UNCHECKED: "The quote is in the source, but a figure of the claim could not be checked against it. A claim's value "
+               "must be a figure the quote states, in the claim's unit, and all its figures must stand in one passage.",
+    NOT_IN_SOURCE: "The sentence quoted for it is not in the source.",
+    None: "No single passage of the source states the whole claim. A claim must rest on one passage: split a claim "
+          "whose facts stand in different places, or cite a source that states it.",
+}
+HELP = ("How to help: submit or supersede the evidence with a readable public source, then reply here with the new "
+        "evidence's id (`ev-YYYYMMDD-...`).")
+HELP_NOT_FOUND = ("How to help: supersede the evidence with the claims rewritten so that each rests on one passage of "
+                  "the source, or with a source that states them, then reply here with the new evidence's id "
+                  "(`ev-YYYYMMDD-...`).")
 
 
 def title(evidence_id: str) -> str:
@@ -57,7 +73,7 @@ def why(record: dict, reason: str | None = None) -> str | None:
         return "the source is a PDF, which this version cannot read" if source.get("format") == "pdf" \
             else "the source is in a format this version cannot read"
     if record.get("reason") == "not_found":
-        return "the source does not contain the claim"
+        return "the source does not confirm every claim"
     return None  # non-public: never
 
 
@@ -96,11 +112,13 @@ def request_body(state: RepoState, evidence_id: str, record: dict, reason: str) 
         line = f"- {index}: {sanitize(str(claim.get('text', '')))}"
         if item.get("verdict") == "contradicted" and item.get("quote"):
             line += f"\n  - The fetched source says: \"{sanitize(str(item['quote']))}\""
+        elif item.get("verdict") == "not_found":
+            note = item.get("note")
+            line += f"\n  - {NOT_CONFIRMED.get(note if note in NOT_CONFIRMED else None)}"
         lines.append(line)
-    lines += ["", "How to help: submit or supersede the evidence with a readable public source, then reply here with "
-                  "the new evidence's id (`ev-YYYYMMDD-...`). I read replies by registered researchers only. If this "
-                  "request is still open 90 days after it was opened, I close it as not planned and the evidence stays "
-                  "unverified."]
+    help_line = HELP_NOT_FOUND if record.get("reason") == "not_found" else HELP
+    lines += ["", f"{help_line} I read replies by registered researchers only. If this request is still open 90 days "
+                  "after it was opened, I close it as not planned and the evidence stays unverified."]
     return cap("\n".join(lines))
 
 

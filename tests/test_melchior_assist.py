@@ -259,3 +259,75 @@ def test_a_refused_assignment_still_opens_the_request_and_notifies_the_owner(wor
     text = (REPO_ROOT / "protocol" / "PROTOCOL.md").read_text(encoding="utf-8")
     assert "assigns the issue to the evidence's owner where GitHub allows it" in text
     assert "the link on the submission issue is what notifies the owner" in text
+
+
+# Each listed claim says why it could not be checked (production #127-#129, #134, #135) ---------------------------
+
+def _record(reason, claims, status="unverified", **source):
+    return {"evidence": "ev-20261020-tem-ceo", "status": status, "reason": reason, "claims": claims,
+            "source": {"url": GOOD, "format": "html", **source}}
+
+
+CLAIMS = [{"text": "Revenue guidance midpoint is $90 million", "value": 90},
+          {"text": "Gross margin was 60%"},
+          {"text": "Cash and marketable securities total $700 million", "value": 700},
+          {"text": "Revenue in the second quarter of 2026 was $382.5 million"}]
+HELP_NOT_FOUND = ("How to help: supersede the evidence with the claims rewritten so that each rests on one passage of "
+                  "the source, or with a source that states them, then reply here with the new evidence's id "
+                  "(`ev-YYYYMMDD-...`).")
+
+
+def test_each_claim_the_source_does_not_confirm_says_why(world):
+    from engine.melchior.assist import request_body, why
+    from engine.melchior.quotes import NOT_IN_SOURCE, UNCHECKED
+    add(world, "ev-20261020-tem-ceo", GOOD, "2026-10-20T00:00:00Z", claims=CLAIMS)
+    record = _record("not_found", [
+        {"index": 0, "verdict": "not_found", "quote": "midpoint", "note": UNCHECKED},
+        {"index": 1, "verdict": "not_found", "quote": None, "note": NOT_IN_SOURCE},
+        {"index": 2, "verdict": "not_found", "quote": None, "note": None},
+        {"index": 3, "verdict": "supported", "quote": "Revenue in the second quarter", "note": None}])
+    assert why(record) == "the source does not confirm every claim"
+    body = request_body(RepoState.load(world["root"]), "ev-20261020-tem-ceo", record, why(record))
+    assert "I could not check evidence `ev-20261020-tem-ceo` against its source: the source does not confirm every " \
+           "claim." in body
+    lines = body.splitlines()
+    first, second, third = (lines.index(f"- {n}: {CLAIMS[n]['text']}") for n in (0, 1, 2))
+    assert lines[first + 1] == ("  - The quote is in the source, but a figure of the claim could not be checked against "
+                                "it. A claim's value must be a figure the quote states, in the claim's unit, and all "
+                                "its figures must stand in one passage.")
+    assert lines[second + 1] == "  - The sentence quoted for it is not in the source."
+    assert lines[third + 1] == ("  - No single passage of the source states the whole claim. A claim must rest on one "
+                                "passage: split a claim whose facts stand in different places, or cite a source that "
+                                "states it.")
+    assert "382.5" not in body  # a supported claim is not listed
+    assert HELP_NOT_FOUND in body and "I read replies by registered researchers only." in body
+
+
+def test_a_contradicted_claim_keeps_its_quote_line(world):
+    from engine.melchior.assist import request_body
+    add(world, "ev-20261020-tem-ceo", GOOD, "2026-10-20T00:00:00Z", claims=CLAIMS)
+    record = _record(None, [{"index": 1, "verdict": "contradicted", "quote": "Gross margin was 58%", "note": None}],
+                     status="discrepancy")
+    body = request_body(RepoState.load(world["root"]), "ev-20261020-tem-ceo", record, "the source appears to differ")
+    lines = body.splitlines()
+    at = lines.index(f"- 1: {CLAIMS[1]['text']}")
+    assert lines[at + 1] == '  - The fetched source says: "Gross margin was 58%"'
+
+
+@pytest.mark.parametrize("reason, source, said", [
+    ("unsupported_format", {"format": "pdf"}, "the source is a PDF, which this version cannot read"),
+    ("source_unreachable", {"http_status": 403}, "the site refused the automated request (HTTP 403)")])
+def test_bodies_for_unreadable_sources_do_not_change(world, reason, source, said):
+    from engine.melchior.assist import request_body, why
+    add(world, "ev-20261020-tem-ceo", GOOD, "2026-10-20T00:00:00Z", claims=CLAIMS[:2])
+    record = _record(reason, [], **source)
+    assert why(record) == said
+    body = request_body(RepoState.load(world["root"]), "ev-20261020-tem-ceo", record, why(record))
+    assert body == "\n".join([
+        "**Melchior.Magi** · assist request", "<!-- magi:melchior assist ev-20261020-tem-ceo -->", "",
+        f"I could not check evidence `ev-20261020-tem-ceo` against its source: {said}.", "",
+        f"Source: {GOOD}", "", "Claims I could not check:", "",
+        f"- 0: {CLAIMS[0]['text']}", f"- 1: {CLAIMS[1]['text']}", "",
+        "How to help: submit or supersede the evidence with a readable public source, then reply here with the new "
+        "evidence's id (`ev-YYYYMMDD-...`). I read replies by registered researchers only. If this request is still "
+        "open 90 days after it was opened, I close it as not planned and the evidence stays unverified."])
