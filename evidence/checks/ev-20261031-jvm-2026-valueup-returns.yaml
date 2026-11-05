@@ -1,0 +1,142 @@
+schema: magi/evidence-check@1
+evidence: ev-20261031-jvm-2026-valueup-returns
+status: unverified
+reason: not_found
+source_date:
+  quote: '2026-03-18'
+  date: '2026-03-18'
+  filing_date: null
+  matches: true
+claims:
+- index: 0
+  verdict: supported
+  timing: standing
+  quote: '- 25~30년 매년 최소 총주주환원율 20% 이상(연결기준)'
+  figures:
+  - claim: 20%
+    source: 20%
+    unit: null
+    claim_value: 20
+    source_value: 20
+  correct: null
+  note: The plan sets a minimum total shareholder return ratio of 20% or more each year from 2025 to 2030 on a consolidated basis. It also introduces a minimum dividend system and employee RSUs. The claim's caveats are interpretation and do not conflict with the source.
+- index: 1
+  verdict: supported
+  timing: historical
+  quote: '직전 사업연도 (2025) 배당성향(%)
+
+    26.4
+
+    직전 사업연도 (2025) 이익배당금액(원)
+
+    7,486,679,200
+
+    전전 사업연도 (2024) 이익배당금액(원)
+
+    5,758,984,000
+
+    전전 사업연도 대비 직전 사업연도 이익배당금액 증가율(%)
+
+    30
+
+    4. 결정일자
+
+    2026-03-18
+
+    5. 관련 자료
+
+    게재일시
+
+    2026-03-18
+
+    관련 웹페이지
+
+    https://www.myjvm.com
+
+    6. 기타 투자판단과 관련한 중요사항
+
+    1. 당사는 조세특례제한법 제104조의27에 따른 고배당기업에 해당합니다. 제30기 사업연도의 보통주 1주당 배당금은 650원, 배당금 총액은 7,486,679,200원입니다.'
+  figures:
+  - claim: 650韩元
+    source: 650원
+    unit: null
+    claim_value: 650
+    source_value: 650
+  - claim: 7,486,679,200韩元
+    source: 7,486,679,200원
+    unit: null
+    claim_value: 7486679200
+    source_value: 7486679200
+  - claim: 26.4%
+    source: '26.4'
+    unit: (%)
+    claim_value: 26.4
+    source_value: 26.4
+  correct: null
+  note: The disclosure gives a 2025 payout ratio of 26.4% and total dividends of 7,486,679,200 won. It states a common-share DPS of 650 won for the fiscal year with a record date of December 31, 2025.
+- index: 2
+  verdict: not_found
+  timing: standing
+  quote: '☞ 25년 0.17조 → 30년 0.5조(국내 0.16조/해외 0.34조)
+
+    25년~30년 연평균 매출성장 24% 이상
+
+    30년 Innovative Growth 0.135조 이상
+
+    ▶ 주요 성장 전략
+
+    ☞ Fundamental Growth
+
+    - 핵심사업 확대(Pouch)
+
+    ·제품 경쟁력 강화
+
+    ·신제품 개발 및 수익성 향상
+
+    ☞ Innovative Growth
+
+    - 신사업 확장(Vial, Blister)
+
+    ·신제품/기능 개발
+
+    ·해외 생산 거점 구축
+
+    - 연관사업 진출
+
+    ·로보틱스&헬스케어 분야
+
+    ·전략적 제휴 및 M&A
+
+    ▶ 재무전략
+
+    ☞ 2030 Target Operating Profit Margin 20%↑(연결기준)'
+  figures: []
+  correct: null
+  note: a figure could not be checked
+source:
+  url: https://kind.krx.co.kr/external/2026/03/18/000199/20260318000891/72101.htm
+  final_url: https://kind.krx.co.kr/external/2026/03/18/000199/20260318000891/72101.htm
+  http_status: 200
+  content_type: text/html
+  format: html
+  parts: 1
+  decoding: declared
+  fetched_at: '2026-11-05T03:44:27Z'
+  sha256: 139d640cf6933a895d67a50320889cdf3fed64e51d505d56205cee916135cc89
+  chars: 1754
+  truncated: false
+link: ok
+currency: current
+superseded_by: null
+same_source_as: []
+pending_sources: []
+assist_issue: null
+filings_read_on: null
+filings_listed: []
+next_review: '2027-02-03'
+input_commit: 396a43dc3132d9dcc0387636e740f7675f1d9f3e
+prompt_sha256: c4a7fd588a3661762d0f8435ff02b0f2db248013b11483706ef47693511892d7
+model: claude-opus-5-5
+version: 1
+checked_at: '2026-11-05T03:47:23Z'
+checked_via_run: 41963425702
