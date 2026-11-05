@@ -156,7 +156,8 @@ class YahooProvider:
         """The settled daily closes of a response, dated by the exchange's own day (spec 16.4).
 
         A session that is still trading is skipped. When the latest finished daily bar has no close
-        yet, its close is that day's last 5-minute bar; other bars without a close are dropped.
+        yet, its close is the last 5-minute bar of that same exchange day, or none when that day has no
+        5-minute bar; other bars without a close are dropped.
         """
         meta = daily.get("meta") or {}
         currency = str(meta.get("currency") or "")
@@ -169,8 +170,12 @@ class YahooProvider:
         last = None
         if bars and bars[-1][1] is None:
             day_start = bars[-1][0]
+            # Only the 5-minute bars of that exchange day: for a market that trades around the clock the two-day
+            # range also holds the next day's bars, whose price is not this day's close. Without a bar of the day
+            # the day stays unrecorded.
+            day = _market_date(day_start, offset)
             intraday = [b for b in self._bars(self._chart(symbol, "range=2d&interval=5m"), symbol)
-                        if b[1] is not None and b[0] >= day_start]
+                        if b[1] is not None and _market_date(b[0], offset) == day]
             if intraday:
                 stamp, value = intraday[-1]
                 last = Quote(float(value), currency, _moment(stamp), "yahoo-5m", _market_date(day_start, offset))

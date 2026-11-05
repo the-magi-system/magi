@@ -127,3 +127,14 @@ def test_naver_history_has_no_actions_and_closes_at_0630z():
     assert history.session.close_at("2026-10-23") == datetime(2026, 10, 23, 6, 30, tzinfo=timezone.utc)
     assert "count=30" in opener.requests[0].full_url
     assert history.bars[-1].market_date == "2026-10-23"
+
+
+def test_history_of_a_24_hour_market_has_no_bar_from_the_next_day():
+    from tests.test_prices import BTC, D, around_the_clock
+    stamps, closes = around_the_clock(D, D + 86400 + 3 * 3600 + 2700)
+    provider = YahooProvider(opener=SequenceOpener([bars([D - 86400, D], [75000.0, None], gmtoffset=0),
+                                                    bars(stamps, closes, gmtoffset=0)]),
+                             clock=lambda: datetime.fromtimestamp(D + 86400 + 4 * 3600, timezone.utc))
+    history = provider.history(BTC)
+    assert [bar.market_date for bar in history.bars] == ["2026-11-02", "2026-11-03"]
+    assert all(bar.as_of[:10] == bar.market_date for bar in history.bars), [bar.as_of for bar in history.bars]
