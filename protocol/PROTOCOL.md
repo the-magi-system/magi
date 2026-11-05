@@ -323,7 +323,7 @@ crps_rel = CRPS ÷ price_at_publish.value
 
 Evidence records facts with their sources: what was said or published, by whom and when. It contains no interpretation; interpretations belong in each actor's `evidence_stances`. Accepted evidence never changes. To correct it, submit `supersede_evidence` pointing to the old record; the old record stays visible and is marked as superseded.
 
-In force since protocol 1.15: a claim's `value`, when given, must be a number written in the claim's own text, read as written (thousands separators, a sign, brackets or the word "minus" aside) or as the amount that the number and the multiplier directly after it give in the claim's `unit` (`$1.2 billion` is 1200 in `USD million`); a value worked out from the text, such as the midpoint of a range or a sum, is rejected at `/payload/claims/<i>/value`, and evidence accepted before 1.15 is not checked again.
+In force since protocol 1.15: a claim's `value`, when given, must be a number written in the claim's own text, read as written (thousands separators, a sign, brackets or the word "minus" aside) or as the amount that the number and the multiplier directly after it give in the claim's `unit` (`$1.2 billion` is 1200 in `USD million`); a number in a range takes the multiplier written after the range's other end (`$1.595 to $1.605 billion` gives 1595 in `USD million`); a value worked out from the text, such as the midpoint of a range or a sum, is rejected at `/payload/claims/<i>/value`, and evidence accepted before 1.15 is not checked again.
 
 Evidence supplied by a data provider (section 12) carries `provider_ref`, an opaque reference into the provider's own records. The provider uses it to supersede the evidence when its source research changes.
 

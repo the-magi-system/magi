@@ -97,31 +97,79 @@ class WrittenNumber:
     start: int
     end: int
     written: Decimal  # the number as written, without thousands separators or sign
-    multiplier: re.Match | None  # the multiplier directly after it, if any
-    amount: Decimal  # the number times that multiplier, divided by the multiplier of the `unit` given
+    multiplier: re.Match | None  # its own multiplier, directly after it, if any
+    amount: Decimal  # the number times its own or else its borrowed multiplier, divided by that of the `unit` given
+    borrowed: re.Match | None = None  # the multiplier written after the other end of a range, when it has none
+
+
+# A range: the connector between a number with no multiplier of its own and a number that has one ($1.595 to $1.605
+# billion, $260-$270 million, 1,000~1,200억원). NFKC turns ～ into ~ but leaves 〜. `and` counts only after `between`.
+_CURRENCY = r"[$€£¥₩]?\s*"
+_RANGE = re.compile(r"\s*(?:to\b|-|–|—|~|〜|至|到)\s*" + _CURRENCY, re.IGNORECASE)
+_RANGE_AND = re.compile(r"\s*and\s*" + _CURRENCY, re.IGNORECASE)
+_BETWEEN = re.compile(r"\bbetween\s*[$€£¥₩]?\s*$", re.IGNORECASE)
+
+
+def _factor(match: re.Match | None) -> int:
+    if match is None:
+        return 1
+    if match.re is _KOREAN_AFTER:
+        return _KOREAN[match.group(1)]
+    return _multiplier(match.group(1)) or 1
 
 
 def written_numbers(text: str, unit: str | None = None) -> list[WrittenNumber]:
     """Each number of `text`, read as given (callers normalise it), with the amount that the number and the
     multiplier directly after it give: a word or sign of _UNIT_AFTER (`%`, `million`, `억원`), else a Korean multiplier
-    of _KOREAN_AFTER (`10만주`, `0.5조`), and none for a number directly after 제 (제3조, an article). The amount is
-    divided by the multiplier of `unit` (1 when the unit names none). significant_numbers and the intake rule on a
+    of _KOREAN_AFTER (`10만주`, `0.5조`), and none for a number directly after 제 (제3조, an article). A number with no
+    multiplier of its own, not after 제, that a range connector (`to`, `-`, `–`, `—`, `~`, `〜`, `至`, `到`, or `and`
+    after `between`) joins to a number with its own multiplier, borrows that multiplier: `$1.595 to $1.605 billion`.
+    The amount is divided by the multiplier of `unit` (1 when the unit names none). significant_numbers and the intake rule on a
     claim's `value` (engine/semantic.py) both read numbers here, so the two cannot drift apart."""
     divisor = Decimal(_multiplier(normalize(unit)) or 1) if unit else Decimal(1)
+    matches = list(_NUMBER.finditer(text))
+    articles = [match.start() > 0 and text[match.start() - 1] == ARTICLE for match in matches]
+    own = [None if article else (_UNIT_AFTER.match(text, match.end()) or _KOREAN_AFTER.match(text, match.end()))
+           for match, article in zip(matches, articles)]
     found = []
-    for match in _NUMBER.finditer(text):
-        token, start, end = match.group(0), match.start(), match.end()
-        before = text[start - 1] if start else ""
-        after = None if before == ARTICLE else (_UNIT_AFTER.match(text, end) or _KOREAN_AFTER.match(text, end))
-        written = Decimal(token.replace(",", ""))
-        if after is None:
-            factor = 1
-        elif after.re is _KOREAN_AFTER:
-            factor = _KOREAN[after.group(1)]
-        else:
-            factor = _multiplier(after.group(1)) or 1
-        found.append(WrittenNumber(token, start, end, written, after, written * factor / divisor))
+    for index, match in enumerate(matches):
+        borrowed = None
+        if own[index] is None and not articles[index] and index + 1 < len(matches) and own[index + 1] is not None:
+            # Only the number directly before the connector borrows, and only the other end's own multiplier.
+            gap = text[match.end():matches[index + 1].start()]
+            between = _BETWEEN.search(text[:match.start()]) is not None
+            if _RANGE.fullmatch(gap) or (between and _RANGE_AND.fullmatch(gap)):
+                borrowed = own[index + 1]
+        written = Decimal(match.group(0).replace(",", ""))
+        factor = _factor(own[index] or borrowed)
+        found.append(WrittenNumber(match.group(0), match.start(), match.end(), written, own[index],
+                                   written * factor / divisor, borrowed))
     return found
+
+
+def _borrowed_reading(fragment: str, text: str):
+    """The (amount, precision) of a fragment's one number read with the multiplier it borrows where the fragment
+    stands in `text`; None when it borrows none there; False when the fragment occurs more than once and the
+    readings differ, so the program cannot decide."""
+    wanted = normalize(fragment)
+    if not wanted:
+        return None
+    numbers = written_numbers(text)
+    readings, position = [], text.find(wanted)
+    while position >= 0:
+        inside = [n for n in numbers if position <= n.start and n.end <= position + len(wanted)]
+        number = inside[0] if len(inside) == 1 else None
+        readings.append((number.written, _factor(number.borrowed))
+                        if number is not None and number.multiplier is None and number.borrowed is not None else None)
+        position = text.find(wanted, position + 1)
+    if not readings or all(reading is None for reading in readings):
+        return None
+    if len(set(readings)) > 1:
+        return False
+    written, factor = readings[0]
+    token = next(n.token for n in numbers if n.written == written).replace(",", "")
+    decimals = len(token.split(".")[1]) if "." in token else 0
+    return written * factor, Decimal(5) * Decimal(10) ** (-(decimals + 1)) * factor
 
 
 def significant_numbers(claim_text: str) -> list[str]:
@@ -167,7 +215,14 @@ def check_figures(claim_text: str, quote: str, source_text: str, figures, value=
             return False, []
         if unit_part is not None and (not isinstance(unit_part, str) or normalize(unit_part) not in window):
             return False, []
-        claimed, source_amount = parse_amount(claim_part), parse_amount(source_part, unit_part)
+        # A fragment whose number takes the multiplier written after a range's other end reads with it, where the
+        # fragment stands (the claim text, the quote); it then names a unit, so a table header does not apply.
+        claim_borrowed, source_borrowed = _borrowed_reading(claim_part, claim_norm), \
+            _borrowed_reading(source_part, quote_norm)
+        if claim_borrowed is False or source_borrowed is False:
+            return False, []
+        claimed = claim_borrowed or parse_amount(claim_part)
+        source_amount = source_borrowed or parse_amount(source_part, unit_part)
         if claimed is None or source_amount is None:
             return False, []
         if abs(abs(claimed[0]) - abs(source_amount[0])) > claimed[1]:

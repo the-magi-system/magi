@@ -235,3 +235,25 @@ def test_the_intake_rule_imports_no_private_name():
     tree = ast.parse((REPO_ROOT / "engine" / "semantic.py").read_text(encoding="utf-8"))
     names = [alias.name for node in ast.walk(tree) if isinstance(node, ast.ImportFrom) for alias in node.names]
     assert not [name for name in names if name.startswith("_")], names
+
+
+# A number in a range takes the multiplier written after the range's other end (the intake rule reads it the same).
+
+def test_a_range_end_is_a_written_value(state):
+    claim = {"text": "Revenue of $1.595 to $1.605 billion", "value": 1595, "unit": "USD million"}
+    errors, _ = check_semantics(state, Proposal("add_evidence", "john.research", evidence_payload(claims=[claim])))
+    assert errors == []
+
+
+@pytest.mark.parametrize("text, value, accepted", [
+    ("Revenue of $80 to $100 million", 80, True),
+    ("Revenue of $1.595 to $1.605 billion", 1600, False),
+    ("Guidance of $80 million to $100 million", 90, False),
+])
+def test_a_range_midpoint_is_still_rejected(state, text, value, accepted):
+    claim = {"text": text, "value": value, "unit": "USD million"}
+    errors, _ = check_semantics(state, Proposal("add_evidence", "john.research", evidence_payload(claims=[claim])))
+    if accepted:
+        assert errors == []
+    else:
+        assert [(e.path, e.message) for e in errors] == [("/payload/claims/0/value", VALUE_MESSAGE.format(value))]
