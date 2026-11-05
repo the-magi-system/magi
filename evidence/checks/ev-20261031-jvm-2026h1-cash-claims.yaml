@@ -1,0 +1,85 @@
+schema: magi/evidence-check@1
+evidence: ev-20261031-jvm-2026h1-cash-claims
+status: unverified
+reason: not_found
+source_date:
+  quote: 2026년 8월 14일
+  date: '2026-08-14'
+  filing_date: null
+  matches: true
+claims:
+- index: 0
+  verdict: not_found
+  timing: historical
+  quote: null
+  figures: []
+  correct: null
+  note: null
+- index: 1
+  verdict: not_found
+  timing: historical
+  quote: null
+  figures: []
+  correct: null
+  note: null
+- index: 2
+  verdict: supported
+  timing: historical
+  quote: '배당금의 지급
+
+    (7,486,679,200)
+
+    (5,758,984,000)
+
+    외화환산으로 인한 현금및현금성자산의 변동
+
+    345,680,147'
+  figures:
+  - claim: 7.486679十亿韩元
+    source: (7,486,679,200)
+    unit: '(단위 : 원)'
+    claim_value: 7486679000
+    source_value: 7486679200
+  correct: null
+  note: The H1 consolidated cash flow statement shows a dividend payment of 7,486,679,200 won. Its financing section lists no line for buying back own shares.
+- index: 3
+  verdict: not_found
+  timing: standing
+  quote: null
+  figures: []
+  correct: null
+  note: null
+- index: 4
+  verdict: not_found
+  timing: historical
+  quote: null
+  figures: []
+  correct: null
+  note: null
+source:
+  url: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003335
+  final_url: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003335
+  http_status: 200
+  content_type: text/html; charset=UTF-8
+  format: html
+  parts: 15
+  decoding: declared
+  fetched_at: '2026-11-05T03:44:27Z'
+  sha256: 80e79117b6e8d1ffa7b95a74fcbac0082480139a1bc8364b997191dd63d8a19a
+  chars: 191973
+  truncated: false
+link: ok
+currency: current
+superseded_by: null
+same_source_as: []
+pending_sources: []
+assist_issue: 135
+filings_read_on: null
+filings_listed: []
+next_review: '2027-02-03'
+input_commit: 396a43dc3132d9dcc0387636e740f7675f1d9f3e
+prompt_sha256: c4a7fd588a3661762d0f8435ff02b0f2db248013b11483706ef47693511892d7
+model: claude-opus-5-5
+version: 1
+checked_at: '2026-11-05T03:47:23Z'
+checked_via_run: 41963425702

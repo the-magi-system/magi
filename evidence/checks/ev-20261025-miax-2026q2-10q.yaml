@@ -1,0 +1,146 @@
+schema: magi/evidence-check@1
+evidence: ev-20261025-miax-2026q2-10q
+status: verified
+reason: null
+source_date:
+  quote: August 7, 2026
+  date: '2026-08-07'
+  filing_date: '2026-08-07'
+  matches: true
+claims:
+- index: 0
+  verdict: supported
+  timing: historical
+  quote: Access fees 34,941 26,106 68,298 50,189
+  figures:
+  - claim: $34.9 million
+    source: 34,941
+    unit: (dollars in thousands, except share and per share amounts)
+    claim_value: 34900000
+    source_value: 34941000
+  - claim: $26.1 million
+    source: 26,106
+    unit: (dollars in thousands, except share and per share amounts)
+    claim_value: 26100000
+    source_value: 26106000
+  correct: null
+  note: The income statement shows access fees of 34,941 thousand for the three months ended June 30, 2026, against 26,106 thousand for the same quarter of 2025.
+- index: 1
+  verdict: supported
+  timing: historical
+  quote: Market data fees 12,206 10,253 25,161 19,895
+  figures:
+  - claim: $12.2 million
+    source: 12,206
+    unit: (dollars in thousands, except share and per share amounts)
+    claim_value: 12200000
+    source_value: 12206000
+  - claim: $10.3 million
+    source: 10,253
+    unit: (dollars in thousands, except share and per share amounts)
+    claim_value: 10300000
+    source_value: 10253000
+  correct: null
+  note: The income statement shows market data fees of 12,206 thousand for Q2 2026, against 10,253 thousand for Q2 2025.
+- index: 2
+  verdict: supported
+  timing: historical
+  quote: 'Transaction and clearing fees $ 331,884 $ 286,139 $ 647,294 $ 575,443
+
+    Access fees 34,941 26,106 68,298 50,189
+
+    Market data fees 12,206 10,253 25,161 19,895
+
+    Other revenue 8,598 5,286 16,566 9,334
+
+    Total revenues 387,629 327,784 757,319 654,861
+
+    Cost of revenues:
+
+    Liquidity payments 206,633 195,651 430,159 389,697'
+  figures:
+  - claim: $331.9 million
+    source: $ 331,884
+    unit: (dollars in thousands, except share and per share amounts)
+    claim_value: 331900000
+    source_value: 331884000
+  - claim: $206.6 million
+    source: 206,633
+    unit: (dollars in thousands, except share and per share amounts)
+    claim_value: 206600000
+    source_value: 206633000
+  correct: null
+  note: In the income statement, Q2 2026 transaction and clearing fees are 331,884 thousand, and liquidity payments under cost of revenues are 206,633 thousand.
+- index: 3
+  verdict: supported
+  timing: historical
+  quote: Diluted 110,713,513 78,458,195 109,943,953 77,952,959
+  figures:
+  - claim: 110.7 million shares
+    source: 110,713,513
+    unit: null
+    claim_value: 110700000
+    source_value: 110713513
+  - claim: 78.5 million
+    source: 78,458,195
+    unit: null
+    claim_value: 78500000
+    source_value: 78458195
+  correct: null
+  note: The income statement gives diluted weighted-average shares of 110,713,513 for Q2 2026 and 78,458,195 for Q2 2025.
+- index: 4
+  verdict: supported
+  timing: historical
+  quote: Litigation settlement 30,000 — 30,000 —
+  figures:
+  - claim: $30.0 million
+    source: 30,000
+    unit: (dollars in thousands, except share and per share amounts)
+    claim_value: 30000000
+    source_value: 30000000
+  correct: null
+  note: Q2 2026 operating expenses in the income statement include a litigation settlement of 30,000 thousand. The notes describe this as an accrued settlement in the Nasdaq litigation.
+- index: 5
+  verdict: supported
+  timing: historical
+  quote: As of June 30, 2026 and December 31, 2025, our cash and cash equivalents were $660.5 million and $433.6 million, respectively, of which $0.5 million and $0.6 million, respectively, were held in Bermuda, and $24.1 million and $21.7 million, respectively, were held in Guernsey. The remaining cash and cash equivalents are denominated in U.S. dollars and held primarily in interest-bearing accounts with financial institutions and investments in U.S. Treasury securities and money market funds that have original or acquired maturities of 90 days or less. Given the short-term nature and composition of these cash and cash equivalent balances, the Company does not believe that the results of operations or cash flows would be affected to any significant degree by a sudden change in market interest rates. As of June 30, 2026, we had $1.5 million in outstanding debt related to unsecured promissory notes.
+  figures:
+  - claim: $660.5 million
+    source: $660.5 million
+    unit: null
+    claim_value: 660500000
+    source_value: 660500000
+  - claim: $1.5 million
+    source: $1.5 million
+    unit: null
+    claim_value: 1500000
+    source_value: 1500000
+  correct: null
+  note: The market risk section gives cash and cash equivalents of $660.5 million and outstanding debt of $1.5 million at June 30, 2026. The debt note shows total debt, including current obligations, of 1,514 thousand.
+source:
+  url: https://www.sec.gov/Archives/edgar/data/1438472/000162828026054575/miax-20260630.htm
+  final_url: https://www.sec.gov/Archives/edgar/data/1438472/000162828026054575/miax-20260630.htm
+  http_status: 200
+  content_type: text/html
+  format: html
+  parts: 1
+  decoding: detected
+  fetched_at: '2026-11-05T03:44:27Z'
+  sha256: 5652cde3be4cc64e715a562eb212f614cde3951396dc1dae8cdec92a4d90950a
+  chars: 342768
+  truncated: false
+link: ok
+currency: current
+superseded_by: null
+same_source_as: []
+pending_sources: []
+assist_issue: null
+filings_read_on: null
+filings_listed: []
+next_review: '2027-02-03'
+input_commit: 396a43dc3132d9dcc0387636e740f7675f1d9f3e
+prompt_sha256: c4a7fd588a3661762d0f8435ff02b0f2db248013b11483706ef47693511892d7
+model: claude-opus-5-5
+version: 1
+checked_at: '2026-11-05T03:47:23Z'
+checked_via_run: 41963425702

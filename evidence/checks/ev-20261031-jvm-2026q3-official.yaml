@@ -1,0 +1,33 @@
+schema: magi/evidence-check@1
+evidence: ev-20261031-jvm-2026q3-official
+status: unverified
+reason: unsupported_format
+source_date: null
+claims: []
+source:
+  url: https://www.myjvm.com/bbs/bbs_download.php?idx=688&download=1
+  final_url: https://www.myjvm.com/bbs/bbs_download.php?idx=688&download=1
+  http_status: 200
+  content_type: file/unknown
+  format: pdf
+  parts: 0
+  decoding: null
+  fetched_at: '2026-11-05T03:44:27Z'
+  sha256: null
+  chars: 0
+  truncated: false
+link: ok
+currency: current
+superseded_by: null
+same_source_as: []
+pending_sources: []
+assist_issue: 133
+filings_read_on: null
+filings_listed: []
+next_review: '2027-02-03'
+input_commit: 396a43dc3132d9dcc0387636e740f7675f1d9f3e
+prompt_sha256: null
+model: null
+version: 1
+checked_at: '2026-11-05T03:47:23Z'
+checked_via_run: 41963425702
