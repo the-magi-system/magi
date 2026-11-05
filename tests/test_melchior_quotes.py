@@ -208,3 +208,21 @@ def test_counter_currency_and_large_multiplier_figures_agree():
     assert check_figures("5,000亿韩元", "매출 목표 5천억원", "매출 목표 5천억원", won)[0] is True
     smaller = [{"claim": "500亿韩元", "source": "5천억원", "unit": None}]
     assert check_figures("500亿韩元", "매출 목표 5천억원", "매출 목표 5천억원", smaller)[0] is False
+
+
+def test_written_numbers_give_each_number_with_its_multiplier():
+    # Review of PR #131: one reader for the figure check's significant numbers and the intake rule on `value`.
+    from decimal import Decimal
+    from engine.melchior.quotes import written_numbers
+
+    def read(text, unit=None):
+        return [(n.token, n.written, n.amount) for n in written_numbers(text, unit)]
+
+    assert read("자기주식 10만주 취득") == [("10", Decimal(10), Decimal(100000))]
+    assert read("매출 5억달러", "USD million") == [("5", Decimal(5), Decimal(500))]
+    assert read("자기주식 0.5조 규모", "억원") == [("0.5", Decimal("0.5"), Decimal(5000))]
+    assert read("5천억원", "억원") == [("5", Decimal(5), Decimal(5000))]
+    assert read("제3조에 따라") == [("3", Decimal(3), Decimal(3))], "no multiplier after 제"
+    assert read("Revenue was $1.2 billion", "USD million") == [("1.2", Decimal("1.2"), Decimal(1200))]
+    assert read("175,390,967 shares") == [("175,390,967", Decimal(175390967), Decimal(175390967))]
+    assert read("만기 10년") == [("10", Decimal(10), Decimal(10))]

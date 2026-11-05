@@ -2,6 +2,11 @@
 
 Newest first. Each entry gives the date, what changed, and the request issue that prompted it, if any.
 
+## v1.15 — 2026-11-04
+
+- `add_evidence` and `supersede_evidence` reject a claim whose `value` is not a number written in the claim's own text (maintainer decision 2026-11-04; section 9). A value is accepted when its absolute value equals a number of the text read as written (thousands separators, a leading minus, brackets or the word "minus" aside), or the amount that the number and the multiplier directly after it give, divided by the multiplier of the claim's `unit` (1 when the unit names none): `$599.6 million` gives 599.6 and `$1.2 billion` gives 1200 in `USD million`. Otherwise the proposal is rejected at `/payload/claims/<i>/value` with `E_SEMANTIC`: "value <v> is not a number written in the claim's text; give a figure the source states, or leave value out". Production run 41775470287 found claims whose `value` was the midpoint of a range or the sum of two share counts; Melchior.Magi's figure check requires `value` to equal a checked figure, so such a claim could never be supported, and its owner learnt it only from an assist request weeks later. The rule uses the figure check's own readers.
+- Evidence accepted before 1.15 is not affected: the consistency check validates stored evidence against its schema and does not apply this rule. The JSON schemas do not change.
+
 ## 2026-11-04 — the figure check reads Korean counters, currencies and 십만 to 천억 (no version change)
 
 - Melchior.Magi's figure check reads a Korean multiplier directly after the number when the next Hangul syllable is 원 or one of 달러, 엔, 위안, 유로, 주, 명, 개, 건, 톤 and 대, as in `10만주`, `5억달러` or `1만대`; any other syllable still blocks it, so `100만기` is unchanged. It also reads 십만, 십억, 백억 and 천억, with or without 원, so `5천억원` is 5×10^11. A number directly after 제, such as the article `제3조`, takes no Korean multiplier. A number with two digit groups, such as `1조2천억원`, stays unread. The significant numbers a figure must cover follow the same rules, and whatever the program cannot read is still `not_found`.

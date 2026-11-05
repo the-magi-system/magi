@@ -9,6 +9,7 @@ the program cannot decide makes the claim not_found, never supported.
 from __future__ import annotations
 
 import re
+from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 
 from ..fetch import normalize
@@ -90,19 +91,51 @@ def parse_amount(fragment: str | None, unit: str | None = None) -> tuple[Decimal
     return amount * factor, precision
 
 
+@dataclass(frozen=True)
+class WrittenNumber:
+    token: str  # the number as the text writes it, for example `1,234.5`
+    start: int
+    end: int
+    written: Decimal  # the number as written, without thousands separators or sign
+    multiplier: re.Match | None  # the multiplier directly after it, if any
+    amount: Decimal  # the number times that multiplier, divided by the multiplier of the `unit` given
+
+
+def written_numbers(text: str, unit: str | None = None) -> list[WrittenNumber]:
+    """Each number of `text`, read as given (callers normalise it), with the amount that the number and the
+    multiplier directly after it give: a word or sign of _UNIT_AFTER (`%`, `million`, `억원`), else a Korean multiplier
+    of _KOREAN_AFTER (`10만주`, `0.5조`), and none for a number directly after 제 (제3조, an article). The amount is
+    divided by the multiplier of `unit` (1 when the unit names none). significant_numbers and the intake rule on a
+    claim's `value` (engine/semantic.py) both read numbers here, so the two cannot drift apart."""
+    divisor = Decimal(_multiplier(normalize(unit)) or 1) if unit else Decimal(1)
+    found = []
+    for match in _NUMBER.finditer(text):
+        token, start, end = match.group(0), match.start(), match.end()
+        before = text[start - 1] if start else ""
+        after = None if before == ARTICLE else (_UNIT_AFTER.match(text, end) or _KOREAN_AFTER.match(text, end))
+        written = Decimal(token.replace(",", ""))
+        if after is None:
+            factor = 1
+        elif after.re is _KOREAN_AFTER:
+            factor = _KOREAN[after.group(1)]
+        else:
+            factor = _multiplier(after.group(1)) or 1
+        found.append(WrittenNumber(token, start, end, written, after, written * factor / divisor))
+    return found
+
+
 def significant_numbers(claim_text: str) -> list[str]:
     """Numbers in a claim that a figure must cover: with a decimal point, with a unit, a percentage, or an integer of
     three digits or more. Years from 1900 to 2100, dates and marks joined to letters (H1, FY2025, Q3) do not count."""
     text = _DATES.sub(lambda m: " " * len(m.group(0)), normalize(claim_text))
     found = []
-    for match in _NUMBER.finditer(text):
-        token, start, end = match.group(0), match.start(), match.end()
+    for number in written_numbers(text):
+        token, start, end, unit = number.token, number.start, number.end, number.multiplier
         before = text[start - 1] if start else ""
         after = text[end] if end < len(text) else ""
         if (before.isascii() and before.isalpha()) or (after.isascii() and after.isalpha()):
             continue
         plain = token.replace(",", "")
-        unit = None if before == ARTICLE else (_UNIT_AFTER.match(text, end) or _KOREAN_AFTER.match(text, end))
         if "." in plain or unit or len(plain) >= 3:
             if "." not in plain and "," not in token and len(plain) == 4 and 1900 <= int(plain) <= 2100 and not unit:
                 continue
