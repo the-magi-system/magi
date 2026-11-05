@@ -201,3 +201,42 @@ def test_a_close_is_dated_by_the_exchange_day():
     assert close == {"date": "2026-09-22", "value": 41.2, "currency": "AUD", "as_of": "2026-09-21T23:00:00Z",
                      "source": "yahoo"}
     assert Quote(180.2, "USD", "2026-09-30T20:00:00Z", "yahoo").as_close()["date"] == "2026-09-30"
+
+
+# The 5-minute fallback prices the day of the daily bar, not the next one ----------------------------------------
+
+BTC = {"id": "btc-usd", "currency": "USD", "price_source": {"provider": "yahoo", "symbol": "BTC-USD"}}
+D = 1793664000  # 2026-11-03T00:00:00Z
+
+
+def around_the_clock(first, last, base=76000.0):
+    """5-minute bars of a market that trades around the clock, from `first` to `last` (both included)."""
+    stamps = list(range(first, last + 1, 300))
+    return stamps, [round(base + n, 2) for n in range(len(stamps))]
+
+
+def test_a_24_hour_market_closes_with_the_last_bar_of_its_own_day():
+    stamps, closes = around_the_clock(D, D + 86400 + 3 * 3600 + 2700)  # D 00:00Z to D+1 03:45Z
+    opener = SequenceOpener([bars([D - 86400, D], [75000.0, None], gmtoffset=0), bars(stamps, closes, gmtoffset=0)])
+    quote = YahooProvider(opener=opener).close(BTC)
+    last_of_d = stamps.index(D + 86400 - 300)  # D 23:55Z
+    assert (quote.value, quote.as_of, quote.market_date, quote.source) == (
+        closes[last_of_d], "2026-11-03T23:55:00Z", "2026-11-03", "yahoo-5m")
+
+
+def test_no_five_minute_bar_on_the_day_leaves_it_unrecorded():
+    stamps, closes = around_the_clock(D + 86400, D + 86400 + 3 * 3600 + 2700)  # only D+1
+    opener = SequenceOpener([bars([D - 86400, D], [75000.0, None], gmtoffset=0), bars(stamps, closes, gmtoffset=0)])
+    quote = YahooProvider(opener=opener).close(BTC)
+    assert quote.market_date != "2026-11-03" and (quote.value, quote.market_date) == (75000.0, "2026-11-02")
+
+
+def test_an_exchange_that_closes_keeps_its_fallback_close():
+    # Passes before and after: an exchange's 5-minute bars end at its close (Sydney, UTC+11).
+    opens = 1790031600  # 2026-09-21T23:00:00Z, 10:00 on 22 September in Sydney
+    stamps = list(range(opens, opens + 6 * 3600 + 1, 300))  # to the 16:00 close
+    closes = [41.0 + n / 100 for n in range(len(stamps))]
+    opener = SequenceOpener([bars([opens - 86400, opens], [40.8, None], "AUD", gmtoffset=39600),
+                             bars([opens - 3600, *stamps], [40.9, *closes], "AUD", gmtoffset=39600)])
+    quote = YahooProvider(opener=opener).close({**NVDA, "currency": "AUD"})
+    assert (quote.value, quote.as_of, quote.market_date) == (closes[-1], "2026-09-22T05:00:00Z", "2026-09-22")
