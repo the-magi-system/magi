@@ -14,7 +14,7 @@ from .fetch import normalize
 from .holding import holding_error
 from .ids import RESERVED_SUFFIX, agent_suffix, compose_agent_id
 from .ledger import CORRECTABLE, effective_ledger, record_kind
-from .melchior.quotes import _NUMBER, _UNIT_AFTER, _multiplier, parse_amount
+from .melchior.quotes import written_numbers
 from .methodology import check_publish, check_view_methodology
 from .profiles import check_publish_profile, check_view_profile
 from .proposal import Proposal
@@ -110,21 +110,15 @@ def _create_idea(state: RepoState, actor: str, payload: dict) -> Result:
 def _value_written(claim: dict) -> bool:
     """Whether |value| is a number written in the claim's text (protocol 1.15): as written, thousands separators,
     a sign, brackets or the word "minus" aside, or as the amount the number and the multiplier directly after it give,
-    divided by the multiplier of the claim's `unit` (1 when it names none). The readers are the figure check's own."""
+    divided by the multiplier of the claim's `unit` (1 when it names none). The figure check's own reader
+    (quotes.written_numbers) reads the numbers, so both read a multiplier the same way."""
     try:
         wanted = abs(Decimal(str(claim["value"])))
     except (InvalidOperation, ValueError):
         return False
-    text = normalize(str(claim.get("text") or ""))
-    divisor = Decimal(_multiplier(normalize(str(claim.get("unit") or ""))) or 1)
-    for match in _NUMBER.finditer(text):
-        if Decimal(match.group(0).replace(",", "")) == wanted:
-            return True
-        after = _UNIT_AFTER.match(text, match.end())
-        amount = parse_amount(match.group(0) + after.group(0)) if after else None
-        if amount is not None and amount[0] / divisor == wanted:
-            return True
-    return False
+    unit = claim.get("unit")
+    numbers = written_numbers(normalize(str(claim.get("text") or "")), str(unit) if unit else None)
+    return any(wanted in (number.written, number.amount) for number in numbers)
 
 
 def _evidence(state: RepoState, actor: str, payload: dict) -> Result:

@@ -207,3 +207,31 @@ def test_evidence_accepted_before_1_15_is_not_rechecked_by_consistency(repo):
         {"text": "Guidance of $80 million to $100 million", "value": 90, "unit": "USD million"},
         {"text": "175,390,967 Class A shares and 5,043,789 Class B shares", "value": 180434756, "unit": "shares"}]})
     assert check_repository(repo) == []
+
+
+# Review of PR #131: the intake rule reads a multiplier exactly as the figure check does (quotes.written_numbers).
+KOREAN_VALUE_CASES = [
+    ("자기주식 10만주 취득", 100000, "shares", True),
+    ("매출 5억달러", 500, "USD million", True),
+    ("자기주식 0.5조 규모", 5000, "억원", True),
+    ("5천억원", 5000, "억원", True),
+    ("제3조에 따라", 3000000000000, None, False),
+    ("제3조에 따라", 3, None, True),
+]
+
+
+@pytest.mark.parametrize("text, value, unit, accepted", KOREAN_VALUE_CASES)
+def test_a_claim_value_is_read_as_the_figure_check_reads_it(state, text, value, unit, accepted):
+    claim = {"text": text, "value": value, **({"unit": unit} if unit else {})}
+    errors, _ = check_semantics(state, Proposal("add_evidence", "john.research", evidence_payload(claims=[claim])))
+    if accepted:
+        assert errors == []
+    else:
+        assert [(e.path, e.message) for e in errors] == [("/payload/claims/0/value", VALUE_MESSAGE.format(value))]
+
+
+def test_the_intake_rule_imports_no_private_name():
+    import ast
+    tree = ast.parse((REPO_ROOT / "engine" / "semantic.py").read_text(encoding="utf-8"))
+    names = [alias.name for node in ast.walk(tree) if isinstance(node, ast.ImportFrom) for alias in node.names]
+    assert not [name for name in names if name.startswith("_")], names
