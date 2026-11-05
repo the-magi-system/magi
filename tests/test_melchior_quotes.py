@@ -226,3 +226,93 @@ def test_written_numbers_give_each_number_with_its_multiplier():
     assert read("Revenue was $1.2 billion", "USD million") == [("1.2", Decimal("1.2"), Decimal(1200))]
     assert read("175,390,967 shares") == [("175,390,967", Decimal(175390967), Decimal(175390967))]
     assert read("만기 10년") == [("10", Decimal(10), Decimal(10))]
+
+
+# A number in a range takes the multiplier written after the range's other end ------------------------------------
+
+def _range_read(text, unit=None):
+    from engine.melchior.quotes import written_numbers
+    return {n.token: n.amount for n in written_numbers(text, unit)}
+
+
+def test_a_range_end_borrows_the_multiplier_written_after_the_other_end():
+    assert _range_read("revenue of $1.595 to $1.605 billion", "USD million") == {"1.595": Decimal(1595),
+                                                                                 "1.605": Decimal(1605)}
+    assert _range_read("lowered from $265 to $275 million")["265"] == Decimal(265_000_000)
+    assert _range_read("in a range between $260 and $270 million")["260"] == Decimal(260_000_000)
+    assert _range_read("자사주 1,000~1,200억원 매입", "억원") == {"1,000": Decimal(1000), "1,200": Decimal(1200)}
+    from engine.melchior.quotes import written_numbers
+    ten = written_numbers("a margin of 10-20%")[0]
+    assert ten.amount == Decimal(10) and ten.multiplier is None and ten.borrowed.group(1) == "%"
+
+
+def test_a_range_borrows_only_where_the_rule_says():
+    # These already hold before the change: an own multiplier is kept, and nothing else borrows.
+    assert _range_read("$900 million to $1.1 billion")["900"] == Decimal(900_000_000)
+    assert _range_read("from 2025 to 2026") == {"2025": Decimal(2025), "2026": Decimal(2026)}
+    assert _range_read("5 and 10 million")["5"] == Decimal(5), "and borrows only after between"
+    assert _range_read("정관 제3~5조에 따라")["3"] == Decimal(3), "a number directly after 제 borrows nothing"
+
+
+def test_significant_numbers_of_a_range_are_unchanged():
+    from engine.melchior.quotes import significant_numbers
+    # What they return today: a borrowed multiplier does not make a number significant.
+    assert significant_numbers("$80 to $100 million") == ["100"]
+    assert significant_numbers("$1.595 to $1.605 billion") == ["1.595", "1.605"]
+    assert significant_numbers("10-20%") == ["20%"]
+
+
+MIAX_CLAIM = "Full-year adjusted EBITDA guidance was lowered to $260 to $270 million"
+MIAX_QUOTE = "adjusted EBITDA is now expected in a range between $260 million and $270 million"
+MIAX_PAIRS = [{"claim": "$260", "source": "$260 million", "unit": None},
+              {"claim": "$270 million", "source": "$270 million", "unit": None}]
+TEM_CLAIM = "Full-year 2026 guidance: revenue of $1.595 to $1.605 billion"
+TEM_QUOTE = "The company raised its guidance to $1.595 to $1.605 billion of revenue"
+TEM_PAIRS = [{"claim": "$1.595", "source": "$1.595", "unit": None},
+             {"claim": "$1.605 billion", "source": "$1.605 billion", "unit": None}]
+
+
+def test_a_range_whose_unit_is_written_once_is_checked():
+    from engine.melchior.quotes import check_figures
+    assert check_figures(MIAX_CLAIM, MIAX_QUOTE, MIAX_QUOTE, MIAX_PAIRS)[0]
+    assert check_figures(MIAX_CLAIM, MIAX_QUOTE, MIAX_QUOTE, MIAX_PAIRS, value=260, unit="USD million")[0]
+    ok, checked = check_figures(TEM_CLAIM, TEM_QUOTE, TEM_QUOTE, TEM_PAIRS, value=1595, unit="USD million")
+    assert ok and checked[0]["claim_value"] == 1_595_000_000
+
+
+def test_a_range_value_that_is_not_an_end_is_still_refused():
+    from engine.melchior.quotes import check_figures
+    assert not check_figures(TEM_CLAIM, TEM_QUOTE, TEM_QUOTE, TEM_PAIRS, value=1600, unit="USD million")[0]
+
+
+def test_a_borrowed_multiplier_must_agree_and_be_decidable():
+    from engine.melchior.quotes import check_figures
+    quote = "a price of $260 per share and $270 million of cash"
+    pairs = [{"claim": "$260", "source": "$260 per share", "unit": None},
+             {"claim": "$270 million", "source": "$270 million", "unit": None}]
+    assert not check_figures("Pay $260 to $270 million", quote, quote, pairs)[0]
+    twice = "Costs of $5 to $6 million in one year and $5 to $6 billion in the other"
+    source = "costs of $5 million to $6 million"
+    pairs = [{"claim": "$5", "source": "$5 million", "unit": None},
+             {"claim": "$6 million", "source": "$6 million", "unit": None},
+             {"claim": "$6 billion", "source": "$6 million", "unit": None}]
+    assert not check_figures(twice, source, source, pairs)[0], "$5 reads as million and as billion"
+
+
+def test_a_borrowed_reading_takes_its_precision_from_the_number_in_the_fragment():
+    # Review of PR #141, item 1: an earlier "1.5" must not lend its precision to "$1.50".
+    from engine.melchior.quotes import check_figures
+    claim = "Revenue was 1.5 billion in 2025; guidance is $1.50 to $1.60 billion"
+    quote = "guidance of $1.54 billion to $1.60 billion"
+    pairs = [{"claim": "$1.50", "source": "$1.54 billion", "unit": None},
+             {"claim": "$1.60 billion", "source": "$1.60 billion", "unit": None}]
+    assert not check_figures(claim, quote, quote, pairs)[0]
+
+
+def test_a_year_or_a_mark_joined_to_letters_borrows_nothing():
+    # Review of PR #141, item 2: neither is a range end.
+    from engine.melchior.quotes import written_numbers
+    year = next(n for n in written_numbers("guidance for 2026 to $1.2 billion") if n.token == "2026")
+    mark = next(n for n in written_numbers("Q3 to $1.2 billion") if n.token == "3")
+    assert (year.borrowed, year.amount) == (None, Decimal(2026))
+    assert (mark.borrowed, mark.amount) == (None, Decimal(3))
