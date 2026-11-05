@@ -110,6 +110,19 @@ _RANGE_AND = re.compile(r"\s*and\s*" + _CURRENCY, re.IGNORECASE)
 _BETWEEN = re.compile(r"\bbetween\s*[$€£¥₩]?\s*$", re.IGNORECASE)
 
 
+def _joined_to_letters(text: str, start: int, end: int) -> bool:
+    """A mark such as Q3, H1 or FY2026: the number touches an ASCII letter on either side."""
+    before = text[start - 1] if start else ""
+    after = text[end] if end < len(text) else ""
+    return (before.isascii() and before.isalpha()) or (after.isascii() and after.isalpha())
+
+
+def _bare_year(token: str, own: re.Match | None) -> bool:
+    """A year: a four-digit integer from 1900 to 2100, written without a comma, a decimal point or a multiplier."""
+    plain = token.replace(",", "")
+    return "." not in plain and "," not in token and len(plain) == 4 and 1900 <= int(plain) <= 2100 and own is None
+
+
 def _factor(match: re.Match | None) -> int:
     if match is None:
         return 1
@@ -122,10 +135,11 @@ def written_numbers(text: str, unit: str | None = None) -> list[WrittenNumber]:
     """Each number of `text`, read as given (callers normalise it), with the amount that the number and the
     multiplier directly after it give: a word or sign of _UNIT_AFTER (`%`, `million`, `억원`), else a Korean multiplier
     of _KOREAN_AFTER (`10만주`, `0.5조`), and none for a number directly after 제 (제3조, an article). A number with no
-    multiplier of its own, not after 제, that a range connector (`to`, `-`, `–`, `—`, `~`, `〜`, `至`, `到`, or `and`
-    after `between`) joins to a number with its own multiplier, borrows that multiplier: `$1.595 to $1.605 billion`.
-    The amount is divided by the multiplier of `unit` (1 when the unit names none). significant_numbers and the intake rule on a
-    claim's `value` (engine/semantic.py) both read numbers here, so the two cannot drift apart."""
+    multiplier of its own, not after 제, and neither a year nor a mark joined to letters (Q3, FY2026), that a range
+    connector (`to`, `-`, `–`, `—`, `~`, `〜`, `至`, `到`, or `and` after `between`) joins to a number with its own
+    multiplier, borrows that multiplier: `$1.595 to $1.605 billion`. The amount is divided by the multiplier of `unit`
+    (1 when the unit names none). significant_numbers and the intake rule on a claim's `value` (engine/semantic.py)
+    both read numbers here, so the two cannot drift apart."""
     divisor = Decimal(_multiplier(normalize(unit)) or 1) if unit else Decimal(1)
     matches = list(_NUMBER.finditer(text))
     articles = [match.start() > 0 and text[match.start() - 1] == ARTICLE for match in matches]
@@ -134,7 +148,9 @@ def written_numbers(text: str, unit: str | None = None) -> list[WrittenNumber]:
     found = []
     for index, match in enumerate(matches):
         borrowed = None
-        if own[index] is None and not articles[index] and index + 1 < len(matches) and own[index + 1] is not None:
+        # A year or a mark joined to letters is not a range end, as significant_numbers skips them (PR #141 review).
+        if own[index] is None and not articles[index] and index + 1 < len(matches) and own[index + 1] is not None \
+                and not _joined_to_letters(text, match.start(), match.end()) and not _bare_year(match.group(0), None):
             # Only the number directly before the connector borrows, and only the other end's own multiplier.
             gap = text[match.end():matches[index + 1].start()]
             between = _BETWEEN.search(text[:match.start()]) is not None
@@ -159,17 +175,17 @@ def _borrowed_reading(fragment: str, text: str):
     while position >= 0:
         inside = [n for n in numbers if position <= n.start and n.end <= position + len(wanted)]
         number = inside[0] if len(inside) == 1 else None
-        readings.append((number.written, _factor(number.borrowed))
+        readings.append((number.token.replace(",", ""), _factor(number.borrowed))
                         if number is not None and number.multiplier is None and number.borrowed is not None else None)
         position = text.find(wanted, position + 1)
     if not readings or all(reading is None for reading in readings):
         return None
     if len(set(readings)) > 1:
         return False
-    written, factor = readings[0]
-    token = next(n.token for n in numbers if n.written == written).replace(",", "")
+    # The token of the number inside the fragment gives the precision: $1.50 is read to 0.005, not as an earlier 1.5.
+    token, factor = readings[0]
     decimals = len(token.split(".")[1]) if "." in token else 0
-    return written * factor, Decimal(5) * Decimal(10) ** (-(decimals + 1)) * factor
+    return Decimal(token) * factor, Decimal(5) * Decimal(10) ** (-(decimals + 1)) * factor
 
 
 def significant_numbers(claim_text: str) -> list[str]:
@@ -179,13 +195,11 @@ def significant_numbers(claim_text: str) -> list[str]:
     found = []
     for number in written_numbers(text):
         token, start, end, unit = number.token, number.start, number.end, number.multiplier
-        before = text[start - 1] if start else ""
-        after = text[end] if end < len(text) else ""
-        if (before.isascii() and before.isalpha()) or (after.isascii() and after.isalpha()):
+        if _joined_to_letters(text, start, end):
             continue
         plain = token.replace(",", "")
         if "." in plain or unit or len(plain) >= 3:
-            if "." not in plain and "," not in token and len(plain) == 4 and 1900 <= int(plain) <= 2100 and not unit:
+            if _bare_year(token, unit):
                 continue
             found.append(token + ("%" if unit and unit.group(1) == "%" else ""))
     return found

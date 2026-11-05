@@ -297,3 +297,22 @@ def test_a_borrowed_multiplier_must_agree_and_be_decidable():
              {"claim": "$6 million", "source": "$6 million", "unit": None},
              {"claim": "$6 billion", "source": "$6 million", "unit": None}]
     assert not check_figures(twice, source, source, pairs)[0], "$5 reads as million and as billion"
+
+
+def test_a_borrowed_reading_takes_its_precision_from_the_number_in_the_fragment():
+    # Review of PR #141, item 1: an earlier "1.5" must not lend its precision to "$1.50".
+    from engine.melchior.quotes import check_figures
+    claim = "Revenue was 1.5 billion in 2025; guidance is $1.50 to $1.60 billion"
+    quote = "guidance of $1.54 billion to $1.60 billion"
+    pairs = [{"claim": "$1.50", "source": "$1.54 billion", "unit": None},
+             {"claim": "$1.60 billion", "source": "$1.60 billion", "unit": None}]
+    assert not check_figures(claim, quote, quote, pairs)[0]
+
+
+def test_a_year_or_a_mark_joined_to_letters_borrows_nothing():
+    # Review of PR #141, item 2: neither is a range end.
+    from engine.melchior.quotes import written_numbers
+    year = next(n for n in written_numbers("guidance for 2026 to $1.2 billion") if n.token == "2026")
+    mark = next(n for n in written_numbers("Q3 to $1.2 billion") if n.token == "3")
+    assert (year.borrowed, year.amount) == (None, Decimal(2026))
+    assert (mark.borrowed, mark.amount) == (None, Decimal(3))
