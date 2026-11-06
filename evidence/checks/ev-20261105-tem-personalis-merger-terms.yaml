@@ -1,0 +1,220 @@
+schema: magi/evidence-check@1
+evidence: ev-20261105-tem-personalis-merger-terms
+status: verified
+reason: null
+source_date:
+  quote: October 2, 2026
+  date: '2026-10-02'
+  filing_date: '2026-10-02'
+  matches: true
+claims:
+- index: 0
+  verdict: supported
+  timing: standing
+  quote: '“Exchange Ratio,” which will be: (a) 0.3356, if the Tempus Stock Price is equal to or less than $48.42 (the “Floor Price”); or (b) the quotient of $16.25 divided by the Tempus Stock Price, if the Tempus Stock Price'
+  figures:
+  - claim: $16.25
+    source: $16.25
+    unit: null
+    claim_value: 16.25
+    source_value: 16.25
+  - claim: '0.3356'
+    source: '0.3356'
+    unit: null
+    claim_value: 0.3356
+    source_value: 0.3356
+  - claim: $48.42
+    source: $48.42
+    unit: null
+    claim_value: 48.42
+    source_value: 48.42
+  correct: null
+  note: The summary term sheet sets the exchange ratio at 0.3356 at or below the $48.42 floor price, and otherwise at $16.25 divided by the Tempus stock price, paid in Tempus Class A shares.
+- index: 1
+  verdict: supported
+  timing: standing
+  quote: 'Personalis, a Tempus Cash Election to pay cash for up to 50% of the aggregate number of outstanding shares of Personalis Common Stock (subject to automatic reduction to preserve the intended tax treatment of the Mergers). If Tempus makes a Tempus
+
+    Cash Election, each Personalis Stockholder will receive (a) the Cash Consideration being $16.25 per share in cash, without interest (which may include a fraction of a share and, in that context, will be rounded to the nearest four decimal
+
+    places), for such holder’s pro rata portion of shares of Personalis Common Stock subject to the Tempus Cash Election, and (b) the Stock Consideration for the holder’s remaining shares. Accordingly, Personalis Stockholders will not
+
+    know the mix of cash and stock (or if they will receive any Cash Consideration) at the time of the Personalis Special Meeting unless Tempus makes a Tempus Cash Election prior to such time.
+
+    In determining whether to exercise the Tempus Cash Election prior to Closing, Tempus will consider, among other factors, the Tempus Stock
+
+    Price, cash liquidity and available financing and potential effects on the Intended Tax Treatment. Tempus expects to fund the Tempus Cash Election, if any, through cash on hand, borrowing under existing or newly arranged credit facilities and/or
+
+    offerings of equity or equity-linked securities.'
+  figures:
+  - claim: 50%
+    source: 50%
+    unit: null
+    claim_value: 50
+    source_value: 50
+  correct: null
+  note: The Q&A section says Tempus may elect to pay cash for up to 50% of the shares, and lists the factors it will weigh in deciding whether to do so, which shows no decision has been made yet. It also gives the same three funding sources as the claim.
+- index: 2
+  verdict: supported
+  timing: standing
+  quote: 'by Personalis, if the Tempus Stock Price, as finally determined at Closing, is less than $46.00 (the “Lower
+
+    Floor Price”), subject to the timing limitations set forth in the Merger Agreement.'
+  figures:
+  - claim: $46.00
+    source: $46.00
+    unit: null
+    claim_value: 46
+    source_value: 46
+  correct: null
+  note: The termination section of the summary gives Personalis this right when the Tempus stock price determined at closing is below $46.00.
+- index: 3
+  verdict: supported
+  timing: standing
+  quote: 'by either Tempus or Personalis, if the Mergers have not been consummated by April 20, 2027 (the
+
+    “Outside Date”), subject to automatic extension to October 20, 2027, and, if applicable, to April 20, 2028, if all conditions other than the Regulatory Conditions have been satisfied or waived, and such failure to terminate is
+
+    not attributable to a failure of such terminating party to perform its obligations in any material respect;'
+  figures: []
+  correct: null
+  note: The source gives the outside date of April 20, 2027 and the automatic extensions to October 20, 2027 and April 20, 2028 when only the regulatory conditions remain unmet.
+- index: 4
+  verdict: supported
+  timing: standing
+  quote: 'Revenue
+
+    79
+
+    115
+
+    172
+
+    242
+
+    333
+
+    457
+
+    623
+
+    843
+
+    1,127
+
+    1,484
+
+    1,915
+
+    2,413
+
+    2,963
+
+    3,539
+
+    4,109'
+  figures:
+  - claim: $115 million
+    source: '115'
+    unit: (dollars in millions)
+    claim_value: 115000000
+    source_value: 115000000
+  correct: null
+  note: In the table of Tempus Projections for Personalis, stated in millions of dollars, the second column (2027E) shows revenue of 115.
+- index: 5
+  verdict: supported
+  timing: standing
+  quote: 'Adj. EBITDA(1)
+
+    (95
+
+    )
+
+    (86
+
+    )
+
+    (73
+
+    )
+
+    (28
+
+    )
+
+    0
+
+    25
+
+    68
+
+    137
+
+    243
+
+    400
+
+    561
+
+    764
+
+    1,008
+
+    1,287
+
+    1,591
+
+    Unlevered Free Cash Flow(2)
+
+    (112
+
+    )
+
+    (113
+
+    )'
+  figures:
+  - claim: minus $86 million
+    source: '(86
+
+      )'
+    unit: (dollars in millions)
+    claim_value: 86000000
+    source_value: 86000000
+  - claim: minus $113 million
+    source: '(113
+
+      )'
+    unit: (dollars in millions)
+    claim_value: 113000000
+    source_value: 113000000
+  correct: null
+  note: In the same Tempus Projections for Personalis table, 2027E adjusted EBITDA is (86) and 2027E unlevered free cash flow is (113). Adjusted EBITDA reaches 0 in the fifth column, which is 2030E.
+source:
+  url: https://www.sec.gov/Archives/edgar/data/1717115/000119312526412289/d864810ds4a.htm
+  final_url: https://www.sec.gov/Archives/edgar/data/1717115/000119312526412289/d864810ds4a.htm
+  http_status: 200
+  content_type: text/html
+  format: html
+  parts: 1
+  decoding: detected
+  fetched_at: '2026-11-06T03:39:53Z'
+  sha256: 671c56cc52f8f5f8c18fb775154c35f7c1222d99fb2fdd28f19071481f34f5bd
+  chars: 1000000
+  truncated: true
+link: ok
+currency: current
+superseded_by: null
+same_source_as:
+- ev-20261020-tem-personalis-merger-terms
+pending_sources: []
+assist_issue: null
+filings_read_on: null
+filings_listed: []
+next_review: '2027-02-04'
+input_commit: d0d54e347467f2744b582aadd7c48e14cfd27534
+prompt_sha256: c4a7fd588a3661762d0f8435ff02b0f2db248013b11483706ef47693511892d7
+model: claude-opus-5-5
+version: 1
+checked_at: '2026-11-06T03:42:02Z'
+checked_via_run: 42157880371

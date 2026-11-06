@@ -1,0 +1,277 @@
+schema: magi/evidence-check@1
+evidence: ev-20261105-tem-2026q2-results
+status: verified
+reason: null
+source_date:
+  quote: July 30, 2026
+  date: '2026-07-30'
+  filing_date: '2026-07-30'
+  matches: true
+claims:
+- index: 0
+  verdict: supported
+  timing: historical
+  quote: Revenue increased 22% year-over-year to $382.5 million.
+  figures:
+  - claim: $382.5 million
+    source: $382.5 million
+    unit: null
+    claim_value: 382500000
+    source_value: 382500000
+  - claim: 22%
+    source: 22%
+    unit: null
+    claim_value: 22
+    source_value: 22
+  correct: null
+  note: The summary results state Q2 2026 revenue of $382.5 million, up 22% year over year.
+- index: 1
+  verdict: supported
+  timing: historical
+  quote: Diagnostics generated $289.3 million of revenue, representing 20% year-over-year growth, driven by Oncology volume growth of 31%, offset by Hereditary revenue growth of 5%.
+  figures:
+  - claim: $289.3 million
+    source: $289.3 million
+    unit: null
+    claim_value: 289300000
+    source_value: 289300000
+  - claim: 20%
+    source: 20%
+    unit: null
+    claim_value: 20
+    source_value: 20
+  - claim: 31%
+    source: 31%
+    unit: null
+    claim_value: 31
+    source_value: 31
+  - claim: 5%
+    source: 5%
+    unit: null
+    claim_value: 5
+    source_value: 5
+  correct: null
+  note: The summary results give Diagnostics revenue, its growth rate, oncology volume growth and hereditary revenue growth, all matching the claim.
+- index: 2
+  verdict: supported
+  timing: historical
+  quote: Data and Applications generated $93.2 million of revenue, representing 28% year-over-year growth, with Insights growing 36%.
+  figures:
+  - claim: $93.2 million
+    source: $93.2 million
+    unit: null
+    claim_value: 93200000
+    source_value: 93200000
+  - claim: 28%
+    source: 28%
+    unit: null
+    claim_value: 28
+    source_value: 28
+  - claim: 36%
+    source: 36%
+    unit: null
+    claim_value: 36
+    source_value: 36
+  correct: null
+  note: The summary results match the claim. The highlights also describe Insights as Data Licensing & Modeling.
+- index: 3
+  verdict: supported
+  timing: historical
+  quote: Signed ~$200 million in new Data and Applications licenses
+  figures:
+  - claim: $200 million
+    source: $200 million
+    unit: null
+    claim_value: 200000000
+    source_value: 200000000
+  correct: null
+  note: The highlights list about $200 million of new Data and Applications licenses signed in the quarter.
+- index: 4
+  verdict: supported
+  timing: historical
+  quote: 'Diagnostics gross margin
+
+    62.6
+
+    %
+
+    58.8
+
+    %'
+  figures:
+  - claim: 62.6%
+    source: '62.6'
+    unit: null
+    claim_value: 62.6
+    source_value: 62.6
+  - claim: 58.8%
+    source: '58.8'
+    unit: null
+    claim_value: 58.8
+    source_value: 58.8
+  correct: null
+  note: The reconciliation table gives the GAAP Diagnostics gross margin, before non-GAAP adjustments, as 62.6% for Q2 2026 and 58.8% for Q2 2025.
+- index: 5
+  verdict: supported
+  timing: historical
+  quote: 'Gross margin, data and applications
+
+    70.2
+
+    %
+
+    72.7
+
+    %'
+  figures:
+  - claim: 70.2%
+    source: '70.2'
+    unit: null
+    claim_value: 70.2
+    source_value: 70.2
+  - claim: 72.7%
+    source: '72.7'
+    unit: null
+    claim_value: 72.7
+    source_value: 72.7
+  correct: null
+  note: The reconciliation table gives the GAAP Data and applications gross margin as 70.2% for Q2 2026 and 72.7% for Q2 2025.
+- index: 6
+  verdict: supported
+  timing: historical
+  quote: 'Loss from operations
+
+    $
+
+    (75,913
+
+    )
+
+    $
+
+    (61,774
+
+    )'
+  figures:
+  - claim: $75.9 million
+    source: (75,913
+    unit: (in thousands, except percentages and per share amounts)
+    claim_value: 75900000
+    source_value: 75913000
+  - claim: $61.8 million
+    source: (61,774
+    unit: (in thousands, except percentages and per share amounts)
+    claim_value: 61800000
+    source_value: 61774000
+  correct: null
+  note: The financial results table, stated in thousands, shows a loss from operations of 75,913 for Q2 2026 and 61,774 for Q2 2025.
+- index: 7
+  verdict: supported
+  timing: historical
+  quote: Net income was $5.6 million, which included $55.6 million of stock compensation expense and related employer payroll taxes and $98.5 million in unrealized gains on marketable securities, compared to a net loss of $(42.8 million) in Q2 of 2025.
+  figures:
+  - claim: $5.6 million
+    source: $5.6 million
+    unit: null
+    claim_value: 5600000
+    source_value: 5600000
+  - claim: $98.5 million
+    source: $98.5 million
+    unit: null
+    claim_value: 98500000
+    source_value: 98500000
+  - claim: $55.6 million
+    source: $55.6 million
+    unit: null
+    claim_value: 55600000
+    source_value: 55600000
+  correct: null
+  note: The summary results state all three amounts as the claim gives them.
+- index: 8
+  verdict: supported
+  timing: historical
+  quote: Adjusted EBITDA was $8.0 million, compared to ($5.6 million) in Q2 of 2025.
+  figures:
+  - claim: $8.0 million
+    source: $8.0 million
+    unit: null
+    claim_value: 8000000
+    source_value: 8000000
+  - claim: $5.6 million
+    source: ($5.6 million)
+    unit: null
+    claim_value: 5600000
+    source_value: 5600000
+  correct: null
+  note: The summary results give Adjusted EBITDA of $8.0 million against negative $5.6 million a year earlier.
+- index: 9
+  verdict: supported
+  timing: historical
+  quote: 'Net cash used in operating activities
+
+    $
+
+    (80,802'
+  figures:
+  - claim: $80.8 million
+    source: (80,802
+    unit: (in thousands, except per share amounts)
+    claim_value: 80800000
+    source_value: 80802000
+  correct: null
+  note: The cash flow statement for the six months ended June 30, 2026, stated in thousands, shows net cash used in operating activities of 80,802.
+- index: 10
+  verdict: supported
+  timing: standing
+  quote: Tempus is increasing its full year 2026 revenue guidance to $1.595 to $1.605 billion, which represents ~25% annual growth. We continue to expect 2026 Adjusted EBITDA to be ~$65 million. Guidance assumes no impact from the Personalis transaction, which is expected to close in late Q4 2026 or early 2027.
+  figures:
+  - claim: $1.595
+    source: $1.595
+    unit: null
+    claim_value: 1595000000
+    source_value: 1595000000
+  - claim: $1.605 billion
+    source: $1.605 billion
+    unit: null
+    claim_value: 1605000000
+    source_value: 1605000000
+  - claim: 25%
+    source: 25%
+    unit: null
+    claim_value: 25
+    source_value: 25
+  - claim: $65 million
+    source: $65 million
+    unit: null
+    claim_value: 65000000
+    source_value: 65000000
+  correct: null
+  note: The outlook section states the revenue range, the growth rate, the Adjusted EBITDA expectation and the Personalis assumption and expected timing.
+source:
+  url: https://www.sec.gov/Archives/edgar/data/1717115/000119312526326083/tem-ex99_1.htm
+  final_url: https://www.sec.gov/Archives/edgar/data/1717115/000119312526326083/tem-ex99_1.htm
+  http_status: 200
+  content_type: text/html
+  format: html
+  parts: 1
+  decoding: detected
+  fetched_at: '2026-11-06T03:39:53Z'
+  sha256: 5286652d412923eb6129109262ba1b3670ea0e87344d34e09e2906889e92aef0
+  chars: 32739
+  truncated: false
+link: ok
+currency: current
+superseded_by: null
+same_source_as:
+- ev-20261020-tem-2026q2-results
+pending_sources: []
+assist_issue: null
+filings_read_on: null
+filings_listed: []
+next_review: '2027-02-04'
+input_commit: d0d54e347467f2744b582aadd7c48e14cfd27534
+prompt_sha256: c4a7fd588a3661762d0f8435ff02b0f2db248013b11483706ef47693511892d7
+model: claude-opus-5-5
+version: 1
+checked_at: '2026-11-06T03:42:02Z'
+checked_via_run: 42157880371

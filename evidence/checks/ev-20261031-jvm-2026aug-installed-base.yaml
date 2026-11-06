@@ -1,0 +1,33 @@
+schema: magi/evidence-check@1
+evidence: ev-20261031-jvm-2026aug-installed-base
+status: unverified
+reason: unsupported_format
+source_date: null
+claims: []
+source:
+  url: https://kind.krx.co.kr/external/dst/irReference/18969/JVM_IR%EC%9E%90%EB%A3%8C_2026%20AUG_KR.pdf
+  final_url: https://kind.krx.co.kr/external/dst/irReference/18969/JVM_IR%EC%9E%90%EB%A3%8C_2026%20AUG_KR.pdf
+  http_status: 200
+  content_type: application/pdf
+  format: pdf
+  parts: 0
+  decoding: null
+  fetched_at: '2026-11-06T03:39:53Z'
+  sha256: null
+  chars: 0
+  truncated: false
+link: ok
+currency: current
+superseded_by: null
+same_source_as: []
+pending_sources: []
+assist_issue: 145
+filings_read_on: null
+filings_listed: []
+next_review: '2027-02-04'
+input_commit: d0d54e347467f2744b582aadd7c48e14cfd27534
+prompt_sha256: null
+model: null
+version: 1
+checked_at: '2026-11-06T03:42:02Z'
+checked_via_run: 42157880371

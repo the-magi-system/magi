@@ -162,7 +162,7 @@ source:
   truncated: true
 link: ok
 currency: current
-superseded_by: null
+superseded_by: ev-20261105-tem-personalis-merger-terms
 same_source_as: []
 pending_sources: []
 assist_issue: 128
@@ -172,6 +172,6 @@ next_review: '2027-02-02'
 input_commit: dc3f3ee20de3b649c8b79193d8ea6befbe38c8c9
 prompt_sha256: c4a7fd588a3661762d0f8435ff02b0f2db248013b11483706ef47693511892d7
 model: claude-opus-5-5
-version: 1
+version: 2
 checked_at: '2026-11-04T04:51:45Z'
 checked_via_run: 41775470287
