@@ -12,6 +12,37 @@
 
 **上游：** 计划 8 已完成（PR #48、#49、#51、#52）。本计划写成时 main 为 `6fa23c3`（PR #98，协议 1.11），`646 passed`，一致性 `[]`。正式仓库的状态：四个 idea（`tem-data-engine`、`miax-options-volume`、`ccc-gtcr-take-private-2026`、`jvm-owner-cash-realization`）；14 条证据，都是 `access: public`；四个观点版本；三期 Caspar 周报；`melchior.magi` 与 `caspar.magi` 都已登记为 active。正式仓库的 `MELCHIOR_MODE` 自 2026-10-31 起为 `live`（程序部分），`CASPAR_MODE` 为 `live`。
 
+**进度（2026-11-06）：** 计划 9 的四个 PR 都已合并。下表的日期为 UTC，测试数取自合并推送的 ci；合并推送的 ci 与 audit 都为 success。
+
+| PR | 合并 | main | ci |
+|---|---|---|---|
+| 9a，#106 | 2026-11-01，squash | `d66f43c` | `689 passed` |
+| 9b，#111 | 2026-11-02，rebase，保留 9 个提交 | `bd3efc6`（协议 1.13） | `753 passed` |
+| 9c，#122 | 2026-11-03，squash | `ee0e1c4` | `854 passed` |
+| 9d，#125 | 2026-11-03，squash | `a8c019b` | `877 passed` |
+
+各数都高于下文的 Expected，原因有二：其间另合并了 #109（录下证据核查用的来源页面）、#121（摘录先取数字；triage 每 3 小时运行）与 #124（协议 1.14）；各 PR 在审阅中也补了测试。
+
+- **sandbox 端到端（Step 2）：** 9b、9c、9d 合并之前，维护者各在 sandbox 临时把 `MELCHIOR_MODEL_MODE` 设为 `live` 跑一次，跑完即删除该变量。
+  - 9b 在审阅中的提交 `c5ada62` 上 83 步全部通过。Melchior 三个模型任务共 $0.178，其中核查一条真实证据（TEM 二季度新闻稿，32,739 字符）花 $0.121，判 `verified`；维护者对照 SEC 原文，引文与数字相符。
+  - 9c 合并之前 85 步全部通过，Melchior 三个模型任务约 $0.18。
+  - 9d 在最终提交 `824244f` 上 86 步全部通过。Step 2 以这一次为准，合并之后没有再跑。
+- **正式仓库 `preview`（Step 3）：** 2026-11-04 设 `MELCHIOR_MODEL_MODE=preview`，手动运行 `melchior.yml`（run `41718539976`，范围 `evidence`）。
+  - 运行成功：`think` 没有 429 与其他错误，main 上没有写 `evidence/checks/`。
+  - 14 条待核查证据中核查了 5 条，4 个模型任务共 $1.05。MIAX 两条全部核实。JVM 三条都会开协助请求：三季度官方文件是 PDF（`unsupported_format`，程序直接记录）；上半年现金一条的主张在原文里找不到；价值提升计划一条有 2 条主张数字核不上。
+  - KIND 的价值提升计划页面从 GitHub 托管运行器取到了正文，没有返回 403。
+  - 这次运行查出数字检查不读百分比表头，也不读不带「원」的韩文倍数。#126 修复了这两处（main `dc3f3ee`）。用 #126 重放这次运行，派息率 26.4% 那条改判核实，其余 20 条主张结果不变。
+- **正式仓库 `live`（Step 4）：** 维护者 2026-11-04 看过 `preview` 的结果之后改为 `live`，并手动运行一次（run `41775470287`，范围 `evidence`，main `dc3f3ee`，写入 `664209f`）。
+  - 5 个模型任务共 $1.99。`ev-20261020-tem-2026-proxy-control-incentives` 核实，6 条主张全部有来源支持。
+  - 另 4 条为 `unverified`（`not_found`）：TEM 10-Q（10 条主张中 6 条有支持）、TEM CEO 会议发言（5 条中 3 条）、Personalis 合并条款（6 条中 5 条）、MIAX 二季度业绩（7 条中 6 条）。前三条开了协助请求 #127、#128、#129；MIAX 一条因每次运行最多新开 3 个协助请求而顺延。
+  - 核不上的原因多在主张的写法：`value` 填区间中点或两数之和，或一条主张的事实分在原文不同段落。另有一处程序缺口：区间只在后端写单位时（`$260 to $270 million`），数字检查读不出前端的单位。
+  - 第二次 `live` 是 2026-11-05 的定时运行（run `41963425702`，写入 `76321f5`），7 个模型任务共 $1.44。两次 `live` 合计 $3.43。
+- **后续（不属于本计划）：**
+  - 程序与协议：#130 补齐韩文量词与 십만至천억 的读法；协议 1.15（#131）在提交时拒绝不是主张文字里写明的数的 `value`；#141 让区间前端借用后端的倍数；#142 修正每日取价的 5 分钟线回退（24 小时交易的 `btc-usd` 曾取到次日的价格）；#143 让协助请求逐条写出核不上的原因。
+  - 证据：证据主人以 `supersede_evidence` 改写重提了 5 条证据（#136–#140）。
+  - 第三次 `live`：2026-11-06 的定时运行（run `42157880371`，写入 `42fc938`），5 个模型任务共 $1.30，三次 `live` 合计 $4.73。Melchior.Magi 核实了改写重提的 4 条证据：TEM 二季度业绩、TEM CEO 会议发言、Personalis 合并条款、MIAX 二季度业绩；对应的协助请求 #128、#129、#134 随之自动关闭。JVM 装机量一条的来源是 PDF，程序记为 `unsupported_format`，开了协助请求 #145；程序还为上次运行顺延的 JVM 价值提升计划一条开了协助请求 #146。
+  - 现状：截至这次运行，Melchior.Magi 还没有写过更正；待核查的证据还有 4 条（CCC 3 条与改写重提的 TEM 10-Q），积压尚未补完。
+
 **进度（2026-11-01）：** Task 1：PR #99。维护者 2026-11-01 审阅之后，本计划的分支合并了当时的 main `28871d2`（含 PR #104），`654 passed`，一致性 `[]`；下文各任务的 Expected 从 654 起算。末尾一节已改写为维护者确认的记录（Task 1 Step 5）。
 
 **证据来源的核对（本计划的作者，2026-11-01）：** 作者用不带联系方式的通用 User-Agent 请求了正式仓库里非 SEC 证据的来源。结果如下，下文的做法依据这些结果：
@@ -1110,11 +1141,11 @@ git commit -m "feat(melchior): the profile lists the ruling duty; the sandbox ru
 
 ### Task 23（维护者）：合并 PR 9d，sandbox 端到端测试，在正式仓库打开模型部分
 
-- [ ] **Step 1: 审阅并合并 PR 9d**
+- [x] **Step 1: 审阅并合并 PR 9d**
 
 合并后 `python -m pytest`、`python -m engine consistency --repo .`。Expected: `768 passed`；一致性 `[]`。
 
-- [ ] **Step 2: 重置 sandbox 并运行端到端测试**
+- [x] **Step 2: 重置 sandbox 并运行端到端测试**
 
 种子同计划 8 Task 22（含 `caspar.magi.yaml` 与 `melchior.magi.yaml`）。sandbox 的 `MELCHIOR_MODE` 与 `MELCHIOR_MODEL_MODE` 都设为 `live`，secret `MAGI_HTTP_CONTACT` 已设（Task 13 Step 3）。
 
@@ -1124,15 +1155,15 @@ python -u tools/e2e_sandbox.py --repo the-magi-system/magi-sandbox
 
 Expected: 全部步骤 `PASS`，最后一行 `all steps passed`。另核对 sandbox 的 `usage/melchior/` 有本月的行，每个任务的 `cost_usd` 与「花费」一节的估计对照；明显更高时，先调整上限再进入 Step 3。
 
-- [ ] **Step 3: 正式仓库的 `preview`**
+- [x] **Step 3: 正式仓库的 `preview`**
 
 正式仓库设 `MELCHIOR_MODEL_MODE=preview`（`MELCHIOR_MODE` 保持 `live`）。手动触发一次 `melchior.yml`，范围 `evidence`。核对：运行成功；运行摘要列出将要写的核查记录、将要开的协助请求与将要写的更正；KRX 两条的结果（403 时为 `source_unreachable`）；那份公司 PDF 为 `unsupported_format`；main 上没有 `evidence/checks/`；`think` 的日志里没有 429 以外的错误。需要时再手动触发一次范围 `probe`。定时运行在 `preview` 下不调用模型，所以这一步不会每天自动花费。
 
-- [ ] **Step 4: 正式仓库的 `live`**
+- [x] **Step 4: 正式仓库的 `live`**
 
 维护者看过 `preview` 的结果之后，把 `MELCHIOR_MODEL_MODE` 改为 `live`。之后的三次运行补完积压（「花费、积压与工作区的花费上限」一节）。核对第一份更正与第一个协助请求的帖子文字，以及证据主人是否收到通知。
 
-- [ ] **Step 5: 记录**
+- [x] **Step 5: 记录**
 
 在本计划开头写进度：四个 PR 的编号与合并后的 main、测试数、sandbox 端到端结果、`preview` 与第一次 `live` 运行的结果与实测花费。
 
@@ -1140,13 +1171,13 @@ Expected: 全部步骤 `PASS`，最后一行 `all steps passed`。另核对 sand
 
 ## 计划 9 完成标准
 
-- [ ] Task 1 的文档 PR 已合并，维护者确认了「维护者确认的几处」。
-- [ ] PR 9a 已合并；main 上 `663 passed`，一致性 `[]`。
-- [ ] PR 9b 已合并；main 上 `718 passed`；合并之后的定时运行没有调用模型。
-- [ ] PR 9c 已合并；main 上 `750 passed`。
-- [ ] PR 9d 已合并；main 上 `768 passed`，ci 与 audit 为 success。
-- [ ] sandbox 端到端测试 `all steps passed`。
-- [ ] 正式仓库先以 `preview`、再以 `live` 运行了模型部分。
+- [x] Task 1 的文档 PR 已合并，维护者确认了「维护者确认的几处」。
+- [x] PR 9a 已合并；main 上 `663 passed`，一致性 `[]`。
+- [x] PR 9b 已合并；main 上 `718 passed`；合并之后的定时运行没有调用模型。
+- [x] PR 9c 已合并；main 上 `750 passed`。
+- [x] PR 9d 已合并；main 上 `768 passed`，ci 与 audit 为 success。
+- [x] sandbox 端到端测试 `all steps passed`。
+- [x] 正式仓库先以 `preview`、再以 `live` 运行了模型部分。
 
 ---
 
