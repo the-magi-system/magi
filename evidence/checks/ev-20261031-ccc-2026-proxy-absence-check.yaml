@@ -1,0 +1,61 @@
+schema: magi/evidence-check@1
+evidence: ev-20261031-ccc-2026-proxy-absence-check
+status: unverified
+reason: not_found
+source_date: null
+claims:
+- index: 0
+  verdict: not_found
+  timing: historical
+  quote: null
+  figures: []
+  correct: null
+  note: null
+- index: 1
+  verdict: not_found
+  timing: standing
+  quote: null
+  figures: []
+  correct: null
+  note: null
+- index: 2
+  verdict: not_found
+  timing: standing
+  quote: null
+  figures: []
+  correct: null
+  note: null
+- index: 3
+  verdict: not_found
+  timing: historical
+  quote: null
+  figures: []
+  correct: null
+  note: null
+source:
+  url: https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001818201&type=8-K&dateb=&owner=include&count=40
+  final_url: https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001818201&type=8-K&dateb=&owner=include&count=40
+  http_status: 200
+  content_type: text/html; charset=UTF-8
+  format: html
+  parts: 1
+  decoding: declared
+  fetched_at: '2026-11-07T03:12:50Z'
+  sha256: 2fdb8bdb35246eaa6857e83c6d5aecf2a96c3771b3a0365d27210304a7739161
+  chars: 6926
+  truncated: false
+link: ok
+currency: current
+superseded_by: null
+same_source_as: []
+pending_sources: []
+assist_issue: 147
+filings_read_on: null
+filings_listed: []
+next_review: '2027-02-05'
+input_commit: dace14db01e905eb2cf9df92d37e0eb3e6671b4a
+prompt_sha256: c4a7fd588a3661762d0f8435ff02b0f2db248013b11483706ef47693511892d7
+model: claude-opus-5-5
+version: 1
+checked_at: '2026-11-07T03:14:51Z'
+checked_via_run: 42332922743

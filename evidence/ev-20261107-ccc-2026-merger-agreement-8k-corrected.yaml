@@ -1,0 +1,30 @@
+schema: magi/evidence@1
+id: ev-20261107-ccc-2026-merger-agreement-8k-corrected
+title: CCC merger agreement with GTCR-led consortium, $7.75 per share in cash
+kind: filing
+assets:
+- ccc
+ideas:
+- ccc-gtcr-take-private-2026
+source:
+  url: https://www.sec.gov/Archives/edgar/data/1818201/000119312526438167/0001193125-26-438167-index.htm
+  publisher: U.S. Securities and Exchange Commission
+  published_at: '2026-10-29'
+  tier: primary
+claims:
+- text: CCC Intelligent Solutions Holdings Inc. entered into an Agreement and Plan of Merger dated as of 14 October 2026 with Mozart Parent, LLC and Mozart Merger Sub (DE), Inc., under which the merger subsidiary merges into CCC and CCC survives as a wholly owned subsidiary of the parent.
+- text: Each share of CCC common stock receives $7.75 in cash at closing.
+  value: 7.75
+  unit: USD per share
+- text: The consideration represents a premium of about 44% to the unaffected closing price on 9 July 2026, the last trading day before media speculation about a potential sale of CCC.
+  value: 44
+  unit: '% premium to unaffected close'
+- text: The consideration represents a premium of about 59% to the 30-day average price as of 9 July 2026.
+  value: 59
+  unit: '% premium to 30-day average'
+- text: The acquirer group is led by GTCR and includes Elliott Investment Management.
+body_md: 'Correction by Melchior.Magi of `ev-20261031-ccc-2026-merger-agreement-8k`: the fetched primary source contradicts it (evidence check `evidence/checks/ev-20261031-ccc-2026-merger-agreement-8k.yaml`).'
+supersedes: ev-20261031-ccc-2026-merger-agreement-8k
+submitted_by: melchior.magi
+submitted_at: '2026-11-07T03:14:51Z'
+submitted_via_run: 42332922743

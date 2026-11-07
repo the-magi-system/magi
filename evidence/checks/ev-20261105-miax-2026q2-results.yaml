@@ -189,14 +189,16 @@ currency: current
 superseded_by: null
 same_source_as:
 - ev-20261025-miax-2026q2-results
-pending_sources: []
+pending_sources:
+- https://www.sec.gov/Archives/edgar/data/1438472/000143847226000044/miax-20261029.htm
+- https://www.sec.gov/Archives/edgar/data/1438472/000162828026068667/miax-20260930.htm
 assist_issue: null
-filings_read_on: null
+filings_read_on: '2026-11-07'
 filings_listed: []
 next_review: '2027-02-04'
 input_commit: d0d54e347467f2744b582aadd7c48e14cfd27534
 prompt_sha256: c4a7fd588a3661762d0f8435ff02b0f2db248013b11483706ef47693511892d7
 model: claude-opus-5-5
-version: 1
-checked_at: '2026-11-06T03:42:02Z'
-checked_via_run: 42157880371
+version: 2
+checked_at: '2026-11-07T03:14:51Z'
+checked_via_run: 42332922743

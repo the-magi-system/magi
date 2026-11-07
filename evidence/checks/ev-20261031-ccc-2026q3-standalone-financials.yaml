@@ -1,0 +1,189 @@
+schema: magi/evidence-check@1
+evidence: ev-20261031-ccc-2026q3-standalone-financials
+status: discrepancy
+reason: null
+source_date:
+  quote: October 29, 2026
+  date: '2026-10-29'
+  filing_date: '2026-10-29'
+  matches: true
+claims:
+- index: 0
+  verdict: supported
+  timing: historical
+  quote: 'Revenue
+
+    $
+
+    861,298
+
+    $
+
+    779,136
+
+    $
+
+    82,162
+
+    10.5%'
+  figures:
+  - claim: $861.3 million
+    source: 861,298
+    unit: (dollar amounts in thousands, except share and per share data)
+    claim_value: 861300000
+    source_value: 861298000
+  - claim: $779.1 million
+    source: 779,136
+    unit: (dollar amounts in thousands, except share and per share data)
+    claim_value: 779100000
+    source_value: 779136000
+  - claim: 10.5%
+    source: 10.5%
+    unit: null
+    claim_value: 10.5
+    source_value: 10.5
+  correct: null
+  note: The MD&A nine-month comparison table shows revenue of 861,298 against 779,136 thousand, an increase of 10.5%.
+- index: 1
+  verdict: supported
+  timing: historical
+  quote: 'Net cash provided by operating activities
+
+    $
+
+    100,429
+
+    $
+
+    94,767
+
+    $
+
+    259,464
+
+    $
+
+    196,315
+
+    Purchases of software, equipment, and property
+
+    (17,964
+
+    )
+
+    (16,135
+
+    )
+
+    (52,966
+
+    )
+
+    (46,684
+
+    )
+
+    Free Cash Flow
+
+    $
+
+    82,465
+
+    $
+
+    78,632
+
+    $
+
+    206,498
+
+    $
+
+    149,631'
+  figures:
+  - claim: $259.5 million
+    source: 259,464
+    unit: (dollar amounts in thousands)
+    claim_value: 259500000
+    source_value: 259464000
+  - claim: $53.0 million
+    source: 52,966
+    unit: (dollar amounts in thousands)
+    claim_value: 53000000
+    source_value: 52966000
+  - claim: $206.5 million
+    source: 206,498
+    unit: (dollar amounts in thousands)
+    claim_value: 206500000
+    source_value: 206498000
+  correct: null
+  note: The Free Cash Flow reconciliation gives nine-month operating cash flow of 259,464, purchases of 52,966 and Free Cash Flow of 206,498 (thousands). Free Cash Flow is defined as operating cash flow less those purchases, with no adjustment for stock-based compensation.
+- index: 2
+  verdict: not_found
+  timing: historical
+  quote: null
+  figures: []
+  correct: null
+  note: null
+- index: 3
+  verdict: not_found
+  timing: standing
+  quote: null
+  figures: []
+  correct: null
+  note: null
+- index: 4
+  verdict: supported
+  timing: standing
+  quote: As of October 27, 2026, 591,041,172 shares of common stock, $0.0001 par value per share, were issued and outstanding.
+  figures:
+  - claim: 591,041,172
+    source: 591,041,172
+    unit: null
+    claim_value: 591041172
+    source_value: 591041172
+  correct: null
+  note: The cover page states the share count as of October 27, 2026.
+- index: 5
+  verdict: not_found
+  timing: historical
+  quote: null
+  figures: []
+  correct: null
+  note: null
+- index: 6
+  verdict: contradicted
+  timing: standing
+  quote: The consummation of the Merger is subject to customary closing conditions, including adoption of the Merger Agreement by the holders of a majority of the outstanding shares of the Company’s common stock entitled to vote thereon, the expiration or termination of the applicable waiting period under the Hart-Scott-Rodino Antitrust Improvements Act of 1976, as amended, and the absence of any law, injunction or order prohibiting the consummation of the Merger.
+  figures: []
+  correct:
+    text: 'The quarterly report is for the period ended 30 September 2026 and discloses the merger, including its closing conditions: stockholder adoption, expiration or termination of the Hart-Scott-Rodino waiting period, and the absence of any prohibiting law, injunction or order.'
+    figures: []
+  note: Note 25 and the MD&A describe the merger agreement signed October 14, 2026, including $7.75 cash per share and the regulatory and other closing conditions. This contradicts the claim that the report contains no merger terms or regulatory conditions.
+source:
+  url: https://www.sec.gov/Archives/edgar/data/1818201/000119312526437061/ccc-20260930.htm
+  final_url: https://www.sec.gov/Archives/edgar/data/1818201/000119312526437061/ccc-20260930.htm
+  http_status: 200
+  content_type: text/html
+  format: html
+  parts: 1
+  decoding: detected
+  fetched_at: '2026-11-07T03:12:50Z'
+  sha256: 818096022a82282ca3cfcd8e20b2fead24e247ae20fcf3736660348026a015ff
+  chars: 166680
+  truncated: false
+link: ok
+currency: current
+superseded_by: null
+same_source_as: []
+pending_sources: []
+assist_issue: 148
+filings_read_on: null
+filings_listed: []
+next_review: '2027-02-05'
+input_commit: dace14db01e905eb2cf9df92d37e0eb3e6671b4a
+prompt_sha256: c4a7fd588a3661762d0f8435ff02b0f2db248013b11483706ef47693511892d7
+model: claude-opus-5-5
+version: 1
+checked_at: '2026-11-07T03:14:51Z'
+checked_via_run: 42332922743

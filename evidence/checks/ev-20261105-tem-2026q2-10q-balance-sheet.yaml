@@ -1,0 +1,231 @@
+schema: magi/evidence-check@1
+evidence: ev-20261105-tem-2026q2-10q-balance-sheet
+status: unverified
+reason: not_found
+source_date:
+  quote: July 30, 2026
+  date: '2026-07-30'
+  filing_date: '2026-07-30'
+  matches: true
+claims:
+- index: 0
+  verdict: supported
+  timing: historical
+  quote: 'Cash and cash equivalents
+
+    $
+
+    599,614'
+  figures:
+  - claim: $599.6 million
+    source: 599,614
+    unit: (in thousands, except share and per share amounts)
+    claim_value: 599600000
+    source_value: 599614000
+  correct: null
+  note: Balance sheet row for June 30, 2026 shows cash and cash equivalents of 599,614 thousand.
+- index: 1
+  verdict: supported
+  timing: historical
+  quote: 'Marketable equity securities
+
+    $
+
+    216,377'
+  figures:
+  - claim: $216.4 million
+    source: 216,377
+    unit: (in thousands)
+    claim_value: 216400000
+    source_value: 216377000
+  correct: null
+  note: Fair value table at June 30, 2026 shows marketable equity securities of 216,377 thousand; the filing separately states all are publicly traded shares of common stock measured at fair value.
+- index: 2
+  verdict: supported
+  timing: historical
+  quote: On July 3, 2025, the Company completed a private offering (the "2025 Offering") of $750.0 million aggregate principal amount of 0.75% Convertible Senior Notes due 2030 (the "2030 Notes" and, together with the 2032 Notes, the "Notes").
+  figures:
+  - claim: $750.0 million
+    source: $750.0 million
+    unit: null
+    claim_value: 750000000
+    source_value: 750000000
+  - claim: 0.75%
+    source: 0.75%
+    unit: null
+    claim_value: 0.75
+    source_value: 0.75
+  correct: null
+  note: null
+- index: 3
+  verdict: supported
+  timing: standing
+  quote: The conversion rate for the 2030 Notes is 11.8778 shares of the Company's Class A common stock per $1,000 principal amount of Notes, which is equivalent to an initial conversion price of approximately $84.19 per share of the Company's Class A common stock.
+  figures:
+  - claim: $84.19
+    source: $84.19
+    unit: null
+    claim_value: 84.19
+    source_value: 84.19
+  correct: null
+  note: null
+- index: 4
+  verdict: supported
+  timing: historical
+  quote: On May 12, 2026, the Company completed a private offering (the “2026 Offering”) of $460.0 million aggregate principal amount of 0.00% Convertible Senior Notes due 2032 (the “2032 Notes”).
+  figures:
+  - claim: $460.0 million
+    source: $460.0 million
+    unit: null
+    claim_value: 460000000
+    source_value: 460000000
+  - claim: 0.00%
+    source: 0.00%
+    unit: null
+    claim_value: 0
+    source_value: 0
+  correct: null
+  note: null
+- index: 5
+  verdict: supported
+  timing: standing
+  quote: The conversion rate for the 2032 Notes will initially be 14.4388 shares of the Company's Class A common stock per $1,000 principal amount of 2032 Notes, which is equivalent to an initial conversion price of approximately $69.26 per share of the Company's Class A common stock.
+  figures:
+  - claim: $69.26
+    source: $69.26
+    unit: null
+    claim_value: 69.26
+    source_value: 69.26
+  correct: null
+  note: null
+- index: 6
+  verdict: supported
+  timing: historical
+  quote: 'Convertible promissory note
+
+    187,929'
+  figures:
+  - claim: $187.9 million
+    source: 187,929
+    unit: (in thousands, except share and per share amounts)
+    claim_value: 187900000
+    source_value: 187929000
+  correct: null
+  note: Balance sheet row at June 30, 2026; the convertible promissory note is the Second Amended Note with Google LLC.
+- index: 7
+  verdict: supported
+  timing: standing
+  quote: Consistent with the terms of the Amended Note, the Second Amended Note bears interest at a rate of 6.0% per annum, compounded annually.
+  figures:
+  - claim: 6.0%
+    source: 6.0%
+    unit: null
+    claim_value: 6
+    source_value: 6
+  correct: null
+  note: The next sentence states the principal is automatically reduced each year based on the value of Google Cloud Platform services used.
+- index: 8
+  verdict: supported
+  timing: standing
+  quote: The amendment extended the maturity date of the Second Amended Note from March 22, 2026 to December 31, 2030.
+  figures: []
+  correct: null
+  note: null
+- index: 9
+  verdict: supported
+  timing: historical
+  quote: In May 2026, the Company repaid in full the principal amount for $307.7 million of the Additional Term Loan Facility and Revolving Credit Facility.
+  figures:
+  - claim: $307.7 million
+    source: $307.7 million
+    unit: null
+    claim_value: 307700000
+    source_value: 307700000
+  correct: null
+  note: The following sentence states the Credit Agreement and related documents were terminated in connection with this repayment.
+- index: 10
+  verdict: supported
+  timing: historical
+  quote: The Company recognized revenue from Insights products of $77.7 million and $57.2 million for the three months ended June 30, 2026 and 2025, respectively and $149.0 million and $106.7 million for the six months ended June 30, 2026 and 2025, respectively.
+  figures:
+  - claim: $77.7 million
+    source: $77.7 million
+    unit: null
+    claim_value: 77700000
+    source_value: 77700000
+  - claim: $57.2 million
+    source: $57.2 million
+    unit: null
+    claim_value: 57200000
+    source_value: 57200000
+  - claim: $149.0 million
+    source: $149.0 million
+    unit: null
+    claim_value: 149000000
+    source_value: 149000000
+  - claim: $106.7 million
+    source: $106.7 million
+    unit: null
+    claim_value: 106700000
+    source_value: 106700000
+  correct: null
+  note: null
+- index: 11
+  verdict: not_found
+  timing: historical
+  quote: The Company has recognized $43.8 million, and $16.5 million of revenue from related parties for the six months ended June 30, 2026 and 2025, respectively.
+  figures: []
+  correct: null
+  note: a figure could not be checked
+- index: 12
+  verdict: supported
+  timing: standing
+  quote: The Company's Founder and Chief Executive Officer is a co-founder and serves as Executive Chairman of the board of Pathos AI, Inc. ("Pathos").
+  figures: []
+  correct: null
+  note: Stated in the Related Parties note.
+- index: 13
+  verdict: supported
+  timing: standing
+  quote: As of July 24, 2026, there were 175,390,967 shares of Class A common stock and 5,043,789 shares of Class B common stock, each with a par value of $0.0001 per share, outstanding.
+  figures:
+  - claim: 175,390,967
+    source: 175,390,967
+    unit: null
+    claim_value: 175390967
+    source_value: 175390967
+  - claim: 5,043,789
+    source: 5,043,789
+    unit: null
+    claim_value: 5043789
+    source_value: 5043789
+  correct: null
+  note: null
+source:
+  url: https://www.sec.gov/Archives/edgar/data/1717115/000119312526326090/tem-20260630.htm
+  final_url: https://www.sec.gov/Archives/edgar/data/1717115/000119312526326090/tem-20260630.htm
+  http_status: 200
+  content_type: text/html
+  format: html
+  parts: 1
+  decoding: detected
+  fetched_at: '2026-11-07T03:12:50Z'
+  sha256: 1cfa84fa779dafe26d81a3579270231a13bf2a882e2b89065ab3e41caab9e4bb
+  chars: 274483
+  truncated: false
+link: ok
+currency: current
+superseded_by: null
+same_source_as:
+- ev-20261020-tem-2026q2-10q-balance-sheet
+pending_sources: []
+assist_issue: 149
+filings_read_on: null
+filings_listed: []
+next_review: '2027-02-05'
+input_commit: dace14db01e905eb2cf9df92d37e0eb3e6671b4a
+prompt_sha256: c4a7fd588a3661762d0f8435ff02b0f2db248013b11483706ef47693511892d7
+model: claude-opus-5-5
+version: 1
+checked_at: '2026-11-07T03:14:51Z'
+checked_via_run: 42332922743
