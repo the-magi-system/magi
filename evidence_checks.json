@@ -1,0 +1,224 @@
+{
+  "checks": {
+    "ev-20261020-tem-2026-proxy-control-incentives": {
+      "evidence": "ev-20261020-tem-2026-proxy-control-incentives",
+      "status": "verified",
+      "reason": null,
+      "checked_at": "2026-11-06T03:42:02Z",
+      "version": 2,
+      "link": "ok",
+      "currency": "current",
+      "superseded_by": null,
+      "assist_issue": null
+    },
+    "ev-20261020-tem-2026q2-10q-balance-sheet": {
+      "evidence": "ev-20261020-tem-2026q2-10q-balance-sheet",
+      "status": "unverified",
+      "reason": "not_found",
+      "checked_at": "2026-11-05T03:47:23Z",
+      "version": 2,
+      "link": "ok",
+      "currency": "current",
+      "superseded_by": null,
+      "assist_issue": 127
+    },
+    "ev-20261020-tem-2026q2-results": {
+      "evidence": "ev-20261020-tem-2026q2-results",
+      "status": "unverified",
+      "reason": "not_found",
+      "checked_at": "2026-11-05T03:47:23Z",
+      "version": 2,
+      "link": "ok",
+      "currency": "current",
+      "superseded_by": "ev-20261105-tem-2026q2-results",
+      "assist_issue": 134
+    },
+    "ev-20261020-tem-ceo-ms-conference-2026-09": {
+      "evidence": "ev-20261020-tem-ceo-ms-conference-2026-09",
+      "status": "unverified",
+      "reason": "not_found",
+      "checked_at": "2026-11-05T03:47:23Z",
+      "version": 3,
+      "link": "ok",
+      "currency": "current",
+      "superseded_by": "ev-20261105-tem-ceo-ms-conference-2026-09",
+      "assist_issue": 129
+    },
+    "ev-20261020-tem-personalis-merger-terms": {
+      "evidence": "ev-20261020-tem-personalis-merger-terms",
+      "status": "unverified",
+      "reason": "not_found",
+      "checked_at": "2026-11-04T04:51:45Z",
+      "version": 2,
+      "link": "ok",
+      "currency": "current",
+      "superseded_by": "ev-20261105-tem-personalis-merger-terms",
+      "assist_issue": 128
+    },
+    "ev-20261025-miax-2026q2-10q": {
+      "evidence": "ev-20261025-miax-2026q2-10q",
+      "status": "verified",
+      "reason": null,
+      "checked_at": "2026-11-05T03:47:23Z",
+      "version": 1,
+      "link": "ok",
+      "currency": "current",
+      "superseded_by": null,
+      "assist_issue": null
+    },
+    "ev-20261025-miax-2026q2-results": {
+      "evidence": "ev-20261025-miax-2026q2-results",
+      "status": "unverified",
+      "reason": "not_found",
+      "checked_at": "2026-11-04T04:51:45Z",
+      "version": 1,
+      "link": "ok",
+      "currency": "current",
+      "superseded_by": null,
+      "assist_issue": null
+    },
+    "ev-20261031-ccc-2026-merger-agreement-8k": {
+      "evidence": "ev-20261031-ccc-2026-merger-agreement-8k",
+      "status": "discrepancy",
+      "reason": null,
+      "checked_at": "2026-11-07T03:14:51Z",
+      "version": 1,
+      "link": "ok",
+      "currency": "current",
+      "superseded_by": "ev-20261107-ccc-2026-merger-agreement-8k-corrected",
+      "assist_issue": null
+    },
+    "ev-20261031-ccc-2026-proxy-absence-check": {
+      "evidence": "ev-20261031-ccc-2026-proxy-absence-check",
+      "status": "unverified",
+      "reason": "not_found",
+      "checked_at": "2026-11-07T03:14:51Z",
+      "version": 1,
+      "link": "ok",
+      "currency": "current",
+      "superseded_by": null,
+      "assist_issue": 147
+    },
+    "ev-20261031-ccc-2026q3-standalone-financials": {
+      "evidence": "ev-20261031-ccc-2026q3-standalone-financials",
+      "status": "discrepancy",
+      "reason": null,
+      "checked_at": "2026-11-07T03:14:51Z",
+      "version": 1,
+      "link": "ok",
+      "currency": "current",
+      "superseded_by": null,
+      "assist_issue": 148
+    },
+    "ev-20261031-jvm-2026-valueup-returns": {
+      "evidence": "ev-20261031-jvm-2026-valueup-returns",
+      "status": "unverified",
+      "reason": "not_found",
+      "checked_at": "2026-11-05T03:47:23Z",
+      "version": 2,
+      "link": "ok",
+      "currency": "current",
+      "superseded_by": null,
+      "assist_issue": 146
+    },
+    "ev-20261031-jvm-2026aug-installed-base": {
+      "evidence": "ev-20261031-jvm-2026aug-installed-base",
+      "status": "unverified",
+      "reason": "unsupported_format",
+      "checked_at": "2026-11-06T03:42:02Z",
+      "version": 1,
+      "link": "ok",
+      "currency": "current",
+      "superseded_by": null,
+      "assist_issue": 145
+    },
+    "ev-20261031-jvm-2026h1-cash-claims": {
+      "evidence": "ev-20261031-jvm-2026h1-cash-claims",
+      "status": "unverified",
+      "reason": "not_found",
+      "checked_at": "2026-11-05T03:47:23Z",
+      "version": 1,
+      "link": "ok",
+      "currency": "current",
+      "superseded_by": null,
+      "assist_issue": 135
+    },
+    "ev-20261031-jvm-2026q3-official": {
+      "evidence": "ev-20261031-jvm-2026q3-official",
+      "status": "unverified",
+      "reason": "unsupported_format",
+      "checked_at": "2026-11-05T03:47:23Z",
+      "version": 1,
+      "link": "ok",
+      "currency": "current",
+      "superseded_by": null,
+      "assist_issue": 133
+    },
+    "ev-20261105-miax-2026q2-results": {
+      "evidence": "ev-20261105-miax-2026q2-results",
+      "status": "verified",
+      "reason": null,
+      "checked_at": "2026-11-07T03:14:51Z",
+      "version": 2,
+      "link": "ok",
+      "currency": "current",
+      "superseded_by": null,
+      "assist_issue": null
+    },
+    "ev-20261105-tem-2026q2-10q-balance-sheet": {
+      "evidence": "ev-20261105-tem-2026q2-10q-balance-sheet",
+      "status": "unverified",
+      "reason": "not_found",
+      "checked_at": "2026-11-07T03:14:51Z",
+      "version": 1,
+      "link": "ok",
+      "currency": "current",
+      "superseded_by": null,
+      "assist_issue": 149
+    },
+    "ev-20261105-tem-2026q2-results": {
+      "evidence": "ev-20261105-tem-2026q2-results",
+      "status": "verified",
+      "reason": null,
+      "checked_at": "2026-11-06T03:42:02Z",
+      "version": 1,
+      "link": "ok",
+      "currency": "current",
+      "superseded_by": null,
+      "assist_issue": null
+    },
+    "ev-20261105-tem-ceo-ms-conference-2026-09": {
+      "evidence": "ev-20261105-tem-ceo-ms-conference-2026-09",
+      "status": "verified",
+      "reason": null,
+      "checked_at": "2026-11-06T03:42:02Z",
+      "version": 1,
+      "link": "ok",
+      "currency": "current",
+      "superseded_by": null,
+      "assist_issue": null
+    },
+    "ev-20261105-tem-personalis-merger-terms": {
+      "evidence": "ev-20261105-tem-personalis-merger-terms",
+      "status": "verified",
+      "reason": null,
+      "checked_at": "2026-11-06T03:42:02Z",
+      "version": 1,
+      "link": "ok",
+      "currency": "current",
+      "superseded_by": null,
+      "assist_issue": null
+    },
+    "ev-20261107-ccc-2026-merger-agreement-8k-corrected": {
+      "evidence": "ev-20261107-ccc-2026-merger-agreement-8k-corrected",
+      "status": "pending",
+      "reason": null,
+      "checked_at": null,
+      "version": null,
+      "link": null,
+      "currency": null,
+      "superseded_by": null,
+      "assist_issue": null
+    }
+  }
+}

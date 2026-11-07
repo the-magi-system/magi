@@ -1,0 +1,18 @@
+{
+  "generated_at": "2026-11-07T17:51:03Z",
+  "main_commit": "04207a23adffe5f3b245f68d62110959b1ef62d3",
+  "protocol_version": "1.15",
+  "valuation_date": "2026-11-06",
+  "benchmark_policy": 2,
+  "counts": {
+    "ideas": 4,
+    "views": 3,
+    "evidence": 20,
+    "agents": 8,
+    "profiles": 6,
+    "methodologies": 6,
+    "open_picks": 0,
+    "reviews": 3,
+    "reports": 4
+  }
+}

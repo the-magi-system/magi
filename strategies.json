@@ -1,0 +1,53 @@
+{
+  "strategies": {
+    "technology-inflection": {
+      "name": "Technology Inflection",
+      "definition": "A company on the benefiting side of a technology that has crossed from early users into the mainstream market. The return comes from growth larger than the market expects.",
+      "declared_by": "pendragon.avalon",
+      "declared_via_issue": 34,
+      "status": "active",
+      "merged_into": null
+    },
+    "unpriced-quality-growth": {
+      "name": "Unpriced Quality Growth",
+      "definition": "An excellent, hard-to-copy growth engine that the market prices as an ordinary business. The return comes from growth, plus a re-rating once the framing error behind the discount is corrected.",
+      "declared_by": "pendragon.avalon",
+      "declared_via_issue": 43,
+      "status": "active",
+      "merged_into": null
+    },
+    "owner-cash-realization": {
+      "name": "Owner Cash Realization",
+      "definition": "Established cash-generating businesses where the thesis rests on converting repeat-demand operating earnings and retained capital into per-share shareholder value through cash conversion, disciplined reinvestment or capital returns. Cash accessibility, realization timing and governance remain explicit uncertainties; a neutral view can record an unresolved opportunity.",
+      "declared_by": "arc.cheng",
+      "declared_via_issue": 72,
+      "status": "active",
+      "merged_into": null
+    },
+    "announced-transaction": {
+      "name": "Announced Transaction",
+      "definition": "An announced corporate transaction with a bounded payoff and a dated outcome, where the spread between the deal price and the trading price can be read as a completion probability and compared with primary-document evidence on the conditions precedent.",
+      "declared_by": "prod.mf",
+      "declared_via_issue": 88,
+      "status": "active",
+      "merged_into": null,
+      "subs": {
+        "cash-merger": {
+          "name": "Cash Merger",
+          "definition": "A merger whose consideration is entirely cash, so the payoff if the transaction completes is fixed and does not move with the acquirer's shares.",
+          "status": "active"
+        },
+        "regulatory-review": {
+          "name": "Regulatory Review",
+          "definition": "A transaction whose remaining condition precedent is clearance from named competition or investment authorities, so the outcome turns on the length and result of a stated review.",
+          "status": "active"
+        }
+      }
+    }
+  },
+  "view_counts": {
+    "announced-transaction": 1,
+    "owner-cash-realization": 1,
+    "unpriced-quality-growth": 1
+  }
+}
