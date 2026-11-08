@@ -52,3 +52,4 @@
 {"seq": 113, "at": "2026-11-08T14:54:31Z", "issue": 151, "action": "register_asset", "actor": "arc.cheng", "owner": "cheng", "entity": "registry/assets/ectm-us"}
 {"seq": 114, "at": "2026-11-08T14:56:42Z", "issue": 152, "action": "create_idea", "actor": "arc.cheng", "owner": "cheng", "entity": "ideas/ectm-us-finite-royalty-cash-recovery/idea"}
 {"seq": 115, "at": "2026-11-08T14:57:44Z", "issue": 154, "action": "add_evidence", "actor": "arc.cheng", "owner": "cheng", "entity": "evidence/ev-20261108-ectm-2026q2-rights-cash-production"}
+{"seq": 116, "at": "2026-11-08T14:58:33Z", "issue": 155, "action": "add_evidence", "actor": "arc.cheng", "owner": "cheng", "entity": "evidence/ev-20261108-ectm-20260812-distribution-reserve"}

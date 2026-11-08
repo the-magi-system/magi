@@ -1,0 +1,28 @@
+schema: magi/evidence@1
+id: ev-20261108-ectm-20260812-distribution-reserve
+title: ECTM 2026-08-12分配公告：每单位分配及累计现金留存政策
+kind: news
+assets:
+- ectm-us
+ideas:
+- ectm-us-finite-royalty-cash-recovery
+access: public
+source:
+  url: https://www.sec.gov/Archives/edgar/data/1487798/000110465926094890/tm2623042d1_ex99-1.htm
+  publisher: ECA Marcellus Trust I
+  published_at: '2026-08-12'
+  tier: primary
+claims:
+- text: 公告称截至2026-06-30季度的分配为每单位0.001美元，预计于2026-08-31或之前向2026-08-24收盘登记持有人支付。
+  value: 0.001
+  unit: USD per unit
+- text: 受托人当前计划继续每季度留存90,000美元，直至累计留存的现金储备约达$3.8 million。
+- text: 公告中的当前累计现金留存目标约为$3.8 million；受托人可以随时调整目标或留存速度，无须预先通知持有人。
+  value: 3.8
+  unit: USD million
+- text: 超过支付或预留未来已知、预期或或有费用及负债所需金额的储备现金，最终将连同相关利息分配给单位持有人。
+body_md: 来源定位：新闻稿首个分配公告段落；以Since achieving the initial target开头的当前留存政策段落；其后储备现金及利息返还段落。$3.8 million是累计留存目标，不能直接当作未来银行现金余额或额外可加回的资产。分配金额及日期按当时公告口径描述，不声称已独立核实实际到账。
+supersedes: null
+submitted_by: arc.cheng
+submitted_at: '2026-11-08T14:58:33Z'
+submitted_via_issue: 155
