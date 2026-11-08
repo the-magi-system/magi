@@ -1,0 +1,31 @@
+schema: magi/evidence@1
+id: ev-20261108-ectm-2026q2-rights-cash-production
+title: ECTM 2026Q2 10-Q：终止条款、权益处置与报告期现金及产量
+kind: filing
+assets:
+- ectm-us
+ideas:
+- ectm-us-finite-royalty-cash-recovery
+access: public
+source:
+  url: https://www.sec.gov/Archives/edgar/data/1487798/000110465926095922/tm2616215d1_10q.htm
+  publisher: ECA Marcellus Trust I
+  published_at: '2026-08-13'
+  tier: primary
+claims:
+- text: 若未提前终止，信托将于2030-03-31前后开始清算，此后结束事务并终止。
+- text: 正常终止时，PDP与PUD版税权益各有50%自动返还Greylock Production；其余50%出售，出售净款按比例分给单位持有人，Greylock Production享有优先购买权。
+  value: 50
+  unit: '%'
+- text: 若任意连续四个季度归属于版税权益的信托gross proceeds低于$1.5 million，信托协议要求提前终止并出售版税权益。
+  value: 1.5
+  unit: USD million
+- text: 截至2026-06-30，信托资产负债表列示现金3,010,426美元。
+- text: 10-Q列示截至2026-06-30的六个月报告期production为950 MMcf。
+  value: 950
+  unit: MMcf
+body_md: 来源定位：Note 1的季度分配及Termination Date段落；紧接其后的PDP/PUD各半返还及出售段落；gross proceeds提前终止段落；第3页Cash行；MD&A六个月production段落。现金为6月底历史余额；production按报告期口径引用。未把历史余额称为11月余额，也未把现金、储量或回报模型推算写成披露事实。
+supersedes: null
+submitted_by: arc.cheng
+submitted_at: '2026-11-08T14:57:44Z'
+submitted_via_issue: 154
