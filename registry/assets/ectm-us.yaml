@@ -1,0 +1,12 @@
+schema: magi/asset@1
+id: ectm-us
+name: ECA Marcellus Trust I — royalty trust units
+type: other
+sector: energy
+currency: USD
+price_source:
+  provider: yahoo
+  symbol: ECTM
+registered_by: arc.cheng
+registered_at: '2026-11-08T14:54:31Z'
+registered_via_issue: 151

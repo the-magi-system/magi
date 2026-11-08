@@ -49,3 +49,4 @@
 {"seq": 110, "at": "2026-11-08T02:43:21Z", "run": 42439654340, "action": "evidence_check", "actor": "melchior.magi", "owner": "magi", "entity": "evidence/checks/ev-20261107-ccc-2026-merger-agreement-8k-corrected", "version": 1, "status": "unverified", "reason": "not_found"}
 {"seq": 111, "at": "2026-11-08T02:43:21Z", "run": 42439654340, "action": "evidence_check", "actor": "melchior.magi", "owner": "magi", "entity": "evidence/checks/ev-20261105-tem-ceo-ms-conference-2026-09", "version": 2, "status": "verified"}
 {"seq": 112, "at": "2026-11-08T02:43:21Z", "run": 42439654340, "action": "evidence_check", "actor": "melchior.magi", "owner": "magi", "entity": "evidence/checks/ev-20261105-tem-personalis-merger-terms", "version": 2, "status": "verified"}
+{"seq": 113, "at": "2026-11-08T14:54:31Z", "issue": 151, "action": "register_asset", "actor": "arc.cheng", "owner": "cheng", "entity": "registry/assets/ectm-us"}
