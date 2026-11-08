@@ -1,0 +1,32 @@
+schema: magi/judgement@1
+idea: ectm-us-finite-royalty-cash-recovery
+actor: arc.cheng
+view_version: 1
+judge: caspar.magi
+scores:
+  evidence_quality: 8
+  reasoning_coherence: 8
+  valuation_consistency: 8
+  data_freshness: 8
+  falsifiability: 9
+reasons:
+  evidence_quality: The termination terms, the 50% reversion and sale, the $1.5m four-quarter early-termination test, the $3,010,426 June cash, the 950 MMcf six-month production and the $90,000/quarter toward ~$3.8m reserve policy all match the 2026Q2 10-Q and the 2026-08-12 distribution release. However, the cash-flow drivers that matter most (HH $3.25, −$0.71 basis, 7% decline, buyer discount at liquidation) are clearly labelled research assumptions without a primary anchor.
+  reasoning_coherence: The pillars lead logically from finite rights to dated owner cash to a conditional IRR, and the view takes care not to count the same cash twice. The neutral stance fits a 20% base IRR set against a −5.7% operating-pessimistic case and fat-left-tail pressure paths.
+  valuation_consistency: The target-date distribution comes explicitly from a 15%-discount DCF of cash still attached to the unit after 2029-11-08, so it is a stated conversion to a market price. A mean of about $0.399, below $0.45 and excluding about $0.26 of interim distributions, fits a neutral total-return view. The 15% market-pricing assumption and the 10/25/45/20 weights are openly subjective.
+  data_freshness: 'The view uses the latest filings available: the 10-Q of 2026-08-13 and the 8-K of 2026-08-12, with no Q3 filing yet on EDGAR as of 2026-11-08. The price is the 2026-11-06 close.'
+  falsifiability: 'It gives concrete, checkable triggers: Q3 royalty, production and G&A versus the $1.25m base, basis worse than −$0.71, rolling four-quarter gross proceeds near $1.5m, operator shut-in evidence, and actual sale terms.'
+tail_risk: high
+tail_risk_reason: This is a finite, depleting OTC royalty trust. It depends entirely on one private operator (Greylock), faces an early-termination trigger if four-quarter gross proceeds fall below $1.5m, and 50% of its interest reverts at a 2030 liquidation, with about 60% of modelled value coming from an uncertain sale price. The most recent distribution was only $0.001/unit. Losses well beyond the $0.155 pressure case, including illiquidity or no quote, are plausible.
+notes: 'This is a careful, honest piece of finite-life cash-flow work. It separates facts from assumptions, models cash with dates, avoids double-counting the June cash and the reserve, and converts the cash model into a target-date market price with the assumption stated. Neutral is a fair conclusion. The main thing worth tightening is how the near-term base path lines up with the latest disclosures. The model''s first distribution (~$0.026/unit on 2026-11-29) is roughly 26 times the $0.001/unit just declared for Q2 2026. H1 2026 G&A was $809,937, with Q2 alone at $683,669, which already runs above the $1.25m/yr base. A short bridge would make the base case much more credible: either reconcile from Q2 royalty income, G&A and withholding to the modelled Q3 payout, or show the base IRR with G&A at the H1 annualised rate. It would also help to give the HH $3.25 fixed-nominal choice a dated reference, such as the futures strip or EIA STEO, and to say why basis is held flat. Finally, because
+  about 60% of value comes from the 2030 sale under Greylock''s right of first refusal, a sensitivity table across buyer discount rates would show how much of the 20% IRR depends on that one step. I found no factual errors in the claims I checked against the 10-Q and the distribution release.'
+factual_errors: []
+unlabeled_non_public: []
+comment_url: https://github.com/the-magi-system/magi/issues/153#issuecomment-6726358928
+input_commit: 54772c6d6799a637d131a6ac8387fc1e5b37e61f
+methodology_version: 1
+profile_version: 1
+prompt_sha256: ab17582eba8e651077a17a9786268bda75433b5d74bc15ac270df9a4e005f746
+model: claude-opus-5-5
+version: 1
+published_at: '2026-11-08T19:57:43Z'
+published_via_run: 42517498870
