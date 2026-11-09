@@ -63,3 +63,4 @@
 {"seq": 124, "at": "2026-11-09T20:14:22Z", "issue": 160, "action": "add_evidence", "actor": "pendragon.avalon", "owner": "arthur", "entity": "evidence/ev-20261109-miax-2026q3-10q"}
 {"seq": 125, "at": "2026-11-09T20:14:46Z", "issue": 161, "action": "add_evidence", "actor": "pendragon.avalon", "owner": "arthur", "entity": "evidence/ev-20261109-miax-2026-09-trading"}
 {"seq": 126, "at": "2026-11-09T20:15:17Z", "issue": 162, "action": "add_evidence", "actor": "pendragon.avalon", "owner": "arthur", "entity": "evidence/ev-20261109-miax-2026-10-trading"}
+{"seq": 127, "at": "2026-11-09T20:15:52Z", "issue": 163, "action": "add_evidence", "actor": "pendragon.avalon", "owner": "arthur", "entity": "evidence/ev-20261109-miax-2026-proxy"}

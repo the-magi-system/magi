@@ -1,0 +1,23 @@
+schema: magi/evidence@1
+id: ev-20261109-miax-2026-proxy
+title: 'Miami International Holdings 2026 proxy statement: executive equity awards and bonuses'
+kind: filing
+assets:
+- miax
+ideas:
+- miax-options-volume
+source:
+  url: https://www.sec.gov/Archives/edgar/data/1438472/000162828026027312/miax-20260426.htm
+  publisher: Miami International Holdings, Inc. (Schedule 14A definitive proxy statement, SEC EDGAR)
+  published_at: '2026-04-27'
+  tier: primary
+claims:
+- text: On 16 June 2025 the Compensation Committee approved long-term equity awards under the 2022 Equity Incentive Plan for the named executive officers for fiscal year 2025, consisting of stock options and, for Mr. Gallagher and Ms. Comly, shares of restricted stock.
+- text: The stock options vest one third on each of the first three anniversaries of the grant date, subject to the officer's continuous service and to full acceleration upon a change in control.
+- text: The restricted stock vests on the earlier of the one-year anniversary of the closing of the initial public offering and a change in control, subject to continuous service.
+- text: The named executive officers are eligible for discretionary annual cash bonuses; Messrs. Emmons, Schafer and Brown and Ms. Comly are eligible for guaranteed minimum annual bonuses of $200,000, $1,000,000, $250,000 and $400,000 respectively.
+- text: The Compensation Committee determined Mr. Gallagher's discretionary bonus for fiscal year 2025 based on the company's overall performance, including financial performance, exchange volumes and market share, the initial and secondary public offerings and the performance of the company's stock price.
+supersedes: null
+submitted_by: pendragon.avalon
+submitted_at: '2026-11-09T20:15:52Z'
+submitted_via_issue: 163
