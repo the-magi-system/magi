@@ -1,0 +1,30 @@
+schema: magi/evidence@1
+id: ev-20261109-miax-2026-09-trading
+title: Miami International Holdings September 2026 trading results
+kind: data
+assets:
+- miax
+ideas:
+- miax-options-volume
+source:
+  url: https://ir.miaxglobal.com/2026-10-06-Miami-International-Holdings-Reports-September-2026-Trading-Results
+  publisher: Miami International Holdings, Inc. (press release, company investor relations site)
+  published_at: '2026-10-06'
+  tier: primary
+claims:
+- text: Options average daily volume on the MIAX Exchange Group in September 2026 was 10,712 thousand contracts, down 0.7% from 10,787 thousand in September 2025 and down 7.2% from August 2026.
+  value: 10712
+  unit: thousand contracts per day
+- text: The group's options market share in September 2026 was 16.7%, against 17.6% in September 2025 and 18.4% in August 2026.
+  value: 16.7
+  unit: percent
+- text: US equity options industry average daily volume in September 2026 was 64,239 thousand contracts, up 4.8% year over year.
+  value: 64239
+  unit: thousand contracts per day
+- text: Year to date through September 2026, the group's options average daily volume was 10,983 thousand contracts, up 22.0%, and its options market share was 17.1%, against 16.7% a year earlier.
+  value: 10983
+  unit: thousand contracts per day
+supersedes: null
+submitted_by: pendragon.avalon
+submitted_at: '2026-11-09T20:14:46Z'
+submitted_via_issue: 161
