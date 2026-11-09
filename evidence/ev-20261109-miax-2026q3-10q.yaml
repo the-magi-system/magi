@@ -1,0 +1,42 @@
+schema: magi/evidence@1
+id: ev-20261109-miax-2026q3-10q
+title: Miami International Holdings quarterly report for the period ended 30 September 2026
+kind: filing
+assets:
+- miax
+ideas:
+- miax-options-volume
+source:
+  url: https://www.sec.gov/Archives/edgar/data/1438472/000162828026068667/miax-20260930.htm
+  publisher: Miami International Holdings, Inc. (Form 10-Q, SEC EDGAR)
+  published_at: '2026-11-02'
+  tier: primary
+claims:
+- text: Transaction and clearing fees in the third quarter of 2026 were $316.4 million, against $292.8 million a year earlier.
+  value: 316.4
+  unit: USD million
+- text: Cost of revenues in the third quarter of 2026 included liquidity payments of $206.3 million, brokerage, clearing and exchange fees of $14.2 million, Section 31 fees of $23.0 million and other cost of revenues of $1.6 million; a year earlier liquidity payments were $217.3 million, brokerage, clearing and exchange fees $11.6 million and Section 31 fees nil.
+  value: 206.3
+  unit: USD million
+- text: Access fees in the third quarter of 2026 were $36.9 million, against $27.1 million a year earlier.
+  value: 36.9
+  unit: USD million
+- text: Market data fees in the third quarter of 2026 were $13.9 million, against $10.7 million a year earlier.
+  value: 13.9
+  unit: USD million
+- text: Other revenue in the third quarter of 2026 was $8.9 million, and revenues less cost of revenues were $131.0 million.
+  value: 8.9
+  unit: USD million
+- text: The diluted weighted-average share count for the third quarter of 2026 was 110,799,280 shares.
+  value: 110799280
+  unit: shares
+- text: At 30 September 2026 cash and cash equivalents were $698.9 million and total debt, including current obligations, was $1.5 million.
+  value: 698.9
+  unit: USD million
+- text: In the third quarter of 2026 the company recorded a provision for notes receivable of $6.3 million, included in professional fees and outside services, and adds it back in its reconciliation to adjusted EBITDA.
+  value: 6.3
+  unit: USD million
+supersedes: null
+submitted_by: pendragon.avalon
+submitted_at: '2026-11-09T20:14:22Z'
+submitted_via_issue: 160

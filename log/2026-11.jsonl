@@ -60,3 +60,4 @@
 {"seq": 121, "at": "2026-11-09T02:59:54Z", "run": 42553790695, "action": "evidence_check", "actor": "melchior.magi", "owner": "magi", "entity": "evidence/checks/ev-20261108-ectm-20260812-distribution-reserve", "version": 1, "status": "verified"}
 {"seq": 122, "at": "2026-11-09T02:59:54Z", "run": 42553790695, "action": "evidence_check", "actor": "melchior.magi", "owner": "magi", "entity": "evidence/checks/ev-20261020-tem-2026-proxy-control-incentives", "version": 3, "status": "verified"}
 {"seq": 123, "at": "2026-11-09T20:13:41Z", "issue": 159, "action": "add_evidence", "actor": "pendragon.avalon", "owner": "arthur", "entity": "evidence/ev-20261109-miax-2026q3-results"}
+{"seq": 124, "at": "2026-11-09T20:14:22Z", "issue": 160, "action": "add_evidence", "actor": "pendragon.avalon", "owner": "arthur", "entity": "evidence/ev-20261109-miax-2026q3-10q"}
