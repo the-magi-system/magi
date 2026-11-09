@@ -1,0 +1,114 @@
+schema: magi/evidence-check@1
+evidence: ev-20261108-ectm-2026q2-rights-cash-production
+status: verified
+reason: null
+source_date:
+  quote: August 13, 2026
+  date: '2026-08-13'
+  filing_date: '2026-08-13'
+  matches: true
+claims:
+- index: 0
+  verdict: supported
+  timing: standing
+  quote: 'Unless sooner terminated, the
+
+    Trust will begin to liquidate on or about March 31, 2030 (the “Termination Date”) and will soon thereafter wind up its
+
+    affairs and terminate.'
+  figures: []
+  correct: null
+  note: Note 1 states that, unless terminated earlier, the trust begins to liquidate on or about March 31, 2030, then winds up its affairs and terminates.
+- index: 1
+  verdict: supported
+  timing: standing
+  quote: 'At the termination of the Trust, 50% of each of the PDP Royalty Interest and the PUD Royalty Interest will revert
+
+    automatically to Greylock Production. The remaining 50% of each of the PDP Royalty Interest and the PUD Royalty Interest will be sold,
+
+    and the net proceeds will be distributed pro rata to the unitholders soon after the termination of the Trust. Greylock Production will
+
+    have a right of first refusal to purchase the remaining 50% of the Royalty Interests at the termination of the Trust.'
+  figures:
+  - claim: 50%
+    source: 50%
+    unit: null
+    claim_value: 50
+    source_value: 50
+  correct: null
+  note: Note 1 describes the 50% reversion of each royalty interest, the sale of the remaining 50% with pro rata distribution of net proceeds, and Greylock Production's right of first refusal.
+- index: 2
+  verdict: supported
+  timing: standing
+  quote: 'The trust agreement provides that the Trust will
+
+    terminate if gross proceeds to the Trust attributable to the Royalty Interests over any four consecutive quarters are less than $1.5 million.
+
+    If this early termination event occurs, the trust agreement will require the Trustee to sell the Royalty Interests, either by private
+
+    sale or public auction, subject to Greylock Energy''s right of first refusal to purchase the Royalty Interests.'
+  figures:
+  - claim: $1.5 million
+    source: $1.5 million
+    unit: null
+    claim_value: 1500000
+    source_value: 1500000
+  correct: null
+  note: Under the trust agreement, the trust terminates early if gross proceeds over any four consecutive quarters fall below $1.5 million, and the Trustee must then sell the royalty interests.
+- index: 3
+  verdict: supported
+  timing: historical
+  quote: 'Cash
+
+    $ 3,010,426
+
+    $ 3,234,214'
+  figures:
+  - claim: 3,010,426美元
+    source: $ 3,010,426
+    unit: null
+    claim_value: 3010426
+    source_value: 3010426
+  correct: null
+  note: The June 30, 2026 column of the balance sheet shows cash of $3,010,426.
+- index: 4
+  verdict: supported
+  timing: historical
+  quote: 'Production increased 8.2% from 877 MMcf for the
+
+    six months ended June 30, 2025 to 950 MMcf for the six months ended June 30, 2026'
+  figures:
+  - claim: 950 MMcf
+    source: 950 MMcf
+    unit: null
+    claim_value: 950
+    source_value: 950
+  correct: null
+  note: The MD&A reports production of 950 MMcf for the six months ended June 30, 2026.
+source:
+  url: https://www.sec.gov/Archives/edgar/data/1487798/000110465926095922/tm2616215d1_10q.htm
+  final_url: https://www.sec.gov/Archives/edgar/data/1487798/000110465926095922/tm2616215d1_10q.htm
+  http_status: 200
+  content_type: text/html
+  format: html
+  parts: 1
+  decoding: detected
+  fetched_at: '2026-11-09T02:58:34Z'
+  sha256: 301e4181954fb4e319ad47a4dbe6861ec038ef84604ce549144513a583acb962
+  chars: 69789
+  truncated: false
+link: ok
+currency: current
+superseded_by: null
+same_source_as: []
+pending_sources: []
+assist_issue: null
+filings_read_on: null
+filings_listed: []
+next_review: '2027-02-07'
+input_commit: 9cf8b679ee24230336ca8490fea83e8874c2da53
+prompt_sha256: c4a7fd588a3661762d0f8435ff02b0f2db248013b11483706ef47693511892d7
+model: claude-opus-5-5
+version: 1
+checked_at: '2026-11-09T02:59:54Z'
+checked_via_run: 42553790695
