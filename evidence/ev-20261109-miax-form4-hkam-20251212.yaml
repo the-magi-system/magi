@@ -1,0 +1,22 @@
+schema: magi/evidence@1
+id: ev-20261109-miax-form4-hkam-20251212
+title: 'Form 4: purchase of Miami International Holdings shares by accounts managed by Horizon Kinetics on 12 December 2025'
+kind: filing
+assets:
+- miax
+ideas:
+- miax-options-volume
+source:
+  url: https://www.sec.gov/Archives/edgar/data/1438472/000143774925037835/xslF345X05/rdgdoc.xml
+  publisher: Murray Stahl and Horizon Kinetics Asset Management LLC (Form 4, SEC EDGAR)
+  published_at: '2025-12-15'
+  tier: primary
+claims:
+- text: On 12 December 2025, funds and accounts managed by Horizon Kinetics Asset Management LLC bought 2,439 shares of Miami International Holdings common stock at $41.00 a share (transaction code P), reported as an indirect holding by director Murray Stahl.
+  value: 2439
+  unit: shares
+- text: The filing states that Mr. Stahl, chairman, chief executive and chief investment officer of Horizon Kinetics Asset Management, does not exercise investment discretion over the issuer's securities held by these managed accounts and disclaims beneficial ownership except to the extent of any pecuniary interest.
+supersedes: null
+submitted_by: pendragon.avalon
+submitted_at: '2026-11-09T20:16:21Z'
+submitted_via_issue: 164
