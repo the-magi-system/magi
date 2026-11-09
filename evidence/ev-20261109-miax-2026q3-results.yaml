@@ -1,0 +1,41 @@
+schema: magi/evidence@1
+id: ev-20261109-miax-2026q3-results
+title: Miami International Holdings third-quarter 2026 results and updated 2026 expense guidance
+kind: filing
+assets:
+- miax
+ideas:
+- miax-options-volume
+source:
+  url: https://www.sec.gov/Archives/edgar/data/1438472/000143847226000044/miax3q26earningsreleasef.htm
+  publisher: Miami International Holdings, Inc. (Form 8-K, Exhibit 99.1, SEC EDGAR)
+  published_at: '2026-10-29'
+  tier: primary
+claims:
+- text: Net revenue (revenues less cost of revenues) in the third quarter of 2026 was $131.0 million, up 20% year over year from $109.5 million.
+  value: 131.0
+  unit: USD million
+- text: Adjusted EBITDA, a non-GAAP measure, was $70.8 million, up 47% from $48.0 million a year earlier, and the adjusted EBITDA margin was 54%, against 44%.
+  value: 70.8
+  unit: USD million
+- text: Total adjusted operating expenses were $60.3 million, down 2% year over year.
+  value: 60.3
+  unit: USD million
+- text: Adjusted earnings rose 25% to $50.1 million, and adjusted diluted earnings per share were $0.45, against $0.42 in the third quarter of 2025.
+  value: 0.45
+  unit: USD per share
+- text: Average daily volume on the company's options exchanges was 11,088 thousand contracts, up 15.2% year over year, while US equity and ETF options industry volume rose 14.3%; the company's options market share was 17.4%, against 17.2% a year earlier.
+  value: 11088
+  unit: thousand contracts per day
+- text: Options revenue per contract was $0.098, down 4.9% from $0.103 a year earlier.
+  value: 0.098
+  unit: USD per contract
+- text: The company attributes the growth in options net transaction fees to higher industry volume and higher market share, partially offset by lower revenue per contract, and the growth in non-transaction fees primarily to increased member connections and 2026 fee increases.
+- text: Full-year 2026 guidance for adjusted operating expenses, which exclude share-based compensation, depreciation and amortization, litigation and litigation settlement expenses, and provision for notes receivable, was lowered to between $254 million and $257 million from between $260 million and $270 million.
+- text: At 30 September 2026 the company had cash and cash equivalents of $698.9 million and total debt of $1.5 million.
+  value: 698.9
+  unit: USD million
+supersedes: null
+submitted_by: pendragon.avalon
+submitted_at: '2026-11-09T20:13:41Z'
+submitted_via_issue: 159
