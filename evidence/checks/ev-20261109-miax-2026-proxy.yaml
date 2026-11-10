@@ -1,0 +1,142 @@
+schema: magi/evidence-check@1
+evidence: ev-20261109-miax-2026-proxy
+status: verified
+reason: null
+source_date:
+  quote: April 27, 2026
+  date: '2026-04-27'
+  filing_date: '2026-04-27'
+  matches: true
+claims:
+- index: 0
+  verdict: supported
+  timing: historical
+  quote: 'On June 16, 2025, the Compensation Committee approved long-term equity awards
+
+    under the 2022 Plan for our NEOs for fiscal year 2025. Such equity awards consisted of stock
+
+    45
+
+    options (and shares of restricted stock, for Mr. Gallagher and Ms. Comly), which generally vest
+
+    as follows:'
+  figures: []
+  correct: null
+  note: The source states the approval date, the plan, the fiscal year and the mix of awards, with restricted stock for Mr. Gallagher and Ms. Comly.
+- index: 1
+  verdict: supported
+  timing: standing
+  quote: 'One-third of the
+
+    underlying shares vest on each of first three anniversaries of the date of grant,
+
+    subject to acceleration of vesting in full upon a Change in Control (as defined in
+
+    the 2022 Plan and set forth below in the section titled “Potential Payments Upon
+
+    Termination or Change in Control - Summary of Defined Terms”) and further
+
+    subject to the NEO’s continuous service to the Company through each applicable
+
+    vesting date.'
+  figures: []
+  correct: null
+  note: The option vesting terms in the source match the claim.
+- index: 2
+  verdict: supported
+  timing: standing
+  quote: 'The shares of restricted stock vest on the earlier to occur of the
+
+    one-year anniversary of the closing of the IPO and a Change in Control, subject to
+
+    acceleration of vesting in full upon a termination of the NEO’s employment by us
+
+    without “Cause” or by the NEO for “Good Reason” (each as defined in the
+
+    appliable employment agreement, as set forth below in the section titled
+
+    “Potential Payments Upon Termination or Change in Control - Summary of
+
+    Defined Terms”) and further subject to the NEO’s continuous service to the
+
+    Company through the applicable vesting date.'
+  figures: []
+  correct: null
+  note: The source states this vesting trigger and the continuous-service condition. It also adds acceleration on certain terminations, which the claim leaves out.
+- index: 3
+  verdict: supported
+  timing: standing
+  quote: 'In addition, each
+
+    of Messrs. Emmons, Schafer and Brown and Ms. Comly is eligible to receive a guaranteed
+
+    minimum annual bonus in an amount equal to $200,000, $1,000,000, $250,000 and $400,000,
+
+    respectively.'
+  figures:
+  - claim: $200,000
+    source: $200,000
+    unit: null
+    claim_value: 200000
+    source_value: 200000
+  - claim: $1,000,000
+    source: $1,000,000
+    unit: null
+    claim_value: 1000000
+    source_value: 1000000
+  - claim: $250,000
+    source: $250,000
+    unit: null
+    claim_value: 250000
+    source_value: 250000
+  - claim: $400,000
+    source: $400,000
+    unit: null
+    claim_value: 400000
+    source_value: 400000
+  correct: null
+  note: The Annual Cash Bonuses section states that executives are eligible for discretionary bonuses, and gives these guaranteed minimum amounts.
+- index: 4
+  verdict: supported
+  timing: historical
+  quote: '(5)The discretionary bonus earned by Mr. Gallagher for fiscal year 2025 was determined by the Compensation
+
+    Committee based on the Company''s overall performance, including financial performance, financing activity,
+
+    improvements to the Company''s balance sheet and capital structure, exchange volumes and market share,
+
+    acquisition and investment activity, launch of the MIAX Sapphire trading floor, sale of 90% of MIAXdx in a
+
+    strategic transaction, consummation of initial and secondary public offerings and performance of the Company''s
+
+    stock price.'
+  figures: []
+  correct: null
+  note: Footnote 5 to the Summary Compensation Table lists every factor the claim names, among others.
+source:
+  url: https://www.sec.gov/Archives/edgar/data/1438472/000162828026027312/miax-20260426.htm
+  final_url: https://www.sec.gov/Archives/edgar/data/1438472/000162828026027312/miax-20260426.htm
+  http_status: 200
+  content_type: text/html
+  format: html
+  parts: 1
+  decoding: detected
+  fetched_at: '2026-11-10T04:47:37Z'
+  sha256: f740d8719ae503cd2ded7599bdcc2d2dae1a7f72e2cd3c1cf65bf1a29e01207f
+  chars: 244316
+  truncated: false
+link: ok
+currency: current
+superseded_by: null
+same_source_as: []
+pending_sources: []
+assist_issue: null
+filings_read_on: null
+filings_listed: []
+next_review: '2027-02-08'
+input_commit: f2dda345ac5a2faebdbcf7dd54f7fd13b5bb2c2d
+prompt_sha256: c4a7fd588a3661762d0f8435ff02b0f2db248013b11483706ef47693511892d7
+model: claude-opus-5-5
+version: 1
+checked_at: '2026-11-10T04:49:23Z'
+checked_via_run: 42758061690

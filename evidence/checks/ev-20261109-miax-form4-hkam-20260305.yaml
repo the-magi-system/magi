@@ -1,0 +1,81 @@
+schema: magi/evidence-check@1
+evidence: ev-20261109-miax-form4-hkam-20260305
+status: verified
+reason: null
+source_date: null
+claims:
+- index: 0
+  verdict: supported
+  timing: historical
+  quote: 'Common Stock
+
+    03/05/2026
+
+    P
+
+    7,200
+
+    A
+
+    $43.08
+
+    4,633,842(1)
+
+    I
+
+    Horizon
+
+    Kinetics
+
+    Asset
+
+    Management
+
+    LLC'
+  figures:
+  - claim: 7,200 shares
+    source: 7,200
+    unit: null
+    claim_value: 7200
+    source_value: 7200
+  - claim: $43.08
+    source: $43.08
+    unit: null
+    claim_value: 43.08
+    source_value: 43.08
+  correct: null
+  note: Table I row shows Common Stock bought on 03/05/2026 under code P, 7,200 shares acquired at $43.08, held indirectly (I) through Horizon Kinetics Asset Management LLC. The reporting person is checked as a Director.
+- index: 1
+  verdict: supported
+  timing: standing
+  quote: Mr. Stahl does not exercise investment discretion with respect to the securities of the Issuer that are beneficially owned by the Managed Accounts. Mr. Stahl disclaims beneficial ownership over the securities reported, except to the extent of his pecuniary interest therein, if any.
+  figures: []
+  correct: null
+  note: Footnote 1 says he is Chairman, CEO and CIO of the manager. It also says he does not exercise investment discretion over the Managed Accounts' issuer securities and disclaims beneficial ownership except to the extent of his pecuniary interest.
+source:
+  url: https://www.sec.gov/Archives/edgar/data/1438472/000143774926007252/xslF345X05/rdgdoc.xml
+  final_url: https://www.sec.gov/Archives/edgar/data/1438472/000143774926007252/xslF345X05/rdgdoc.xml
+  http_status: 200
+  content_type: text/html
+  format: html
+  parts: 1
+  decoding: declared
+  fetched_at: '2026-11-10T04:47:37Z'
+  sha256: c137eae490b086a40be5d07a65ccefd72cce6bc9af7af696b4b6ddb9536f8fc0
+  chars: 5311
+  truncated: false
+link: ok
+currency: current
+superseded_by: null
+same_source_as: []
+pending_sources: []
+assist_issue: null
+filings_read_on: null
+filings_listed: []
+next_review: '2027-02-08'
+input_commit: f2dda345ac5a2faebdbcf7dd54f7fd13b5bb2c2d
+prompt_sha256: c4a7fd588a3661762d0f8435ff02b0f2db248013b11483706ef47693511892d7
+model: claude-opus-5-5
+version: 1
+checked_at: '2026-11-10T04:49:23Z'
+checked_via_run: 42758061690
