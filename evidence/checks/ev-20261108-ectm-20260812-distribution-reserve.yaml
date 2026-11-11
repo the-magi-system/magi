@@ -82,14 +82,15 @@ link: ok
 currency: current
 superseded_by: null
 same_source_as: []
-pending_sources: []
+pending_sources:
+- https://www.sec.gov/Archives/edgar/data/1487798/000110465926095922/tm2616215d1_10q.htm
 assist_issue: null
-filings_read_on: null
+filings_read_on: '2026-11-11'
 filings_listed: []
 next_review: '2027-02-07'
 input_commit: 9cf8b679ee24230336ca8490fea83e8874c2da53
 prompt_sha256: c4a7fd588a3661762d0f8435ff02b0f2db248013b11483706ef47693511892d7
 model: claude-opus-5-5
-version: 1
-checked_at: '2026-11-09T02:59:54Z'
-checked_via_run: 42553790695
+version: 2
+checked_at: '2026-11-11T03:02:45Z'
+checked_via_run: 42949828945

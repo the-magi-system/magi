@@ -1,0 +1,195 @@
+schema: magi/evidence-check@1
+evidence: ev-20261109-miax-2026q3-10q
+status: unverified
+reason: not_found
+source_date:
+  quote: November 2, 2026
+  date: '2026-11-02'
+  filing_date: '2026-11-02'
+  matches: true
+claims:
+- index: 0
+  verdict: supported
+  timing: historical
+  quote: Transaction and clearing fees $ 316,420 $ 292,814 $ 963,714 $ 868,257
+  figures:
+  - claim: $316.4 million
+    source: 316,420
+    unit: (dollars in thousands, except share and per share amounts)
+    claim_value: 316400000
+    source_value: 316420000
+  - claim: $292.8 million
+    source: 292,814
+    unit: (dollars in thousands, except share and per share amounts)
+    claim_value: 292800000
+    source_value: 292814000
+  correct: null
+  note: The statement of operations shows third-quarter transaction and clearing fees of 316,420 thousand in 2026 and 292,814 thousand in 2025.
+- index: 1
+  verdict: supported
+  timing: historical
+  quote: 'Liquidity payments 206,313 217,286 636,472 606,983
+
+    Brokerage, clearing, and exchange fees 14,212 11,612 45,849 42,547
+
+    Section 31 fees 23,028 — 46,004 35,225
+
+    Other cost of revenues 1,621 1,397 4,462 3,855'
+  figures:
+  - claim: $206.3 million
+    source: 206,313
+    unit: (dollars in thousands, except share and per share amounts)
+    claim_value: 206300000
+    source_value: 206313000
+  - claim: $14.2 million
+    source: 14,212
+    unit: (dollars in thousands, except share and per share amounts)
+    claim_value: 14200000
+    source_value: 14212000
+  - claim: $23.0 million
+    source: 23,028
+    unit: (dollars in thousands, except share and per share amounts)
+    claim_value: 23000000
+    source_value: 23028000
+  - claim: $1.6 million
+    source: 1,621
+    unit: (dollars in thousands, except share and per share amounts)
+    claim_value: 1600000
+    source_value: 1621000
+  - claim: $217.3 million
+    source: 217,286
+    unit: (dollars in thousands, except share and per share amounts)
+    claim_value: 217300000
+    source_value: 217286000
+  - claim: $11.6 million
+    source: 11,612
+    unit: (dollars in thousands, except share and per share amounts)
+    claim_value: 11600000
+    source_value: 11612000
+  correct: null
+  note: The cost-of-revenues rows in the statement of operations match every component. The prior-year Section 31 fees show a dash, which means nil.
+- index: 2
+  verdict: supported
+  timing: historical
+  quote: Access fees 36,949 27,096 105,247 77,285
+  figures:
+  - claim: $36.9 million
+    source: 36,949
+    unit: (dollars in thousands, except share and per share amounts)
+    claim_value: 36900000
+    source_value: 36949000
+  - claim: $27.1 million
+    source: 27,096
+    unit: (dollars in thousands, except share and per share amounts)
+    claim_value: 27100000
+    source_value: 27096000
+  correct: null
+  note: The access fees row in the statement of operations matches.
+- index: 3
+  verdict: supported
+  timing: historical
+  quote: Market data fees 13,877 10,730 39,038 30,625
+  figures:
+  - claim: $13.9 million
+    source: 13,877
+    unit: (dollars in thousands, except share and per share amounts)
+    claim_value: 13900000
+    source_value: 13877000
+  - claim: $10.7 million
+    source: 10,730
+    unit: (dollars in thousands, except share and per share amounts)
+    claim_value: 10700000
+    source_value: 10730000
+  correct: null
+  note: The market data fees row in the statement of operations matches.
+- index: 4
+  verdict: supported
+  timing: historical
+  quote: 'Other revenue 8,937 9,138 25,503 18,472
+
+    Total revenues 376,183 339,778 1,133,502 994,639
+
+    Cost of revenues:
+
+    Liquidity payments 206,313 217,286 636,472 606,983
+
+    Brokerage, clearing, and exchange fees 14,212 11,612 45,849 42,547
+
+    Section 31 fees 23,028 — 46,004 35,225
+
+    Other cost of revenues 1,621 1,397 4,462 3,855
+
+    Total cost of revenues 245,174 230,295 732,787 688,610
+
+    Revenues less cost of revenues 131,009 109,483 400,715 306,029'
+  figures:
+  - claim: $8.9 million
+    source: 8,937
+    unit: (dollars in thousands, except share and per share amounts)
+    claim_value: 8900000
+    source_value: 8937000
+  - claim: $131.0 million
+    source: 131,009
+    unit: (dollars in thousands, except share and per share amounts)
+    claim_value: 131000000
+    source_value: 131009000
+  correct: null
+  note: The statement of operations shows third-quarter 2026 other revenue of 8,937 thousand and revenues less cost of revenues of 131,009 thousand.
+- index: 5
+  verdict: supported
+  timing: historical
+  quote: Diluted 110,799,280 70,128,197 110,249,406 66,168,315
+  figures:
+  - claim: 110,799,280
+    source: 110,799,280
+    unit: null
+    claim_value: 110799280
+    source_value: 110799280
+  correct: null
+  note: The diluted weighted-average shares for the three months ended September 30, 2026 are 110,799,280.
+- index: 6
+  verdict: not_found
+  timing: historical
+  quote: null
+  figures: []
+  correct: null
+  note: null
+- index: 7
+  verdict: supported
+  timing: historical
+  quote: As a result during the three months ended September 30, 2026, the Company recorded a provision for notes receivable of $6.3 million, and is included in professional fee and outside services in the condensed consolidated statement of operations.
+  figures:
+  - claim: $6.3 million
+    source: $6.3 million
+    unit: null
+    claim_value: 6300000
+    source_value: 6300000
+  correct: null
+  note: The notes-receivable note states the $6.3 million provision and that it is included in professional fees and outside services. The adjusted EBITDA reconciliation has a row adding back a provision for notes receivable of 6,268 thousand for the quarter.
+source:
+  url: https://www.sec.gov/Archives/edgar/data/1438472/000162828026068667/miax-20260930.htm
+  final_url: https://www.sec.gov/Archives/edgar/data/1438472/000162828026068667/miax-20260930.htm
+  http_status: 200
+  content_type: text/html
+  format: html
+  parts: 1
+  decoding: detected
+  fetched_at: '2026-11-11T03:00:53Z'
+  sha256: 9338b30e91fc005c115caa64981cef510352bf1463f81b35c222178db78a2f9d
+  chars: 359954
+  truncated: false
+link: ok
+currency: current
+superseded_by: null
+same_source_as: []
+pending_sources: []
+assist_issue: 170
+filings_read_on: null
+filings_listed: []
+next_review: '2027-02-09'
+input_commit: 0acda15b0173bfda8a01051a8db8de60a2fc0fae
+prompt_sha256: c4a7fd588a3661762d0f8435ff02b0f2db248013b11483706ef47693511892d7
+model: claude-opus-5-5
+version: 1
+checked_at: '2026-11-11T03:02:45Z'
+checked_via_run: 42949828945

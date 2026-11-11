@@ -1,0 +1,210 @@
+schema: magi/evidence-check@1
+evidence: ev-20261109-miax-2026q3-results
+status: unverified
+reason: not_found
+source_date:
+  quote: October 29, 2026
+  date: '2026-10-29'
+  filing_date: '2026-10-29'
+  matches: true
+claims:
+- index: 0
+  verdict: supported
+  timing: historical
+  quote: Net revenue, defined as revenues less cost of revenues, grew 20%, or $21.5 million, to $131.0 million, compared to $109.5 million in the prior-year period.
+  figures:
+  - claim: $131.0 million
+    source: $131.0 million
+    unit: null
+    claim_value: 131000000
+    source_value: 131000000
+  - claim: 20%
+    source: 20%
+    unit: null
+    claim_value: 20
+    source_value: 20
+  - claim: $109.5 million
+    source: $109.5 million
+    unit: null
+    claim_value: 109500000
+    source_value: 109500000
+  correct: null
+  note: The highlights state net revenue, defined as revenues less cost of revenues, grew 20% to $131.0 million from $109.5 million.
+- index: 1
+  verdict: supported
+  timing: historical
+  quote: Adjusted EBITDA increased 47% to $70.8 million, compared to $48.0 million in the prior-year period, driven primarily by strong growth in net revenues. • Adjusted EBITDA margin expanded to 54% from 44% in the prior-year period.
+  figures:
+  - claim: $70.8 million
+    source: $70.8 million
+    unit: null
+    claim_value: 70800000
+    source_value: 70800000
+  - claim: 47%
+    source: 47%
+    unit: null
+    claim_value: 47
+    source_value: 47
+  - claim: $48.0 million
+    source: $48.0 million
+    unit: null
+    claim_value: 48000000
+    source_value: 48000000
+  - claim: 54%
+    source: 54%
+    unit: null
+    claim_value: 54
+    source_value: 54
+  - claim: 44%
+    source: 44%
+    unit: null
+    claim_value: 44
+    source_value: 44
+  correct: null
+  note: The highlights give adjusted EBITDA up 47% to $70.8 million from $48.0 million, and the margin rising to 54% from 44%.
+- index: 2
+  verdict: not_found
+  timing: historical
+  quote: Total adjusted operating expenses of $60.3 million decreased 2% compared to the prior-year period.
+  figures: []
+  correct: null
+  note: a figure could not be checked
+- index: 3
+  verdict: not_found
+  timing: historical
+  quote: Adjusted earnings** $ 50,056 $ 39,947 25 % Adjusted diluted EPS** $ 0.45 $ 0.42 7 %
+  figures: []
+  correct: null
+  note: a figure could not be checked
+- index: 4
+  verdict: supported
+  timing: historical
+  quote: Market ADV – Equity and ETF (in thousands)(1) ............... 63,810 55,840 7,970 14.3 % 64,327 53,989 10,338 19.1 % MIH ADV – Equity and ETF (in thousands)(1) .................... 11,088 9,624 1,464 15.2 % 10,983 9,002 1,981 22.0 % MIH market share ............................................................................ 17.4 % 17.2 % 0.2 pts 1.2 %
+  figures:
+  - claim: 11,088 thousand contracts
+    source: 11,088
+    unit: (in thousands)
+    claim_value: 11088000
+    source_value: 11088000
+  - claim: 15.2%
+    source: 15.2 %
+    unit: null
+    claim_value: 15.2
+    source_value: 15.2
+  - claim: 14.3%
+    source: 14.3 %
+    unit: null
+    claim_value: 14.3
+    source_value: 14.3
+  - claim: 17.4%
+    source: 17.4 %
+    unit: null
+    claim_value: 17.4
+    source_value: 17.4
+  - claim: 17.2%
+    source: 17.2 %
+    unit: null
+    claim_value: 17.2
+    source_value: 17.2
+  correct: null
+  note: The key business metrics table gives the company's options ADV of 11,088 thousand (up 15.2%), market ADV up 14.3%, and market share of 17.4% against 17.2%.
+- index: 5
+  verdict: supported
+  timing: historical
+  quote: Total Options revenue per contract (“RPC”)(2) .............................. $0.098 $0.103 $(0.005) (4.9) %
+  figures:
+  - claim: $0.098
+    source: $0.098
+    unit: null
+    claim_value: 0.098
+    source_value: 0.098
+  - claim: 4.9%
+    source: (4.9) %
+    unit: null
+    claim_value: 4.9
+    source_value: 4.9
+  - claim: $0.103
+    source: $0.103
+    unit: null
+    claim_value: 0.103
+    source_value: 0.103
+  correct: null
+  note: The metrics table shows options RPC of $0.098 against $0.103, a 4.9% decline.
+- index: 6
+  verdict: supported
+  timing: historical
+  quote: Net transaction fees increased due to higher industry volume, and higher market share, partially offset by lower revenue per contract (RPC). Higher non-transaction fees were primarily driven by increased member connections, and 2026 fee increases.
+  figures: []
+  correct: null
+  note: The options segment discussion gives these exact drivers.
+- index: 7
+  verdict: supported
+  timing: standing
+  quote: Adjusted operating expenses, which exclude share-based compensation, depreciation and amortization, litigation and litigation settlement expenses, and provision for notes receivable in a range between $254 million and $257 million, down from previous guidance of between $260 million and $270 million;
+  figures:
+  - claim: $254 million
+    source: $254 million
+    unit: null
+    claim_value: 254000000
+    source_value: 254000000
+  - claim: $257 million
+    source: $257 million
+    unit: null
+    claim_value: 257000000
+    source_value: 257000000
+  - claim: $260 million
+    source: $260 million
+    unit: null
+    claim_value: 260000000
+    source_value: 260000000
+  - claim: $270 million
+    source: $270 million
+    unit: null
+    claim_value: 270000000
+    source_value: 270000000
+  correct: null
+  note: The FY 2026 guidance section states the lowered adjusted operating expense range and the previous range.
+- index: 8
+  verdict: supported
+  timing: historical
+  quote: As of September 30, 2026, MIAX had cash and cash equivalents of $698.9 million and total debt of $1.5 million.
+  figures:
+  - claim: $698.9 million
+    source: $698.9 million
+    unit: null
+    claim_value: 698900000
+    source_value: 698900000
+  - claim: $1.5 million
+    source: $1.5 million
+    unit: null
+    claim_value: 1500000
+    source_value: 1500000
+  correct: null
+  note: Stated in the capital and liquidity section.
+source:
+  url: https://www.sec.gov/Archives/edgar/data/1438472/000143847226000044/miax3q26earningsreleasef.htm
+  final_url: https://www.sec.gov/Archives/edgar/data/1438472/000143847226000044/miax3q26earningsreleasef.htm
+  http_status: 200
+  content_type: text/html
+  format: html
+  parts: 1
+  decoding: detected
+  fetched_at: '2026-11-11T03:00:53Z'
+  sha256: c83bd2e765026c0d4f2a6ed39f9b77408f62215bc0d3ed51a6c0a2dd27260918
+  chars: 51280
+  truncated: false
+link: ok
+currency: current
+superseded_by: null
+same_source_as: []
+pending_sources: []
+assist_issue: 169
+filings_read_on: null
+filings_listed: []
+next_review: '2027-02-09'
+input_commit: 0acda15b0173bfda8a01051a8db8de60a2fc0fae
+prompt_sha256: c4a7fd588a3661762d0f8435ff02b0f2db248013b11483706ef47693511892d7
+model: claude-opus-5-5
+version: 1
+checked_at: '2026-11-11T03:02:45Z'
+checked_via_run: 42949828945
