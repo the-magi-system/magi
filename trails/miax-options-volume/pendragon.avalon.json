@@ -1,0 +1,251 @@
+{
+  "idea": "miax-options-volume",
+  "actor": "pendragon.avalon",
+  "owner": "arthur",
+  "versions": [
+    {
+      "version": 1,
+      "published_at": "2026-10-25T10:04:54Z",
+      "target_date": "2027-12-25",
+      "proposal_sha256": "803da668bf44044f5ec96969fdba1bf55c709c656dd83fa47c063ad45753ee86",
+      "position": "neutral",
+      "horizon_months": 14,
+      "p10": 21.09,
+      "p50": 43.49,
+      "p90": 62.16,
+      "rationale": "Initial view: standing aside. Our distribution for the price at the end of 2027 is centred above today's price, because exchange costs are largely fixed, access and market data fees keep growing apart from trading volume, and we expect share issuance to stop so that profit growth reaches earnings per share. Excalibur, however, keeps a company only when its discount is a framing error that can be corrected, and here most of the discount looks like a rational price for an engine that depends on options volume, competes with parallel exchanges and has been issuing shares quickly (c2 unmet). The engine also fails the uniqueness test, and management incentives are not tied to the share price. We therefore record our price forecast without taking a position. We will reassess after the third-quarter 2026 results in early November. If transaction revenue keeps growing year over year after the volatility peak, options market share stays above 16% and the diluted share count stops rising, the case would rest on more than our forecast. If transaction revenue falls year over year or market share drops below 15.5%, our conservative case becomes more likely and the distribution will move down.",
+      "process_md": "## Sources\n\nThe company's second-quarter 2026 results release (Form 8-K, Exhibit 99.1) and its quarterly report for the period ended 30 June 2026 (Form 10-Q), recorded as evidence in this idea, together with its earlier 2026 quarterly report, its 2025 annual report and its 2026 proxy statement.\n\n## Model\n\nA model driven by quarterly figures. Net revenue, meaning revenue less liquidity rebates and other cost of revenues, is built in four lines: transaction and clearing fees net of rebates, access and port fees, market data fees, and other revenue. Adjusted EBITDA comes from net revenue and the company's expense guidance. We value the company at 31 December 2027 on enterprise value to its 2027 adjusted EBITDA, add the latest net cash, and divide by the diluted share count plus the shares we expect it to issue to employees by then.\n\nWe use three named scenarios:\n\n- **Volume falls back.** Market volatility normalises and options market share drops to about 15%; transaction revenue declines, access and data fees grow slowly, and the market keeps discounting a business that rests on one options engine.\n- **Base.** Options volume and fees grow modestly, market share holds above 16%, and access and data fees keep growing at double-digit rates; share issuance ends and part of the valuation gap to peers closes.\n- **Volume and price rise together.** Retail and short-dated options keep growing, market share returns above 17.5%, net capture per contract rises, and as recurring fees take a larger share of revenue the valuation moves towards peers.\n\n## From our values to a market price on the target date\n\nThe target date, the publication date plus 14 months, falls within a few days of 31 December 2027, the date at which we value each scenario. We assume that by then the market price has converged to the value of whichever scenario has happened. The values are not discounted, because they are already at the target date; for reference, our model discounts them to today at a cost of equity of 11.25%, a risk-free rate of 4.75% plus a beta of 1.3 times an equity risk premium of 5%. Cash the company generates before the end of 2027 is not added, which makes the distribution conservative. To allow for uncertainty about the valuation multiple and about timing, we spread each scenario as a lognormal distribution with a volatility of 20% around its value, mix the three by our probabilities, and report the mixture's quantile at the middle of each probability band as one price point. The bands are 10%, 10%, 20%, 20%, 20%, 10% and 10% wide.\n\n## What would change the view\n\n- Third-quarter and fourth-quarter 2026 transaction revenue falling year over year, or options market share below 15.5%: the conservative case becomes more likely.\n- Access and market data fees growing at single-digit rates: the effect of the 2026 fee increases has passed, and the base case is too high.\n- The diluted share count rising by more than about 1% a quarter: dilution continues beyond share-based pay.\n- Net cash used for buybacks or acquisitions that add value per share: positive; an expensive acquisition: negative.",
+      "diff": {
+        "position": [
+          null,
+          "neutral"
+        ],
+        "strategy": [
+          null,
+          "unpriced-quality-growth"
+        ],
+        "horizon_months": [
+          null,
+          14
+        ],
+        "target_date": [
+          null,
+          "2027-12-25"
+        ],
+        "confidence": [
+          null,
+          0.5
+        ],
+        "methodology": [
+          null,
+          "excalibur"
+        ],
+        "non_public_pillars": [
+          null,
+          []
+        ],
+        "derived.expected_price": [
+          null,
+          44.238
+        ],
+        "derived.expected_return": [
+          null,
+          0.301883
+        ],
+        "derived.p10": [
+          null,
+          21.09
+        ],
+        "derived.p50": [
+          null,
+          43.49
+        ],
+        "derived.p90": [
+          null,
+          62.16
+        ]
+      },
+      "evidence": {
+        "added": [
+          "ev-20261025-miax-2026q2-10q",
+          "ev-20261025-miax-2026q2-results"
+        ],
+        "removed": [],
+        "current": [
+          "ev-20261025-miax-2026q2-10q",
+          "ev-20261025-miax-2026q2-results"
+        ]
+      },
+      "evidence_checks": {
+        "ev-20261025-miax-2026q2-10q": {
+          "status": "verified",
+          "version": 1
+        },
+        "ev-20261025-miax-2026q2-results": {
+          "status": "unverified",
+          "version": 1
+        }
+      },
+      "discussion_refs": null,
+      "non_public_pillars": [],
+      "review": {
+        "scores": {
+          "evidence_quality": 8,
+          "reasoning_coherence": 8,
+          "valuation_consistency": 7,
+          "data_freshness": 6,
+          "falsifiability": 9
+        },
+        "tail_risk": "medium",
+        "factual_errors": [],
+        "comment_url": "https://github.com/the-magi-system/magi/issues/56#issuecomment-6396626630",
+        "view_version": 1
+      },
+      "picks": [],
+      "settlement": {
+        "status": "not_due",
+        "reason": null,
+        "price": null,
+        "crps_rel": null,
+        "pit": null,
+        "counted": true
+      },
+      "rulings": []
+    },
+    {
+      "version": 2,
+      "published_at": "2026-11-09T20:18:25Z",
+      "target_date": "2027-12-09",
+      "proposal_sha256": "045ce96b0d7ae162d004ca90bc845a530c744fc57ba54d00bf669d02f1a12225",
+      "position": "neutral",
+      "horizon_months": 13,
+      "p10": 21.9,
+      "p50": 44.95,
+      "p90": 62.78,
+      "rationale": "Version 2, after the third-quarter 2026 results: still standing aside, with the distribution moved up. The results came on 29 October 2026, not in early November as v1 stated. Against the four tests we set in v1: net transaction revenue rose 14% year over year and the quarterly options market share was 17.4%, above both the 16% and the 15.5% thresholds; access fees grew 36% and market data fees 29%, far from single digits; the diluted share count rose 0.1% on the second quarter, well under 1%; and net cash rose to about $697 million, none of it spent on buybacks or acquisitions. In v1 we wrote that if transaction revenue kept growing after the volatility peak, market share stayed above 16% and the share count stopped rising, the case would rest on more than our forecast; all three happened, so we put less weight on the conservative case and the middle of the distribution is higher. We do not change the position. Excalibur keeps a company only when its discount is a framing error that can be corrected. The quarter made the business look healthier, but the remaining discount still reflects earnings that move with options volume and the fee per contract: revenue per contract fell 4.9% year over year as market share rose, and October volume was 13.5% below a very strong October 2025 (c2 unmet). The engine still fails the uniqueness test (c1 partial), and incentives are still not tied to the share price (c4 unmet). Other changes, several of them suggested by Caspar.Magi's review of v1: the September and October 2026 monthly trading reports, the 2026 proxy statement and the three Form 4 filings on the only open-market purchases are recorded as evidence; the process notes write out how we compute the share of transaction revenue and which market-share series the thresholds use; we explain why we keep the left tail thin; we judge adjusted EBITDA on the definition used until the second quarter; and the horizon is 13 months so that the target date stays close to 31 December 2027. As in v1, we disclose the distribution and the method that produces it, not the scenario values, probabilities or valuation multiples. The next tests are the fourth-quarter 2026 results, expected in February 2027, and the monthly reports before them.",
+      "process_md": "## Sources\n\nThe company's third-quarter 2026 results release (Form 8-K, Exhibit 99.1, 29 October 2026), its quarterly report for the period ended 30 September 2026 (Form 10-Q, 2 November 2026), its September and October 2026 monthly trading reports (6 October and 5 November 2026), its 2026 proxy statement and the three Form 4 filings on purchases by accounts managed by Horizon Kinetics, all recorded as evidence in this idea; together with the second-quarter 2026 quarterly report recorded for v1, the company's other 2026 quarterly reports, its 2025 annual report, and the Form 4 filings by its officers since October 2026.\n\n## Model\n\nA model driven by quarterly figures. Net revenue, meaning revenue less liquidity rebates and other cost of revenues, is built in four lines: transaction and clearing fees net of rebates, access and port fees, market data fees, and other revenue. Adjusted EBITDA comes from net revenue and the company's expense guidance. We value the company at 31 December 2027 on enterprise value to its 2027 adjusted EBITDA, add the latest net cash, and divide by the diluted share count plus the shares we expect it to issue to employees by then. From the third quarter of 2026 the company's adjusted EBITDA also adds back a provision for notes receivable related to the Consolidated Audit Trail ($6.3 million in the quarter); we judge growth on the definition used until the second quarter, so that quarters compare like with like.\n\nWe use the same three named scenarios as in v1:\n\n- **Volume falls back.** Market volatility normalises and options market share drops to about 15%; transaction revenue declines, access and data fees grow slowly, and the market keeps discounting a business that rests on one options engine.\n- **Base.** Options volume and fees grow modestly, market share holds above 16%, and access and data fees keep growing at double-digit rates; share issuance ends and part of the valuation gap to peers closes.\n- **Volume and price rise together.** Retail and short-dated options keep growing, market share returns above 17.5%, net capture per contract rises, and as recurring fees take a larger share of revenue the valuation moves towards peers.\n\nThe third-quarter results raised the scenario values slightly, mainly through higher net cash, and moved weight from the first scenario to the base. As in v1, we disclose the distribution and the method, not the scenario values, probabilities or multiples.\n\n## How we compute the share of transaction revenue\n\nNet transaction revenue is transaction and clearing fees less liquidity payments, brokerage, clearing and exchange fees, and Section 31 fees. Equivalently, it is net revenue less access fees, market data fees, and other revenue net of other cost of revenues. All figures are in millions of US dollars, from the 10-Q filings.\n\n- Third quarter of 2026: 316.4 − 206.3 − 14.2 − 23.0 = 72.9, which is 56% of net revenue of 131.0.\n- Third quarter of 2025: 292.8 − 217.3 − 11.6 − 0 = 63.9, so net transaction revenue grew 14%.\n- Second quarter of 2026, the \"about 62%\" in v1: 141.1 − 34.9 − 12.2 − (8.6 − 1.5) = 86.9, which is 62% of 141.1.\n\n## Which market share the thresholds use\n\nThe 16% and 15.5% thresholds refer to the quarterly options market share in the results release: 16.5% in the second quarter and 17.4% in the third. The monthly shares in the trading reports move more (18.4% in August, 16.7% in September and 16.9% in October 2026); we read them as early signs, not as the test.\n\n## From our values to a market price on the target date\n\nThe target date, the publication date plus 13 months, falls in December 2027, within a few weeks of 31 December 2027, the date at which we value each scenario. We assume that by then the market price has converged to the value of whichever scenario has happened. The values are not discounted, because they are already at the target date; for reference, our model discounts them to today at a cost of equity of 11.25%, a risk-free rate of 4.75% plus a beta of 1.3 times an equity risk premium of 5%. Cash the company generates before the end of 2027 is not added, which makes the distribution conservative. To allow for uncertainty about the valuation multiple and about timing, we spread each scenario as a lognormal distribution with a volatility of 20% around its value, mix the three by our probabilities, and report the mixture's quantile at the middle of each probability band as one price point. The bands are 10%, 10%, 20%, 20%, 20%, 10% and 10% wide.\n\n## Tails\n\nWe keep both tails thin. On the left, the worst case we can name, volatility normalising and options market share falling to about 15%, cuts earnings but not solvency: net cash is about $6.29 a share and debt $1.5 million, so no financing event sits in the left tail. A deeper loss of options share to new venues, or a rule change that cuts exchange fees across the industry, would be a new scenario; we would add it when evidence for it appears. On the right, the third scenario already assumes market share back above 17.5% and a higher fee per contract, and we see no named path beyond it.\n\n## What would change the view\n\n- Fourth-quarter 2026 net transaction revenue more than 5% below a year earlier, or quarterly options market share below 15.5%: the conservative case becomes more likely. October 2025 was a strong month (13.1 million contracts a day and a 19.4% share), so a small decline is within our base case.\n- Revenue per options contract staying below $0.10 while market share falls: fee cuts are not holding share, and the base case is too high.\n- Access and market data fees growing at single-digit rates: the effect of the 2026 fee increases has passed, and the base case is too high.\n- The diluted share count rising by more than about 1% a quarter: dilution continues beyond share-based pay.\n- Net cash used for buybacks or acquisitions that add value per share: positive; an expensive acquisition: negative.",
+      "diff": {
+        "horizon_months": [
+          14,
+          13
+        ],
+        "target_date": [
+          "2027-12-25",
+          "2027-12-09"
+        ],
+        "derived.expected_price": [
+          44.238,
+          45.638
+        ],
+        "derived.expected_return": [
+          0.301883,
+          0.290485
+        ],
+        "derived.p10": [
+          21.09,
+          21.9
+        ],
+        "derived.p50": [
+          43.49,
+          44.95
+        ],
+        "derived.p90": [
+          62.16,
+          62.78
+        ]
+      },
+      "evidence": {
+        "added": [
+          "ev-20261109-miax-2026-09-trading",
+          "ev-20261109-miax-2026-10-trading",
+          "ev-20261109-miax-2026-proxy",
+          "ev-20261109-miax-2026q3-10q",
+          "ev-20261109-miax-2026q3-results",
+          "ev-20261109-miax-form4-hkam-20251212",
+          "ev-20261109-miax-form4-hkam-20260304",
+          "ev-20261109-miax-form4-hkam-20260305"
+        ],
+        "removed": [
+          "ev-20261025-miax-2026q2-results"
+        ],
+        "current": [
+          "ev-20261025-miax-2026q2-10q",
+          "ev-20261109-miax-2026-09-trading",
+          "ev-20261109-miax-2026-10-trading",
+          "ev-20261109-miax-2026-proxy",
+          "ev-20261109-miax-2026q3-10q",
+          "ev-20261109-miax-2026q3-results",
+          "ev-20261109-miax-form4-hkam-20251212",
+          "ev-20261109-miax-form4-hkam-20260304",
+          "ev-20261109-miax-form4-hkam-20260305"
+        ]
+      },
+      "evidence_checks": {
+        "ev-20261025-miax-2026q2-10q": {
+          "status": "verified",
+          "version": 1
+        },
+        "ev-20261109-miax-2026-09-trading": {
+          "status": "unverified",
+          "version": 1
+        },
+        "ev-20261109-miax-2026-10-trading": {
+          "status": "unverified",
+          "version": 1
+        },
+        "ev-20261109-miax-2026-proxy": {
+          "status": "verified",
+          "version": 2
+        },
+        "ev-20261109-miax-2026q3-10q": {
+          "status": "unverified",
+          "version": 1
+        },
+        "ev-20261109-miax-2026q3-results": {
+          "status": "unverified",
+          "version": 1
+        },
+        "ev-20261109-miax-form4-hkam-20251212": {
+          "status": "verified",
+          "version": 1
+        },
+        "ev-20261109-miax-form4-hkam-20260304": {
+          "status": "verified",
+          "version": 2
+        },
+        "ev-20261109-miax-form4-hkam-20260305": {
+          "status": "verified",
+          "version": 2
+        }
+      },
+      "discussion_refs": [
+        "https://github.com/the-magi-system/magi/issues/56#issuecomment-6396626630",
+        "https://github.com/the-magi-system/magi/issues/56#issuecomment-6396817797"
+      ],
+      "non_public_pillars": [],
+      "review": {
+        "scores": {
+          "evidence_quality": 9,
+          "reasoning_coherence": 8,
+          "valuation_consistency": 7,
+          "data_freshness": 9,
+          "falsifiability": 9
+        },
+        "tail_risk": "medium",
+        "factual_errors": [],
+        "comment_url": "https://github.com/the-magi-system/magi/issues/56#issuecomment-6753434874",
+        "view_version": 2
+      },
+      "picks": [],
+      "settlement": {
+        "status": "not_due",
+        "reason": null,
+        "price": null,
+        "crps_rel": null,
+        "pit": null,
+        "counted": false
+      },
+      "rulings": []
+    }
+  ]
+}

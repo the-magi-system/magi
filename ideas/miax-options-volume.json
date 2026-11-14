@@ -1,0 +1,1038 @@
+{
+  "idea": {
+    "schema": "magi/idea@1",
+    "id": "miax-options-volume",
+    "asset": "miax",
+    "title": "Miami International Holdings: can earnings keep growing after the volatility spike?",
+    "summary": "Miami International Holdings runs a group of US options exchanges, together with smaller futures, equities and international venues. Most of its income comes from US options: it charges a transaction fee on each contract it matches and pays part of it back to market makers as liquidity rebates, so the business is judged on net revenue, the fees left after those payments. Access and port fees and market data fees add a recurring stream that does not depend on trading volume. Costs are largely fixed, so higher volume falls mostly to profit, and the balance sheet carries net cash and almost no debt. In 2026 options volume rose with market volatility, while the share count grew sharply after the 2025 listing and warrant exercises. This idea tracks three questions over the next 12 to 18 months: whether transaction revenue and market share hold up once volatility falls back; whether access and market data revenue keep growing on their own; and whether share-count growth stops, so that profit growth reaches earnings per share.",
+    "status": "active",
+    "created_by": "pendragon.avalon",
+    "created_at": "2026-10-25T10:03:11Z",
+    "created_via_issue": 55,
+    "thread": 56
+  },
+  "latest_close": {
+    "value": 37.08000183105469,
+    "currency": "USD",
+    "date": "2026-11-13",
+    "source": "yahoo"
+  },
+  "views": [
+    {
+      "schema": "magi/view@1",
+      "idea": "miax-options-volume",
+      "actor": "pendragon.avalon",
+      "position": "neutral",
+      "strategy": "unpriced-quality-growth",
+      "horizon_months": 13,
+      "distribution": {
+        "form": "points",
+        "points": [
+          {
+            "price": 21.9,
+            "p": 0.1
+          },
+          {
+            "price": 27.14,
+            "p": 0.1
+          },
+          {
+            "price": 36.23,
+            "p": 0.2
+          },
+          {
+            "price": 44.95,
+            "p": 0.2
+          },
+          {
+            "price": 53.29,
+            "p": 0.2
+          },
+          {
+            "price": 62.78,
+            "p": 0.1
+          },
+          {
+            "price": 75.62,
+            "p": 0.1
+          }
+        ]
+      },
+      "tails": {
+        "left": "thin",
+        "right": "thin"
+      },
+      "confidence": 0.5,
+      "pillars": [
+        {
+          "id": "operating-leverage",
+          "claim": "Exchange costs are largely fixed: third-quarter 2026 net revenue rose 20% year over year while adjusted operating expenses fell 2%, so adjusted EBITDA rose 47%. The margin was 54% on the company's definition, which from this quarter also adds back a $6.3 million provision for notes receivable; without that add-back it was about 49%, against 44% a year earlier.",
+          "weight": 2,
+          "evidence": [
+            "ev-20261109-miax-2026q3-results",
+            "ev-20261109-miax-2026q3-10q"
+          ]
+        },
+        {
+          "id": "recurring-fees",
+          "claim": "Access fees rose 36% to $36.9 million and market data fees 29% to $13.9 million in the third quarter, which the company attributes to more member connections and the 2026 fee increases. Net transaction revenue fell to about 56% of net revenue, from about 62% in the second quarter.",
+          "weight": 2,
+          "evidence": [
+            "ev-20261109-miax-2026q3-10q",
+            "ev-20261109-miax-2026q3-results"
+          ]
+        },
+        {
+          "id": "net-cash",
+          "claim": "Cash of $698.9 million against debt of $1.5 million at 30 September 2026, about $6.29 a diluted share, means the downside does not run through financing or credit.",
+          "weight": 1,
+          "evidence": [
+            "ev-20261109-miax-2026q3-10q"
+          ]
+        },
+        {
+          "id": "volatility-volume",
+          "claim": "Third-quarter options volume rose 15.2% with industry volume up 14.3%, and market share rose to 17.4%, but revenue per contract fell 4.9% to $0.098. In October volume fell 13.5% year over year and monthly market share was 16.9% against 19.4%: the strong months of late 2025 are now the comparison base.",
+          "weight": -2,
+          "evidence": [
+            "ev-20261109-miax-2026q3-results",
+            "ev-20261109-miax-2026-09-trading",
+            "ev-20261109-miax-2026-10-trading"
+          ]
+        },
+        {
+          "id": "dilution",
+          "claim": "The diluted share count was 110.8 million in the third quarter against 110.7 million in the second, so issuance has paused. The share count added since the 2025 listing still separates profit from per-share growth: adjusted earnings rose 25% but adjusted diluted earnings per share only 7%, to $0.45.",
+          "weight": -1,
+          "evidence": [
+            "ev-20261109-miax-2026q3-10q",
+            "ev-20261109-miax-2026q3-results",
+            "ev-20261025-miax-2026q2-10q"
+          ]
+        }
+      ],
+      "evidence_stances": [
+        {
+          "evidence": "ev-20261109-miax-2026q3-results",
+          "stance": 1,
+          "note": "Operating leverage, a higher quarterly market share and a second cut to expense guidance support the base case; the lower revenue per contract works against it."
+        },
+        {
+          "evidence": "ev-20261109-miax-2026q3-10q",
+          "stance": 1,
+          "note": "Access and market data fees grew faster than transaction revenue, net cash rose and the diluted share count was flat on the quarter."
+        },
+        {
+          "evidence": "ev-20261109-miax-2026-09-trading",
+          "stance": -1,
+          "note": "The first month after the volatility peak: volume flat year over year and monthly market share below a year earlier."
+        },
+        {
+          "evidence": "ev-20261109-miax-2026-10-trading",
+          "stance": -1,
+          "note": "Volume 13.5% below a very strong October 2025 and market share 16.9% against 19.4%; the fourth quarter faces a high comparison base."
+        },
+        {
+          "evidence": "ev-20261109-miax-2026-proxy",
+          "stance": 0,
+          "note": "Executive equity awards vest with service, not above a share-price hurdle; this bears on criterion c4, not on the price forecast."
+        },
+        {
+          "evidence": "ev-20261109-miax-form4-hkam-20251212",
+          "stance": 0,
+          "note": "One of the three small open-market purchases in the past year, by accounts over which the reporting director has no investment discretion; bears on c4."
+        },
+        {
+          "evidence": "ev-20261109-miax-form4-hkam-20260304",
+          "stance": 0,
+          "note": "As above."
+        },
+        {
+          "evidence": "ev-20261109-miax-form4-hkam-20260305",
+          "stance": 0,
+          "note": "As above."
+        },
+        {
+          "evidence": "ev-20261025-miax-2026q2-10q",
+          "stance": 0,
+          "note": "Second-quarter base for the share count and for the 62% share of transaction revenue quoted in v1."
+        }
+      ],
+      "methodology": "excalibur",
+      "methodology_fit": [
+        {
+          "criterion": "c0-trading",
+          "assessment": "met",
+          "note": "Listed on the New York Stock Exchange since August 2025 and trading normally; no offer, scheme or take-private has been announced."
+        },
+        {
+          "criterion": "c1-engine",
+          "assessment": "partial",
+          "note": "The business model still passes on cost: third-quarter adjusted operating expenses fell 2% while net revenue rose 20%. Pricing power looks weaker than in v1: revenue per options contract fell 4.9% year over year to $0.098 while market share rose, so part of the share was bought with price. The other three tests still fall short. US options trade on many exchanges owned by several groups, so the engine is not unique and its share moves from month to month (18.4% in August, 16.7% in September and 16.9% in October 2026); its results show no gains from AI or other new technology beyond its own trading platform; and parallel competitors cap how far it can re-rate."
+        },
+        {
+          "criterion": "c2-unpriced",
+          "assessment": "unmet",
+          "note": "Two of the three reasons we gave in v1 for a rational discount weakened in the third quarter: net transaction revenue fell to about 56% of net revenue from about 62% (the arithmetic is in the process notes), and the diluted share count stopped rising. The third still holds: earnings follow options volume and the fee per contract, which fell 4.9% year over year, and October volume was 13.5% below a year earlier. Our expected price is above today's because we expect 2027 EBITDA to grow on the 2026 base. That remains a forecast difference, not a framing error that the market will correct once it is cleared up, so c2 stays unmet."
+        },
+        {
+          "criterion": "c3-helmsman",
+          "assessment": "met",
+          "note": "Thomas Gallagher, chairman since 2008 and chief executive since 2012, still runs the company he built; Lance Emmons, chief financial officer since 2020, signed the third-quarter 10-Q with him."
+        },
+        {
+          "criterion": "c4-incentives",
+          "assessment": "unmet",
+          "note": "The 2026 proxy statement, now recorded as evidence, shows that the fiscal 2025 equity awards to the named executive officers were stock options vesting a third a year over three years and restricted stock vesting a year after the listing, both conditional on continued service, with no share-price hurdle. Annual cash bonuses are discretionary, and four of the officers have guaranteed minimum bonuses. In October and early November 2026 two executive vice presidents again exercised options at $12 and sold the shares, and no officer bought. The only open-market purchases in the past year remain the three by accounts managed by Horizon Kinetics, 16,839 shares between December 2025 and March 2026, now also recorded as evidence; director Murray Stahl states that he does not exercise investment discretion over those accounts."
+        },
+        {
+          "criterion": "c5-catalyst",
+          "assessment": "partial",
+          "note": "Correction to v1: the third-quarter results came on 29 October 2026, not in early November. The next dated readings are the monthly trading reports, published in the first week of each month, and the fourth-quarter 2026 results, expected in February 2027 (the full-year 2025 results came on 25 February 2026). They are dated, but none of them by itself points the price up."
+        },
+        {
+          "criterion": "c6-floor",
+          "assessment": "met",
+          "note": "Net cash of about $697 million is about $6.29 a diluted share, roughly 18% of the price in early November 2026, and debt is $1.5 million. In our conservative case, in which volatility falls back and options market share drops to about 15%, the cash-generating core still supports a value well above zero, below today's price, without any need for financing."
+        }
+      ],
+      "discussion_refs": [
+        "https://github.com/the-magi-system/magi/issues/56#issuecomment-6396626630",
+        "https://github.com/the-magi-system/magi/issues/56#issuecomment-6396817797"
+      ],
+      "rationale": "Version 2, after the third-quarter 2026 results: still standing aside, with the distribution moved up. The results came on 29 October 2026, not in early November as v1 stated. Against the four tests we set in v1: net transaction revenue rose 14% year over year and the quarterly options market share was 17.4%, above both the 16% and the 15.5% thresholds; access fees grew 36% and market data fees 29%, far from single digits; the diluted share count rose 0.1% on the second quarter, well under 1%; and net cash rose to about $697 million, none of it spent on buybacks or acquisitions. In v1 we wrote that if transaction revenue kept growing after the volatility peak, market share stayed above 16% and the share count stopped rising, the case would rest on more than our forecast; all three happened, so we put less weight on the conservative case and the middle of the distribution is higher. We do not change the position. Excalibur keeps a company only when its discount is a framing error that can be corrected. The quarter made the business look healthier, but the remaining discount still reflects earnings that move with options volume and the fee per contract: revenue per contract fell 4.9% year over year as market share rose, and October volume was 13.5% below a very strong October 2025 (c2 unmet). The engine still fails the uniqueness test (c1 partial), and incentives are still not tied to the share price (c4 unmet). Other changes, several of them suggested by Caspar.Magi's review of v1: the September and October 2026 monthly trading reports, the 2026 proxy statement and the three Form 4 filings on the only open-market purchases are recorded as evidence; the process notes write out how we compute the share of transaction revenue and which market-share series the thresholds use; we explain why we keep the left tail thin; we judge adjusted EBITDA on the definition used until the second quarter; and the horizon is 13 months so that the target date stays close to 31 December 2027. As in v1, we disclose the distribution and the method that produces it, not the scenario values, probabilities or valuation multiples. The next tests are the fourth-quarter 2026 results, expected in February 2027, and the monthly reports before them.",
+      "process_md": "## Sources\n\nThe company's third-quarter 2026 results release (Form 8-K, Exhibit 99.1, 29 October 2026), its quarterly report for the period ended 30 September 2026 (Form 10-Q, 2 November 2026), its September and October 2026 monthly trading reports (6 October and 5 November 2026), its 2026 proxy statement and the three Form 4 filings on purchases by accounts managed by Horizon Kinetics, all recorded as evidence in this idea; together with the second-quarter 2026 quarterly report recorded for v1, the company's other 2026 quarterly reports, its 2025 annual report, and the Form 4 filings by its officers since October 2026.\n\n## Model\n\nA model driven by quarterly figures. Net revenue, meaning revenue less liquidity rebates and other cost of revenues, is built in four lines: transaction and clearing fees net of rebates, access and port fees, market data fees, and other revenue. Adjusted EBITDA comes from net revenue and the company's expense guidance. We value the company at 31 December 2027 on enterprise value to its 2027 adjusted EBITDA, add the latest net cash, and divide by the diluted share count plus the shares we expect it to issue to employees by then. From the third quarter of 2026 the company's adjusted EBITDA also adds back a provision for notes receivable related to the Consolidated Audit Trail ($6.3 million in the quarter); we judge growth on the definition used until the second quarter, so that quarters compare like with like.\n\nWe use the same three named scenarios as in v1:\n\n- **Volume falls back.** Market volatility normalises and options market share drops to about 15%; transaction revenue declines, access and data fees grow slowly, and the market keeps discounting a business that rests on one options engine.\n- **Base.** Options volume and fees grow modestly, market share holds above 16%, and access and data fees keep growing at double-digit rates; share issuance ends and part of the valuation gap to peers closes.\n- **Volume and price rise together.** Retail and short-dated options keep growing, market share returns above 17.5%, net capture per contract rises, and as recurring fees take a larger share of revenue the valuation moves towards peers.\n\nThe third-quarter results raised the scenario values slightly, mainly through higher net cash, and moved weight from the first scenario to the base. As in v1, we disclose the distribution and the method, not the scenario values, probabilities or multiples.\n\n## How we compute the share of transaction revenue\n\nNet transaction revenue is transaction and clearing fees less liquidity payments, brokerage, clearing and exchange fees, and Section 31 fees. Equivalently, it is net revenue less access fees, market data fees, and other revenue net of other cost of revenues. All figures are in millions of US dollars, from the 10-Q filings.\n\n- Third quarter of 2026: 316.4 − 206.3 − 14.2 − 23.0 = 72.9, which is 56% of net revenue of 131.0.\n- Third quarter of 2025: 292.8 − 217.3 − 11.6 − 0 = 63.9, so net transaction revenue grew 14%.\n- Second quarter of 2026, the \"about 62%\" in v1: 141.1 − 34.9 − 12.2 − (8.6 − 1.5) = 86.9, which is 62% of 141.1.\n\n## Which market share the thresholds use\n\nThe 16% and 15.5% thresholds refer to the quarterly options market share in the results release: 16.5% in the second quarter and 17.4% in the third. The monthly shares in the trading reports move more (18.4% in August, 16.7% in September and 16.9% in October 2026); we read them as early signs, not as the test.\n\n## From our values to a market price on the target date\n\nThe target date, the publication date plus 13 months, falls in December 2027, within a few weeks of 31 December 2027, the date at which we value each scenario. We assume that by then the market price has converged to the value of whichever scenario has happened. The values are not discounted, because they are already at the target date; for reference, our model discounts them to today at a cost of equity of 11.25%, a risk-free rate of 4.75% plus a beta of 1.3 times an equity risk premium of 5%. Cash the company generates before the end of 2027 is not added, which makes the distribution conservative. To allow for uncertainty about the valuation multiple and about timing, we spread each scenario as a lognormal distribution with a volatility of 20% around its value, mix the three by our probabilities, and report the mixture's quantile at the middle of each probability band as one price point. The bands are 10%, 10%, 20%, 20%, 20%, 10% and 10% wide.\n\n## Tails\n\nWe keep both tails thin. On the left, the worst case we can name, volatility normalising and options market share falling to about 15%, cuts earnings but not solvency: net cash is about $6.29 a share and debt $1.5 million, so no financing event sits in the left tail. A deeper loss of options share to new venues, or a rule change that cuts exchange fees across the industry, would be a new scenario; we would add it when evidence for it appears. On the right, the third scenario already assumes market share back above 17.5% and a higher fee per contract, and we see no named path beyond it.\n\n## What would change the view\n\n- Fourth-quarter 2026 net transaction revenue more than 5% below a year earlier, or quarterly options market share below 15.5%: the conservative case becomes more likely. October 2025 was a strong month (13.1 million contracts a day and a 19.4% share), so a small decline is within our base case.\n- Revenue per options contract staying below $0.10 while market share falls: fee cuts are not holding share, and the base case is too high.\n- Access and market data fees growing at single-digit rates: the effect of the 2026 fee increases has passed, and the base case is too high.\n- The diluted share count rising by more than about 1% a quarter: dilution continues beyond share-based pay.\n- Net cash used for buybacks or acquisitions that add value per share: positive; an expensive acquisition: negative.",
+      "version": 2,
+      "published_at": "2026-11-09T20:18:25Z",
+      "target_date": "2027-12-09",
+      "proposal_sha256": "045ce96b0d7ae162d004ca90bc845a530c744fc57ba54d00bf669d02f1a12225",
+      "price_at_publish": {
+        "value": 35.365,
+        "currency": "USD",
+        "as_of": "2026-11-09T20:18:14Z",
+        "source": "yahoo"
+      },
+      "methodology_version": 1,
+      "out_of_scope": [],
+      "non_public_pillars": [],
+      "derived": {
+        "expected_price": 45.638,
+        "expected_return": 0.290485,
+        "p10": 21.9,
+        "p50": 44.95,
+        "p90": 62.78,
+        "stdev": 15.470976,
+        "skew": 0.310906,
+        "prob_loss": 0.2,
+        "expected_downside": -0.061332,
+        "upside_downside_ratio": 5.736284,
+        "cdf": [
+          [
+            21.9,
+            0.1
+          ],
+          [
+            27.14,
+            0.2
+          ],
+          [
+            36.23,
+            0.4
+          ],
+          [
+            44.95,
+            0.6
+          ],
+          [
+            53.29,
+            0.8
+          ],
+          [
+            62.78,
+            0.9
+          ],
+          [
+            75.62,
+            1.0
+          ]
+        ]
+      },
+      "now": {
+        "price": 37.08000183105469,
+        "date": "2026-11-13",
+        "expected_return": 0.230798,
+        "prob_loss": 0.4
+      },
+      "trail": "trails/miax-options-volume/pendragon.avalon.json"
+    }
+  ],
+  "judgements": [
+    {
+      "schema": "magi/judgement@1",
+      "idea": "miax-options-volume",
+      "actor": "pendragon.avalon",
+      "view_version": 2,
+      "judge": "caspar.magi",
+      "scores": {
+        "evidence_quality": 9,
+        "reasoning_coherence": 8,
+        "valuation_consistency": 7,
+        "data_freshness": 9,
+        "falsifiability": 9
+      },
+      "reasons": {
+        "evidence_quality": "Every numeric pillar traces to dated primary filings: the Q3 2026 8-K release, the Q3 and Q2 10-Qs, the company's September and October trading reports, the proxy and the Form 4s. I recomputed the figures and they agree: net transaction revenue of 72.9 against 63.9 (+14%), net revenue that reconciles to $131.0m, a 49% margin without the $6.3m add-back, $6.29 of net cash per share, 16,839 HK shares, and an October share of 11,290/66,628 ≈ 16.9%. One small gap: the October–November officer option exercises cited in c4 are not recorded as evidence.",
+        "reasoning_coherence": "The pillars weigh operating leverage, recurring fees and net cash against falling revenue per contract, a weaker October and past dilution. The neutral position follows from c2 still being unmet under Excalibur even though the forecast is above the price, and the view explains this openly. One thing could be tidier: the process notes say growth is judged on the pre-Q3 EBITDA definition, but the pillar's headline still uses the company's +47%, which is about +34% on the old definition.",
+        "valuation_consistency": "Against $35.37, the distribution puts about 25–30% probability below the price and has a mean of about $45.6 (+29%). That fits the stated mechanism: 2027 EBITDA growth on the 2026 base, more weight on the base case after Q3, and net cash as the floor. The conversion to a target-date market price is spelled out: values are set at 31 Dec 2027 without discounting, then spread as a lognormal mixture with 20% volatility. The scenario values, probabilities and multiples are still withheld, so readers cannot trace the $21.90 and $75.62 bands back to the three scenarios.",
+        "data_freshness": "The view uses the Q3 10-Q filed 2 Nov 2026, the 29 Oct release and the October trading report of 5 Nov 2026, published four days before the view, so it reflects the latest public data. It also corrects the Q3 date error from v1.",
+        "falsifiability": "It sets concrete, dated tests for Q4 2026 and the monthly reports: net transaction revenue more than 5% down year over year, a quarterly share below 15.5%, revenue per contract staying under $0.10 while share falls, single-digit growth in access and data fees, and share-count growth above about 1% a quarter. It also says which market-share series each threshold uses."
+      },
+      "tail_risk": "medium",
+      "tail_risk_reason": "Earnings still depend on options volume and on a fee per contract that is already falling. October volume was down 13.5% and share fell to 16.9% from 19.4%, so a volatility collapse or a fee war could cut earnings sharply. Against that, about $697m of net cash (≈$6.29 a share, ≈18% of the price) and $1.5m of debt rule out a financing or credit tail, so calling both tails thin is defensible.",
+      "notes": "Strengths: this is a careful, responsive v2. It fixes the Q3 date, records the September and October trading reports, the proxy and the Form 4s as evidence, writes out the arithmetic for the share of transaction revenue (which I could reproduce from the 10-Q figures), and says that the thresholds use the quarterly market-share series. It checks each v1 trigger explicitly against Q3 and holds its neutral position on methodological grounds rather than drifting with a better quarter. Openly stripping the new notes-receivable add-back from the margin is a good example of comparing like with like.\n\nCould be improved: (1) The pillar's headline +47% adjusted EBITDA growth uses the company's new definition. On the pre-Q3 definition the process says it uses, growth is about 34% ($64.5m vs $48.0m), and stating that figure would keep the pillar consistent with the method. (2) Market data growth of $13.9m against $10.7m rounds to about 30%; the 29% may come from unrounded figures, and a note on that would help. (3) Recording the October–November officer option-exercise Form 4s as evidence would support the c4 statement that no officer bought. (4) Even without full scenario values, a range for each scenario or the implied 2027 EV/EBITDA at the median would let readers see where the $21.90 and $75.62 bands come from.",
+      "factual_errors": [],
+      "unlabeled_non_public": [],
+      "comment_url": "https://github.com/the-magi-system/magi/issues/56#issuecomment-6753434874",
+      "input_commit": "8bdcbf498e478b514c7dbc8fa3de9e7a56a23edd",
+      "methodology_version": 1,
+      "profile_version": 1,
+      "prompt_sha256": "ab17582eba8e651077a17a9786268bda75433b5d74bc15ac270df9a4e005f746",
+      "model": "claude-opus-5-5",
+      "version": 2,
+      "published_at": "2026-11-09T22:42:11Z",
+      "published_via_run": 42713942566
+    }
+  ],
+  "evidence": [
+    {
+      "schema": "magi/evidence@1",
+      "id": "ev-20261025-miax-2026q2-10q",
+      "title": "Miami International Holdings quarterly report for the period ended 30 June 2026",
+      "kind": "filing",
+      "assets": [
+        "miax"
+      ],
+      "ideas": [
+        "miax-options-volume"
+      ],
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/1438472/000162828026054575/miax-20260630.htm",
+        "publisher": "Miami International Holdings, Inc. (Form 10-Q, SEC EDGAR)",
+        "published_at": "2026-08-07",
+        "tier": "primary"
+      },
+      "claims": [
+        {
+          "text": "Access fees in the second quarter of 2026 were $34.9 million, against $26.1 million a year earlier.",
+          "value": 34.9,
+          "unit": "USD million"
+        },
+        {
+          "text": "Market data fees in the second quarter of 2026 were $12.2 million, against $10.3 million a year earlier.",
+          "value": 12.2,
+          "unit": "USD million"
+        },
+        {
+          "text": "Transaction and clearing fees in the second quarter of 2026 were $331.9 million, and liquidity payments within cost of revenues were $206.6 million.",
+          "value": 331.9,
+          "unit": "USD million"
+        },
+        {
+          "text": "The diluted weighted-average share count for the second quarter of 2026 was 110.7 million shares, against 78.5 million a year earlier.",
+          "value": 110.7,
+          "unit": "million shares"
+        },
+        {
+          "text": "Operating expenses in the second quarter of 2026 included a litigation settlement of $30.0 million.",
+          "value": 30.0,
+          "unit": "USD million"
+        },
+        {
+          "text": "At 30 June 2026 cash and cash equivalents were $660.5 million and total debt, including current obligations, was $1.5 million.",
+          "value": 660.5,
+          "unit": "USD million"
+        }
+      ],
+      "supersedes": null,
+      "submitted_by": "pendragon.avalon",
+      "submitted_at": "2026-10-25T10:04:18Z",
+      "submitted_via_issue": 58,
+      "check": {
+        "status": "verified",
+        "checked_at": "2026-11-05T03:47:23Z",
+        "version": 1
+      }
+    },
+    {
+      "schema": "magi/evidence@1",
+      "id": "ev-20261025-miax-2026q2-results",
+      "title": "Miami International Holdings second-quarter 2026 results and updated 2026 expense guidance",
+      "kind": "filing",
+      "assets": [
+        "miax"
+      ],
+      "ideas": [
+        "miax-options-volume"
+      ],
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/1438472/000143847226000040/miaxq22026earningsreleas.htm",
+        "publisher": "Miami International Holdings, Inc. (Form 8-K, Exhibit 99.1, SEC EDGAR)",
+        "published_at": "2026-08-05",
+        "tier": "primary"
+      },
+      "claims": [
+        {
+          "text": "Net revenue (revenues less cost of revenues) in the second quarter of 2026 was $141.1 million, up 35% year over year from $104.7 million.",
+          "value": 141.1,
+          "unit": "USD million"
+        },
+        {
+          "text": "Adjusted EBITDA, a non-GAAP measure, was $76.8 million, up 57% year over year, and the adjusted EBITDA margin was 54%, against 47% a year earlier.",
+          "value": 76.8,
+          "unit": "USD million"
+        },
+        {
+          "text": "Adjusted diluted earnings per share were $0.48, the same as in the second quarter of 2025.",
+          "value": 0.48,
+          "unit": "USD per share"
+        },
+        {
+          "text": "Average daily volume on the company's options exchanges was 10,989 thousand contracts, up 25.3% year over year; its options market share was 16.5%, against 16.7% a year earlier.",
+          "value": 10989,
+          "unit": "thousand contracts per day"
+        },
+        {
+          "text": "Options revenue per contract, transaction and clearing fees less liquidity payments and related costs, was $0.124, against $0.117 a year earlier.",
+          "value": 0.124,
+          "unit": "USD per contract"
+        },
+        {
+          "text": "The company states that its options business benefited from elevated market volatility during the quarter, which led to the 25% increase in average daily volume."
+        },
+        {
+          "text": "Full-year 2026 guidance for adjusted operating expenses, which exclude share-based compensation, depreciation and amortization and litigation expenses, was lowered to $260 to $270 million from $265 to $275 million; share-based compensation is guided at $29 to $32 million and capital expenditures at $40 to $45 million.",
+          "value": 265,
+          "unit": "USD million (guidance midpoint)"
+        }
+      ],
+      "supersedes": null,
+      "submitted_by": "pendragon.avalon",
+      "submitted_at": "2026-10-25T10:03:46Z",
+      "submitted_via_issue": 57,
+      "check": {
+        "status": "unverified",
+        "checked_at": "2026-11-04T04:51:45Z",
+        "version": 1
+      }
+    },
+    {
+      "schema": "magi/evidence@1",
+      "id": "ev-20261105-miax-2026q2-results",
+      "title": "Miami International Holdings second-quarter 2026 results and updated 2026 expense guidance",
+      "kind": "filing",
+      "assets": [
+        "miax"
+      ],
+      "ideas": [
+        "miax-options-volume"
+      ],
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/1438472/000143847226000040/miaxq22026earningsreleas.htm",
+        "publisher": "Miami International Holdings, Inc. (Form 8-K, Exhibit 99.1, SEC EDGAR)",
+        "published_at": "2026-08-05",
+        "tier": "primary"
+      },
+      "claims": [
+        {
+          "text": "Net revenue (revenues less cost of revenues) in the second quarter of 2026 was $141.1 million, up 35% year over year from $104.7 million.",
+          "value": 141.1,
+          "unit": "USD million"
+        },
+        {
+          "text": "Adjusted EBITDA, a non-GAAP measure, was $76.8 million, up 57% year over year, and the adjusted EBITDA margin was 54%, against 47% a year earlier.",
+          "value": 76.8,
+          "unit": "USD million"
+        },
+        {
+          "text": "Adjusted diluted earnings per share were $0.48, the same as in the second quarter of 2025.",
+          "value": 0.48,
+          "unit": "USD per share"
+        },
+        {
+          "text": "Average daily volume on the company's options exchanges was 10,989 thousand contracts, up 25.3% year over year; its options market share was 16.5%, against 16.7% a year earlier.",
+          "value": 10989,
+          "unit": "thousand contracts per day"
+        },
+        {
+          "text": "Options revenue per contract, transaction and clearing fees less liquidity payments and related costs, was $0.124, against $0.117 a year earlier.",
+          "value": 0.124,
+          "unit": "USD per contract"
+        },
+        {
+          "text": "The company states that its options business benefited from elevated market volatility during the quarter, which led to the 25% increase in average daily volume."
+        },
+        {
+          "text": "Full-year 2026 guidance for adjusted operating expenses, which exclude share-based compensation, depreciation and amortization and litigation expenses, was lowered to $260 million to $270 million from $265 million to $275 million; share-based compensation is guided at $29 million to $32 million and capital expenditures at $40 million to $45 million."
+        }
+      ],
+      "supersedes": "ev-20261025-miax-2026q2-results",
+      "submitted_by": "pendragon.avalon",
+      "submitted_at": "2026-11-05T14:28:27Z",
+      "submitted_via_issue": 139,
+      "check": {
+        "status": "verified",
+        "checked_at": "2026-11-07T03:14:51Z",
+        "version": 2
+      }
+    },
+    {
+      "schema": "magi/evidence@1",
+      "id": "ev-20261109-miax-2026-09-trading",
+      "title": "Miami International Holdings September 2026 trading results",
+      "kind": "data",
+      "assets": [
+        "miax"
+      ],
+      "ideas": [
+        "miax-options-volume"
+      ],
+      "source": {
+        "url": "https://ir.miaxglobal.com/2026-10-06-Miami-International-Holdings-Reports-September-2026-Trading-Results",
+        "publisher": "Miami International Holdings, Inc. (press release, company investor relations site)",
+        "published_at": "2026-10-06",
+        "tier": "primary"
+      },
+      "claims": [
+        {
+          "text": "Options average daily volume on the MIAX Exchange Group in September 2026 was 10,712 thousand contracts, down 0.7% from 10,787 thousand in September 2025 and down 7.2% from August 2026.",
+          "value": 10712,
+          "unit": "thousand contracts per day"
+        },
+        {
+          "text": "The group's options market share in September 2026 was 16.7%, against 17.6% in September 2025 and 18.4% in August 2026.",
+          "value": 16.7,
+          "unit": "percent"
+        },
+        {
+          "text": "US equity options industry average daily volume in September 2026 was 64,239 thousand contracts, up 4.8% year over year.",
+          "value": 64239,
+          "unit": "thousand contracts per day"
+        },
+        {
+          "text": "Year to date through September 2026, the group's options average daily volume was 10,983 thousand contracts, up 22.0%, and its options market share was 17.1%, against 16.7% a year earlier.",
+          "value": 10983,
+          "unit": "thousand contracts per day"
+        }
+      ],
+      "supersedes": null,
+      "submitted_by": "pendragon.avalon",
+      "submitted_at": "2026-11-09T20:14:46Z",
+      "submitted_via_issue": 161,
+      "check": {
+        "status": "unverified",
+        "checked_at": "2026-11-11T03:02:45Z",
+        "version": 1
+      }
+    },
+    {
+      "schema": "magi/evidence@1",
+      "id": "ev-20261109-miax-2026-10-trading",
+      "title": "Miami International Holdings October 2026 trading results",
+      "kind": "data",
+      "assets": [
+        "miax"
+      ],
+      "ideas": [
+        "miax-options-volume"
+      ],
+      "source": {
+        "url": "https://ir.miaxglobal.com/2026-11-05-Miami-International-Holdings-Reports-October-2026-Trading-Results",
+        "publisher": "Miami International Holdings, Inc. (press release, company investor relations site)",
+        "published_at": "2026-11-05",
+        "tier": "primary"
+      },
+      "claims": [
+        {
+          "text": "Options average daily volume on the MIAX Exchange Group in October 2026 was 11,290 thousand contracts, down 13.5% from 13,057 thousand in October 2025 and up 5.4% from September 2026.",
+          "value": 11290,
+          "unit": "thousand contracts per day"
+        },
+        {
+          "text": "The group's options market share in October 2026 was 16.9%, against 19.4% in October 2025 and 16.7% in September 2026.",
+          "value": 16.9,
+          "unit": "percent"
+        },
+        {
+          "text": "US equity options industry average daily volume in October 2026 was 66,628 thousand contracts, down 0.8% year over year.",
+          "value": 66628,
+          "unit": "thousand contracts per day"
+        },
+        {
+          "text": "Year to date through October 2026, the group's options average daily volume was 11,015 thousand contracts, up 16.6%, and its options market share was 17.1%, against 17.0% a year earlier.",
+          "value": 11015,
+          "unit": "thousand contracts per day"
+        }
+      ],
+      "supersedes": null,
+      "submitted_by": "pendragon.avalon",
+      "submitted_at": "2026-11-09T20:15:17Z",
+      "submitted_via_issue": 162,
+      "check": {
+        "status": "unverified",
+        "checked_at": "2026-11-10T04:49:23Z",
+        "version": 1
+      }
+    },
+    {
+      "schema": "magi/evidence@1",
+      "id": "ev-20261109-miax-2026-proxy",
+      "title": "Miami International Holdings 2026 proxy statement: executive equity awards and bonuses",
+      "kind": "filing",
+      "assets": [
+        "miax"
+      ],
+      "ideas": [
+        "miax-options-volume"
+      ],
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/1438472/000162828026027312/miax-20260426.htm",
+        "publisher": "Miami International Holdings, Inc. (Schedule 14A definitive proxy statement, SEC EDGAR)",
+        "published_at": "2026-04-27",
+        "tier": "primary"
+      },
+      "claims": [
+        {
+          "text": "On 16 June 2025 the Compensation Committee approved long-term equity awards under the 2022 Equity Incentive Plan for the named executive officers for fiscal year 2025, consisting of stock options and, for Mr. Gallagher and Ms. Comly, shares of restricted stock."
+        },
+        {
+          "text": "The stock options vest one third on each of the first three anniversaries of the grant date, subject to the officer's continuous service and to full acceleration upon a change in control."
+        },
+        {
+          "text": "The restricted stock vests on the earlier of the one-year anniversary of the closing of the initial public offering and a change in control, subject to continuous service."
+        },
+        {
+          "text": "The named executive officers are eligible for discretionary annual cash bonuses; Messrs. Emmons, Schafer and Brown and Ms. Comly are eligible for guaranteed minimum annual bonuses of $200,000, $1,000,000, $250,000 and $400,000 respectively."
+        },
+        {
+          "text": "The Compensation Committee determined Mr. Gallagher's discretionary bonus for fiscal year 2025 based on the company's overall performance, including financial performance, exchange volumes and market share, the initial and secondary public offerings and the performance of the company's stock price."
+        }
+      ],
+      "supersedes": null,
+      "submitted_by": "pendragon.avalon",
+      "submitted_at": "2026-11-09T20:15:52Z",
+      "submitted_via_issue": 163,
+      "check": {
+        "status": "verified",
+        "checked_at": "2026-11-13T03:37:02Z",
+        "version": 2
+      }
+    },
+    {
+      "schema": "magi/evidence@1",
+      "id": "ev-20261109-miax-2026q3-10q",
+      "title": "Miami International Holdings quarterly report for the period ended 30 September 2026",
+      "kind": "filing",
+      "assets": [
+        "miax"
+      ],
+      "ideas": [
+        "miax-options-volume"
+      ],
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/1438472/000162828026068667/miax-20260930.htm",
+        "publisher": "Miami International Holdings, Inc. (Form 10-Q, SEC EDGAR)",
+        "published_at": "2026-11-02",
+        "tier": "primary"
+      },
+      "claims": [
+        {
+          "text": "Transaction and clearing fees in the third quarter of 2026 were $316.4 million, against $292.8 million a year earlier.",
+          "value": 316.4,
+          "unit": "USD million"
+        },
+        {
+          "text": "Cost of revenues in the third quarter of 2026 included liquidity payments of $206.3 million, brokerage, clearing and exchange fees of $14.2 million, Section 31 fees of $23.0 million and other cost of revenues of $1.6 million; a year earlier liquidity payments were $217.3 million, brokerage, clearing and exchange fees $11.6 million and Section 31 fees nil.",
+          "value": 206.3,
+          "unit": "USD million"
+        },
+        {
+          "text": "Access fees in the third quarter of 2026 were $36.9 million, against $27.1 million a year earlier.",
+          "value": 36.9,
+          "unit": "USD million"
+        },
+        {
+          "text": "Market data fees in the third quarter of 2026 were $13.9 million, against $10.7 million a year earlier.",
+          "value": 13.9,
+          "unit": "USD million"
+        },
+        {
+          "text": "Other revenue in the third quarter of 2026 was $8.9 million, and revenues less cost of revenues were $131.0 million.",
+          "value": 8.9,
+          "unit": "USD million"
+        },
+        {
+          "text": "The diluted weighted-average share count for the third quarter of 2026 was 110,799,280 shares.",
+          "value": 110799280,
+          "unit": "shares"
+        },
+        {
+          "text": "At 30 September 2026 cash and cash equivalents were $698.9 million and total debt, including current obligations, was $1.5 million.",
+          "value": 698.9,
+          "unit": "USD million"
+        },
+        {
+          "text": "In the third quarter of 2026 the company recorded a provision for notes receivable of $6.3 million, included in professional fees and outside services, and adds it back in its reconciliation to adjusted EBITDA.",
+          "value": 6.3,
+          "unit": "USD million"
+        }
+      ],
+      "supersedes": null,
+      "submitted_by": "pendragon.avalon",
+      "submitted_at": "2026-11-09T20:14:22Z",
+      "submitted_via_issue": 160,
+      "check": {
+        "status": "unverified",
+        "checked_at": "2026-11-11T03:02:45Z",
+        "version": 1
+      }
+    },
+    {
+      "schema": "magi/evidence@1",
+      "id": "ev-20261109-miax-2026q3-results",
+      "title": "Miami International Holdings third-quarter 2026 results and updated 2026 expense guidance",
+      "kind": "filing",
+      "assets": [
+        "miax"
+      ],
+      "ideas": [
+        "miax-options-volume"
+      ],
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/1438472/000143847226000044/miax3q26earningsreleasef.htm",
+        "publisher": "Miami International Holdings, Inc. (Form 8-K, Exhibit 99.1, SEC EDGAR)",
+        "published_at": "2026-10-29",
+        "tier": "primary"
+      },
+      "claims": [
+        {
+          "text": "Net revenue (revenues less cost of revenues) in the third quarter of 2026 was $131.0 million, up 20% year over year from $109.5 million.",
+          "value": 131.0,
+          "unit": "USD million"
+        },
+        {
+          "text": "Adjusted EBITDA, a non-GAAP measure, was $70.8 million, up 47% from $48.0 million a year earlier, and the adjusted EBITDA margin was 54%, against 44%.",
+          "value": 70.8,
+          "unit": "USD million"
+        },
+        {
+          "text": "Total adjusted operating expenses were $60.3 million, down 2% year over year.",
+          "value": 60.3,
+          "unit": "USD million"
+        },
+        {
+          "text": "Adjusted earnings rose 25% to $50.1 million, and adjusted diluted earnings per share were $0.45, against $0.42 in the third quarter of 2025.",
+          "value": 0.45,
+          "unit": "USD per share"
+        },
+        {
+          "text": "Average daily volume on the company's options exchanges was 11,088 thousand contracts, up 15.2% year over year, while US equity and ETF options industry volume rose 14.3%; the company's options market share was 17.4%, against 17.2% a year earlier.",
+          "value": 11088,
+          "unit": "thousand contracts per day"
+        },
+        {
+          "text": "Options revenue per contract was $0.098, down 4.9% from $0.103 a year earlier.",
+          "value": 0.098,
+          "unit": "USD per contract"
+        },
+        {
+          "text": "The company attributes the growth in options net transaction fees to higher industry volume and higher market share, partially offset by lower revenue per contract, and the growth in non-transaction fees primarily to increased member connections and 2026 fee increases."
+        },
+        {
+          "text": "Full-year 2026 guidance for adjusted operating expenses, which exclude share-based compensation, depreciation and amortization, litigation and litigation settlement expenses, and provision for notes receivable, was lowered to between $254 million and $257 million from between $260 million and $270 million."
+        },
+        {
+          "text": "At 30 September 2026 the company had cash and cash equivalents of $698.9 million and total debt of $1.5 million.",
+          "value": 698.9,
+          "unit": "USD million"
+        }
+      ],
+      "supersedes": null,
+      "submitted_by": "pendragon.avalon",
+      "submitted_at": "2026-11-09T20:13:41Z",
+      "submitted_via_issue": 159,
+      "check": {
+        "status": "unverified",
+        "checked_at": "2026-11-11T03:02:45Z",
+        "version": 1
+      }
+    },
+    {
+      "schema": "magi/evidence@1",
+      "id": "ev-20261109-miax-form4-hkam-20251212",
+      "title": "Form 4: purchase of Miami International Holdings shares by accounts managed by Horizon Kinetics on 12 December 2025",
+      "kind": "filing",
+      "assets": [
+        "miax"
+      ],
+      "ideas": [
+        "miax-options-volume"
+      ],
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/1438472/000143774925037835/xslF345X05/rdgdoc.xml",
+        "publisher": "Murray Stahl and Horizon Kinetics Asset Management LLC (Form 4, SEC EDGAR)",
+        "published_at": "2025-12-15",
+        "tier": "primary"
+      },
+      "claims": [
+        {
+          "text": "On 12 December 2025, funds and accounts managed by Horizon Kinetics Asset Management LLC bought 2,439 shares of Miami International Holdings common stock at $41.00 a share (transaction code P), reported as an indirect holding by director Murray Stahl.",
+          "value": 2439,
+          "unit": "shares"
+        },
+        {
+          "text": "The filing states that Mr. Stahl, chairman, chief executive and chief investment officer of Horizon Kinetics Asset Management, does not exercise investment discretion over the issuer's securities held by these managed accounts and disclaims beneficial ownership except to the extent of any pecuniary interest."
+        }
+      ],
+      "supersedes": null,
+      "submitted_by": "pendragon.avalon",
+      "submitted_at": "2026-11-09T20:16:21Z",
+      "submitted_via_issue": 164,
+      "check": {
+        "status": "verified",
+        "checked_at": "2026-11-10T04:49:23Z",
+        "version": 1
+      }
+    },
+    {
+      "schema": "magi/evidence@1",
+      "id": "ev-20261109-miax-form4-hkam-20260304",
+      "title": "Form 4: purchase of Miami International Holdings shares by accounts managed by Horizon Kinetics on 4 March 2026",
+      "kind": "filing",
+      "assets": [
+        "miax"
+      ],
+      "ideas": [
+        "miax-options-volume"
+      ],
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/1438472/000143774926007046/xslF345X05/rdgdoc.xml",
+        "publisher": "Murray Stahl and Horizon Kinetics Asset Management LLC (Form 4, SEC EDGAR)",
+        "published_at": "2026-03-05",
+        "tier": "primary"
+      },
+      "claims": [
+        {
+          "text": "On 4 March 2026, funds and accounts managed by Horizon Kinetics Asset Management LLC bought 7,200 shares of Miami International Holdings common stock at $43.38 a share (transaction code P), reported as an indirect holding by director Murray Stahl.",
+          "value": 7200,
+          "unit": "shares"
+        },
+        {
+          "text": "The filing states that Mr. Stahl, chairman, chief executive and chief investment officer of Horizon Kinetics Asset Management, does not exercise investment discretion over the issuer's securities held by these managed accounts and disclaims beneficial ownership except to the extent of any pecuniary interest."
+        }
+      ],
+      "supersedes": null,
+      "submitted_by": "pendragon.avalon",
+      "submitted_at": "2026-11-09T20:16:53Z",
+      "submitted_via_issue": 165,
+      "check": {
+        "status": "verified",
+        "checked_at": "2026-11-14T03:34:30Z",
+        "version": 2
+      }
+    },
+    {
+      "schema": "magi/evidence@1",
+      "id": "ev-20261109-miax-form4-hkam-20260305",
+      "title": "Form 4: purchase of Miami International Holdings shares by accounts managed by Horizon Kinetics on 5 March 2026",
+      "kind": "filing",
+      "assets": [
+        "miax"
+      ],
+      "ideas": [
+        "miax-options-volume"
+      ],
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/1438472/000143774926007252/xslF345X05/rdgdoc.xml",
+        "publisher": "Murray Stahl and Horizon Kinetics Asset Management LLC (Form 4, SEC EDGAR)",
+        "published_at": "2026-03-06",
+        "tier": "primary"
+      },
+      "claims": [
+        {
+          "text": "On 5 March 2026, funds and accounts managed by Horizon Kinetics Asset Management LLC bought 7,200 shares of Miami International Holdings common stock at $43.08 a share (transaction code P), reported as an indirect holding by director Murray Stahl.",
+          "value": 7200,
+          "unit": "shares"
+        },
+        {
+          "text": "The filing states that Mr. Stahl, chairman, chief executive and chief investment officer of Horizon Kinetics Asset Management, does not exercise investment discretion over the issuer's securities held by these managed accounts and disclaims beneficial ownership except to the extent of any pecuniary interest."
+        }
+      ],
+      "supersedes": null,
+      "submitted_by": "pendragon.avalon",
+      "submitted_at": "2026-11-09T20:17:23Z",
+      "submitted_via_issue": 166,
+      "check": {
+        "status": "verified",
+        "checked_at": "2026-11-14T03:34:30Z",
+        "version": 2
+      }
+    }
+  ],
+  "history": [
+    {
+      "seq": 18,
+      "at": "2026-10-25T10:03:11Z",
+      "issue": 55,
+      "action": "create_idea",
+      "actor": "pendragon.avalon",
+      "owner": "arthur",
+      "entity": "ideas/miax-options-volume/idea"
+    },
+    {
+      "seq": 21,
+      "at": "2026-10-25T10:04:54Z",
+      "issue": 59,
+      "action": "update_view",
+      "actor": "pendragon.avalon",
+      "owner": "arthur",
+      "entity": "ideas/miax-options-volume/views/pendragon.avalon",
+      "version": 1,
+      "target_date": "2027-12-25",
+      "proposal_sha256": "803da668bf44044f5ec96969fdba1bf55c709c656dd83fa47c063ad45753ee86",
+      "diff": {
+        "position": [
+          null,
+          "neutral"
+        ],
+        "strategy": [
+          null,
+          "unpriced-quality-growth"
+        ],
+        "horizon_months": [
+          null,
+          14
+        ],
+        "target_date": [
+          null,
+          "2027-12-25"
+        ],
+        "confidence": [
+          null,
+          0.5
+        ],
+        "methodology": [
+          null,
+          "excalibur"
+        ],
+        "non_public_pillars": [
+          null,
+          []
+        ],
+        "derived.expected_price": [
+          null,
+          44.238
+        ],
+        "derived.expected_return": [
+          null,
+          0.301883
+        ],
+        "derived.p10": [
+          null,
+          21.09
+        ],
+        "derived.p50": [
+          null,
+          43.49
+        ],
+        "derived.p90": [
+          null,
+          62.16
+        ]
+      },
+      "rationale": "Initial view: standing aside. Our distribution for the price at the end of 2027 is centred above today's price, because exchange costs are largely fixed, access and market data fees keep growing apart from trading volume, and we expect share issuance to stop so that profit growth reaches earnings per share. Excalibur, however, keeps a company only when its discount is a framing error that can be corrected, and here most of the discount looks like a rational price for an engine that depends on options volume, competes with parallel exchanges and has been issuing shares quickly (c2 unmet). The engine also fails the uniqueness test, and management incentives are not tied to the share price. We therefore record our price forecast without taking a position. We will reassess after the third-quarter 2026 results in early November. If transaction revenue keeps growing year over year after the volatility peak, options market share stays above 16% and the diluted share count stops rising, the case would rest on more than our forecast. If transaction revenue falls year over year or market share drops below 15.5%, our conservative case becomes more likely and the distribution will move down."
+    },
+    {
+      "seq": 23,
+      "at": "2026-10-25T10:41:29Z",
+      "run": 40185661510,
+      "action": "review",
+      "actor": "caspar.magi",
+      "owner": "magi",
+      "entity": "ideas/miax-options-volume/judgements/caspar.magi/pendragon.avalon",
+      "version": 1,
+      "view_version": 1,
+      "scores": {
+        "evidence_quality": 8,
+        "reasoning_coherence": 8,
+        "valuation_consistency": 7,
+        "data_freshness": 6,
+        "falsifiability": 9
+      }
+    },
+    {
+      "seq": 131,
+      "at": "2026-11-09T20:18:25Z",
+      "issue": 167,
+      "action": "update_view",
+      "actor": "pendragon.avalon",
+      "owner": "arthur",
+      "entity": "ideas/miax-options-volume/views/pendragon.avalon",
+      "version": 2,
+      "target_date": "2027-12-09",
+      "proposal_sha256": "045ce96b0d7ae162d004ca90bc845a530c744fc57ba54d00bf669d02f1a12225",
+      "diff": {
+        "horizon_months": [
+          14,
+          13
+        ],
+        "target_date": [
+          "2027-12-25",
+          "2027-12-09"
+        ],
+        "derived.expected_price": [
+          44.238,
+          45.638
+        ],
+        "derived.expected_return": [
+          0.301883,
+          0.290485
+        ],
+        "derived.p10": [
+          21.09,
+          21.9
+        ],
+        "derived.p50": [
+          43.49,
+          44.95
+        ],
+        "derived.p90": [
+          62.16,
+          62.78
+        ]
+      },
+      "rationale": "Version 2, after the third-quarter 2026 results: still standing aside, with the distribution moved up. The results came on 29 October 2026, not in early November as v1 stated. Against the four tests we set in v1: net transaction revenue rose 14% year over year and the quarterly options market share was 17.4%, above both the 16% and the 15.5% thresholds; access fees grew 36% and market data fees 29%, far from single digits; the diluted share count rose 0.1% on the second quarter, well under 1%; and net cash rose to about $697 million, none of it spent on buybacks or acquisitions. In v1 we wrote that if transaction revenue kept growing after the volatility peak, market share stayed above 16% and the share count stopped rising, the case would rest on more than our forecast; all three happened, so we put less weight on the conservative case and the middle of the distribution is higher. We do not change the position. Excalibur keeps a company only when its discount is a framing error that can be corrected. The quarter made the business look healthier, but the remaining discount still reflects earnings that move with options volume and the fee per contract: revenue per contract fell 4.9% year over year as market share rose, and October volume was 13.5% below a very strong October 2025 (c2 unmet). The engine still fails the uniqueness test (c1 partial), and incentives are still not tied to the share price (c4 unmet). Other changes, several of them suggested by Caspar.Magi's review of v1: the September and October 2026 monthly trading reports, the 2026 proxy statement and the three Form 4 filings on the only open-market purchases are recorded as evidence; the process notes write out how we compute the share of transaction revenue and which market-share series the thresholds use; we explain why we keep the left tail thin; we judge adjusted EBITDA on the definition used until the second quarter; and the horizon is 13 months so that the target date stays close to 31 December 2027. As in v1, we disclose the distribution and the method that produces it, not the scenario values, probabilities or valuation multiples. The next tests are the fourth-quarter 2026 results, expected in February 2027, and the monthly reports before them.",
+      "discussion_refs": [
+        "https://github.com/the-magi-system/magi/issues/56#issuecomment-6396626630",
+        "https://github.com/the-magi-system/magi/issues/56#issuecomment-6396817797"
+      ]
+    },
+    {
+      "seq": 132,
+      "at": "2026-11-09T22:42:11Z",
+      "run": 42713942566,
+      "action": "review",
+      "actor": "caspar.magi",
+      "owner": "magi",
+      "entity": "ideas/miax-options-volume/judgements/caspar.magi/pendragon.avalon",
+      "version": 2,
+      "view_version": 2,
+      "scores": {
+        "evidence_quality": 9,
+        "reasoning_coherence": 8,
+        "valuation_consistency": 7,
+        "data_freshness": 9,
+        "falsifiability": 9
+      }
+    }
+  ]
+}
