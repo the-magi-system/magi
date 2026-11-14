@@ -126,3 +126,17 @@
 {"date": "2026-11-12", "asset": "spy", "close": 757.1199951171875, "currency": "USD", "source": "yahoo", "as_of": "2026-11-12T14:30:00Z", "recorded_at": "2026-11-13T03:06:35Z"}
 {"date": "2026-11-12", "asset": "tem", "close": 75.88999938964844, "currency": "USD", "source": "yahoo", "as_of": "2026-11-12T14:30:00Z", "recorded_at": "2026-11-13T03:06:35Z"}
 {"date": "2026-11-12", "asset": "xlf", "close": 58.209999084472656, "currency": "USD", "source": "yahoo", "as_of": "2026-11-12T14:30:00Z", "recorded_at": "2026-11-13T03:06:35Z"}
+{"date": "2026-11-13", "asset": "069500-ks", "close": 83115.0, "currency": "KRW", "source": "yahoo", "as_of": "2026-11-13T00:00:00Z", "recorded_at": "2026-11-14T02:53:06Z"}
+{"date": "2026-11-13", "asset": "1306-t", "close": 415.5, "currency": "JPY", "source": "yahoo", "as_of": "2026-11-13T00:00:00Z", "recorded_at": "2026-11-14T02:53:06Z"}
+{"date": "2026-11-13", "asset": "btc-usd", "close": 68076.4765625, "currency": "USD", "source": "yahoo-5m", "as_of": "2026-11-13T23:35:00Z", "recorded_at": "2026-11-14T02:53:06Z"}
+{"date": "2026-11-13", "asset": "ccc", "close": 7.679999828338623, "currency": "USD", "source": "yahoo", "as_of": "2026-11-13T14:30:00Z", "recorded_at": "2026-11-14T02:53:06Z"}
+{"date": "2026-11-13", "asset": "dbc", "close": 30.790000915527344, "currency": "USD", "source": "yahoo", "as_of": "2026-11-13T14:30:00Z", "recorded_at": "2026-11-14T02:53:06Z"}
+{"date": "2026-11-13", "asset": "ectm-us", "close": 0.4699999988079071, "currency": "USD", "source": "yahoo", "as_of": "2026-11-13T14:30:00Z", "recorded_at": "2026-11-14T02:53:06Z"}
+{"date": "2026-11-13", "asset": "ive", "close": 242.16000366210938, "currency": "USD", "source": "yahoo", "as_of": "2026-11-13T14:30:00Z", "recorded_at": "2026-11-14T02:53:06Z"}
+{"date": "2026-11-13", "asset": "ivw", "close": 132.60000610351562, "currency": "USD", "source": "yahoo", "as_of": "2026-11-13T14:30:00Z", "recorded_at": "2026-11-14T02:53:06Z"}
+{"date": "2026-11-13", "asset": "iwm", "close": 277.5400085449219, "currency": "USD", "source": "yahoo", "as_of": "2026-11-13T14:30:00Z", "recorded_at": "2026-11-14T02:53:06Z"}
+{"date": "2026-11-13", "asset": "jvm", "close": 25250.0, "currency": "KRW", "source": "naver", "as_of": "2026-11-13T06:30:00Z", "recorded_at": "2026-11-14T02:53:06Z"}
+{"date": "2026-11-13", "asset": "miax", "close": 37.08000183105469, "currency": "USD", "source": "yahoo", "as_of": "2026-11-13T14:30:00Z", "recorded_at": "2026-11-14T02:53:06Z"}
+{"date": "2026-11-13", "asset": "spy", "close": 754.3699951171875, "currency": "USD", "source": "yahoo", "as_of": "2026-11-13T14:30:00Z", "recorded_at": "2026-11-14T02:53:06Z"}
+{"date": "2026-11-13", "asset": "tem", "close": 71.5999984741211, "currency": "USD", "source": "yahoo", "as_of": "2026-11-13T14:30:00Z", "recorded_at": "2026-11-14T02:53:06Z"}
+{"date": "2026-11-13", "asset": "xlf", "close": 58.68000030517578, "currency": "USD", "source": "yahoo", "as_of": "2026-11-13T14:30:00Z", "recorded_at": "2026-11-14T02:53:06Z"}
