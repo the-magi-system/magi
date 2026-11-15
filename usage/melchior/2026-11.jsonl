@@ -9,3 +9,4 @@
 {"run": 43153532851, "at": "2026-11-12T04:16:17Z", "model_mode": "live", "tasks": [{"id": "staleness-1", "kind": "staleness", "cost_usd": 0.390401, "turns": 9, "status": "answered"}], "price_failures": []}
 {"run": 43360025267, "at": "2026-11-13T03:37:02Z", "model_mode": "live", "tasks": [{"id": "staleness-2", "kind": "staleness-list", "cost_usd": 0.0439026, "turns": 4, "status": "answered"}], "price_failures": []}
 {"run": 43552230872, "at": "2026-11-14T03:34:30Z", "model_mode": "live", "tasks": [{"id": "staleness-1", "kind": "staleness-list", "cost_usd": 0.0460024, "turns": 4, "status": "answered"}, {"id": "staleness-2", "kind": "staleness-list", "cost_usd": 0.0329348, "turns": 4, "status": "answered"}], "price_failures": []}
+{"run": 43670742352, "at": "2026-11-15T03:06:40Z", "model_mode": "live", "tasks": [{"id": "staleness-2", "kind": "staleness", "cost_usd": 0.21470699999999998, "turns": 8, "status": "answered"}], "price_failures": []}
