@@ -85,3 +85,4 @@
 {"seq": 146, "at": "2026-11-14T03:34:30Z", "run": 43552230872, "action": "evidence_check", "actor": "melchior.magi", "owner": "magi", "entity": "evidence/checks/ev-20261109-miax-form4-hkam-20260305", "version": 2, "status": "verified"}
 {"seq": 147, "at": "2026-11-15T03:06:40Z", "run": 43670742352, "action": "evidence_check", "actor": "melchior.magi", "owner": "magi", "entity": "evidence/checks/ev-20261109-miax-2026-proxy", "version": 3, "status": "verified"}
 {"seq": 148, "at": "2026-11-16T03:08:51Z", "run": 43796247187, "action": "evidence_check", "actor": "melchior.magi", "owner": "magi", "entity": "evidence/checks/ev-20261109-miax-form4-hkam-20260305", "version": 3, "status": "verified"}
+{"seq": 149, "at": "2026-11-16T07:14:27Z", "run": 43822230997, "action": "report", "actor": "caspar.magi", "owner": "magi", "entity": "reports/caspar/2026-W46.md", "week": "2026-W46"}
