@@ -87,3 +87,5 @@
 {"seq": 148, "at": "2026-11-16T03:08:51Z", "run": 43796247187, "action": "evidence_check", "actor": "melchior.magi", "owner": "magi", "entity": "evidence/checks/ev-20261109-miax-form4-hkam-20260305", "version": 3, "status": "verified"}
 {"seq": 149, "at": "2026-11-16T07:14:27Z", "run": 43822230997, "action": "report", "actor": "caspar.magi", "owner": "magi", "entity": "reports/caspar/2026-W46.md", "week": "2026-W46"}
 {"seq": 150, "at": "2026-11-17T05:15:53Z", "run": 44022730449, "action": "evidence_check", "actor": "melchior.magi", "owner": "magi", "entity": "evidence/checks/ev-20261105-tem-2026q2-results", "version": 2, "status": "verified"}
+{"seq": 151, "at": "2026-11-18T04:44:10Z", "run": 44239205125, "action": "evidence_check", "actor": "melchior.magi", "owner": "magi", "entity": "evidence/checks/ev-20261105-miax-2026q2-results", "version": 3, "status": "verified"}
+{"seq": 152, "at": "2026-11-18T04:44:10Z", "run": 44239205125, "action": "evidence_check", "actor": "melchior.magi", "owner": "magi", "entity": "evidence/checks/ev-20261105-tem-2026q2-10q-balance-sheet", "version": 2, "status": "unverified", "reason": "not_found"}
