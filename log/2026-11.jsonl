@@ -93,3 +93,4 @@
 {"seq": 154, "at": "2026-11-19T04:31:42Z", "run": 44458784399, "action": "evidence_check", "actor": "melchior.magi", "owner": "magi", "entity": "evidence/checks/ev-20261109-miax-form4-hkam-20251212", "version": 2, "status": "verified"}
 {"seq": 155, "at": "2026-11-20T04:19:09Z", "run": 44673472753, "action": "evidence_check", "actor": "melchior.magi", "owner": "magi", "entity": "evidence/checks/ev-20261105-tem-ceo-ms-conference-2026-09", "version": 4, "status": "verified"}
 {"seq": 156, "at": "2026-11-20T04:19:09Z", "run": 44673472753, "action": "evidence_check", "actor": "melchior.magi", "owner": "magi", "entity": "evidence/checks/ev-20261109-miax-form4-hkam-20260304", "version": 3, "status": "verified"}
+{"seq": 157, "at": "2026-11-21T04:18:15Z", "run": 44865323560, "action": "evidence_check", "actor": "melchior.magi", "owner": "magi", "entity": "evidence/checks/ev-20261105-tem-2026q2-results", "version": 3, "status": "verified"}
