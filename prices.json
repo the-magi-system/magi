@@ -1,0 +1,86 @@
+{
+  "069500-ks": {
+    "value": 76210.0,
+    "currency": "KRW",
+    "date": "2026-11-20",
+    "source": "yahoo"
+  },
+  "1306-t": {
+    "value": 386.20001220703125,
+    "currency": "JPY",
+    "date": "2026-11-20",
+    "source": "yahoo"
+  },
+  "btc-usd": {
+    "value": 58894.328125,
+    "currency": "USD",
+    "date": "2026-11-20",
+    "source": "yahoo-5m"
+  },
+  "ccc": {
+    "value": 7.659999847412109,
+    "currency": "USD",
+    "date": "2026-11-20",
+    "source": "yahoo"
+  },
+  "dbc": {
+    "value": 29.31999969482422,
+    "currency": "USD",
+    "date": "2026-11-20",
+    "source": "yahoo"
+  },
+  "ectm-us": {
+    "value": 0.47999998927116394,
+    "currency": "USD",
+    "date": "2026-11-20",
+    "source": "yahoo"
+  },
+  "ive": {
+    "value": 227.74000549316406,
+    "currency": "USD",
+    "date": "2026-11-20",
+    "source": "yahoo"
+  },
+  "ivw": {
+    "value": 118.27999877929688,
+    "currency": "USD",
+    "date": "2026-11-20",
+    "source": "yahoo"
+  },
+  "iwm": {
+    "value": 256.6099853515625,
+    "currency": "USD",
+    "date": "2026-11-20",
+    "source": "yahoo"
+  },
+  "jvm": {
+    "value": 25650.0,
+    "currency": "KRW",
+    "date": "2026-11-20",
+    "source": "naver"
+  },
+  "miax": {
+    "value": 36.38999938964844,
+    "currency": "USD",
+    "date": "2026-11-20",
+    "source": "yahoo"
+  },
+  "spy": {
+    "value": 689.8099975585938,
+    "currency": "USD",
+    "date": "2026-11-20",
+    "source": "yahoo"
+  },
+  "tem": {
+    "value": 54.040000915527344,
+    "currency": "USD",
+    "date": "2026-11-20",
+    "source": "yahoo"
+  },
+  "xlf": {
+    "value": 54.56999969482422,
+    "currency": "USD",
+    "date": "2026-11-20",
+    "source": "yahoo"
+  }
+}

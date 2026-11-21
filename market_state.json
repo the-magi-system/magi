@@ -1,0 +1,60 @@
+{
+  "as_of": "2026-11-20",
+  "series": {
+    "spy": {
+      "registered": true,
+      "closes": 768,
+      "total_return_3m": -0.093206,
+      "total_return_12m": 0.068519,
+      "deviation_200d": -0.058608,
+      "volatility_20d": 0.262116,
+      "volatility_percentile_3y": 0.967914
+    },
+    "1306-t": {
+      "registered": true,
+      "closes": 745,
+      "total_return_3m": -0.086566,
+      "total_return_12m": 0.137404,
+      "deviation_200d": -0.052109,
+      "volatility_20d": 0.319106,
+      "volatility_percentile_3y": 0.904828
+    },
+    "btc-usd": {
+      "registered": true,
+      "closes": 1117,
+      "total_return_3m": -0.19359,
+      "total_return_12m": -0.320177,
+      "deviation_200d": -0.18799,
+      "volatility_20d": 0.522146,
+      "volatility_percentile_3y": 0.868613
+    },
+    "xlf": {
+      "registered": true,
+      "closes": 768,
+      "total_return_3m": -0.038414,
+      "total_return_12m": 0.0844,
+      "deviation_200d": 0.010261,
+      "volatility_20d": 0.237223,
+      "volatility_percentile_3y": 0.941176
+    },
+    "dbc": {
+      "registered": true,
+      "closes": 768,
+      "total_return_3m": -0.057538,
+      "total_return_12m": 0.335727,
+      "deviation_200d": -0.014164,
+      "volatility_20d": 0.193934,
+      "volatility_percentile_3y": 0.739305
+    }
+  },
+  "spreads": {
+    "value_minus_growth": {
+      "3m": 0.112835,
+      "12m": 0.130117
+    },
+    "small_minus_large": {
+      "3m": -0.042465,
+      "12m": 0.062895
+    }
+  }
+}
