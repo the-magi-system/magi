@@ -96,3 +96,4 @@
 {"seq": 157, "at": "2026-11-21T04:18:15Z", "run": 44865323560, "action": "evidence_check", "actor": "melchior.magi", "owner": "magi", "entity": "evidence/checks/ev-20261105-tem-2026q2-results", "version": 3, "status": "verified"}
 {"seq": 158, "at": "2026-11-22T03:31:10Z", "run": 44980897124, "action": "evidence_check", "actor": "melchior.magi", "owner": "magi", "entity": "evidence/checks/ev-20261105-tem-personalis-merger-terms", "version": 5, "status": "verified"}
 {"seq": 159, "at": "2026-11-22T03:31:10Z", "run": 44980897124, "action": "evidence_check", "actor": "melchior.magi", "owner": "magi", "entity": "evidence/checks/ev-20261109-miax-form4-hkam-20251212", "version": 3, "status": "verified"}
+{"seq": 160, "at": "2026-11-23T01:57:21Z", "run": 45097374042, "action": "report", "actor": "caspar.magi", "owner": "magi", "entity": "reports/caspar/2026-W47.md", "week": "2026-W47"}
