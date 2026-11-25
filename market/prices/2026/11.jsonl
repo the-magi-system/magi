@@ -230,3 +230,14 @@
 {"date": "2026-11-23", "asset": "spy", "close": 722.2899780273438, "currency": "USD", "source": "yahoo", "as_of": "2026-11-23T14:30:00Z", "recorded_at": "2026-11-24T06:42:42Z"}
 {"date": "2026-11-23", "asset": "tem", "close": 57.040000915527344, "currency": "USD", "source": "yahoo", "as_of": "2026-11-23T14:30:00Z", "recorded_at": "2026-11-24T06:42:42Z"}
 {"date": "2026-11-23", "asset": "xlf", "close": 55.650001525878906, "currency": "USD", "source": "yahoo", "as_of": "2026-11-23T14:30:00Z", "recorded_at": "2026-11-24T06:42:42Z"}
+{"date": "2026-11-24", "asset": "btc-usd", "close": 59740.87109375, "currency": "USD", "source": "yahoo-5m", "as_of": "2026-11-24T23:55:00Z", "recorded_at": "2026-11-25T05:12:16Z"}
+{"date": "2026-11-24", "asset": "ccc", "close": 7.75, "currency": "USD", "source": "yahoo", "as_of": "2026-11-24T14:30:00Z", "recorded_at": "2026-11-25T05:12:16Z"}
+{"date": "2026-11-24", "asset": "dbc", "close": 29.030000686645508, "currency": "USD", "source": "yahoo", "as_of": "2026-11-24T14:30:00Z", "recorded_at": "2026-11-25T05:12:16Z"}
+{"date": "2026-11-24", "asset": "ectm-us", "close": 0.44999998807907104, "currency": "USD", "source": "yahoo", "as_of": "2026-11-24T14:30:00Z", "recorded_at": "2026-11-25T05:12:16Z"}
+{"date": "2026-11-24", "asset": "ive", "close": 234.3300018310547, "currency": "USD", "source": "yahoo", "as_of": "2026-11-24T14:30:00Z", "recorded_at": "2026-11-25T05:12:16Z"}
+{"date": "2026-11-24", "asset": "ivw", "close": 124.55999755859375, "currency": "USD", "source": "yahoo", "as_of": "2026-11-24T14:30:00Z", "recorded_at": "2026-11-25T05:12:16Z"}
+{"date": "2026-11-24", "asset": "iwm", "close": 267.1400146484375, "currency": "USD", "source": "yahoo", "as_of": "2026-11-24T14:30:00Z", "recorded_at": "2026-11-25T05:12:16Z"}
+{"date": "2026-11-24", "asset": "miax", "close": 37.75, "currency": "USD", "source": "yahoo", "as_of": "2026-11-24T14:30:00Z", "recorded_at": "2026-11-25T05:12:16Z"}
+{"date": "2026-11-24", "asset": "spy", "close": 718.780029296875, "currency": "USD", "source": "yahoo", "as_of": "2026-11-24T14:30:00Z", "recorded_at": "2026-11-25T05:12:16Z"}
+{"date": "2026-11-24", "asset": "tem", "close": 54.83000183105469, "currency": "USD", "source": "yahoo", "as_of": "2026-11-24T14:30:00Z", "recorded_at": "2026-11-25T05:12:16Z"}
+{"date": "2026-11-24", "asset": "xlf", "close": 56.11000061035156, "currency": "USD", "source": "yahoo", "as_of": "2026-11-24T14:30:00Z", "recorded_at": "2026-11-25T05:12:16Z"}
