@@ -68,15 +68,14 @@ currency: current
 superseded_by: null
 same_source_as:
 - ev-20261031-ccc-2026-merger-agreement-8k
-pending_sources:
-- https://www.sec.gov/Archives/edgar/data/1818201/000114036126045013/ny20084609x1_prem14a.htm
+pending_sources: []
 assist_issue: 150
 filings_read_on: '2026-11-25'
 filings_listed: []
-next_review: '2027-02-06'
+next_review: '2027-02-26'
 input_commit: 04207a23adffe5f3b245f68d62110959b1ef62d3
 prompt_sha256: c4a7fd588a3661762d0f8435ff02b0f2db248013b11483706ef47693511892d7
 model: claude-opus-5-5
-version: 2
-checked_at: '2026-11-25T05:41:26Z'
-checked_via_run: 45555198307
+version: 3
+checked_at: '2026-11-28T04:58:38Z'
+checked_via_run: 46109885066
